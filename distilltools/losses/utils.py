@@ -16,7 +16,7 @@ def weight_loss(loss_func: Callable[..., torch.Tensor]):
         loss = loss_func(*args, **kwargs)
         if weight is not None:
             loss = loss * weight
-        reduction_enum = get_enum(reduction)  # none: 0, elementwise_mean:1, sum: 2
+        reduction_enum = get_enum(reduction)  # none: 0, elementwise_mean: 1, sum: 2
         if reduction_enum == 0:
             return loss
         elif reduction_enum == 1:
