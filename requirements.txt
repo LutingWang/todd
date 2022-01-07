@@ -1,0 +1,5 @@
+einops
+mmcv>=1.4.2
+pytorch>=1.8.0
+setuptools
+torchvision>=0.9.0

@@ -6,7 +6,7 @@ import torch.nn.functional as F
 
 from .builder import LOSSES
 from .mse import MSELoss
-from .utils import match_poses
+# from .utils import match_poses
 
 
 @LOSSES.register_module()

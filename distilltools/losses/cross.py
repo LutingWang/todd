@@ -11,7 +11,8 @@ from ..adapts import Decouple
 from .base import BaseLoss
 from .builder import LOSSES
 from .mse import MSELoss
-from .utils import index_by_pos, match_by_poses, weight_loss
+# from .utils import index_by_pos, match_by_poses, weight_loss
+from .utils import weight_loss
 
 
 @LOSSES.register_module()

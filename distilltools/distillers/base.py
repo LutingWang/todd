@@ -1,6 +1,5 @@
-from collections import Iterable
 import functools
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, Iterable, List, Optional, Union
 
 from mmcv.runner import BaseModule
 import torch.nn as nn
