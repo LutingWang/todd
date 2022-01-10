@@ -1,5 +1,6 @@
 einops
+ipdb
 mmcv>=1.4.2
-pytorch>=1.8.0
+torch
+torchvision
 setuptools
-torchvision>=0.9.0

@@ -2,6 +2,7 @@ import functools
 from typing import Any, Callable, Dict, Iterable, List, Optional, Union
 
 from mmcv.runner import BaseModule
+import torch
 import torch.nn as nn
 
 from ..adapts import AdaptModule
@@ -66,13 +67,17 @@ class BaseDistiller(BaseModule):
         }
         return {**hooked_tensors, **tracked_tensors}
 
-    def distill(self, adapt_kwargs: dict, loss_kwargs: dict):
+    def distill(self, adapt_kwargs: Optional[dict] = None, loss_kwargs: Optional[dict] = None) -> Dict[str, torch.Tensor]:
+        if adapt_kwargs is None: adapt_kwargs = {}
+        if loss_kwargs is None: loss_kwargs = {}
+
         for i, trackings in self._trackings.items():
             trackings.register_tensor()
 
         tensors = self.tensors
-        adapted_tensors = self._adapts(tensors, **adapt_kwargs)
-        losses = self._losses(adapted_tensors, **loss_kwargs)
+        if self._adapts is not None:
+            _ = self._adapts(tensors, inplace=True, **adapt_kwargs)
+        losses = self._losses(tensors, **loss_kwargs)
 
         inc_iter()
 

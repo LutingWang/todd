@@ -24,9 +24,9 @@ def inc_iter():
 
 class BaseModule(_BaseModule):
     @classmethod
-    def build(cls, cfg) -> 'BaseModule':
+    def build(cls, cfg, **kwargs) -> Optional['BaseModule']:
         if cfg is None: return None
-        module = cfg if isinstance(cfg, cls) else cls(cfg)
+        module = cfg if isinstance(cfg, cls) else cls(cfg, **kwargs)
         return module
 
 
