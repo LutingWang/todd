@@ -5,9 +5,9 @@ from mmcv.runner import BaseModule
 import torch
 import torch.nn as nn
 
-from ..adapts import AdaptModule
+from ..adapts import AdaptModuleDict
 from ..hooks import HookModule, TrackingModule
-from ..losses import LossModule
+from ..losses import LossModuleDict
 from ..utils import init_iter, inc_iter
 
 
@@ -17,8 +17,8 @@ class BaseDistiller(BaseModule):
         models: List[nn.Module],
         hooks: Optional[Dict[int, Union[HookModule, Iterable[Optional[dict]]]]] = None, 
         trackings: Optional[Dict[int, Union[TrackingModule, Iterable[Optional[dict]]]]] = None, 
-        adapts: Optional[Union[AdaptModule, dict]] = None,
-        losses: Optional[Union[LossModule, dict]] = None,
+        adapts: Optional[Union[AdaptModuleDict, dict]] = None,
+        losses: Optional[Union[LossModuleDict, dict]] = None,
         iter_: int = 0,
         **kwargs,
     ):
@@ -39,10 +39,10 @@ class BaseDistiller(BaseModule):
         }
         self._trackings = trackings
 
-        adapts: AdaptModule = AdaptModule.build(adapts)
+        adapts: AdaptModuleDict = AdaptModuleDict.build(adapts)
         self._adapts = adapts
 
-        losses: LossModule = LossModule.build(losses)
+        losses: LossModuleDict = LossModuleDict.build(losses)
         self._losses = losses
 
         init_iter(iter_)

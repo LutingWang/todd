@@ -1,11 +1,9 @@
 from collections import Iterable
 from typing import Any, Dict, List
 
-from mmcv.runner import ModuleDict
+from mmcv.runner import BaseModule, ModuleDict
 from mmcv.utils import Registry
 import torch.nn as nn
-
-from ..utils import BaseModule
 
 
 ADAPTS= Registry('adapts')
@@ -34,19 +32,19 @@ class AdaptLayer(BaseModule):
             return self._adapt(*tensors, **kwargs)
 
 
-class AdaptModule(BaseModule):
+class AdaptModuleDict(ModuleDict):
     def __init__(self, adapts: dict, **kwargs):
-        super().__init__(**kwargs)
-        self._adapts = ModuleDict({
+        adapts = {
             k: AdaptLayer.build(v)
             for k, v in adapts.items()
-        })
+        }
+        super().__init__(modules=adapts, **kwargs)
 
     def forward(self, hooked_tensors: Dict[str, Any], inplace: bool = False) -> Dict[str, Any]:
         if not inplace:
             hooked_tensors = dict(hooked_tensors)
         adapted_tensors = dict()
-        for name, adapt in self._adapts.items():
+        for name, adapt in self.items():
             tensors = adapt(hooked_tensors)
             if isinstance(name, str):
                 update_tensors = {name: tensors}

@@ -1,9 +1,9 @@
 from typing import Any, Dict, Generic, List, Optional, TypeVar
 
 import torch.nn as nn
+from mmcv.runner import BaseModule
 
-
-from ..utils import BaseModule, getattr_recur
+from ..utils import getattr_recur
 
 from .base import BaseHook
 from .builder import HOOKS

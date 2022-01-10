@@ -4,13 +4,13 @@ from mmcv.cnn import MODELS
 from mmcv.utils import Registry
 import torch
 
-from ..adapts import AdaptLayer, AdaptModule
+from ..adapts import AdaptLayer, AdaptModuleDict
 
 
 LOSSES = Registry('losses', parent=MODELS)
 
 
-class LossModule(AdaptModule):
+class LossModuleDict(AdaptModuleDict):
     def __init__(self, losses: dict, **kwargs):
         losses = {
             k: AdaptLayer.build(v, registry=LOSSES) 
