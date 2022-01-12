@@ -72,7 +72,7 @@ class BaseDistiller(BaseModule):
         if loss_kwargs is None: loss_kwargs = {}
 
         for i, trackings in self._trackings.items():
-            trackings.register_tensor()
+            trackings.register_tensor(self._models[i])
 
         tensors = self.tensors
         if self._adapts is not None:
