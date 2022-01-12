@@ -37,10 +37,9 @@ class BaseHook:
     def register_tensor(self, _: Any):
         pass
 
+    def _forward_hook(self, module: nn.Module, input_: Any, output: Any):
+        self.register_tensor(input_ if self._on_input else output)
+
     def register_hook(self, model: nn.Module):
-
-        def forward_hook(module: nn.Module, input_: Any, output: Any):
-            self.register_tensor(input_ if self._on_input else output)
-
         module: nn.Module = getattr_recur(model, self.id_)
-        module.register_forward_hook(forward_hook)
+        module.register_forward_hook(self._forward_hook)
