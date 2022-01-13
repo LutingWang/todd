@@ -1,3 +1,4 @@
+import contextlib
 import functools
 from typing import Any, Callable, Dict, Iterable, List, Optional, Union
 
@@ -7,6 +8,7 @@ import torch.nn as nn
 
 from ..adapts import AdaptModuleDict
 from ..hooks import HookModule, TrackingModule
+from ..hooks import detach as DetachHookContext
 from ..losses import LossModuleDict
 from ..utils import init_iter, inc_iter
 
@@ -47,25 +49,28 @@ class BaseDistiller(BaseModule):
 
         init_iter(iter_)
 
+    @property
+    def _hooks_and_trackings(self) -> List[HookModule]:
+        return list(self._hooks.values()) + list(self._trackings.values())
+
     def _apply(self, fn: Callable[..., None]) -> 'BaseDistiller':
         for model in self._models:
             if getattr(model, 'sync_apply', True):
                 model._apply(fn)
         return super()._apply(fn)
 
+    def detach_context(self, mode: bool = True) -> contextlib.AbstractContextManager:
+        if mode:
+            return DetachHookContext(self._hooks_and_trackings)
+        return contextlib.nullcontext()
+
     @property
     def tensors(self) -> Dict[str, Any]:
-        hooked_tensors = {
+        return {
             k: v 
-            for hook in self._hooks.values() 
+            for hook in self._hooks_and_trackings
             for k, v in hook.tensors.items()
         }
-        tracked_tensors = {
-            k: v 
-            for tracking in self._trackings.values() 
-            for k, v in tracking.tensors.items()
-        }
-        return {**hooked_tensors, **tracked_tensors}
 
     def distill(self, adapt_kwargs: Optional[dict] = None, loss_kwargs: Optional[dict] = None) -> Dict[str, torch.Tensor]:
         if adapt_kwargs is None: adapt_kwargs = {}

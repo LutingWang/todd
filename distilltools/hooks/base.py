@@ -7,10 +7,11 @@ from ..utils import getattr_recur
 
 
 class BaseHook:
-    def __init__(self, id_: str, alias: Optional[str] = None, on_input: bool = False):
+    def __init__(self, id_: str, alias: Optional[str] = None, on_input: bool = False, detach: bool = False):
         self._id = id_
         self._alias = alias
         self._on_input = on_input
+        self.detach(detach)
         self.reset()
 
     @property
@@ -36,6 +37,12 @@ class BaseHook:
     @abstractmethod
     def register_tensor(self, _: Any):
         pass
+
+    def detach(self, mode: bool = True):
+        self._detach = mode
+
+    def attach(self):
+        self.detach(False)
 
     def _forward_hook(self, module: nn.Module, input_: Any, output: Any):
         self.register_tensor(input_ if self._on_input else output)

@@ -23,4 +23,6 @@ class MultiTensorsHook(BaseHook):
         self._tensors = []
 
     def register_tensor(self, tensors: List[torch.Tensor]):
+        if self._detach:
+            tensors = [tensor.detach() for tensor in tensors]
         self._tensors = tensors

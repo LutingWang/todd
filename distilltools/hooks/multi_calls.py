@@ -16,4 +16,6 @@ class MultiCallsHook(BaseHook):
         self._tensors = []
 
     def register_tensor(self, tensor: torch.Tensor):
+        if self._detach:
+            tensor = tensor.detach()
         self._tensors.append(tensor)
