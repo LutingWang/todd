@@ -13,6 +13,6 @@ class Detach(BaseAdapt):
 
 
 @ADAPTS.register_module()
-class MultiDetach(BaseAdapt):
+class ListDetach(BaseAdapt):
     def forward(self, tensors: List[torch.Tensor]) -> List[torch.Tensor]:
         return [tensor.detach() for tensor in tensors]
