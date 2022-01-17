@@ -1,6 +1,7 @@
 einops
 ipdb
 mmcv>=1.4.2
+pytest
 torch
 torchvision
 setuptools

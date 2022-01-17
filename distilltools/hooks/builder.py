@@ -1,4 +1,4 @@
-from collections import Iterable
+from collections.abc import Iterable
 from contextlib import AbstractContextManager
 from typing import Any, Dict, Iterable, List, Optional, Union
 

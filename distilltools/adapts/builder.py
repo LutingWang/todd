@@ -1,14 +1,17 @@
-from collections import Iterable
+from collections.abc import Iterable
 from typing import Any, Dict, List
 
+import einops.layers.torch as einops
 from mmcv.runner import BaseModule, ModuleDict
 from mmcv.utils import Registry
 import torch.nn as nn
 
 
 ADAPTS= Registry('adapts')
-ADAPTS.register_module(name='Conv2d', module=nn.Conv2d)
-ADAPTS.register_module(name='Linear', module=nn.Linear)
+ADAPTS.register_module(module=nn.Conv2d)
+ADAPTS.register_module(module=nn.Linear)
+ADAPTS.register_module(module=einops.Rearrange)
+ADAPTS.register_module(module=einops.Reduce)
 
 
 class AdaptLayer(BaseModule):

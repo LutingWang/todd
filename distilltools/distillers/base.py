@@ -97,10 +97,10 @@ class InterfaceDistiller(BaseDistiller):
     @classmethod
     def wrap(cls):
 
-        def wrapper(wrapped_cls: type):
+        def wrapper(cls: type):
 
-            @functools.wraps(wrapped_cls, updated=())
-            class WrappedClass(wrapped_cls):
+            @functools.wraps(cls, updated=())
+            class WrappedClass(cls):
                 def __init__(self, *args, distiller: dict, **kwargs):
                     super().__init__(*args, **kwargs)
                     self._distiller = cls(self, **distiller)
