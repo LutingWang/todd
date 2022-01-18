@@ -8,17 +8,17 @@ from .base import BaseAdapt
 from .builder import ADAPTS
 
 
-GTensor = Union[torch.Tensor, Iterable]
+ListTensor = Union[torch.Tensor, Iterable]
 
 
-def _stack(feat: GTensor) -> torch.Tensor:
+def _stack(feat: ListTensor) -> torch.Tensor:
     if isinstance(feat, torch.Tensor):
         return feat
     feat = [_stack(f) for f in feat]
     return torch.stack(feat)
 
 
-def _shape(feat: GTensor, depth: int = 0) -> Tuple[int]:
+def _shape(feat: ListTensor, depth: int = 0) -> Tuple[int]:
     if isinstance(feat, torch.Tensor):
         return feat.shape[max(depth, 0):]
     shape = {_shape(f, depth - 1) for f in feat}
@@ -29,13 +29,13 @@ def _shape(feat: GTensor, depth: int = 0) -> Tuple[int]:
     return shape
 
 
-def _new_empty(feat: GTensor, *args, **kwargs) -> torch.Tensor:
+def _new_empty(feat: ListTensor, *args, **kwargs) -> torch.Tensor:
     if isinstance(feat, torch.Tensor):
         return feat.new_empty(*args, **kwargs)
     return _new_empty(feat[0], *args, **kwargs)
 
 
-def _index(feat: GTensor, pos: torch.Tensor) -> torch.Tensor:
+def _index(feat: ListTensor, pos: torch.Tensor) -> torch.Tensor:
     """Generalized `feat[pos]`.
 
     Args:
@@ -73,7 +73,7 @@ def _index(feat: GTensor, pos: torch.Tensor) -> torch.Tensor:
     return indexed_feat
 
 
-def g_tenosr_adapt(func: Callable[..., torch.Tensor]):
+def list_tenosr_adapt(func: Callable[..., torch.Tensor]):
     
     def wrapper(cls: type):
         
@@ -88,10 +88,10 @@ def g_tenosr_adapt(func: Callable[..., torch.Tensor]):
 
 
 @ADAPTS.register_module()
-@g_tenosr_adapt(_stack)
+@list_tenosr_adapt(_stack)
 class Stack: pass
 
 
 @ADAPTS.register_module()
-@g_tenosr_adapt(_index)
+@list_tenosr_adapt(_index)
 class Index: pass

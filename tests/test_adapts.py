@@ -1,11 +1,11 @@
 import pytest
 import torch
 
-from distilltools.adapts.g_tensor import GTensor, _stack, _index
+from distilltools.adapts.list_tensor import ListTensor, _stack, _index
 
 
 @pytest.fixture(scope='module', params=['tensor', 'list', 'hybrid'])
-def feat(request: pytest.FixtureRequest) -> GTensor:
+def feat(request: pytest.FixtureRequest) -> ListTensor:
     if request.param == 'tensor':
         return torch.arange(720).reshape(6, 5, 4, 3, 2)
     if request.param == 'list':
@@ -86,13 +86,13 @@ def feat(request: pytest.FixtureRequest) -> GTensor:
 
 
 class TestStack:
-    def test_normal(self, feat: GTensor):
+    def test_normal(self, feat: ListTensor):
         stacked_feat = _stack(feat)
         assert torch.all(stacked_feat.reshape(-1) == torch.arange(720))
 
 
 class TestIndex:
-    def test_empty_pos(self, feat: GTensor):
+    def test_empty_pos(self, feat: ListTensor):
         for n in range(5):
             indexed_feat = _index(feat, torch.zeros([0, n]))
             assert indexed_feat.shape == (0,) + (6, 5, 4, 3, 2)[n:]
@@ -100,7 +100,7 @@ class TestIndex:
         indexed_feat = _index(feat, torch.zeros([m, 0]))
         assert indexed_feat.shape == (m, 6, 5, 4, 3, 2)
     
-    def test_normal(self, feat: GTensor):
+    def test_normal(self, feat: ListTensor):
         pos = torch.Tensor([[0,1],[1,0],[1,2]])
         indexed_feat = _index(feat, pos)
         result = torch.stack([
