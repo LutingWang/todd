@@ -1,10 +1,10 @@
-from .base import BaseDistiller, MixinDistiller
+from .base import BaseDistiller, DecoratorMixin
 from .builder import DISTILLERS, DistillerConfig, build_distiller
 from .self import SelfDistiller
 from .teacher import MultiTeacherDistiller, SingleTeacherDistiller
 
 
 __all__ = [
-    'BaseDistiller', 'MixinDistiller', 'DISTILLERS', 'DistillerConfig', 'build_distiller',
+    'BaseDistiller', 'DecoratorMixin', 'DISTILLERS', 'DistillerConfig', 'build_distiller',
     'SelfDistiller', 'MultiTeacherDistiller', 'SingleTeacherDistiller',
 ]

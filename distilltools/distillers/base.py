@@ -94,7 +94,7 @@ class BaseDistiller(BaseModule):
         return losses
 
 
-class MixinDistiller(BaseDistiller):
+class DecoratorMixin:
     @classmethod
     def wrap(cls):
 
@@ -107,7 +107,7 @@ class MixinDistiller(BaseDistiller):
                     self._distiller = cls(self, **distiller)
 
                 @property
-                def distiller(self) -> MixinDistiller:
+                def distiller(self) -> BaseDistiller:
                     return self._distiller
 
                 @property

@@ -4,12 +4,12 @@ import torch.nn as nn
 
 from ..hooks import HookModule, TrackingModule
 
-from .base import MixinDistiller
+from .base import BaseDistiller, DecoratorMixin
 from .builder import DISTILLERS
 
 
 @DISTILLERS.register_module()
-class MultiTeacherDistiller(MixinDistiller):
+class MultiTeacherDistiller(DecoratorMixin, BaseDistiller):
     def __init__(
         self,
         student: nn.Module,
