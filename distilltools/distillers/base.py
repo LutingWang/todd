@@ -6,10 +6,10 @@ from mmcv.runner import BaseModule
 import torch
 import torch.nn as nn
 
-from ..adapts import AdaptModuleDict
+from ..adapts import AdaptModuleList
 from ..hooks import HookModule, TrackingModule
 from ..hooks import detach as DetachHookContext
-from ..losses import LossModuleDict
+from ..losses import LossModuleList
 from ..utils import init_iter, inc_iter
 
 
@@ -19,8 +19,8 @@ class BaseDistiller(BaseModule):
         models: List[nn.Module],
         hooks: Optional[Dict[int, Union[HookModule, Iterable[Optional[dict]]]]] = None, 
         trackings: Optional[Dict[int, Union[TrackingModule, Iterable[Optional[dict]]]]] = None, 
-        adapts: Optional[Union[AdaptModuleDict, dict]] = None,
-        losses: Optional[Union[LossModuleDict, dict]] = None,
+        adapts: Optional[Union[AdaptModuleList, dict]] = None,
+        losses: Optional[Union[LossModuleList, dict]] = None,
         iter_: int = 0,
         **kwargs,
     ):
@@ -41,10 +41,10 @@ class BaseDistiller(BaseModule):
         }
         self._trackings = trackings
 
-        adapts: AdaptModuleDict = AdaptModuleDict.build(adapts)
+        adapts: AdaptModuleList = AdaptModuleList.build(adapts)
         self._adapts = adapts
 
-        losses: LossModuleDict = LossModuleDict.build(losses)
+        losses: LossModuleList = LossModuleList.build(losses)
         self._losses = losses
 
         init_iter(iter_)
@@ -66,6 +66,7 @@ class BaseDistiller(BaseModule):
 
     @property
     def tensors(self) -> Dict[str, Any]:
+        # TODO: cache the property but remember to clear the cache every iter
         return {
             k: v 
             for hook in self._hooks_and_trackings
@@ -81,7 +82,7 @@ class BaseDistiller(BaseModule):
 
         tensors = self.tensors
         if self._adapts is not None:
-            _ = self._adapts(tensors, inplace=True, **adapt_kwargs)
+            self._adapts(tensors, inplace=True, **adapt_kwargs)
         losses = self._losses(tensors, **loss_kwargs)
 
         inc_iter()
@@ -97,10 +98,10 @@ class MixinDistiller(BaseDistiller):
     @classmethod
     def wrap(cls):
 
-        def wrapper(cls: type):
+        def wrapper(wrapped_cls: type):
 
-            @functools.wraps(cls, updated=())
-            class WrappedClass(cls):
+            @functools.wraps(wrapped_cls, updated=())
+            class WrapperClass(wrapped_cls):
                 def __init__(self, *args, distiller: dict, **kwargs):
                     super().__init__(*args, **kwargs)
                     self._distiller = cls(self, **distiller)
@@ -113,6 +114,6 @@ class MixinDistiller(BaseDistiller):
                 def sync_apply(self) -> bool:
                     return False
 
-            return WrappedClass
+            return WrapperClass
 
         return wrapper
