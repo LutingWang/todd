@@ -28,6 +28,7 @@ class BaseHook:
 
     @abstractproperty
     def tensor(self) -> Dict[str, Any]:
+        # TODO: raise error if returning None
         pass
 
     @abstractmethod

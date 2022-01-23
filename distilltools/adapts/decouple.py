@@ -10,7 +10,7 @@ from .builder import ADAPTS
 
 @ADAPTS.register_module()
 class Decouple(BaseAdapt):
-    def __init__(self, in_features: int, out_features: int, num: int = 1, bias: bool = True, **kwargs):
+    def __init__(self, num: int, in_features: int, out_features: int, bias: bool = True, **kwargs):
         super().__init__(**kwargs)
         self._num = num
         self._layer = nn.Linear(in_features, out_features * num, bias)
@@ -26,6 +26,6 @@ class Decouple(BaseAdapt):
             decoupled_feat: n x dim
         """
         decoupled_feat: torch.Tensor = self._layer(feat)  # n x (num x dim)
-        decoupled_feat = einops.rearrange(decoupled_feat, 'n (num dim) -> num n dim', num=self._num)
-        decoupled_feat = decoupled_feat[id_.long()]  # n x dim
+        decoupled_feat = einops.rearrange(decoupled_feat, 'n (num dim) -> n num dim', num=self._num)
+        decoupled_feat = decoupled_feat[torch.arange(id_.shape[0]), id_.long()]  # n x dim
         return decoupled_feat

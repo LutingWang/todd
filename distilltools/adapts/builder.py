@@ -1,8 +1,7 @@
-from collections.abc import Iterable
-from typing import Any, Dict, List
+from typing import Any, Dict, Iterable, List
 
 import einops.layers.torch as einops
-from mmcv.runner import BaseModule, ModuleDict
+from mmcv.runner import BaseModule, ModuleList
 from mmcv.utils import Registry
 import torch.nn as nn
 
@@ -17,45 +16,51 @@ ADAPTS.register_module(module=einops.Reduce)
 class AdaptLayer(BaseModule):
     def __init__(self, cfg: dict, registry: Registry = ADAPTS, **kwargs):
         super().__init__(**kwargs)
+        self._id = cfg.pop('id_')
         self._tensor_names: List[str] = cfg.pop('tensor_names')
         self._multilevel: bool = cfg.pop('multilevel', False)
         self._adapt = registry.build(cfg)
 
-    def forward(self, hooked_tensors: Dict[str, Any], **kwargs):
+    @property
+    def name(self) -> str:
+        if isinstance(self._id, str):
+            return self._id
+        return str(self._id)
+
+    def forward(self, hooked_tensors: Dict[str, Any], **kwargs) -> dict:
         tensors = [
             hooked_tensors[tensor_name] 
             for tensor_name in self._tensor_names
         ]
         if self._multilevel:
-            return [
+            adapted_tensors = [
                 self._adapt(*level_tensors, **kwargs) 
                 for level_tensors in zip(*tensors)
             ]
         else:
-            return self._adapt(*tensors, **kwargs)
+            adapted_tensors = self._adapt(*tensors, **kwargs)
+
+        if isinstance(self._id, str):
+            return {self._id: adapted_tensors}
+        if isinstance(self._id, Iterable):
+            assert len(self._id) == len(adapted_tensors)
+            return dict(zip(self._id, adapted_tensors))
+        raise NotImplementedError
 
 
-class AdaptModuleDict(ModuleDict):
-    def __init__(self, adapts: dict, **kwargs):
-        adapts = {
-            k: AdaptLayer.build(v)
-            for k, v in adapts.items()
-        }
+class AdaptModuleList(ModuleList):
+    def __init__(self, adapts: List[dict], **kwargs):
+        adapts = [
+            AdaptLayer.build(adapt) for adapt in adapts
+        ]
         super().__init__(modules=adapts, **kwargs)
 
     def forward(self, hooked_tensors: Dict[str, Any], inplace: bool = False) -> Dict[str, Any]:
         if not inplace:
             hooked_tensors = dict(hooked_tensors)
         adapted_tensors = dict()
-        for name, adapt in self.items():
+        for adapt in self:
             tensors = adapt(hooked_tensors)
-            if isinstance(name, str):
-                update_tensors = {name: tensors}
-            elif isinstance(name, Iterable):
-                assert len(name) == len(adapted_tensors)
-                update_tensors = dict(zip(name, adapted_tensors))
-            else:
-                raise NotImplementedError
-            hooked_tensors.update(update_tensors)
-            adapted_tensors.update(update_tensors)
+            hooked_tensors.update(tensors)
+            adapted_tensors.update(tensors)
         return adapted_tensors

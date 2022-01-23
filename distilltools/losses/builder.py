@@ -1,21 +1,21 @@
-from typing import Dict
+from typing import Dict, List
 
 from mmcv.cnn import MODELS
 from mmcv.utils import Registry
 import torch
 
-from ..adapts import AdaptLayer, AdaptModuleDict
+from ..adapts import AdaptLayer, AdaptModuleList
 
 
 LOSSES = Registry('losses', parent=MODELS)
 
 
-class LossModuleDict(AdaptModuleDict):
-    def __init__(self, losses: dict, **kwargs):
-        losses = {
-            k: AdaptLayer.build(v, registry=LOSSES) 
-            for k, v in losses.items()
-        }
+class LossModuleList(AdaptModuleList):
+    def __init__(self, losses: List[dict], **kwargs):
+        losses = [
+            AdaptLayer.build(loss, registry=LOSSES) 
+            for loss in losses
+        ]
         super().__init__(losses, **kwargs)
 
     def forward(self, *args, **kwargs) -> Dict[str, torch.Tensor]:
