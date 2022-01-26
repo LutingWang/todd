@@ -27,11 +27,15 @@ class AdaptLayer(BaseModule):
             return self._id
         return str(self._id)
 
-    def forward(self, hooked_tensors: Dict[str, Any], **kwargs) -> dict:
+    def _get_tensors(self, hooked_tensors: Dict[str, Any]) -> Dict[str, Any]:
         tensors = [
             hooked_tensors[tensor_name] 
             for tensor_name in self._tensor_names
         ]
+        return tensors
+
+    def forward(self, hooked_tensors: Dict[str, Any], **kwargs) -> dict:
+        tensors = self._get_tensors(hooked_tensors)
         if self._multilevel:
             adapted_tensors = [
                 self._adapt(*level_tensors, **kwargs) 

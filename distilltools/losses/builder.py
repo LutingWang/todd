@@ -1,13 +1,12 @@
 from typing import Dict, List
 
-from mmcv.cnn import MODELS
 from mmcv.utils import Registry
 import torch
 
 from ..adapts import AdaptLayer, AdaptModuleList
 
 
-LOSSES = Registry('losses', parent=MODELS)
+LOSSES = Registry('losses')
 
 
 class LossModuleList(AdaptModuleList):

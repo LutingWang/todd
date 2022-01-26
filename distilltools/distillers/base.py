@@ -10,6 +10,7 @@ from ..adapts import AdaptModuleList
 from ..hooks import HookModule, TrackingModule
 from ..hooks import detach as DetachHookContext
 from ..losses import LossModuleList
+from ..visuals import VisualModuleList
 from ..utils import init_iter, inc_iter
 
 
@@ -19,8 +20,9 @@ class BaseDistiller(BaseModule):
         models: List[nn.Module],
         hooks: Optional[Dict[int, Union[HookModule, Iterable[Optional[dict]]]]] = None, 
         trackings: Optional[Dict[int, Union[TrackingModule, Iterable[Optional[dict]]]]] = None, 
-        adapts: Optional[Union[AdaptModuleList, dict]] = None,
-        losses: Optional[Union[LossModuleList, dict]] = None,
+        adapts: Optional[Union[AdaptModuleList, List[dict]]] = None,
+        visuals: Optional[Union[VisualModuleList, List[dict]]] = None,
+        losses: Optional[Union[LossModuleList, List[dict]]] = None,
         iter_: int = 0,
         **kwargs,
     ):
@@ -44,6 +46,9 @@ class BaseDistiller(BaseModule):
         adapts: AdaptModuleList = AdaptModuleList.build(adapts)
         self._adapts = adapts
 
+        visuals: VisualModuleList = VisualModuleList.build(visuals)
+        self._visuals = visuals
+
         losses: LossModuleList = LossModuleList.build(losses)
         self._losses = losses
 
@@ -66,14 +71,19 @@ class BaseDistiller(BaseModule):
 
     @property
     def tensors(self) -> Dict[str, Any]:
-        # TODO: cache the property but remember to clear the cache every iter
         return {
             k: v 
             for hook in self._hooks_and_trackings
             for k, v in hook.tensors.items()
         }
 
-    def distill(self, adapt_kwargs: Optional[dict] = None, loss_kwargs: Optional[dict] = None) -> Dict[str, torch.Tensor]:
+    def visualize(self, *args, **kwargs):
+        for i, trackings in self._trackings.items():
+            trackings.register_tensor(self._models[i])
+        tensors = self.tensors
+        self._visuals(tensors, *args, **kwargs)
+
+    def distill(self, adapt_kwargs: Optional[dict] = None, visual_kwargs: Optional[dict] = None, loss_kwargs: Optional[dict] = None) -> Dict[str, torch.Tensor]:
         if adapt_kwargs is None: adapt_kwargs = {}
         if loss_kwargs is None: loss_kwargs = {}
 

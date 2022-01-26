@@ -46,15 +46,21 @@ def _index(feat: ListTensor, pos: torch.Tensor) -> torch.Tensor:
         indexed_feat: m x *
     """
     m, n = pos.shape
+    if isinstance(feat, torch.Tensor):
+        assert n <= feat.ndim
     if m == 0:
         shape = _shape(feat, n)
         return _new_empty(feat, 0, *shape)
     if n == 0:
         feat = _stack(feat)
-        return feat.unsqueeze(0).repeat(m, *[1 for _ in range(feat.ndim)])
+        return feat.unsqueeze(0).repeat(m, *[1] * feat.ndim)
 
     pos = pos.long()
     if isinstance(feat, torch.Tensor):
+        assert (pos >= 0).all()
+        max_pos = pos.max(0).values
+        feat_shape = pos.new_tensor(feat.shape)
+        assert (max_pos < feat_shape[:n]).all(), f'max_pos({max_pos}) larger than feat_shape({feat_shape}).'
         return feat[pos.split(1, 1)].squeeze(1)
     indices = []
     indexed_feats = []
