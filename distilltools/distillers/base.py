@@ -1,13 +1,13 @@
 import contextlib
 import functools
-from typing import Any, Callable, Dict, Iterable, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional
 
 from mmcv.runner import BaseModule
 import torch
 import torch.nn as nn
 
-from ..adapts import AdaptModuleList
-from ..hooks import HookModule, TrackingModule
+from ..adapts import AdaptModuleList, AdaptModuleListCfg
+from ..hooks import HookModuleList, HookModuleListCfg, TrackingModuleList
 from ..hooks import detach as DetachHookContext
 from ..losses import LossModuleList
 from ..visuals import VisualModuleList
@@ -18,11 +18,11 @@ class BaseDistiller(BaseModule):
     def __init__(
         self, 
         models: List[nn.Module],
-        hooks: Optional[Dict[int, Union[HookModule, Iterable[Optional[dict]]]]] = None, 
-        trackings: Optional[Dict[int, Union[TrackingModule, Iterable[Optional[dict]]]]] = None, 
-        adapts: Optional[Union[AdaptModuleList, List[dict]]] = None,
-        visuals: Optional[Union[VisualModuleList, List[dict]]] = None,
-        losses: Optional[Union[LossModuleList, List[dict]]] = None,
+        hooks: Optional[Dict[int, HookModuleListCfg]] = None, 
+        trackings: Optional[Dict[int, HookModuleListCfg]] = None, 
+        adapts: Optional[AdaptModuleListCfg] = None,
+        visuals: Optional[AdaptModuleListCfg] = None,
+        losses: Optional[AdaptModuleListCfg] = None,
         iter_: int = 0,
         **kwargs,
     ):
@@ -30,16 +30,16 @@ class BaseDistiller(BaseModule):
         self._models = models
 
         hooks = {} if hooks is None else hooks
-        hooks: Dict[str, HookModule] = {
-            i: HookModule.build(hook) for i, hook in hooks.items()
+        hooks: Dict[str, HookModuleList] = {
+            i: HookModuleList.build(hook) for i, hook in hooks.items()
         }
         for i, hook in hooks.items():
             hook.register_hook(models[i])
         self._hooks = hooks
 
         trackings = {} if trackings is None else trackings
-        trackings: Dict[str, TrackingModule] = {
-            i: TrackingModule.build(tracking) for i, tracking in trackings.items()
+        trackings: Dict[str, TrackingModuleList] = {
+            i: TrackingModuleList.build(tracking) for i, tracking in trackings.items()
         }
         self._trackings = trackings
 
@@ -55,7 +55,7 @@ class BaseDistiller(BaseModule):
         init_iter(iter_)
 
     @property
-    def _hooks_and_trackings(self) -> List[HookModule]:
+    def _hooks_and_trackings(self) -> List[HookModuleList]:
         return list(self._hooks.values()) + list(self._trackings.values())
 
     def _apply(self, fn: Callable[..., None]) -> 'BaseDistiller':

@@ -14,4 +14,4 @@ class DuplicatedHook(StandardHook):
 
     @property
     def tensor(self) -> Dict[str, List[torch.Tensor]]:
-        return {self.alias: [self._tensor] * self._num}
+        return {self.id_: [self._tensor] * self._num}

@@ -1,8 +1,8 @@
-from typing import Dict, Iterable, List, Optional, Union
+from typing import Dict, List, Optional
 
 import torch.nn as nn
 
-from ..hooks import HookModule, TrackingModule
+from ..hooks import HookModuleListCfg
 
 from .base import BaseDistiller, DecoratorMixin
 from .builder import DISTILLERS
@@ -15,12 +15,12 @@ class MultiTeacherDistiller(DecoratorMixin, BaseDistiller):
         student: nn.Module,
         online_teachers: List[nn.Module] = None,
         offline_teachers: List[nn.Module] = None,
-        student_hooks: Optional[Union[HookModule, Iterable[Optional[dict]]]] = None, 
-        student_trackings: Optional[Union[TrackingModule, Iterable[Optional[dict]]]] = None, 
-        online_teacher_hooks: Optional[Dict[int, Union[HookModule, Iterable[Optional[dict]]]]] = None, 
-        online_teacher_trackings: Optional[Dict[int, Union[TrackingModule, Iterable[Optional[dict]]]]] = None, 
-        offline_teacher_hooks: Optional[Dict[int, Union[HookModule, Iterable[Optional[dict]]]]] = None, 
-        offline_teacher_trackings: Optional[Dict[int, Union[TrackingModule, Iterable[Optional[dict]]]]] = None, 
+        student_hooks: HookModuleListCfg = None, 
+        student_trackings: HookModuleListCfg = None, 
+        online_teacher_hooks: Optional[Dict[int, HookModuleListCfg]] = None, 
+        online_teacher_trackings: Optional[Dict[int, HookModuleListCfg]] = None, 
+        offline_teacher_hooks: Optional[Dict[int, HookModuleListCfg]] = None, 
+        offline_teacher_trackings: Optional[Dict[int, HookModuleListCfg]] = None, 
         **kwargs,
     ):
         assert not kwargs.get('hooks') and not kwargs.get('trackings')
@@ -90,8 +90,8 @@ class SingleTeacherDistiller(MultiTeacherDistiller):
         self, 
         student: nn.Module, 
         teacher: nn.Module, 
-        teacher_hooks: Optional[Union[HookModule, Iterable[Optional[dict]]]] = None,
-        teacher_trackings: Optional[Union[TrackingModule, Iterable[Optional[dict]]]] = None,
+        teacher_hooks: HookModuleListCfg = None,
+        teacher_trackings: HookModuleListCfg = None,
         teacher_online: bool = False, 
         **kwargs,
     ):

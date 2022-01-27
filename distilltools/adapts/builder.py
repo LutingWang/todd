@@ -1,4 +1,4 @@
-from typing import Any, Dict, Iterable, List
+from typing import Any, Dict, Iterable, List, Optional, Union
 
 import einops.layers.torch as einops
 from mmcv.runner import BaseModule, ModuleList
@@ -52,10 +52,25 @@ class AdaptLayer(BaseModule):
         raise NotImplementedError
 
 
+AdaptLayerCfg = Union[dict, AdaptLayer]
+
+
 class AdaptModuleList(ModuleList):
-    def __init__(self, adapts: List[dict], **kwargs):
+    def __init__(
+        self, 
+        adapts: Union[Dict[str, AdaptLayerCfg], List[AdaptLayerCfg]], 
+        *, 
+        layer_kwargs: Optional[dict] = None, 
+        **kwargs,
+    ):
+        layer_kwargs = {} if layer_kwargs is None else layer_kwargs
+        if isinstance(adapts, dict):
+            adapts = [
+                dict(id_=id_, **adapt) if isinstance(adapt, dict) else adapt 
+                for id_, adapt in adapts.items()
+            ]
         adapts = [
-            AdaptLayer.build(adapt) for adapt in adapts
+            AdaptLayer.build(adapt, **layer_kwargs) for adapt in adapts
         ]
         super().__init__(modules=adapts, **kwargs)
 
@@ -68,3 +83,6 @@ class AdaptModuleList(ModuleList):
             hooked_tensors.update(tensors)
             adapted_tensors.update(tensors)
         return adapted_tensors
+
+
+AdaptModuleListCfg = Union[Dict[str, AdaptLayerCfg], List[AdaptLayerCfg], AdaptModuleList]

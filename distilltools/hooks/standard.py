@@ -10,7 +10,7 @@ from .builder import HOOKS
 class StandardHook(BaseHook):
     @property
     def tensor(self) -> Dict[str, torch.Tensor]:
-        return {self.alias: self._tensor}
+        return {self.id_: self._tensor}
 
     def reset(self):
         self._tensor = None

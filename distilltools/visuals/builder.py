@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 from mmcv.utils import Registry
 
@@ -22,12 +22,6 @@ class VisualLayer(AdaptLayer):
 
 
 class VisualModuleList(AdaptModuleList):
-    def __init__(self, visuals: List[dict], **kwargs):
-        visuals = [
-            VisualLayer.build(visual) for visual in visuals
-        ]
-        super().__init__(visuals, **kwargs)
-
     def forward(self, hooked_tensors: Dict[str, Any]):
         for visual in self:
             visual(hooked_tensors)

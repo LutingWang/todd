@@ -10,7 +10,7 @@ from .builder import HOOKS
 class MultiCallsHook(BaseHook):
     @property
     def tensor(self) -> Dict[str, List[torch.Tensor]]:
-        return {self.alias: self._tensors}
+        return {self.id_: self._tensors}
 
     def reset(self):
         self._tensors = []

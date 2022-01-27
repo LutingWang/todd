@@ -7,9 +7,9 @@ from ..utils import getattr_recur
 
 
 class BaseHook:
-    def __init__(self, id_: str, alias: Optional[str] = None, on_input: bool = False, detach: bool = False):
+    def __init__(self, id_: str, path: str, on_input: bool = False, detach: bool = False):
         self._id = id_
-        self._alias = alias
+        self._path = path
         self._on_input = on_input
         self.detach(detach)
         self.reset()
@@ -19,8 +19,8 @@ class BaseHook:
         return self._id
 
     @property
-    def alias(self) -> str:
-        return self._alias or self._id
+    def path(self) -> str:
+        return self._path
 
     @property
     def on_input(self) -> bool:
@@ -49,5 +49,5 @@ class BaseHook:
         self.register_tensor(input_ if self._on_input else output)
 
     def register_hook(self, model: nn.Module):
-        module: nn.Module = getattr_recur(model, self.id_)
+        module: nn.Module = getattr_recur(model, self.path)
         module.register_forward_hook(self._forward_hook)

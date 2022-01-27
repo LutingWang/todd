@@ -1,8 +1,6 @@
-from typing import Iterable, Optional, Union
-
 import torch.nn as nn
 
-from ..hooks import HookModule, TrackingModule
+from ..hooks import HookModuleListCfg
 
 from .base import BaseDistiller, DecoratorMixin
 from .builder import DISTILLERS
@@ -13,8 +11,8 @@ class SelfDistiller(DecoratorMixin, BaseDistiller):
     def __init__(
         self, 
         student: nn.Module, 
-        student_hooks: Optional[Union[HookModule, Iterable[Optional[dict]]]] = None, 
-        student_trackings: Optional[Union[TrackingModule, Iterable[Optional[dict]]]] = None, 
+        student_hooks: HookModuleListCfg = None, 
+        student_trackings: HookModuleListCfg = None, 
         **kwargs,
     ):
         assert not kwargs.get('hooks') and not kwargs.get('trackings')
