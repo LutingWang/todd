@@ -6,31 +6,6 @@ import torch.nn.functional as F
 
 from .builder import LOSSES
 from .mse import MSELoss
-# from .utils import match_poses
-
-
-@LOSSES.register_module()
-class RCNNLoss(MSELoss):
-    def forward(
-        self, pred: torch.Tensor, target: torch.Tensor,
-        pred_poses: torch.Tensor, target_poses: torch.Tensor,
-        *args, **kwargs,
-    ):
-        """Compute RCNN loss.
-
-        Args:
-            pred: n x dim | n x dim x h x w
-            target: m x dim | m x dim x h x w
-            pred_poses: n x 5
-            target_poses: m x 5
-
-        Returns:
-            loss: 1
-        """
-        pred_inds, target_inds = match_poses(pred_poses, target_poses)
-        if pred_inds is None:
-            return pred_poses.new_zeros([])
-        return super().forward(pred[pred_inds], target[target_inds], *args, **kwargs)
 
 
 @LOSSES.register_module()

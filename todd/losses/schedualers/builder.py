@@ -8,16 +8,12 @@ from .base import BaseSchedualer
 
 SCHEDUALERS = Registry('schedualers')
 
-SchedualerConfig = Union[BaseSchedualer, numbers.Number, dict]
+SchedualerCfg = Union[BaseSchedualer, numbers.Number, dict]
 
 
-def build_schedualer(cfg: SchedualerConfig) -> BaseSchedualer:
-
-    from .constant import ConstantSchedualer
-
+def build_schedualer(cfg: SchedualerCfg) -> BaseSchedualer:
     if isinstance(cfg, BaseSchedualer):
         return cfg
     if isinstance(cfg, numbers.Number):
-        return ConstantSchedualer(cfg)
-    assert isinstance(cfg, dict)
+        cfg = dict(type='ConstantSchedualer', value=cfg)
     return SCHEDUALERS.build(cfg)
