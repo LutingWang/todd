@@ -14,12 +14,14 @@ ADAPTS.register_module(module=einops.Reduce)
 
 
 class AdaptLayer(BaseModule):
-    def __init__(self, cfg: dict, registry: Registry = ADAPTS, **kwargs):
+    REGISTRY = ADAPTS
+
+    def __init__(self, cfg: dict, **kwargs):
         super().__init__(**kwargs)
         self._id = cfg.pop('id_')
         self._tensor_names: List[str] = cfg.pop('tensor_names')
         self._multilevel: bool = cfg.pop('multilevel', False)
-        self._adapt = registry.build(cfg)
+        self._adapt = self.REGISTRY.build(cfg)
 
     @property
     def name(self) -> str:
@@ -56,21 +58,20 @@ AdaptLayerCfg = Union[dict, AdaptLayer]
 
 
 class AdaptModuleList(ModuleList):
+    LAYER_TYPE = AdaptLayer
+
     def __init__(
         self, 
         adapts: Union[Dict[str, AdaptLayerCfg], List[AdaptLayerCfg]], 
-        *, 
-        layer_kwargs: Optional[dict] = None, 
         **kwargs,
     ):
-        layer_kwargs = {} if layer_kwargs is None else layer_kwargs
         if isinstance(adapts, dict):
             adapts = [
                 dict(id_=id_, **adapt) if isinstance(adapt, dict) else adapt 
                 for id_, adapt in adapts.items()
             ]
         adapts = [
-            AdaptLayer.build(adapt, **layer_kwargs) for adapt in adapts
+            self.LAYER_TYPE.build(adapt) for adapt in adapts
         ]
         super().__init__(modules=adapts, **kwargs)
 

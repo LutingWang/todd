@@ -9,8 +9,7 @@ VISUALS = Registry('visuals')
 
 
 class VisualLayer(AdaptLayer):
-    def __init__(self, *args, registry: Registry = VISUALS, **kwargs):
-        super().__init__(*args, registry=registry, **kwargs)
+    REGISTRY = VISUALS
 
     def forward(self, hooked_tensors: Dict[str, Any], **kwargs):
         tensors = self._get_tensors(hooked_tensors)
@@ -22,6 +21,8 @@ class VisualLayer(AdaptLayer):
 
 
 class VisualModuleList(AdaptModuleList):
+    LAYER_TYPE = VisualLayer
+
     def forward(self, hooked_tensors: Dict[str, Any]):
         for visual in self:
             visual(hooked_tensors)
