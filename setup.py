@@ -8,7 +8,7 @@ with open(os.path.join(os.path.dirname(__file__), "requirements.txt")) as requir
     install_requires = [str(r) for r in pkg_resources.parse_requirements(requirements)]
 
 setup(
-    name='distilltools',
+    name='todd',
     packages=find_packages(),
     install_requires=install_requires,
 )

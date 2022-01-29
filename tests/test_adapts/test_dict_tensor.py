@@ -1,7 +1,7 @@
 import pytest
 import torch
 
-from distilltools.adapts.dict_tensor import Union, Intersect
+from todd.adapts.dict_tensor import Intersect
 
 
 class TestIntersect:

@@ -1,7 +1,7 @@
 import pytest
 import torch
 
-from distilltools.adapts.list_tensor import ListTensor, _stack, _index
+from todd.adapts.list_tensor import ListTensor, _stack, _index
 
 
 @pytest.fixture(scope='module', params=['tensor', 'list', 'hybrid'])
