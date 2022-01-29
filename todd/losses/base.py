@@ -3,18 +3,14 @@ from typing_extensions import Literal
 from mmcv.runner import BaseModule
 import torch
 
-from .schedualers import SchedualerCfg, build_schedualer
-
 
 class BaseLoss(BaseModule):
     def __init__(
         self, reduction: Literal['none', 'mean', 'sum'] ='mean', 
-        weight: SchedualerCfg = 1.0, **kwargs,
+        weight: float = 1.0, **kwargs,
     ):
         super().__init__(**kwargs)
         self.reduction = reduction
-
-        weight = build_schedualer(weight)
         self._weight = weight
 
     def forward(self, loss: torch.Tensor) -> torch.Tensor:

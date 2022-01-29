@@ -10,6 +10,7 @@ from ..adapts import AdaptModuleList, AdaptModuleListCfg
 from ..hooks import HookModuleList, HookModuleListCfg, TrackingModuleList
 from ..hooks import detach as DetachHookContext
 from ..losses import LossModuleList
+from ..schedualers import SchedualerModuleList
 from ..visuals import VisualModuleList
 from ..utils import init_iter, inc_iter
 
@@ -23,6 +24,7 @@ class BaseDistiller(BaseModule):
         adapts: Optional[AdaptModuleListCfg] = None,
         visuals: Optional[AdaptModuleListCfg] = None,
         losses: Optional[AdaptModuleListCfg] = None,
+        schedualers: Optional[AdaptModuleListCfg] = None,
         iter_: int = 0,
         **kwargs,
     ):
@@ -51,6 +53,9 @@ class BaseDistiller(BaseModule):
 
         losses: LossModuleList = LossModuleList.build(losses)
         self._losses = losses
+
+        schedualers: SchedualerModuleList = SchedualerModuleList.build(schedualers)
+        self._schedualers = schedualers
 
         init_iter(iter_)
 
@@ -94,6 +99,8 @@ class BaseDistiller(BaseModule):
         if self._adapts is not None:
             self._adapts(tensors, inplace=True, **adapt_kwargs)
         losses = self._losses(tensors, **loss_kwargs)
+        if self._schedualers is not None:
+            self._schedualers(losses, inplace=True)
 
         inc_iter()
 

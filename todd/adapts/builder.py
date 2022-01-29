@@ -1,4 +1,4 @@
-from typing import Any, Dict, Iterable, List, Optional, Union
+from typing import Any, Dict, Iterable, List, Union
 
 import einops.layers.torch as einops
 from mmcv.runner import BaseModule, ModuleList
