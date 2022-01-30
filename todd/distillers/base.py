@@ -81,6 +81,11 @@ class BaseDistiller(BaseModule):
             for hook in self._hooks_and_trackings
             for k, v in hook.tensors.items()
         }
+    
+    def reset(self):
+        # reset hooks since trackings use StandardHooks
+        for hook in self._hooks.values():
+            hook.reset()
 
     def visualize(self, *args, **kwargs):
         for i, trackings in self._trackings.items():
@@ -103,10 +108,7 @@ class BaseDistiller(BaseModule):
             self._schedualers(losses, inplace=True)
 
         inc_iter()
-
-        # reset hooks since trackings use StandardHooks
-        for hook in self._hooks.values():
-            hook.reset()
+        self.reset()
 
         return losses
 
