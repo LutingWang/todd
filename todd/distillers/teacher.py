@@ -3,6 +3,7 @@ from typing import Dict, List, Optional
 import torch.nn as nn
 
 from ..hooks import HookModuleListCfg
+from ..utils import freeze_model
 
 from .base import BaseDistiller, DecoratorMixin
 from .builder import DISTILLERS
@@ -29,6 +30,8 @@ class MultiTeacherDistiller(DecoratorMixin, BaseDistiller):
         online_teacher_slice = slice(1, 1 + len(online_teachers))
 
         offline_teachers = [] if offline_teachers is None else offline_teachers
+        for offline_teacher in offline_teachers:
+            freeze_model(offline_teacher)
         offline_teacher_slice = slice(online_teacher_slice.stop, None)
 
         hooks = {}
