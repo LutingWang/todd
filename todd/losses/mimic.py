@@ -24,7 +24,7 @@ class FGFILoss(MimicLoss):
     def forward(self, pred: torch.Tensor, target: torch.Tensor, mask: torch.Tensor, *args, **kwargs):
         assert mask.dtype == torch.bool
         mask = mask.unsqueeze(1)  # bs x 1 x h x w
-        return super().forward(pred, target, *args, weight=mask, **kwargs)
+        return super().forward(pred, target, *args, mask=mask, **kwargs)
 
 
 @LOSSES.register_module()
@@ -75,13 +75,13 @@ class DeFeatLoss(MimicLoss):
     def forward(self, pred: torch.Tensor, target: torch.Tensor, mask: torch.Tensor, *args, **kwargs):
         mask = mask.unsqueeze(1)  # bs x 1 x h x w
         if mask.dtype == torch.bool:
-            weight = self.pos_mask(mask)
+            mask = self.pos_mask(mask)
         elif mask.dtype == torch.float:
-            weight = self.iou_mask(mask)
+            mask = self.iou_mask(mask)
         else:
-            weight = torch.ones_like(pred)
+            mask = torch.ones_like(pred)
 
-        if weight.shape != pred.shape:
-            weight = F.interpolate(weight, size=pred.shape[-2:])
+        if mask.shape != pred.shape:
+            mask = F.interpolate(mask, size=pred.shape[-2:])
 
-        return super().forward(pred, target, *args, weight=weight, **kwargs)
+        return super().forward(pred, target, *args, mask=mask, **kwargs)
