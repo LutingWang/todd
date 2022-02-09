@@ -1,7 +1,9 @@
 einops
 ipdb
 mmcv>=1.4.2
+opencv-python
 pytest
 torch
 torchvision
+typing_extensions
 setuptools

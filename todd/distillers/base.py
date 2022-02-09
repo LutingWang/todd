@@ -93,7 +93,13 @@ class BaseDistiller(BaseModule):
         tensors = self.tensors
         self._visuals(tensors, *args, **kwargs)
 
-    def distill(self, adapt_kwargs: Optional[dict] = None, visual_kwargs: Optional[dict] = None, loss_kwargs: Optional[dict] = None) -> Dict[str, torch.Tensor]:
+    def distill(
+        self, 
+        custom_tensors: Optional[Dict[str, torch.Tensor]] = None, 
+        adapt_kwargs: Optional[dict] = None, 
+        loss_kwargs: Optional[dict] = None,
+        debug: bool = False,
+    ) -> Dict[str, torch.Tensor]:
         if adapt_kwargs is None: adapt_kwargs = {}
         if loss_kwargs is None: loss_kwargs = {}
 
@@ -101,6 +107,8 @@ class BaseDistiller(BaseModule):
             trackings.register_tensor(self._models[i])
 
         tensors = self.tensors
+        if custom_tensors is not None:
+            tensors.update(custom_tensors)
         if self._adapts is not None:
             self._adapts(tensors, inplace=True, **adapt_kwargs)
         losses = self._losses(tensors, **loss_kwargs)
@@ -110,6 +118,8 @@ class BaseDistiller(BaseModule):
         inc_iter()
         self.reset()
 
+        if debug:
+            return losses, tensors
         return losses
 
 

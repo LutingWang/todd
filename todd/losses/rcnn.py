@@ -5,7 +5,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from .builder import LOSSES
-from .mse import MSELoss
+from .functional import MSELoss
 
 
 @LOSSES.register_module()

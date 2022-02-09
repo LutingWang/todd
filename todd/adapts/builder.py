@@ -1,13 +1,15 @@
-from typing import Any, Dict, Iterable, List, Union
+from typing import Any, Dict, Iterable, List, Optional, Union
 
 import einops.layers.torch as einops
+from mmcv.cnn import CONV_LAYERS, PLUGIN_LAYERS
 from mmcv.runner import BaseModule, ModuleList
 from mmcv.utils import Registry
 import torch.nn as nn
 
 
 ADAPTS= Registry('adapts')
-ADAPTS.register_module(module=nn.Conv2d)
+ADAPTS.module_dict.update(PLUGIN_LAYERS.module_dict)
+ADAPTS.module_dict.update(CONV_LAYERS.module_dict)
 ADAPTS.register_module(module=nn.Linear)
 ADAPTS.register_module(module=einops.Rearrange)
 ADAPTS.register_module(module=einops.Reduce)
@@ -20,8 +22,15 @@ class AdaptLayer(BaseModule):
         super().__init__(**kwargs)
         self._id = cfg.pop('id_')
         self._tensor_names: List[str] = cfg.pop('tensor_names')
-        self._multilevel: bool = cfg.pop('multilevel', False)
-        self._adapt = self.REGISTRY.build(cfg)
+        self._multilevel: Union[bool, int] = cfg.pop('multilevel', False)
+        if isinstance(self._multilevel, bool):
+            self._adapt = self.REGISTRY.build(cfg)
+        elif isinstance(self._multilevel, int):
+            self._adapt = ModuleList([
+                self.REGISTRY.build(cfg) for _ in range(self._multilevel)
+            ])
+        else:
+            assert False
 
     @property
     def name(self) -> str:
@@ -29,26 +38,39 @@ class AdaptLayer(BaseModule):
             return self._id
         return str(self._id)
 
-    def _get_tensors(self, hooked_tensors: Dict[str, Any]) -> Dict[str, Any]:
+    def _get_tensors(self, tensors: Dict[str, Any], tensor_names: Optional[List[str]] = None) -> Dict[str, Any]:
+        tensor_names = self._tensor_names if tensor_names is None else tensor_names
         tensors = [
-            hooked_tensors[tensor_name] 
-            for tensor_name in self._tensor_names
+            tensors[tensor_name] for tensor_name in tensor_names
         ]
         return tensors
 
     def forward(self, hooked_tensors: Dict[str, Any], **kwargs) -> dict:
         tensors = self._get_tensors(hooked_tensors)
-        if self._multilevel:
+        # TODO: simplify True and int
+        if isinstance(self._multilevel, bool):
+            if self._multilevel:
+                adapted_tensors = [
+                    self._adapt(*level_tensors, **kwargs) 
+                    for level_tensors in zip(*tensors)
+                ]
+            else:
+                adapted_tensors = self._adapt(*tensors, **kwargs)
+        elif isinstance(self._multilevel, int):
+            assert all(len(tensor) == self._multilevel for tensor in tensors)
             adapted_tensors = [
-                self._adapt(*level_tensors, **kwargs) 
-                for level_tensors in zip(*tensors)
+                self._adapt[i](*level_tensors, **kwargs) 
+                for i, level_tensors in enumerate(zip(*tensors))
             ]
         else:
-            adapted_tensors = self._adapt(*tensors, **kwargs)
+            assert False
 
         if isinstance(self._id, str):
             return {self._id: adapted_tensors}
         if isinstance(self._id, Iterable):
+            if self._multilevel:
+                assert all(len(self._id) == len(level_tensors) for level_tensors in adapted_tensors)
+                adapted_tensors = zip(*adapted_tensors)
             assert len(self._id) == len(adapted_tensors)
             return dict(zip(self._id, adapted_tensors))
         raise NotImplementedError

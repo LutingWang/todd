@@ -1,11 +1,13 @@
+from typing import Any
+
 import pytest
 import torch
 
-from todd.adapts.list_tensor import ListTensor, _stack, _index
+from todd.utils import ListTensor
 
 
 @pytest.fixture(scope='module', params=['tensor', 'list', 'hybrid'])
-def feat(request: pytest.FixtureRequest) -> ListTensor:
+def feat(request: pytest.FixtureRequest) -> Any:
     if request.param == 'tensor':
         return torch.arange(720).reshape(6, 5, 4, 3, 2)
     if request.param == 'list':
@@ -86,23 +88,23 @@ def feat(request: pytest.FixtureRequest) -> ListTensor:
 
 
 class TestStack:
-    def test_normal(self, feat: ListTensor):
-        stacked_feat = _stack(feat)
+    def test_normal(self, feat: Any):
+        stacked_feat = ListTensor.stack(feat)
         assert torch.all(stacked_feat.reshape(-1) == torch.arange(720))
 
 
 class TestIndex:
-    def test_empty_pos(self, feat: ListTensor):
+    def test_empty_pos(self, feat: Any):
         for n in range(5):
-            indexed_feat = _index(feat, torch.zeros([0, n]))
+            indexed_feat = ListTensor.index(feat, torch.zeros([0, n]))
             assert indexed_feat.shape == (0,) + (6, 5, 4, 3, 2)[n:]
         m = 100
-        indexed_feat = _index(feat, torch.zeros([m, 0]))
+        indexed_feat = ListTensor.index(feat, torch.zeros([m, 0]))
         assert indexed_feat.shape == (m, 6, 5, 4, 3, 2)
     
     def test_normal(self, feat: ListTensor):
         pos = torch.Tensor([[0,1],[1,0],[1,2]])
-        indexed_feat = _index(feat, pos)
+        indexed_feat = ListTensor.index(feat, pos)
         result = torch.stack([
             torch.arange(24, 48).reshape(4, 3, 2),
             torch.arange(120, 144).reshape(4, 3, 2),

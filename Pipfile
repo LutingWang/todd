@@ -1,0 +1,20 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+einops = "*"
+ipdb = "*"
+mmcv = ">=1.4.2"
+opencv-python = "*"
+pytest = "*"
+torch = "*"
+torchvision = "*"
+typing-extensions = "*"
+setuptools = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.8"

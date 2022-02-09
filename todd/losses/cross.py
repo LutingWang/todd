@@ -1,20 +1,13 @@
-from typing import List, Tuple
-
 import einops
-from einops.layers.torch import Rearrange
 import torch
 import torch.distributed as dist
-import torch.nn as nn
 import torch.nn.functional as F
 
 from ..adapts import Decouple
 from .base import BaseLoss
 from .builder import LOSSES
-from .mse import MSELoss
-from .utils import weight_loss
 
 
-@weight_loss
 def ckd_loss(pred: torch.Tensor, target: torch.Tensor, overlaps: torch.Tensor, offset: int, gamma: float = 0.07):
     """Warpper of CKD loss.
 
