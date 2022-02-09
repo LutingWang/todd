@@ -1,5 +1,6 @@
 from collections.abc import Iterable
 from typing import Any, Callable, Generic, Optional, Tuple, TypeVar, Union
+import warnings
 
 from mmcv.runner import BaseModule
 import torch
@@ -11,7 +12,8 @@ _iter = None
 
 def init_iter(iter_: int = 0):
     global _iter
-    assert _iter is None, f"iter={_iter} has been initialized."
+    if _iter is not None:
+        warnings.warn(f"iter={_iter} has been reset to {iter_}.")
     _iter = iter_
 
 

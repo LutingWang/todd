@@ -6,7 +6,7 @@ from mmcv.runner import BaseModule
 from todd.utils import ListTensor
 
 
-class BaseSchedualer(BaseModule):
+class BaseScheduler(BaseModule):
     def __init__(self, value: float = 1):
         super().__init__()
         self._value = value

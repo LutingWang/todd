@@ -23,10 +23,10 @@ from . import distillers
 from . import hooks
 from . import losses
 from . import utils
-from . import schedualers
+from . import schedulers
 from . import visuals
 
 
 __all__ = [
-    'adapts', 'distillers', 'hooks', 'losses', 'utils', 'schedualers', 'visuals',
+    'adapts', 'distillers', 'hooks', 'losses', 'utils', 'schedulers', 'visuals',
 ]

@@ -3,16 +3,16 @@ from mmcv.utils import Registry
 from ..adapts import AdaptLayer, AdaptModuleList
 
 
-SCHEDUALERS = Registry('schedualers')
+SCHEDULERS = Registry('schedulers')
 
 
-class SchedualerLayer(AdaptLayer):
-    REGISTRY = SCHEDUALERS
+class SchedulerLayer(AdaptLayer):
+    REGISTRY = SCHEDULERS
 
     def __init__(self, cfg: dict, **kwargs):
         cfg['id_'] = cfg['tensor_names']
         super().__init__(cfg, **kwargs)
 
 
-class SchedualerModuleList(AdaptModuleList):
-    LAYER_TYPE = SchedualerLayer
+class SchedulerModuleList(AdaptModuleList):
+    LAYER_TYPE = SchedulerLayer
