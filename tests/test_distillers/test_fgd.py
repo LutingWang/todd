@@ -37,8 +37,8 @@ class TestFGD:
                     temperature=0.5,
                 ),
                 ('masks', 'bg_masks'): dict(
-                    type='Mask',
-                    tensor_names=['gt_bboxes', 'neck'],
+                    type='FGDMask',
+                    tensor_names=['img_shape', 'gt_bboxes'],
                     strides=[8, 16, 32, 64, 128],
                 ),
                 'attn_masks': dict(
@@ -131,16 +131,17 @@ class TestFGD:
                     [15, 17, 29, 18],
                 ]),
             ],
+            'img_shape': (896, 1152),
         }
         return tensors
 
     def generate_result(self):
         distiller = self.distiller()
-        input_ = self.tensors()
-        losses, tensors = distiller.distill(input_, debug=True)
+        inputs = self.tensors()
+        losses, tensors = distiller.distill(inputs, debug=True)
         result = {
             'state_dict': distiller.state_dict(),
-            'input': input_, 'tensors': tensors, 'losses': losses, 
+            'inputs': inputs, 'tensors': tensors, 'losses': losses, 
         }
         filename = os.path.join(os.path.dirname(__file__), 'fgd.pth')
         torch.save(result, filename)
@@ -149,8 +150,11 @@ class TestFGD:
         filename = os.path.join(os.path.dirname(__file__), 'fgd.pth')
         result = torch.load(filename)
         distiller.load_state_dict(result['state_dict'])
-        losses, tensors = distiller.distill(result['input'], debug=True)
+        losses, tensors = distiller.distill(result['inputs'], debug=True)
         assert result['tensors'].keys() == tensors.keys()
+        for k in result['inputs']:
+            result['tensors'].pop(k)
+            tensors.pop(k)
         for k in result['tensors']:
             if isinstance(result['tensors'][k], torch.Tensor):
                 assert isinstance(tensors[k], torch.Tensor)

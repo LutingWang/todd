@@ -9,7 +9,7 @@ class TestIntersect:
     def intersect(self):
         return Intersect()
 
-    def test_normal(self, intersect):
+    def test_normal(self, intersect: Intersect):
         diff = 100
         feat1 = torch.arange(30).reshape(10, 3)
         feat2 = torch.arange(42).reshape(14, 3) + diff

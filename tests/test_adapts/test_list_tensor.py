@@ -102,7 +102,7 @@ class TestIndex:
         indexed_feat = ListTensor.index(feat, torch.zeros([m, 0]))
         assert indexed_feat.shape == (m, 6, 5, 4, 3, 2)
     
-    def test_normal(self, feat: ListTensor):
+    def test_normal(self, feat: Any):
         pos = torch.Tensor([[0,1],[1,0],[1,2]])
         indexed_feat = ListTensor.index(feat, pos)
         result = torch.stack([
