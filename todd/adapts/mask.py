@@ -22,8 +22,7 @@ class Mask(BaseAdapt):
         Returns:
             mask: h x w
         """
-        values = 1.0 / (bboxes[:, 2:] - bboxes[:, :2] + 2).prod(1)
-        values = values.float()
+        values = torch.true_divide(1.0, (bboxes[:, 2:] - bboxes[:, :2] + 2).prod(1))
         for i in range(values.numel()):
             area = mask[bboxes[i, 1]:bboxes[i, 3] + 2, bboxes[i, 0]:bboxes[i, 2] + 2]
             torch.maximum(area, values[i], out=area)
@@ -47,7 +46,7 @@ class Mask(BaseAdapt):
         masks = einops.rearrange(masks, 'n h w -> n 1 h w')
         bg_masks = masks <= 0
         bg_values = einops.reduce(bg_masks, 'n 1 h w -> n 1 1 1', reduction='sum').clamp_min_(1)
-        bg_masks = bg_masks / bg_values
+        bg_masks = torch.true_divide(bg_masks, bg_values)
         return masks, bg_masks
     
     def forward(self, bboxes: List[torch.Tensor], feats: List[torch.Tensor]) -> Tuple[List[torch.Tensor], List[torch.Tensor]]:
