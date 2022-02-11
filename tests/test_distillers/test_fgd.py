@@ -157,19 +157,19 @@ class TestFGD:
             tensors.pop(k)
         for k in result['tensors']:
             if isinstance(result['tensors'][k], torch.Tensor):
-                assert isinstance(tensors[k], torch.Tensor)
-                assert torch.allclose(result['tensors'][k], tensors[k])
+                assert isinstance(tensors[k], torch.Tensor), k
+                assert torch.allclose(result['tensors'][k], tensors[k]), k
             else:
                 for result_tensor, tensor in zip(result['tensors'][k], tensors[k]):
-                    assert torch.allclose(result_tensor, tensor)
+                    assert torch.allclose(result_tensor, tensor), k
         assert result['losses'].keys() == losses.keys()
         for k in result['losses']:
             if isinstance(result['losses'][k], torch.Tensor):
-                assert isinstance(losses[k], torch.Tensor)
-                assert torch.allclose(result['losses'][k], losses[k])
+                assert isinstance(losses[k], torch.Tensor), k
+                assert torch.allclose(result['losses'][k], losses[k]), k
             else:
                 for result_tensor, tensor in zip(result['losses'][k], losses[k]):
-                    assert torch.allclose(result_tensor, tensor)
+                    assert torch.allclose(result_tensor, tensor), k
 
 
 if __name__ == '__main__':

@@ -150,8 +150,9 @@ class FGDMask(DeFeatMask):
             mask: h x w
         """
         mask = bboxes.new_zeros(shape)
+        bboxes = bboxes.int()
         values = torch.true_divide(1.0, (bboxes[:, 2:] - bboxes[:, :2] + 2).prod(1))
-        for i, (x0, y0, x1, y1) in enumerate(bboxes.int().tolist()):
+        for i, (x0, y0, x1, y1) in enumerate(bboxes.tolist()):
             area = mask[y0:y1 + 2, x0:x1 + 2]
             torch.maximum(area, values[i], out=area)
         return mask
