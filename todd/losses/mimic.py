@@ -44,6 +44,8 @@ class DeFeatLoss(BaseLoss):
         mask: torch.Tensor, neg_mask: torch.Tensor, 
         *args, **kwargs,
     ) -> torch.Tensor:
+        _, _, h, w = pred.shape
+        target = F.adaptive_avg_pool2d(target, (h, w))
         loss = F.mse_loss(pred, target, reduction='none')
         pos = loss * mask
         neg = loss * neg_mask * self._neg_gain
