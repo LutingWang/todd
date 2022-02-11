@@ -2,16 +2,10 @@ from typing import List, Tuple
 
 import torch
 
+from ..utils import iou
+
 from .base import BaseAdapt
 from .builder import ADAPTS
-
-
-def clamp(x: torch.Tensor, min_: float = 0) -> torch.Tensor:
-    if not x.is_cuda and x.dtype is torch.float16:
-        x = x.float().clamp_min(min_).half()
-    else:
-        x = x.clamp_min(0)
-    return x
 
 
 @ADAPTS.register_module()
@@ -47,28 +41,7 @@ class IoU(BaseAdapt):
         """
         bboxes1, shape1 = self._reshape(bboxes1)
         bboxes2, shape2 = self._reshape(bboxes2)
-
-        if bboxes1.shape[0] == 0 or bboxes2.shape[0] == 0:
-            return bboxes1.new_empty((bboxes1.shape[0], bboxes2.shape[0]))
-
-        area1 = (bboxes1[:, 2] - bboxes1[:, 0]) * (bboxes1[:, 3] - bboxes1[:, 1])
-        area2 = (bboxes2[:, 2] - bboxes2[:, 0]) * (bboxes2[:, 3] - bboxes2[:, 1])
-
-        lt = torch.maximum(  # [*1, *2, 2]
-            bboxes1[:, None, :2],
-            bboxes2[None, :, :2],
-        )
-        rb = torch.minimum(  # [*1, *2, 2]
-            bboxes1[:, None, 2:],
-            bboxes2[None, :, 2:],
-        )
-
-        wh = clamp(rb - lt)
-        intersection = wh[..., 0] * wh[..., 1]
-
-        union = area1[:, None] + area2[None, :] - intersection
-        union = clamp(union, self._eps)
-        ious = intersection / union
+        ious = iou(bboxes1, bboxes2, self._eps)
         return ious.reshape(shape1 + shape2)
     
     def forward(

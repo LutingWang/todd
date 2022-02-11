@@ -1,6 +1,6 @@
 from .base import BaseLoss
 from .builder import LOSSES, LossModuleList
-from .cross import CKDLoss, ckd_loss
+from .ckd import CKDLoss, ckd_loss
 from .functional import MSELoss
 from .mimic import MimicLoss, FGFILoss, DeFeatLoss
 from .rcnn import SGFILoss

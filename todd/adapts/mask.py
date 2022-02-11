@@ -10,7 +10,7 @@ from .builder import ADAPTS
 
 @ADAPTS.register_module()
 class DeFeatMask(BaseAdapt):
-    def __init__(self, *args, strides: List[int], ceil_mode: bool = False, **kwargs):
+    def __init__(self, *args, strides: Union[int, List[int]], ceil_mode: bool = False, **kwargs):
         super().__init__(*args, **kwargs)
         self._strides = strides
         self._ceil_mode = ceil_mode
@@ -95,7 +95,7 @@ class DeFeatMask(BaseAdapt):
             neg_masks: n x 1 x h x w
         """
         if stride is None:
-            assert self._strides is None
+            assert isinstance(self._strides, int)
             stride = self._strides
         h, w = shape
         if self._ceil_mode:
