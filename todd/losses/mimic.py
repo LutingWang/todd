@@ -34,6 +34,10 @@ class FGFILoss(MSELoss):
 
 @LOSSES.register_module()
 class DeFeatLoss(BaseLoss):
+    def __init__(self, *args, neg_gain: float = 1.0, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._neg_gain = neg_gain
+
     def forward(
         self, 
         pred: torch.Tensor, target: torch.Tensor, 
@@ -42,7 +46,7 @@ class DeFeatLoss(BaseLoss):
     ) -> torch.Tensor:
         loss = F.mse_loss(pred, target, reduction='none')
         pos = loss * mask
-        neg = loss * neg_mask
+        neg = loss * neg_mask * self._neg_gain
         loss = self.reduce(pos + neg)
         return super().forward(loss, *args, **kwargs)
 

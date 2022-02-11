@@ -1,3 +1,4 @@
+import math
 from typing import List, Optional, Tuple, Union
 
 import einops
@@ -9,9 +10,10 @@ from .builder import ADAPTS
 
 @ADAPTS.register_module()
 class DeFeatMask(BaseAdapt):
-    def __init__(self, *args, strides: List[int], **kwargs):
+    def __init__(self, *args, strides: List[int], ceil_mode: bool = False, **kwargs):
         super().__init__(*args, **kwargs)
         self._strides = strides
+        self._ceil_mode = ceil_mode
 
     def _normalize(self, masks: torch.Tensor) -> torch.Tensor:
         """
@@ -96,7 +98,10 @@ class DeFeatMask(BaseAdapt):
             assert self._strides is None
             stride = self._strides
         h, w = shape
-        shape = (h // stride, w // stride)
+        if self._ceil_mode:
+            shape = (math.ceil(h / stride), math.ceil(w / stride))
+        else:
+            shape = (h // stride, w // stride)
         bboxes = [bbox / stride for bbox in bboxes]
         masks = self._pos(shape, bboxes)
         neg_masks = self._neg(masks)
