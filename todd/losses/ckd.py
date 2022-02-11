@@ -36,7 +36,7 @@ def ckd_loss(
     similarity[ignore] = 0
     total = similarity.sum(0)  # n
     loss = pos / total  # n
-    return -loss.log()
+    return -loss.log().mean()
 
 
 class MemoryPool:
