@@ -1,3 +1,6 @@
+import functools
+from typing import Callable, Optional
+
 import torch
 import torch.nn.functional as F
 
@@ -5,22 +8,35 @@ from .base import BaseLoss
 from .builder import LOSSES
 
 
-# TODO: refactor
+def wrap(func: Callable[..., torch.Tensor]):
+
+    def wrapper(wrapped_cls: type):
+    
+        @functools.wraps(wrapped_cls, updated=())
+        class WrapperClass(BaseLoss):
+            def forward(
+                self, 
+                pred: torch.Tensor, 
+                target: torch.Tensor, 
+                mask: Optional[torch.Tensor] = None,
+                *args, **kwargs,
+            ) -> torch.Tensor:
+                if mask is None:
+                    loss = func(pred, target, reduction=self.reduction)
+                else:
+                    loss = func(pred, target, reduction='none')
+                    loss = self.reduce(loss, mask)
+                return super().forward(loss, *args, **kwargs)
+        
+        LOSSES.register_module(module=WrapperClass)
+        return WrapperClass
+
+    return wrapper
 
 
-@LOSSES.register_module()
-class MSELoss(BaseLoss):
-    def forward(
-        self, pred: torch.Tensor, target: torch.Tensor, *args, **kwargs
-    ):
-        loss = F.mse_loss(pred, target, reduction='none')
-        return super().forward(loss, *args, **kwargs)
+@wrap(F.l1_loss)
+class L1Loss: pass
 
 
-@LOSSES.register_module()
-class L1Loss(BaseLoss):
-    def forward(
-        self, pred: torch.Tensor, target: torch.Tensor, *args, **kwargs
-    ):
-        loss = F.l1_loss(pred, target, reduction='none')
-        return super().forward(loss, *args, **kwargs)
+@wrap(F.mse_loss)
+class MSELoss: pass

@@ -6,17 +6,21 @@ except ImportError:
 
 try:
     from torch import maximum
+    from torch import minimum
 except ImportError:
     import torch
     torch.maximum = torch.max
     torch.Tensor.maximum = torch.Tensor.max
+    torch.minimum = torch.min
+    torch.Tensor.minimum = torch.Tensor.min
 
 try:
-    from typing import Literal
+    from typing import Literal, TypeAlias
 except ImportError:
     import typing
-    from typing_extensions import Literal
+    from typing_extensions import Literal, TypeAlias
     typing.Literal = Literal
+    typing.TypeAlias = TypeAlias
 
 from . import adapts
 from . import distillers

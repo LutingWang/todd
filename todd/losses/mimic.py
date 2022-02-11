@@ -1,6 +1,7 @@
 import torch
 import torch.nn.functional as F
 
+from .base import BaseLoss
 from .builder import LOSSES
 from .functional import MSELoss
 
@@ -20,15 +21,34 @@ class MimicLoss(MSELoss):
 
 
 @LOSSES.register_module()
-class FGFILoss(MimicLoss):
-    def forward(self, pred: torch.Tensor, target: torch.Tensor, mask: torch.Tensor, *args, **kwargs):
+class FGFILoss(MSELoss):
+    def forward(
+        self, 
+        pred: torch.Tensor, target: torch.Tensor, 
+        mask: torch.Tensor, 
+        *args, **kwargs,
+    ) -> torch.Tensor:
         assert mask.dtype == torch.bool
-        mask = mask.unsqueeze(1)  # bs x 1 x h x w
-        return super().forward(pred, target, *args, mask=mask, **kwargs)
+        return super().forward(pred[mask], target[mask], *args, **kwargs)
 
 
 @LOSSES.register_module()
-class DeFeatLoss(MimicLoss):
+class DeFeatLoss(BaseLoss):
+    def forward(
+        self, 
+        pred: torch.Tensor, target: torch.Tensor, 
+        mask: torch.Tensor, neg_mask: torch.Tensor, 
+        *args, **kwargs,
+    ) -> torch.Tensor:
+        loss = F.mse_loss(pred, target, reduction='none')
+        pos = loss * mask
+        neg = loss * neg_mask
+        loss = self.reduce(pos + neg)
+        return super().forward(loss, *args, **kwargs)
+
+
+@LOSSES.register_module()
+class DevLoss(MimicLoss):
     def __init__(self, pos_share: float = 1, *args, **kwargs):
         assert 0 <= pos_share <= 1
         super().__init__(*args, **kwargs)
