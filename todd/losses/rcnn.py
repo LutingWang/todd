@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, List
 
 import einops
 from mmcv.cnn import ConvModule
@@ -28,7 +28,7 @@ class SGFILoss(MSELoss):
         self.tau = nn.Parameter(torch.FloatTensor(data=[1]))
 
     def forward(
-        self, pred: torch.Tensor, target: torch.Tensor, 
+        self, pred: List[torch.Tensor], target: torch.Tensor, 
         *args, **kwargs,
     ):
         """Re-implementation of G-Det.
@@ -43,7 +43,8 @@ class SGFILoss(MSELoss):
         Returns:
             loss: 1
         """
-        l = pred.shape[0]
+        l = len(pred)
+        pred = torch.stack(pred)
         embed_pred = einops.rearrange(pred, 'l r c h w -> (l r) c h w')
         embed_pred = self.embed(embed_pred)  # (l x r) x hidden_channels x 1 x 1
         embed_pred = einops.rearrange(embed_pred, '(l r) c 1 1 -> r l c', l=l)
