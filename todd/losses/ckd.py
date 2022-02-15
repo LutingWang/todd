@@ -1,5 +1,6 @@
 from typing import List, Tuple
 
+from mmcv.runner import get_dist_info
 import torch
 import torch.distributed as dist
 import torch.nn.functional as F
@@ -33,7 +34,7 @@ def ckd_loss(
     similarity = target.mm(pred.t()) / gamma  # m x n
     similarity = similarity.exp()
     pos = torch.diag(similarity)  # n
-    similarity[ignore] = 0
+    similarity = similarity.index_put(ignore, similarity.new_zeros(()))
     total = similarity.sum(0)  # n
     loss = pos / total  # n
     return -loss.log().mean()
@@ -43,16 +44,18 @@ class MemoryPool:
     def __init__(self, size: int = 10):
         self._memory = []
         self._size = size
-        self._world_size = dist.get_world_size()
-        self._rank = dist.get_rank()
+        self._rank, self._world_size = get_dist_info()
 
     def register(self, tensor: torch.Tensor) -> int:
         tensor = tensor.contiguous()
-        tensor_list = [torch.zeros_like(tensor) for _ in range(self._world_size)]
-        dist.all_gather(tensor_list, tensor)
-        tensor_list[0], tensor_list[self._rank] = tensor_list[self._rank], tensor_list[0]
-        gathered_tensor = torch.cat(tensor_list)
-        self._memory.insert(0, gathered_tensor)
+        if self._world_size > 1:
+            tensor_list = [torch.zeros_like(tensor) for _ in range(self._world_size)]
+            dist.all_gather(tensor_list, tensor)
+            tensor_list[0], tensor_list[self._rank] = tensor_list[self._rank], tensor_list[0]
+            tensor = torch.cat(tensor_list)
+        else:
+            tensor = tensor.detach()
+        self._memory.insert(0, tensor)
         if len(self._memory) > self._size:
             self._memory.pop(-1)
     

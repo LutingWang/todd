@@ -71,7 +71,7 @@ class AdaptLayer(BaseModule):
             if self._multilevel:
                 assert all(len(self._id) == len(level_tensors) for level_tensors in adapted_tensors)
                 adapted_tensors = zip(*adapted_tensors)
-            assert len(self._id) == len(adapted_tensors)
+            assert len(self._id) == len(adapted_tensors), self._id
             return dict(zip(self._id, adapted_tensors))
         raise NotImplementedError
 

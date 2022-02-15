@@ -5,8 +5,7 @@ except ImportError:
     functools.cached_property = property
 
 try:
-    from torch import maximum
-    from torch import minimum
+    from torch import maximum, minimum
 except ImportError:
     import torch
     torch.maximum = torch.max
@@ -15,12 +14,11 @@ except ImportError:
     torch.Tensor.minimum = torch.Tensor.min
 
 try:
-    from typing import Literal, TypeAlias
+    from typing import Literal
 except ImportError:
     import typing
-    from typing_extensions import Literal, TypeAlias
+    from typing_extensions import Literal
     typing.Literal = Literal
-    typing.TypeAlias = TypeAlias
 
 from . import adapts
 from . import distillers

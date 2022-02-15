@@ -1,8 +1,10 @@
-from collections.abc import Iterable
-from typing import Any, Callable, Generic, Optional, Tuple, TypeVar, Union
+import numbers
+from typing import Any, Callable, Generic, Optional, Tuple, TypeVar
 import warnings
 
-from mmcv.runner import BaseModule
+import mmcv
+from mmcv.runner import BaseModule, load_checkpoint
+from mmcv.utils import Registry
 import torch
 import torch.nn as nn
 
@@ -44,17 +46,53 @@ def build(cls, cfg, **kwargs) -> Optional['BaseModule']:
 BaseModule.build = classmethod(build)
 
 
-T = TypeVar('T', torch.Tensor, Iterable)
+T = TypeVar('T', torch.Tensor, list, tuple, dict)
 
 
-class ListTensor(Generic[T]):
+class CollectionTensor(Generic[T]):
     @staticmethod
     def apply(feat: T, op: Callable[[T], T]) -> T:
         if isinstance(feat, torch.Tensor):
             return op(feat)
-        feat = [ListTensor.apply(f, op) for f in feat]
-        return feat
+        if isinstance(feat, list):
+            return [CollectionTensor.apply(f, op) for f in feat]
+        if isinstance(feat, tuple):
+            return tuple(CollectionTensor.apply(f, op) for f in feat)
+        if isinstance(feat, dict):
+            return {k: CollectionTensor.apply(v, op) for k, v in feat.items()}
+        raise TypeError(type(feat))
 
+    @staticmethod
+    def to(feat: T, device: torch.device) -> T:
+        return CollectionTensor.apply(feat, lambda x: x.to(device))
+
+    @staticmethod
+    def cpu(feat: T) -> T:
+        return CollectionTensor.apply(feat, lambda x: x.cpu())
+
+    @staticmethod
+    def cuda(feat: T) -> T:
+        return CollectionTensor.apply(feat, lambda x: x.cuda())
+
+    @staticmethod
+    def allclose(feat1: T, feat2: T, rtol: float = 1e-5, atol: float = 1e-8) -> bool:
+        if isinstance(feat1, torch.Tensor):
+            assert isinstance(feat2, torch.Tensor)
+            return torch.allclose(feat1, feat2)
+        if isinstance(feat1, list) or isinstance(feat1, tuple):
+            assert isinstance(feat2, list) or isinstance(feat2, tuple)
+            assert len(feat1) == len(feat2)
+            return all(CollectionTensor.allclose(f1, f2) for f1, f2 in zip(feat1, feat2))
+        if isinstance(feat1, dict):
+            assert isinstance(feat2, dict) and feat1.keys() == feat2.keys()
+            return all(CollectionTensor.allclose(feat1[k], feat2[k]) for k in feat1)
+        if isinstance(feat1, numbers.Number):
+            assert isinstance(feat2, numbers.Number)
+            return abs(feat1 - feat2) <= atol + rtol * abs(feat2)
+        raise TypeError(type(feat1))
+
+
+class ListTensor(CollectionTensor[T]):
     @staticmethod
     def stack(feat: T) -> torch.Tensor:
         if isinstance(feat, torch.Tensor):
@@ -169,3 +207,21 @@ def iou(bboxes1: torch.Tensor, bboxes2: Optional[torch.Tensor] = None, eps: floa
     union = clamp(union, eps)
     ious = intersection / union
     return ious
+
+
+class ModelLoader:
+    @staticmethod
+    def load_mmlab_models(
+        registry: Registry,
+        config: str, 
+        config_options: Optional[str] = None, 
+        ckpt: Optional[str] = None,
+    ) -> BaseModule:
+        config_dict = mmcv.Config.fromfile(config)
+        if config_options is not None:
+            config_dict.merge_from_dict(config_options)
+        model: BaseModule = registry.build(config_dict.model)
+        if ckpt is not None:
+            load_checkpoint(model, ckpt, map_location='cpu')
+            model._is_init = True
+        return model

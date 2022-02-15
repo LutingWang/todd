@@ -1,9 +1,11 @@
 import os
+from typing import Dict
 
 import pytest
 import torch
 
 from todd.distillers.base import BaseDistiller
+from todd.utils import CollectionTensor
 
 
 class TestFGD:
@@ -108,6 +110,11 @@ class TestFGD:
         )
         return distiller
 
+    @pytest.fixture(scope='class')
+    def result(self) -> Dict[str, dict]:
+        filename = os.path.join(os.path.dirname(__file__), 'fgd.pth')
+        return torch.load(filename, map_location='cpu')
+
     def tensors(self):
         tensors = {
             'neck': [
@@ -146,32 +153,13 @@ class TestFGD:
         filename = os.path.join(os.path.dirname(__file__), 'fgd.pth')
         torch.save(result, filename)
 
-    def test_fgd(self, distiller: BaseDistiller):
-        filename = os.path.join(os.path.dirname(__file__), 'fgd.pth')
-        result = torch.load(filename)
+    def test_fgd(self, distiller: BaseDistiller, result: Dict[str, dict]):
         distiller.load_state_dict(result['state_dict'])
         losses, tensors = distiller.distill(result['inputs'], debug=True)
-        assert result['tensors'].keys() == tensors.keys()
-        for k in result['inputs']:
-            result['tensors'].pop(k)
-            tensors.pop(k)
-        for k in result['tensors']:
-            if isinstance(result['tensors'][k], torch.Tensor):
-                assert isinstance(tensors[k], torch.Tensor), k
-                assert torch.allclose(result['tensors'][k], tensors[k]), k
-            else:
-                for result_tensor, tensor in zip(result['tensors'][k], tensors[k]):
-                    assert torch.allclose(result_tensor, tensor), k
-        assert result['losses'].keys() == losses.keys()
-        for k in result['losses']:
-            if isinstance(result['losses'][k], torch.Tensor):
-                assert isinstance(losses[k], torch.Tensor), k
-                assert torch.allclose(result['losses'][k], losses[k]), k
-            else:
-                for result_tensor, tensor in zip(result['losses'][k], losses[k]):
-                    assert torch.allclose(result_tensor, tensor), k
+        assert CollectionTensor.allclose(result['tensors'], tensors)
+        assert CollectionTensor.allclose(result['losses'], losses)
 
 
 if __name__ == '__main__':
     test = TestFGD()
-    test.test_fgd(test.distiller())
+    test.generate_result()

@@ -1,5 +1,6 @@
 from typing import Dict, List, Optional
 
+from mmcv.runner import ModuleList
 import torch.nn as nn
 
 from ..hooks import HookModuleListCfg
@@ -67,6 +68,7 @@ class MultiTeacherDistiller(DecoratorMixin, BaseDistiller):
         super().__init__(
             [student] + online_teachers + offline_teachers, **kwargs,
         )
+        self._online_teachers = ModuleList(online_teachers)
         self._online_teacher_slice = online_teacher_slice
         self._offline_teacher_slice = offline_teacher_slice
 

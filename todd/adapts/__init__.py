@@ -8,11 +8,12 @@ from .dict_tensor import Union, Intersect
 from .iou import IoU
 from .list_tensor import Stack, Index
 from .mask import DeFeatMask, FGDMask, FGFIMask
+from .null import Null
 
 
 __all__ = [
     'AbsMeanSpatialAttention', 'AbsMeanChannelAttention', 'BaseAdapt', 'ADAPTS', 
     'AdaptLayer', 'AdaptLayerCfg', 'AdaptModuleList', 'AdaptModuleListCfg',
     'Custom', 'Decouple', 'Detach', 'ListDetach', 'Union', 'Intersect', 'IoU', 
-    'Stack', 'Index', 'DeFeatMask', 'FGDMask', 'FGFIMask',
+    'Stack', 'Index', 'DeFeatMask', 'FGDMask', 'FGFIMask', 'Null',
 ]
