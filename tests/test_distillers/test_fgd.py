@@ -38,51 +38,34 @@ class TestFGD:
                     multilevel=True,
                     temperature=0.5,
                 ),
-                ('masks', 'bg_masks'): dict(
+                'masks': dict(
                     type='FGDMask',
                     tensor_names=['img_shape', 'gt_bboxes'],
+                    neg_gain=0.5,
                     strides=[8, 16, 32, 64, 128],
-                ),
-                'attn_masks': dict(
-                    type='Custom',
-                    tensor_names=['teacher_attn_spatial', 'teacher_attn_channel', 'masks'],
-                    multilevel=True,
-                    pattern='a * b * c',
-                ),
-                'attn_bg_masks': dict(
-                    type='Custom',
-                    tensor_names=['teacher_attn_spatial', 'teacher_attn_channel', 'bg_masks'],
-                    multilevel=True,
-                    pattern='a * b * c',
+                    ceil_mode=True,
                 ),
                 'global': dict(
                     type='ContextBlock',
                     tensor_names=['neck'],
                     multilevel=5,
-                    in_channels=256,
+                    in_channels=4,
                     ratio=0.5,
                 ),
                 'teacher_global': dict(
                     type='ContextBlock',
                     tensor_names=['teacher_neck'],
                     multilevel=5,
-                    in_channels=256,
+                    in_channels=4,
                     ratio=0.5,
                 ),
             },
             losses={
                 'feat': dict(
-                    type='MSELoss',
-                    tensor_names=['neck', 'teacher_neck', 'attn_masks'],
+                    type='FGDLoss',
+                    tensor_names=['neck', 'teacher_neck', 'teacher_attn_spatial', 'teacher_attn_channel', 'masks'],
                     multilevel=True,
                     weight=5e-4,
-                    reduction='sum',
-                ),
-                'bg_feat': dict(
-                    type='MSELoss',
-                    tensor_names=['neck', 'teacher_neck', 'attn_bg_masks'],
-                    multilevel=True,
-                    weight=2.5e-4,
                     reduction='sum',
                 ),
                 'attn_spatial': dict(
@@ -118,18 +101,18 @@ class TestFGD:
     def tensors(self):
         tensors = {
             'neck': [
-                torch.rand(2, 256, 112, 144),
-                torch.rand(2, 256, 56, 72),
-                torch.rand(2, 256, 28, 36),
-                torch.rand(2, 256, 14, 18),
-                torch.rand(2, 256, 7, 9),
+                torch.rand(2, 4, 112, 144),
+                torch.rand(2, 4, 56, 72),
+                torch.rand(2, 4, 28, 36),
+                torch.rand(2, 4, 14, 18),
+                torch.rand(2, 4, 7, 9),
             ],
             'teacher_neck': [
-                torch.rand(2, 256, 112, 144),
-                torch.rand(2, 256, 56, 72),
-                torch.rand(2, 256, 28, 36),
-                torch.rand(2, 256, 14, 18),
-                torch.rand(2, 256, 7, 9),
+                torch.rand(2, 4, 112, 144),
+                torch.rand(2, 4, 56, 72),
+                torch.rand(2, 4, 28, 36),
+                torch.rand(2, 4, 14, 18),
+                torch.rand(2, 4, 7, 9),
             ],
             'gt_bboxes': [
                 torch.Tensor([[10, 5, 22, 39]]),
@@ -142,6 +125,7 @@ class TestFGD:
         }
         return tensors
 
+    @torch.no_grad()
     def generate_result(self):
         distiller = self.distiller()
         inputs = self.tensors()
@@ -150,7 +134,7 @@ class TestFGD:
             'state_dict': distiller.state_dict(),
             'inputs': inputs, 'tensors': tensors, 'losses': losses, 
         }
-        filename = os.path.join(os.path.dirname(__file__), 'fgd.pth')
+        filename = os.path.join(os.path.dirname(__file__), 'fgd1.pth')
         torch.save(result, filename)
 
     def test_fgd(self, distiller: BaseDistiller, result: Dict[str, dict]):
