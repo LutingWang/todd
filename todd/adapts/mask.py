@@ -10,8 +10,16 @@ from .builder import ADAPTS
 
 @ADAPTS.register_module()
 class DeFeatMask(BaseAdapt):
-    def __init__(self, *args, strides: Union[int, List[int]], ceil_mode: bool = False, **kwargs):
+    def __init__(
+        self, 
+        *args, 
+        neg_gain: float = 4, 
+        strides: Union[int, List[int]], 
+        ceil_mode: bool = False, 
+        **kwargs,
+    ):
         super().__init__(*args, **kwargs)
+        self._neg_gain = neg_gain
         self._strides = strides
         self._ceil_mode = ceil_mode
 
@@ -77,7 +85,8 @@ class DeFeatMask(BaseAdapt):
         Returns:
             neg_masks: n x 1 x h x w
         """
-        return self._normalize_neg(masks <= 0)
+        neg_masks = self._normalize_neg(masks <= 0)
+        return neg_masks * self._neg_gain
 
     def _forward(
         self, 
@@ -105,16 +114,13 @@ class DeFeatMask(BaseAdapt):
         bboxes = [bbox / stride for bbox in bboxes]
         masks = self._pos(shape, bboxes)
         neg_masks = self._neg(masks)
-        return masks, neg_masks
+        return masks + neg_masks
 
     def forward(
         self, 
         shape: Tuple[int, int], 
         bboxes: List[torch.Tensor],
-    ) -> Union[
-        Tuple[List[torch.Tensor], List[torch.Tensor]],
-        Tuple[torch.Tensor, torch.Tensor],
-    ]:
+    ) -> Union[List[torch.Tensor], torch.Tensor]:
         """
         Args:
             shape: (h, w)
@@ -125,15 +131,15 @@ class DeFeatMask(BaseAdapt):
             neg_masks: l x n x 1 x h x w
         """
         if isinstance(self._strides, list):
-            masks, neg_masks = zip(*[
+            masks = [
                 self._forward(shape, bboxes, stride) 
                 for stride in self._strides
-            ])
+            ]
         elif isinstance(self._strides, int):
-            masks, neg_masks = self._forward(shape, bboxes)
+            masks = self._forward(shape, bboxes)
         else:
             assert False
-        return masks, neg_masks
+        return masks
 
 
 @ADAPTS.register_module()

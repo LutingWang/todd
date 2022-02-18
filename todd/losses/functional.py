@@ -21,6 +21,9 @@ def wrap(func: Callable[..., torch.Tensor]):
                 mask: Optional[torch.Tensor] = None,
                 *args, **kwargs,
             ) -> torch.Tensor:
+                if pred.shape != target.shape:
+                    _, _, h, w = pred.shape
+                    target = F.adaptive_avg_pool2d(target, (h, w))
                 if mask is None:
                     loss = func(pred, target, reduction=self.reduction)
                 else:

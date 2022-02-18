@@ -1,60 +1,49 @@
+import einops
 import torch
 import torch.nn.functional as F
 
-from .base import BaseLoss
 from .builder import LOSSES
 from .functional import MSELoss
-
-
-@LOSSES.register_module()
-class MimicLoss(MSELoss):
-    def __init__(self, norm: bool = False, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.norm = norm
-
-    def forward(self, pred: torch.Tensor, target: torch.Tensor, *args, **kwargs):
-        target = F.adaptive_avg_pool2d(target, pred.shape[-2:])
-        if self.norm:
-            pred = F.normalize(pred)
-            target = F.normalize(target)
-        return super().forward(pred, target, *args, **kwargs)
 
 
 @LOSSES.register_module()
 class FGFILoss(MSELoss):
     def forward(
         self, 
-        pred: torch.Tensor, target: torch.Tensor, 
+        pred: torch.Tensor, 
+        target: torch.Tensor, 
         mask: torch.Tensor, 
         *args, **kwargs,
     ) -> torch.Tensor:
-        assert mask.dtype == torch.bool
-        return super().forward(pred[mask], target[mask], *args, **kwargs)
+        n, _, h, w = pred.shape
+        target = F.adaptive_avg_pool2d(target, (h, w))
+        assert mask.shape == (n, 1, h, w) and mask.dtype == torch.bool
+
+        pred = einops.rearrange(pred, 'n c h w -> n h w c')
+        target = einops.rearrange(target, 'n c h w -> n h w c')
+        mask = einops.rearrange(mask, 'n 1 h w -> n h w')
+
+        return super().forward(pred[mask], target[mask], mask=None, *args, **kwargs)
 
 
 @LOSSES.register_module()
-class DeFeatLoss(BaseLoss):
-    def __init__(self, *args, neg_gain: float = 1.0, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._neg_gain = neg_gain
-
+class FGDLoss(MSELoss):
     def forward(
-        self, 
-        pred: torch.Tensor, target: torch.Tensor, 
-        mask: torch.Tensor, neg_mask: torch.Tensor, 
+        self,
+        pred: torch.Tensor, target: torch.Tensor,
+        attn_spatial: torch.Tensor, attn_channel: torch.Tensor,
+        mask: torch.Tensor,
         *args, **kwargs,
     ) -> torch.Tensor:
         _, _, h, w = pred.shape
-        target = F.adaptive_avg_pool2d(target, (h, w))
-        loss = F.mse_loss(pred, target, reduction='none')
-        pos = loss * mask
-        neg = loss * neg_mask * self._neg_gain
-        loss = self.reduce(pos + neg)
-        return super().forward(loss, *args, **kwargs)
+        attn_spatial = F.adaptive_avg_pool2d(attn_spatial, (h, w))
+        attn_channel = F.adaptive_avg_pool2d(attn_channel, (h, w))
+        mask = attn_spatial * attn_channel * mask
+        return super().forward(pred, target, mask=mask, *args, **kwargs)
 
 
 @LOSSES.register_module()
-class DevLoss(MimicLoss):
+class DevLoss(MSELoss):
     def __init__(self, pos_share: float = 1, *args, **kwargs):
         assert 0 <= pos_share <= 1
         super().__init__(*args, **kwargs)
