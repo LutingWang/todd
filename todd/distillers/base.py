@@ -1,6 +1,7 @@
 import contextlib
 import functools
-from typing import Any, Callable, Dict, List, Optional
+import itertools
+from typing import Any, Callable, Dict, Iterator, List, Optional
 
 from mmcv.runner import BaseModule
 import torch
@@ -12,7 +13,7 @@ from ..hooks import detach as DetachHookContext
 from ..losses import LossModuleList
 from ..schedulers import SchedulerModuleList
 from ..visuals import VisualModuleList
-from ..utils import init_iter, inc_iter
+from ..utils import ModelLoader, init_iter, inc_iter, getattr_recur
 
 
 class BaseDistiller(BaseModule):
@@ -26,6 +27,7 @@ class BaseDistiller(BaseModule):
         losses: Optional[AdaptModuleListCfg] = None,
         schedulers: Optional[AdaptModuleListCfg] = None,
         iter_: int = 0,
+        weight_transfer: Optional[Dict[str, str]] = None,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -59,9 +61,16 @@ class BaseDistiller(BaseModule):
 
         init_iter(iter_)
 
+        if weight_transfer is not None:
+            ModelLoader.load_state_dicts(self, weight_transfer)
+
     @property
-    def _hooks_and_trackings(self) -> List[HookModuleList]:
-        return list(self._hooks.values()) + list(self._trackings.values())
+    def models(self) -> nn.Module:
+        return self._models
+
+    @property
+    def _hooks_and_trackings(self) -> Iterator[HookModuleList]:
+        return itertools.chain(self._hooks.values(), self._trackings.values())
 
     def _apply(self, fn: Callable[..., None]) -> 'BaseDistiller':
         for model in self._models:
@@ -81,7 +90,14 @@ class BaseDistiller(BaseModule):
             for hook in self._hooks_and_trackings
             for k, v in hook.tensors.items()
         }
-    
+
+    def get(self, tensor_name: str, default: Any = None) -> Any:
+        for hook in self._hooks_and_trackings:
+            tensor = hook.get(tensor_name)
+            if tensor is not None:
+                return tensor
+        return default
+
     def reset(self):
         # reset hooks since trackings use StandardHooks
         for hook in self._hooks.values():

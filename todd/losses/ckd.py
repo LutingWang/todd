@@ -1,4 +1,5 @@
-from typing import List, Tuple
+import itertools
+from typing import List, Optional, Tuple
 
 from mmcv.runner import get_dist_info
 import torch
@@ -14,7 +15,7 @@ from .builder import LOSSES
 def ckd_loss(
     pred: torch.Tensor, 
     target: torch.Tensor, 
-    ignore: Tuple[torch.Tensor, torch.Tensor], 
+    ignore: Optional[Tuple[torch.Tensor, torch.Tensor]] = None, 
     gamma: float = 0.07,
 ) -> torch.Tensor:
     """Warpper of CKD loss.
@@ -31,6 +32,9 @@ def ckd_loss(
     Returns:
         loss: 1
     """
+    if ignore is None:
+        inds = torch.arange(pred.shape[0], dtype=torch.long, device=pred.device)
+        ignore = (inds,) * 2
     similarity = target.mm(pred.t()) / gamma  # m x n
     similarity = similarity.exp()
     pos = torch.diag(similarity)  # n
@@ -74,7 +78,7 @@ class CKDLoss(BaseLoss):
         self, 
         preds: torch.Tensor, 
         targets: torch.Tensor, 
-        bboxes: List[torch.Tensor],
+        bboxes: Optional[List[torch.Tensor]] = None,
     ):
         """Compute CKD loss.
 
@@ -89,21 +93,25 @@ class CKDLoss(BaseLoss):
             loss: 1
         """
         assert preds.shape == targets.shape, (preds.shape, targets.shape)
-
-        ignore, ind = [], 0
-        for bbox in bboxes:
-            ious = iou(bbox)
-            x, y = torch.where(ious > 0.5)
-            x += ind
-            y += ind
-            ind += bbox.shape[0]
-            ignore.append((x, y))
-        assert ind == preds.shape[0], (ind, preds.shape)
-        x, y = zip(*ignore)
-        ignore = (torch.cat(x), torch.cat(y))
-
         preds = F.normalize(preds)
         targets = F.normalize(targets)
         self._memory_pool.register(targets)
-        loss = ckd_loss(preds, self._memory_pool.memory, ignore)
+
+        if bboxes is None:
+            loss = ckd_loss(preds, self._memory_pool.memory)
+        else:
+            # TODO: more pythonic
+            ignore, ind = [], 0
+            for bbox in bboxes:
+                ious = iou(bbox)
+                x, y = torch.where(ious > 0.5)
+                x += ind
+                y += ind
+                ind += bbox.shape[0]
+                ignore.append((x, y))
+            assert ind == preds.shape[0], (ind, preds.shape)
+            x, y = zip(*ignore)
+            ignore = (torch.cat(x), torch.cat(y))
+            loss = ckd_loss(preds, self._memory_pool.memory, ignore)
+
         return super().forward(loss)

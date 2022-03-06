@@ -6,6 +6,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from ..utils import ListTensor
 from .builder import LOSSES
 from .functional import MSELoss
 
@@ -21,17 +22,17 @@ class SGFILoss(MSELoss):
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
-        self.embed: Callable[..., torch.Tensor] = nn.Sequential(
+        self._embed: Callable[..., torch.Tensor] = nn.Sequential(
             ConvModule(in_channels, hidden_channels, 3, stride=2),
             ConvModule(hidden_channels, out_channels, 3, stride=2)
         )
-        self.tau = nn.Parameter(torch.FloatTensor(data=[1]))
+        self._tau = nn.Parameter(torch.FloatTensor(data=[1]))
 
     def forward(
-        self, pred: List[torch.Tensor], target: torch.Tensor, 
+        self, preds: List[torch.Tensor], targets: torch.Tensor, 
         *args, **kwargs,
     ):
-        """Re-implementation of G-Det.
+        """Re-implementation of G-DetKD.
 
         Refer to http://arxiv.org/abs/2108.07482.
 
@@ -43,16 +44,64 @@ class SGFILoss(MSELoss):
         Returns:
             loss: 1
         """
-        l = len(pred)
-        pred = torch.stack(pred)
-        embed_pred = einops.rearrange(pred, 'l r c h w -> (l r) c h w')
-        embed_pred = self.embed(embed_pred)  # (l x r) x hidden_channels x 1 x 1
-        embed_pred = einops.rearrange(embed_pred, '(l r) c 1 1 -> r l c', l=l)
-        embed_target = self.embed(target)  # r x hidden_channels x 1 x 1
-        embed_target = einops.rearrange(embed_target, 'r c 1 1 -> r c 1')
-        similarity = embed_pred.bmm(embed_target)  # r x l x 1
-        similarity = F.softmax(similarity / self.tau, dim=1)
+        l = len(preds)
+        preds = torch.stack(preds)
+        embed_pred = einops.rearrange(preds, 'l r c h w -> (l r) c h w')
+        embed_pred = self._embed(embed_pred)
+        embed_pred = einops.rearrange(embed_pred, '(l r) out_channels 1 1 -> r l out_channels', l=l)
+        embed_target = self._embed(targets)
+        embed_target = einops.rearrange(embed_target, 'r out_channels 1 1 -> r out_channels 1')
+        similarity = embed_pred.bmm(embed_target)
+        similarity = F.softmax(similarity / self._tau, dim=1)
         similarity = einops.rearrange(similarity, 'r l 1 -> l r 1 1 1')
 
-        fused_pred = einops.reduce(pred * similarity, 'l r c h w -> r c h w', reduction='sum')
-        return super().forward(fused_pred, target, *args, **kwargs)
+        fused_pred = einops.reduce(preds * similarity, 'l r c h w -> r c h w', reduction='sum')
+        return super().forward(fused_pred, targets, *args, **kwargs)
+
+
+@LOSSES.register_module()
+class DevRCNNLoss(MSELoss):
+    def __init__(
+        self, 
+        *args, 
+        pred_features: int = 256, 
+        target_features: int = 1024,
+        **kwargs,
+    ):
+        super().__init__(*args, **kwargs)
+        self._adapt: Callable[..., torch.Tensor] = nn.Linear(
+            in_features=pred_features, 
+            out_features=target_features, 
+            bias=False,
+        )
+        self._tau = nn.Parameter(torch.FloatTensor(data=[1]))
+
+    def forward(
+        self, preds: List[torch.Tensor], targets: torch.Tensor, poses: torch.Tensor,
+        *args, **kwargs,
+    ):
+        """
+        Args:
+            pred: l x bs x h x w x in_features
+            target: r x c
+            pos: r x 4
+
+        Returns:
+            loss: 1
+        """
+        l = len(preds)
+        poses[:, 2:] *= 2 ** poses[:, [0]]
+        poses[:, 0] = 0
+        for i in range(l):
+            preds[i] = ListTensor.index(preds[i], poses[:, 1:])
+            poses[:, 2:] = poses[:, 2:] // 2
+        preds = einops.rearrange(torch.stack(preds), 'l r pred_features -> (l r) pred_features')
+        preds = self._adapt(preds)
+        preds = einops.rearrange(preds, '(l r) target_features -> r l target_features', l=l)
+        targets = einops.rearrange(targets, 'r target_features -> r target_features 1')
+
+        similarity = preds.bmm(targets)  # r x l x 1
+        similarity = F.softmax(similarity / self._tau, dim=1)
+
+        fused_pred = einops.reduce(preds * similarity, 'r l target_features -> r target_features 1', reduction='sum')
+        return super().forward(fused_pred, targets, *args, **kwargs)

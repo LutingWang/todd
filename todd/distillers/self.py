@@ -1,3 +1,4 @@
+from typing import Dict, Optional
 import torch.nn as nn
 
 from ..hooks import HookModuleListCfg
@@ -13,18 +14,31 @@ class SelfDistiller(DecoratorMixin, BaseDistiller):
         student: nn.Module, 
         student_hooks: HookModuleListCfg = None, 
         student_trackings: HookModuleListCfg = None, 
+        weight_transfer: Optional[Dict[str, str]] = None,
         **kwargs,
     ):
-        assert not kwargs.get('hooks') and not kwargs.get('trackings')
+        assert 'hooks' not in kwargs 
+        assert 'trackings' not in kwargs
 
         hooks = {}
         if student_hooks is not None:
             hooks[0] = student_hooks
-        kwargs['hooks'] = hooks
 
         trackings = {}
         if student_trackings is not None:
             trackings[0] = student_trackings
-        kwargs['trackings'] = trackings
 
-        super().__init__([student], **kwargs)
+        if weight_transfer is not None:
+            weight_transfer = {
+                'models.0.' + k: 'models.0.' + v 
+                for k, v in weight_transfer.items()
+                if k is not '' and v is not ''
+            }
+
+        super().__init__(
+            [student], 
+            hooks=hooks, 
+            trackings=trackings, 
+            weight_transfer=weight_transfer, 
+            **kwargs,
+        )

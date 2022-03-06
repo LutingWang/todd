@@ -25,7 +25,8 @@ class IoU(BaseAdapt):
             bboxes: prod(*) x 4
             shape: tuple(*)
         """
-        bboxes = bboxes[..., :4].half()
+        bboxes = bboxes[..., :4]
+        # bboxes = bboxes.half()
         shape = bboxes.shape[:-1]
         bboxes = bboxes.reshape(-1, 4)
         return bboxes, shape

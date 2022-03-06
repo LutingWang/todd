@@ -1,49 +1,7 @@
 import numbers
-from typing import Any, Callable, Generic, Optional, Tuple, TypeVar
-import warnings
+from typing import Callable, Generic, Tuple, TypeVar
 
-import mmcv
-from mmcv.runner import BaseModule, load_checkpoint
-from mmcv.utils import Registry
 import torch
-import torch.nn as nn
-
-
-_iter = None
-
-
-def init_iter(iter_: int = 0):
-    global _iter
-    if _iter is not None:
-        warnings.warn(f"iter={_iter} has been reset to {iter_}.")
-    _iter = iter_
-
-
-def get_iter() -> Optional[int]:
-    return _iter
-
-
-def inc_iter():
-    global _iter
-    _iter += 1
-
-
-def getattr_recur(obj: Any, attr: str) -> Any:
-    return eval('obj.' + attr)
-
-
-def freeze_model(model: nn.Module):
-    model.eval()
-    model.requires_grad_(False)
-
-
-def build(cls, cfg, **kwargs) -> Optional['BaseModule']:
-    if cfg is None: return None
-    module = cfg if isinstance(cfg, cls) else cls(cfg, **kwargs)
-    return module
-
-
-BaseModule.build = classmethod(build)
 
 
 T = TypeVar('T', torch.Tensor, list, tuple, dict)
@@ -160,68 +118,3 @@ class ListTensor(CollectionTensor[T]):
         assert index.shape == pos.shape[:1]
         indexed_feat[index] = indexed_feat.clone()
         return indexed_feat
-
-
-def clamp(x: torch.Tensor, min_: float = 0) -> torch.Tensor:
-    if not x.is_cuda and x.dtype is torch.float16:
-        x = x.float().clamp_min(min_).half()
-    else:
-        x = x.clamp_min(0)
-    return x
-
-
-def iou(bboxes1: torch.Tensor, bboxes2: Optional[torch.Tensor] = None, eps: float = 1e-6):
-    """
-    Args:
-        bboxes1: *1 x 4
-        bboxes2: *2 x 4
-    
-    Returns:
-        ious: *1 x *2
-    """
-    flag = bboxes2 is None
-    if flag:
-        bboxes2 = bboxes1
-    if bboxes1.shape[0] == 0 or bboxes2.shape[0] == 0:
-        return bboxes1.new_empty((bboxes1.shape[0], bboxes2.shape[0]))
-
-    area1 = (bboxes1[:, 2] - bboxes1[:, 0]) * (bboxes1[:, 3] - bboxes1[:, 1])
-    area2 = (
-        area1 if flag else 
-        (bboxes2[:, 2] - bboxes2[:, 0]) * (bboxes2[:, 3] - bboxes2[:, 1])
-    )
-
-    lt = torch.maximum(  # [*1, *2, 2]
-        bboxes1[:, None, :2],
-        bboxes2[None, :, :2],
-    )
-    rb = torch.minimum(  # [*1, *2, 2]
-        bboxes1[:, None, 2:],
-        bboxes2[None, :, 2:],
-    )
-
-    wh = clamp(rb - lt)
-    intersection = wh[..., 0] * wh[..., 1]
-
-    union = area1[:, None] + area2[None, :] - intersection
-    union = clamp(union, eps)
-    ious = intersection / union
-    return ious
-
-
-class ModelLoader:
-    @staticmethod
-    def load_mmlab_models(
-        registry: Registry,
-        config: str, 
-        config_options: Optional[str] = None, 
-        ckpt: Optional[str] = None,
-    ) -> BaseModule:
-        config_dict = mmcv.Config.fromfile(config)
-        if config_options is not None:
-            config_dict.merge_from_dict(config_options)
-        model: BaseModule = registry.build(config_dict.model)
-        if ckpt is not None:
-            load_checkpoint(model, ckpt, map_location='cpu')
-            model._is_init = True
-        return model

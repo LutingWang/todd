@@ -6,14 +6,17 @@ from .decouple import Decouple
 from .detach import Detach, ListDetach
 from .dict_tensor import Union, Intersect
 from .iou import IoU
+from .label_enc import LabelEncAdapt
 from .list_tensor import Stack, Index
-from .mask import DeFeatMask, FGDMask, FGFIMask
+from .mask import DeFeatMask, FGDMask, FGFIMask, LabelEncMask
 from .null import Null
+from .roi_align import RoIAlign
 
 
 __all__ = [
     'AbsMeanSpatialAttention', 'AbsMeanChannelAttention', 'BaseAdapt', 'ADAPTS', 
     'AdaptLayer', 'AdaptLayerCfg', 'AdaptModuleList', 'AdaptModuleListCfg',
     'Custom', 'Decouple', 'Detach', 'ListDetach', 'Union', 'Intersect', 'IoU', 
-    'Stack', 'Index', 'DeFeatMask', 'FGDMask', 'FGFIMask', 'Null',
+    'LabelEncAdapt', 'Stack', 'Index', 'DeFeatMask', 'FGDMask', 'FGFIMask', 'LabelEncMask', 
+    'Null', 'RoIAlign',
 ]

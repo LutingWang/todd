@@ -25,7 +25,8 @@ class MultiTeacherDistiller(DecoratorMixin, BaseDistiller):
         offline_teacher_trackings: Optional[Dict[int, HookModuleListCfg]] = None, 
         **kwargs,
     ):
-        assert not kwargs.get('hooks') and not kwargs.get('trackings')
+        assert 'hooks' not in kwargs
+        assert 'trackings' not in kwargs
 
         online_teachers = [] if online_teachers is None else online_teachers
         online_teacher_slice = slice(1, 1 + len(online_teachers))
@@ -48,7 +49,6 @@ class MultiTeacherDistiller(DecoratorMixin, BaseDistiller):
                 offline_teacher_slice.start + i: hook
                 for i, hook in offline_teacher_hooks.items()
             })
-        kwargs['hooks'] = hooks
 
         trackings = {}
         if student_trackings is not None:
@@ -63,10 +63,12 @@ class MultiTeacherDistiller(DecoratorMixin, BaseDistiller):
                 offline_teacher_slice.start + i: tracking
                 for i, tracking in offline_teacher_trackings.items()
             })
-        kwargs['trackings'] = trackings
 
         super().__init__(
-            [student] + online_teachers + offline_teachers, **kwargs,
+            [student] + online_teachers + offline_teachers, 
+            hooks=hooks,
+            trackings=trackings,
+            **kwargs,
         )
         self._online_teachers = ModuleList(online_teachers)
         self._online_teacher_slice = online_teacher_slice
@@ -74,19 +76,19 @@ class MultiTeacherDistiller(DecoratorMixin, BaseDistiller):
 
     @property
     def student(self) -> nn.Module:
-        return self._models[0]
+        return self.models[0]
 
     @property
     def teachers(self) -> List[nn.Module]:
-        return self._models[1:]
+        return self.models[1:]
 
     @property
     def online_teachers(self) -> List[nn.Module]:
-        return self._models[self._online_teacher_slice]
+        return self.models[self._online_teacher_slice]
 
     @property
     def offline_teachers(self) -> List[nn.Module]:
-        return self._models[self._offline_teacher_slice]
+        return self.models[self._offline_teacher_slice]
 
 
 @DISTILLERS.register_module()
@@ -100,15 +102,19 @@ class SingleTeacherDistiller(MultiTeacherDistiller):
         teacher_online: bool = False, 
         **kwargs,
     ):
-        assert not kwargs.get('online_teacher_hooks') and not kwargs.get('online_teacher_trackings')
-        assert not kwargs.get('offline_teacher_hooks') and not kwargs.get('offline_teacher_trackings')
+        assert 'online_teacher_hooks' not in kwargs
+        assert 'online_teacher_trackings' not in kwargs
+        assert 'offline_teacher_hooks' not in kwargs 
+        assert 'offline_teacher_trackings' not in kwargs
+        assert 'online_teacher_weight_transfer' not in kwargs
+        assert 'offline_teacher_weight_transfer' not in kwargs
 
         arg_prefix = ['offline', 'online'][teacher_online]
-        kwargs[f'{arg_prefix}_teachers'] = [teacher]
+        kwargs[arg_prefix + '_teachers'] = [teacher]
         if teacher_hooks is not None:
-            kwargs[f'{arg_prefix}_teacher_hooks'] = {0: teacher_hooks}
+            kwargs[arg_prefix + '_teacher_hooks'] = {0: teacher_hooks}
         if teacher_trackings is not None:
-            kwargs[f'{arg_prefix}_teacher_trackings'] = {0: teacher_trackings}
+            kwargs[arg_prefix + '_teacher_trackings'] = {0: teacher_trackings}
         super().__init__(student, **kwargs)
 
     @property

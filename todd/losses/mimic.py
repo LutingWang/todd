@@ -1,6 +1,12 @@
+from typing import List
+
+from mmcv.cnn import ConvModule
+from mmcv.runner import Sequential
 import einops
 import torch
 import torch.nn.functional as F
+
+from ..schedulers import LinearScheduler
 
 from .builder import LOSSES
 from .functional import MSELoss
@@ -40,6 +46,29 @@ class FGDLoss(MSELoss):
         attn_channel = F.adaptive_avg_pool2d(attn_channel, (h, w))
         mask = attn_spatial * attn_channel * mask
         return super().forward(pred, target, mask=mask, *args, **kwargs)
+
+
+@LOSSES.register_module()
+class LabelEncLoss(MSELoss):
+    def __init__(self, *args, num_channels: int, weight: float = 1.0, **kwargs):
+        weight = LinearScheduler(start_value=0, end_value=weight, start_iter=30000, end_iter=30000)
+        super().__init__(*args, weight=weight, **kwargs)
+
+        norm_cfg = dict(type='GN', num_groups=1, affine=False)
+        self._adapt = Sequential(
+            ConvModule(num_channels, num_channels, 3, 1, 1),
+            ConvModule(num_channels, num_channels, 3, 1, 1),
+            ConvModule(num_channels, num_channels, 3, 1, 1, norm_cfg=norm_cfg, act_cfg=None),
+        )
+ 
+    def forward(self, preds: List[torch.Tensor], targets: List[torch.Tensor], *args, **kwargs) -> torch.Tensor:
+        losses = []
+        for pred, target in zip(preds, targets):
+            pred = self._adapt(pred)
+            target = self._adapt[-1].norm(target.detach())
+            loss = super().forward(pred, target, *args, **kwargs)
+            losses.append(loss)
+        return losses
 
 
 @LOSSES.register_module()

@@ -1,3 +1,4 @@
+import functools
 import math
 from typing import List, Optional, Tuple, Union
 
@@ -8,22 +9,135 @@ from .base import BaseAdapt
 from .builder import ADAPTS
 
 
+def multilevel(wrapped_cls: type):
+
+    @functools.wraps(wrapped_cls, updated=())
+    class WrapperClass(wrapped_cls):
+        def __init__(
+            self,
+            *args, 
+            strides: List[int],
+            ceil_mode: bool = False,
+            **kwargs,
+        ):
+            self._strides = strides
+            self._ceil_mode = ceil_mode
+            if ceil_mode:
+                self._div = lambda a, b: math.ceil(a / b)
+            else:
+                self._div = lambda a, b: a // b
+            super().__init__(*args, **kwargs)
+
+        def forward(
+            self, 
+            shape: Tuple[int, int], 
+            bboxes: List[torch.Tensor],
+            *args, **kwargs,
+        ) -> List[torch.Tensor]:
+            """
+            Args:
+                shape: (h, w)
+                bboxes: n x m x 4
+    
+            Returns:
+                masks: l x n x 1 x h x w
+            """
+            h, w = shape
+            masks = []
+            for stride in self._strides:
+                level_shape = (self._div(h, stride), self._div(w, stride))
+                level_bboxes = [bbox / stride for bbox in bboxes]
+                mask = super().forward(level_shape, level_bboxes, *args, **kwargs) 
+                masks.append(mask)
+            return masks
+    
+    return WrapperClass
+
+
 @ADAPTS.register_module()
+class LabelEncMask(BaseAdapt):
+    def __init__(
+        self, 
+        *args, 
+        num_classes: int = 80, 
+        aug: bool = True,
+        **kwargs,
+    ):
+        super().__init__(*args, **kwargs)
+        self._num_classes = num_classes
+        self._aug = aug
+
+    def _mask(
+        self, 
+        shape: Tuple[int, int], 
+        bboxes: torch.Tensor,
+        labels: torch.Tensor,
+    ) -> torch.Tensor:
+        """
+        Args:
+            shape: (h, w)
+            bboxes: m x 4
+            labels: m
+
+        Returns:
+            mask: k x h x w
+        """
+        h, w = shape
+        masks = bboxes.new_zeros(self._num_classes, *shape)
+        bboxes = torch.cat([
+            bboxes[:, 2:] - bboxes[:, :2], 
+            (bboxes[:, :2] + bboxes[:, 2:]) / 2,
+        ], dim=-1)
+        y, x = torch.meshgrid(
+            torch.arange(0, shape[0], dtype=torch.float, device=bboxes.device),
+            torch.arange(0, shape[1], dtype=torch.float, device=bboxes.device),
+        )
+        for (w, h, cx, cy), label in zip(bboxes.tolist(), labels.tolist()):
+            value = torch.max(
+                torch.abs(x - cx) / w, 
+                torch.abs(y - cy) / h,
+            )
+            value = (1 - value) * (value < 0.5)
+            if self._aug:
+                weight = torch.rand((), device=value.device).clamp_max(0.5) * 2
+                value = value * weight
+            torch.maximum(masks[label], value, out=masks[label])
+        return masks
+
+    def forward(
+        self, 
+        shape: Tuple[int, int], 
+        bboxes: List[torch.Tensor], 
+        labels: List[torch.Tensor],
+    ) -> torch.Tensor:
+        """
+        Args:
+            shape: (h, w)
+            bboxes: n x m x 4
+            labels: n x m
+
+        Returns:
+            masks: n x k x h x w
+        """
+        masks = [self._mask(shape, bbox, label) for bbox, label in zip(bboxes, labels)]
+        masks = torch.stack(masks)
+        return masks
+
+
+@ADAPTS.register_module()
+@multilevel
 class DeFeatMask(BaseAdapt):
     def __init__(
         self, 
         *args, 
         neg_gain: float = 4, 
-        strides: Union[int, List[int]], 
-        ceil_mode: bool = False, 
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self._neg_gain = neg_gain
-        self._strides = strides
-        self._ceil_mode = ceil_mode
 
-    def _normalize(self, masks: torch.Tensor) -> torch.Tensor:
+    @staticmethod
+    def _normalize(masks: torch.Tensor) -> torch.Tensor:
         """
         Args:
             masks: n x 1 x h x w
@@ -59,7 +173,7 @@ class DeFeatMask(BaseAdapt):
             mask[y0:y1 + 2, x0:x1 + 2] = 1
         return mask
 
-    def _pos(
+    def forward(
         self, 
         shape: Tuple[int, int], 
         bboxes: List[torch.Tensor], 
@@ -75,71 +189,10 @@ class DeFeatMask(BaseAdapt):
         masks = [self._mask(shape, bbox) for bbox in bboxes]
         masks = torch.stack(masks)
         masks = einops.rearrange(masks, 'n h w -> n 1 h w')
-        return self._normalize_pos(masks)
-
-    def _neg(self, masks: torch.Tensor) -> torch.Tensor:
-        """
-        Args:
-            masks: n x 1 x h x w
-
-        Returns:
-            neg_masks: n x 1 x h x w
-        """
+        masks = self._normalize_pos(masks)
         neg_masks = self._normalize_neg(masks <= 0)
-        return neg_masks * self._neg_gain
-
-    def _forward(
-        self, 
-        shape: Tuple[int, int], 
-        bboxes: List[torch.Tensor], 
-        stride: Optional[int] = None,
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
-        """
-        Args:
-            shape: (h, w)
-            bboxes: n x m x 4
-
-        Returns:
-            masks: n x 1 x h x w
-            neg_masks: n x 1 x h x w
-        """
-        if stride is None:
-            assert isinstance(self._strides, int)
-            stride = self._strides
-        h, w = shape
-        if self._ceil_mode:
-            shape = (math.ceil(h / stride), math.ceil(w / stride))
-        else:
-            shape = (h // stride, w // stride)
-        bboxes = [bbox / stride for bbox in bboxes]
-        masks = self._pos(shape, bboxes)
-        neg_masks = self._neg(masks)
+        neg_masks = neg_masks * self._neg_gain
         return masks + neg_masks
-
-    def forward(
-        self, 
-        shape: Tuple[int, int], 
-        bboxes: List[torch.Tensor],
-    ) -> Union[List[torch.Tensor], torch.Tensor]:
-        """
-        Args:
-            shape: (h, w)
-            bboxes: n x m x 4
-
-        Returns:
-            masks: l x n x 1 x h x w
-            neg_masks: l x n x 1 x h x w
-        """
-        if isinstance(self._strides, list):
-            masks = [
-                self._forward(shape, bboxes, stride) 
-                for stride in self._strides
-            ]
-        elif isinstance(self._strides, int):
-            masks = self._forward(shape, bboxes)
-        else:
-            assert False
-        return masks
 
 
 @ADAPTS.register_module()
@@ -184,7 +237,7 @@ class FGFIMask(BaseAdapt):
             mask: h x w
         """
         thresh = einops.reduce(ious, 'h w k m -> 1 1 1 m', reduction='max') * self._thresh
-        mask = einops.reduce(ious >= thresh, 'h w k m -> h w', reduction='max')
+        mask = einops.reduce(ious > thresh, 'h w k m -> h w', reduction='max')
         return mask
 
     def _batch(self, ious: List[torch.Tensor]) -> torch.Tensor:

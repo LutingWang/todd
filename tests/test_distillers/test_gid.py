@@ -1,0 +1,3 @@
+
+class TestGID:
+    pass

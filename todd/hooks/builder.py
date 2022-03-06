@@ -36,6 +36,13 @@ class HookModuleList(List[BaseHook], ModuleList):
             for k, v in hook.tensor.items()
         }
 
+    def get(self, tensor_name: str, default: Any = None) -> Any:
+        for hook in self:
+            hooked_tensor = hook.tensor
+            if tensor_name in hooked_tensor:
+                return hooked_tensor[tensor_name]
+        return default
+
     def register_hook(self, model: nn.Module):
         for hook in self:
             hook.register_hook(model)
