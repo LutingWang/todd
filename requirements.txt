@@ -1,6 +1,6 @@
 einops
 ipdb
-mmcv>=1.4.2
+# mmcv>=1.4.2
 opencv-python
 pytest
 torch

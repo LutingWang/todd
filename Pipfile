@@ -13,6 +13,7 @@ torch = "*"
 torchvision = "*"
 typing-extensions = "*"
 setuptools = "*"
+todd = {editable = true, path = "."}
 
 [dev-packages]
 
