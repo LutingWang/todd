@@ -6,14 +6,12 @@ name = "pypi"
 [packages]
 einops = "*"
 ipdb = "*"
-mmcv = ">=1.4.2"
 opencv-python = "*"
 pytest = "*"
 torch = "*"
 torchvision = "*"
 typing-extensions = "*"
 setuptools = "*"
-todd = {editable = true, path = "."}
 
 [dev-packages]
 

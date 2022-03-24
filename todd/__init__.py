@@ -14,11 +14,22 @@ except ImportError:
             if self.attrname in instance.__dict__:
                 return instance.__dict__[self.attrname]
             val = self.func(instance)
-            cache[self.attrname] = val
+            instance.__dict__[self.attrname] = val
             return val
 
     import functools
     functools.cached_property = property
+
+try:
+    from functools import cache
+except ImportError:
+    from functools import lru_cache
+
+    def cache(user_function):
+        return lru_cache(maxsize=None)(user_function)
+
+    import functools
+    functools.cache = cache
 
 try:
     from torch import maximum, minimum
@@ -48,20 +59,3 @@ from . import visuals
 __all__ = [
     'adapts', 'distillers', 'hooks', 'losses', 'utils', 'schedulers', 'visuals',
 ]
-
-
-from mmcv.runner import BaseModule
-import torch.nn as nn
-class ModuleDict(BaseModule, nn.ModuleDict):
-    """ModuleDict in openmmlab.
-    Args:
-        modules (dict, optional): a mapping (dictionary) of (string: module)
-            or an iterable of key-value pairs of type (string, module).
-        init_cfg (dict, optional): Initialization config dict.
-    """
-
-    def __init__(self, modules=None, init_cfg=None):
-        BaseModule.__init__(self, init_cfg)
-        nn.ModuleDict.__init__(self, modules)
-import mmcv.runner
-mmcv.runner.ModuleDict = ModuleDict
