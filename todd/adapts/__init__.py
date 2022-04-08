@@ -8,7 +8,7 @@ from .dict_tensor import Union, Intersect
 from .iou import IoU
 from .label_enc import LabelEncAdapt
 from .list_tensor import Stack, Index
-from .mask import DeFeatMask, FGDMask, FGFIMask, LabelEncMask
+from .mask import DeFeatMask, FGDMask, FGFIMask, LabelEncMask, DenseCLIPMask
 from .null import Null
 from .roi_align import RoIAlign
 
@@ -18,5 +18,5 @@ __all__ = [
     'AdaptLayer', 'AdaptLayerCfg', 'AdaptModuleList', 'AdaptModuleListCfg',
     'Custom', 'Decouple', 'Detach', 'ListDetach', 'Union', 'Intersect', 'IoU', 
     'LabelEncAdapt', 'Stack', 'Index', 'DeFeatMask', 'FGDMask', 'FGFIMask', 'LabelEncMask', 
-    'Null', 'RoIAlign',
+    'DenseCLIPMask', 'Null', 'RoIAlign',
 ]

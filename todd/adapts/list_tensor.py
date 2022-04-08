@@ -1,4 +1,3 @@
-import functools
 from typing import Callable
 
 import torch
@@ -9,25 +8,18 @@ from .base import BaseAdapt
 from .builder import ADAPTS
 
 
-def list_tenosr_adapt(func: Callable[..., torch.Tensor]):
-    
-    def wrapper(cls: type):
-        
-        @functools.wraps(cls, updated=())
-        class WrappedClass(BaseAdapt):
-            def forward(self, *args, **kwargs) -> torch.Tensor:
-                return func(*args, **kwargs)
-        
-        return WrappedClass
+class ListTensorAdapt(BaseAdapt):
+    func: Callable[..., torch.Tensor]
 
-    return wrapper
+    def forward(self, *args, **kwargs) -> torch.Tensor:
+        return self.func(*args, **kwargs)
 
 
 @ADAPTS.register_module()
-@list_tenosr_adapt(ListTensor.stack)
-class Stack: pass
+class Stack(ListTensorAdapt):
+    func = staticmethod(ListTensor.stack)
 
 
 @ADAPTS.register_module()
-@list_tenosr_adapt(ListTensor.index)
-class Index: pass
+class Index(ListTensorAdapt):
+    func = staticmethod(ListTensor.index)

@@ -1,5 +1,6 @@
 einops
 ipdb
+lmdb
 # mmcv>=1.4.2
 opencv-python
 pytest

@@ -27,7 +27,9 @@ class ModelLoader:
     @staticmethod
     def load_state_dict(target: BaseModule, source: BaseModule):
         state_dict = source.state_dict()
-        target.load_state_dict(state_dict)
+        missing_keys, unexpected_keys = target.load_state_dict(state_dict, strict=False)
+        if len(missing_keys) > 0 or len(unexpected_keys) > 0:
+            print(missing_keys, unexpected_keys)  # TODO: enrich output
         target._is_init = True
 
     @staticmethod

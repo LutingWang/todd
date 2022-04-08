@@ -81,7 +81,7 @@ class detach(AbstractContextManager):
             for hook in hook_module:
                 hook.detach()
 
-    def __exit__(self, exc_type, exc_value, traceback):
+    def __exit__(self, *args, **kwargs):
         for hook_module, detach in zip(self._hook_modules, self._detach):
             for hook, mode in zip(hook_module, detach):
                 hook.detach(mode)

@@ -1,3 +1,14 @@
+import enum
+import functools
+import typing
+from functools import lru_cache
+from typing_extensions import Literal
+
+import torch
+import torchvision.transforms as transforms
+from PIL import Image
+
+
 try:
     from functools import cached_property
 except ImportError:
@@ -17,24 +28,19 @@ except ImportError:
             instance.__dict__[self.attrname] = val
             return val
 
-    import functools
     functools.cached_property = property
 
 try:
     from functools import cache
 except ImportError:
-    from functools import lru_cache
-
     def cache(user_function):
         return lru_cache(maxsize=None)(user_function)
 
-    import functools
     functools.cache = cache
 
 try:
     from torch import maximum, minimum
 except ImportError:
-    import torch
     torch.maximum = torch.max
     torch.Tensor.maximum = torch.Tensor.max
     torch.minimum = torch.min
@@ -43,13 +49,22 @@ except ImportError:
 try:
     from typing import Literal
 except ImportError:
-    import typing
-    from typing_extensions import Literal
     typing.Literal = Literal
+
+try:
+    from torchvision.transforms import InterpolationMode
+except ImportError:
+
+    class InterpolationMode(enum.Enum):
+        BICUBIC = Image.BICUBIC
+
+    transforms.InterpolationMode = InterpolationMode
+
 
 from . import adapts
 from . import distillers
 from . import hooks
+from . import logger
 from . import losses
 from . import utils
 from . import schedulers
@@ -57,5 +72,5 @@ from . import visuals
 
 
 __all__ = [
-    'adapts', 'distillers', 'hooks', 'losses', 'utils', 'schedulers', 'visuals',
+    'adapts', 'distillers', 'hooks', 'logger', 'losses', 'utils', 'schedulers', 'visuals',
 ]

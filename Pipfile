@@ -12,6 +12,7 @@ torch = "*"
 torchvision = "*"
 typing-extensions = "*"
 setuptools = "*"
+lmdb = "*"
 
 [dev-packages]
 

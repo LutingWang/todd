@@ -32,7 +32,7 @@ class SelfDistiller(DecoratorMixin, BaseDistiller):
             weight_transfer = {
                 'models.0.' + k: 'models.0.' + v 
                 for k, v in weight_transfer.items()
-                if k is not '' and v is not ''
+                if k != '' and v != ''
             }
 
         super().__init__(

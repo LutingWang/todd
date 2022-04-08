@@ -150,6 +150,8 @@ class DecoratorMixin:
                 def __init__(self, *args, distiller: dict, **kwargs):
                     super().__init__(*args, **kwargs)
                     self._distiller = cls(self, **distiller)
+                    if hasattr(self, '_init_with_distiller'):
+                        self._init_with_distiller()
 
                 @property
                 def distiller(self) -> BaseDistiller:

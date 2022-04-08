@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Tuple
 
 import torch
 
@@ -48,3 +48,30 @@ def iou(bboxes1: torch.Tensor, bboxes2: Optional[torch.Tensor] = None, eps: floa
     union = clamp(union, eps)
     ious = intersection / union
     return ious
+
+
+def expand_bboxes(bboxes: torch.Tensor, ratio: float, image_shape: Optional[Tuple[int]] = None) -> torch.Tensor:
+    """
+    Args:
+        bboxes: * x 4
+    
+    Returns:
+        expanded_bboxes: * x 4
+    """
+    bboxes = bboxes.clone()
+
+    bboxes[..., :2] -= bboxes[..., 2:] * (ratio - 1) / 2
+    bboxes[..., :2].clamp_min_(0)
+
+    bboxes[..., 2:] *= ratio
+    if image_shape is not None:
+        h, w = image_shape
+        bboxes[..., 2] = torch.min(bboxes[..., 2], w - bboxes[..., 0])
+        bboxes[..., 3] = torch.min(bboxes[..., 3], h - bboxes[..., 1])
+
+        # bboxes[..., 2:] += bboxes[..., :2]
+        # bboxes[..., 2].clamp_max_(w)
+        # bboxes[..., 3].clamp_max_(h)
+        # bboxes[..., 2:] -= bboxes[..., :2]
+
+    return bboxes

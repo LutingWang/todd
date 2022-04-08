@@ -1,4 +1,3 @@
-import functools
 import math
 from typing import List, Optional, Tuple, Union
 
@@ -9,50 +8,62 @@ from .base import BaseAdapt
 from .builder import ADAPTS
 
 
-def multilevel(wrapped_cls: type):
+class MultiLevelMask:
+    def __init__(
+        self,
+        *args, 
+        strides: List[int],
+        ceil_mode: bool = False,
+        **kwargs,
+    ):
+        self._strides = strides
+        self._ceil_mode = ceil_mode
+        if ceil_mode:
+            self._div = lambda a, b: math.ceil(a / b)
+        else:
+            self._div = lambda a, b: a // b
+        super().__init__(*args, **kwargs)
 
-    @functools.wraps(wrapped_cls, updated=())
-    class WrapperClass(wrapped_cls):
-        def __init__(
-            self,
-            *args, 
-            strides: List[int],
-            ceil_mode: bool = False,
-            **kwargs,
-        ):
-            self._strides = strides
-            self._ceil_mode = ceil_mode
-            if ceil_mode:
-                self._div = lambda a, b: math.ceil(a / b)
-            else:
-                self._div = lambda a, b: a // b
-            super().__init__(*args, **kwargs)
+    @property
+    def strides(self) -> List[int]:
+        return self._strides
 
-        def forward(
-            self, 
-            shape: Tuple[int, int], 
-            bboxes: List[torch.Tensor],
-            *args, **kwargs,
-        ) -> List[torch.Tensor]:
-            """
-            Args:
-                shape: (h, w)
-                bboxes: n x m x 4
+    def forward(
+        self, 
+        shape: Tuple[int, int], 
+        bboxes: List[torch.Tensor],
+        *args, **kwargs,
+    ) -> List[torch.Tensor]:
+        """
+        Args:
+            shape: (h, w)
+            bboxes: n x m x 4
+
+        Returns:
+            masks: l x n x 1 x h x w
+        """
+        h, w = shape
+        masks = []
+        for stride in self._strides:
+            level_shape = (self._div(h, stride), self._div(w, stride))
+            level_bboxes = [bbox / stride for bbox in bboxes]
+            mask = super().forward(level_shape, level_bboxes, *args, **kwargs) 
+            masks.append(mask)
+        return masks
+
+
+class SingleLevelMask(MultiLevelMask):
+    def __init__(self, *args, stride: List[int], **kwargs):
+        super().__init__(*args, strides=[stride], **kwargs)
     
-            Returns:
-                masks: l x n x 1 x h x w
-            """
-            h, w = shape
-            masks = []
-            for stride in self._strides:
-                level_shape = (self._div(h, stride), self._div(w, stride))
-                level_bboxes = [bbox / stride for bbox in bboxes]
-                mask = super().forward(level_shape, level_bboxes, *args, **kwargs) 
-                masks.append(mask)
-            return masks
-    
-    return WrapperClass
+    @property
+    def stride(self) -> int:
+        return self.strides[0]
 
+    def forward(self, *args, **kwargs) -> torch.Tensor:
+        masks = super().forward(*args, **kwargs)
+        return masks[0]
+    
 
 @ADAPTS.register_module()
 class LabelEncMask(BaseAdapt):
@@ -82,7 +93,6 @@ class LabelEncMask(BaseAdapt):
         Returns:
             mask: k x h x w
         """
-        h, w = shape
         masks = bboxes.new_zeros(self._num_classes, *shape)
         bboxes = torch.cat([
             bboxes[:, 2:] - bboxes[:, :2], 
@@ -125,8 +135,7 @@ class LabelEncMask(BaseAdapt):
 
 
 @ADAPTS.register_module()
-@multilevel
-class DeFeatMask(BaseAdapt):
+class DeFeatMask(MultiLevelMask, BaseAdapt):
     def __init__(
         self, 
         *args, 
@@ -262,4 +271,21 @@ class FGFIMask(BaseAdapt):
             masks: l x n x 1 x h x w
         """
         masks = [self._batch(iou) for iou in ious]
+        return masks
+
+
+@ADAPTS.register_module()
+class DenseCLIPMask(SingleLevelMask, LabelEncMask):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, stride=32, aug=False, **kwargs)
+
+    def _mask(
+        self,
+        shape: Tuple[int, int],
+        bboxes: torch.Tensor,
+        labels: torch.Tensor,
+    ) -> torch.Tensor:
+        masks = bboxes.new_zeros(self._num_classes, *shape)
+        for (x0, y0, x1, y1), label in zip(bboxes.int().tolist(), labels.tolist()):
+            masks[label, y0:y1 + 1, x0:x1 + 1] = 1
         return masks
