@@ -1,5 +1,4 @@
 import argparse
-import os
 from typing import List
 
 import lmdb
@@ -30,14 +29,14 @@ def merge_dbs(target_env: lmdb.Environment, source_env: lmdb.Environment, dbs: L
 
 def merge_envs(target_env: lmdb.Environment, source_filepaths: List[str], dbs: List[str]):
     for source_filepath in source_filepaths:
-        with lmdb.open(source_filepath, max_dbs=len(dbs)) as source_env:
+        with lmdb.open(source_filepath, readonly=True, max_dbs=len(dbs)) as source_env:
             merge_dbs(target_env, source_env, dbs)
 
 
 def main():
     args = parse_args()
     with lmdb.open(
-        os.path.join(args.target_filepath), 
+        args.target_filepath, 
         map_size=10 * 2 ** 30,  # 10 GB
         readonly=False, 
         max_dbs=len(args.dbs),

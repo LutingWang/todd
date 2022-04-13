@@ -3,8 +3,10 @@ ipdb
 lmdb
 # mmcv>=1.4.2
 opencv-python
+pandas
 pytest
 torch
 torchvision
+tqdm
 typing_extensions
 setuptools

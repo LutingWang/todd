@@ -6,6 +6,8 @@ from mmcv.runner import BaseModule
 from ..utils import CollectionTensor, get_iter
 
 
+# TODO: reimplement as descriptors
+
 class BaseScheduler(BaseModule):
     @abstractproperty
     def value(self) -> float:

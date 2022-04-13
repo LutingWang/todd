@@ -13,6 +13,8 @@ torchvision = "*"
 typing-extensions = "*"
 setuptools = "*"
 lmdb = "*"
+tqdm = "*"
+pandas = "*"
 
 [dev-packages]
 
