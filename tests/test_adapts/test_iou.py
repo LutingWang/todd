@@ -17,7 +17,7 @@ class TestIoU:
             [11, 12, 19, 21],
             [5, 9, 25, 15],
         ]])]
-        result = torch.HalfTensor([[
+        result = torch.Tensor([[
             [64 / 108, 5 / 17],
         ]])
         ious = iou(bboxes1, bboxes2)

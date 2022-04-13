@@ -1,5 +1,6 @@
+from abc import abstractmethod
 import math
-from typing import List, Optional, Tuple, Union
+from typing import Any, List, Optional, Tuple, Union
 
 import einops
 import torch
@@ -28,6 +29,10 @@ class MultiLevelMask:
     def strides(self) -> List[int]:
         return self._strides
 
+    @abstractmethod
+    def _forward(self, *args, **kwargs) -> torch.Tensor:
+        pass
+
     def forward(
         self, 
         shape: Tuple[int, int], 
@@ -47,7 +52,7 @@ class MultiLevelMask:
         for stride in self._strides:
             level_shape = (self._div(h, stride), self._div(w, stride))
             level_bboxes = [bbox / stride for bbox in bboxes]
-            mask = super().forward(level_shape, level_bboxes, *args, **kwargs) 
+            mask = self._forward(level_shape, level_bboxes, *args, **kwargs) 
             masks.append(mask)
         return masks
 
@@ -182,7 +187,7 @@ class DeFeatMask(MultiLevelMask, BaseAdapt):
             mask[y0:y1 + 2, x0:x1 + 2] = 1
         return mask
 
-    def forward(
+    def _forward(
         self, 
         shape: Tuple[int, int], 
         bboxes: List[torch.Tensor], 
