@@ -1,17 +1,7 @@
-from typing import Union
+from ..utils import build_metas
 
-from mmcv.utils import Registry
-
-from .base import BaseDataset
+from .base import BaseAccessLayer, BaseDataset
 
 
-DATASETS = Registry('datasets')
-
-DatasetConfig = Union[BaseDataset, dict]
-
-
-def build_dataset(cfg: DatasetConfig) -> BaseDataset:
-    if isinstance(cfg, BaseDataset):
-        return cfg
-    assert isinstance(cfg, dict)
-    return DATASETS.build(cfg)
+ACCESS_LAYERS, AccessLayerConfig, build_access_layer = build_metas('access_layers', BaseAccessLayer)
+DATASETS, DatasetConfig, build_dataset = build_metas('datasets', BaseDataset)

@@ -141,9 +141,9 @@ class BaseDistiller(BaseModule):
 
 class DecoratorMixin:
     @classmethod
-    def wrap(cls):
+    def wrap(cls) -> Callable[[type], type]:
 
-        def wrapper(wrapped_cls: type):
+        def wrapper(wrapped_cls: type) -> type:
 
             @functools.wraps(wrapped_cls, updated=())
             class WrapperClass(wrapped_cls):

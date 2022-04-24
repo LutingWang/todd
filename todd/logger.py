@@ -1,4 +1,5 @@
 import logging
+import getpass
 import os
 import socket
 from typing import Optional
@@ -13,11 +14,12 @@ def get_logger(log_file: Optional[str] = None, level: str = 'DEBUG'):
         _logger_initialized = True
         logger = logging.getLogger('Todd')
         logger.setLevel(getattr(logging, level))
-        worker_pid = f"{socket.gethostname()}:{os.getpid()}"
+        worker_pid = f"{getpass.getuser()}@{socket.gethostname()}:{os.getpid()}"
         formatter = logging.Formatter(
             fmt=(
-                f"[{worker_pid:s}][%(asctime)s.%(msecs)d]"
-                f"[%(filename)s:%(lineno)d]%(levelname)s: "
+                f"[{worker_pid:s}][%(asctime)s]"
+                f"[%(filename)s:%(funcName)s:%(lineno)d] "
+                f"\033[1;34m%(name)s %(levelname)s:\033[0m\n"
                 f"%(message)s"
             ),
             datefmt="%Y-%m-%d %H:%M:%S",
