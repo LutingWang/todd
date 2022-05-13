@@ -7,6 +7,36 @@ from .base import BaseLoss
 from .builder import LOSSES
 
 
+class _2DMixin(BaseLoss):
+    def forward(
+        self, 
+        pred: torch.Tensor, 
+        target: torch.Tensor, 
+        *args, **kwargs,
+    ) -> torch.Tensor:
+        if pred.shape != target.shape:
+            _, _, h, w = pred.shape
+            target = F.adaptive_avg_pool2d(target, (h, w))
+        return super().forward(pred, target, *args, **kwargs)
+
+
+class NormMixin(BaseLoss):
+    def __init__(self, *args, norm: bool = False, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._norm = norm
+
+    def forward(
+        self, 
+        pred: torch.Tensor, 
+        target: torch.Tensor, 
+        *args, **kwargs,
+    ) -> torch.Tensor:
+        if self._norm:
+            pred = F.normalize(pred)
+            target = F.normalize(target)
+        return super().forward(pred, target, *args, **kwargs)
+
+
 class FunctionalLoss(BaseLoss):
     func: Callable[..., torch.Tensor]
 
@@ -17,9 +47,6 @@ class FunctionalLoss(BaseLoss):
         mask: Optional[torch.Tensor] = None,
         *args, **kwargs,
     ) -> torch.Tensor:
-        if pred.shape != target.shape:
-            _, _, h, w = pred.shape
-            target = F.adaptive_avg_pool2d(target, (h, w))
         if mask is None:
             loss = self.func(pred, target, reduction=self.reduction)
         else:
@@ -29,13 +56,28 @@ class FunctionalLoss(BaseLoss):
 
 
 @LOSSES.register_module()
-class L1Loss(FunctionalLoss):
+class L1Loss(NormMixin, FunctionalLoss):
     func = staticmethod(F.l1_loss)
 
 
 @LOSSES.register_module()
-class MSELoss(FunctionalLoss):
+class L12DLoss(_2DMixin, L1Loss):
+    pass
+
+
+@LOSSES.register_module()
+class MSELoss(NormMixin, FunctionalLoss):
     func = staticmethod(F.mse_loss)
+
+
+@LOSSES.register_module()
+class MSE2DLoss(_2DMixin, MSELoss):
+    pass
+
+
+@LOSSES.register_module()
+class BCELoss(FunctionalLoss):
+    func = staticmethod(F.binary_cross_entropy)
 
 
 @LOSSES.register_module()
