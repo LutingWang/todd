@@ -1,5 +1,6 @@
 from typing import Optional
-import warnings
+
+from ..logger import get_logger
 
 
 _iter = None
@@ -8,7 +9,7 @@ _iter = None
 def init_iter(iter_: int = 0):
     global _iter
     if _iter is not None:
-        warnings.warn(f"iter={_iter} has been reset to {iter_}.")
+        get_logger().warn(f"iter={_iter} has been reset to {iter_}.")
     _iter = iter_
 
 

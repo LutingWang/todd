@@ -103,10 +103,12 @@ class BaseDistiller(BaseModule):
         for hook in self._hooks.values():
             hook.reset()
 
-    def visualize(self, *args, **kwargs):
+    def visualize(self, *args, custom_tensors: Optional[Dict[str, Any]] = None, **kwargs):
         for i, trackings in self._trackings.items():
             trackings.register_tensor(self._models[i])
         tensors = self.tensors
+        if custom_tensors is not None:
+            tensors.update(custom_tensors)
         self._visuals(tensors, *args, **kwargs)
 
     def distill(

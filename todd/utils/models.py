@@ -1,7 +1,6 @@
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 
 import mmcv
-import torch.nn as nn
 from mmcv.runner import BaseModule, load_checkpoint
 from mmcv.utils import Registry
 
@@ -39,9 +38,3 @@ class ModelLoader:
             target: BaseModule = getattr_recur(models, target, allow_list=True)
             source: BaseModule = getattr_recur(models, source, allow_list=True)
             ModelLoader.load_state_dict(target, source)
-
-
-def freeze_model(model: nn.Module) -> nn.Module:
-    model.eval()
-    model.requires_grad_(False)
-    return model

@@ -5,6 +5,7 @@ lmdb
 opencv-python
 pandas
 pytest
+timm
 torch
 torchvision
 tqdm

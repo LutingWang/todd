@@ -1,5 +1,5 @@
 import numbers
-from typing import Callable, Generic, Tuple, TypeVar
+from typing import Callable, Generic, List, Tuple, TypeVar
 
 import torch
 
@@ -18,7 +18,7 @@ class CollectionTensor(Generic[T]):
             return tuple(CollectionTensor.apply(f, op) for f in feat)
         if isinstance(feat, dict):
             return {k: CollectionTensor.apply(v, op) for k, v in feat.items()}
-        raise TypeError(type(feat))
+        raise TypeError(f'Unknown type {type(feat)}.')
 
     @staticmethod
     def to(feat: T, device: torch.device) -> T:
@@ -47,7 +47,31 @@ class CollectionTensor(Generic[T]):
         if isinstance(feat1, numbers.Number):
             assert isinstance(feat2, numbers.Number)
             return abs(feat1 - feat2) <= atol + rtol * abs(feat2)
-        raise TypeError(type(feat1))
+        raise TypeError(f'Unknown type {type(feat1)}.')
+
+    @staticmethod
+    def reduce(
+        feat: T, 
+        tensor_op: Callable[[torch.Tensor], torch.Tensor], 
+        tensors_op: Callable[[List[torch.Tensor]], torch.Tensor],
+    ) -> torch.Tensor:
+        if isinstance(feat, torch.Tensor):
+            return tensor_op(feat)
+        if isinstance(feat, list) or isinstance(feat, tuple):
+            return tensors_op([
+                CollectionTensor.reduce(f, tensor_op, tensors_op) 
+                for f in feat
+            ])
+        if isinstance(feat, dict):
+            return tensors_op([
+                CollectionTensor.reduce(f, tensor_op, tensors_op) 
+                for f in feat.values()
+            ])
+        raise TypeError(f'Unknown type {type(feat)}.')
+
+    @staticmethod
+    def sum(feat: T) -> T:
+        return CollectionTensor.reduce(feat, torch.sum, sum)
 
 
 class ListTensor(CollectionTensor[T]):

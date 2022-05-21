@@ -11,18 +11,20 @@ VISUALS = Registry('visuals')
 class VisualLayer(AdaptLayer):
     REGISTRY = VISUALS
 
-    def forward(self, hooked_tensors: Dict[str, Any], **kwargs):
-        tensors = self._get_tensors(hooked_tensors)
-        if self._multilevel:
-            for i, level_tensors in enumerate(zip(*tensors)):
-                self._adapt(*level_tensors, **kwargs, level=i) 
-        else:
-            self._adapt(*tensors, **kwargs)
+    def _adapt_tensors(self, tensors: Dict[str, Any], kwargs: dict):
+        if not self._multilevel:
+            return self._adapt(*tensors, **kwargs)
+
+        from .savers import BaseSaver
+
+        adapted_tensors = []
+        for level, (adapt, *level_tensors) in enumerate(zip(self.adapts, *tensors)):
+            level_kwargs = kwargs
+            if isinstance(adapt, BaseSaver):
+                level_kwargs = dict(level=level, **level_kwargs)
+            adapted_tensors.append(adapt(*level_tensors, **level_kwargs))
+        return adapted_tensors
 
 
 class VisualModuleList(AdaptModuleList):
     LAYER_TYPE = VisualLayer
-
-    def forward(self, hooked_tensors: Dict[str, Any]):
-        for visual in self:
-            visual(hooked_tensors)

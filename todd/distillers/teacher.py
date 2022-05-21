@@ -4,7 +4,7 @@ from mmcv.runner import ModuleList
 import torch.nn as nn
 
 from ..hooks import HookModuleListCfg
-from ..utils import freeze_model
+from ..reproduction import freeze_model
 
 from .base import BaseDistiller, DecoratorMixin
 from .builder import DISTILLERS

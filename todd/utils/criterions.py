@@ -1,8 +1,9 @@
 import einops
 import numpy as np
 import pandas as pd
+from pandas.core.base import PandasObject
 from abc import abstractmethod
-from typing import Any, Dict, Generic, List, Tuple, TypeVar, Union
+from typing import Any, Dict, Generic, List, Set, Tuple, TypeVar, Union
 
 import torch
 
@@ -31,10 +32,16 @@ class BaseAccuracy(Generic[T]):
     def todict(self) -> T:
         return self._todict(self._corrects, self._total)
 
+    def topandas(self) -> PandasObject:
+        raise NotImplementedError
+
+    def __repr__(self) -> str:
+        return repr(self.topandas())
+
 
 class Accuracy(BaseAccuracy[Dict[int, float]]):
-    def __init__(self, topks: Tuple[int] = (1, 5)):
-        super().__init__(n=len(topks))
+    def __init__(self, *args, topks: Tuple[int] = (1, 5), **kwargs):
+        super().__init__(*args, n=len(topks), **kwargs)
         self._topks = topks
 
     def evaluate(self, preds: torch.Tensor, targets: torch.Tensor, accumulate: bool = True) -> Dict[int, float]:
@@ -64,15 +71,17 @@ class Accuracy(BaseAccuracy[Dict[int, float]]):
         accuracies = super()._todict(corrects, total).tolist()
         return dict(zip(self._topks, accuracies))
 
-    def __repr__(self) -> str:
+    def topandas(self) -> PandasObject:
         accuracies = self.todict()
-        df = pd.DataFrame(dict(topk=accuracies.keys(), accuracies=accuracies.values()))
-        return repr(df)
+        return pd.DataFrame(dict(
+            topk=accuracies.keys(), 
+            accuracies=accuracies.values(),
+        ))
 
 
 class BinaryAccuracy(BaseAccuracy[Dict[float, float]]):
-    def __init__(self, thrs: Tuple[float] = (0.1, 0.5, 0.9)):
-        super().__init__(n=len(thrs))
+    def __init__(self, *args, thrs: Tuple[float] = (0.1, 0.5, 0.9), **kwargs):
+        super().__init__(*args, n=len(thrs), **kwargs)
         self._thrs = thrs
         self._tps = self._corrects.copy()
         self._fps = self._corrects.copy()
@@ -123,8 +132,55 @@ class BinaryAccuracy(BaseAccuracy[Dict[float, float]]):
     def todict(self) -> Dict[str, Dict[float, float]]:
         return self._todict(self._corrects, self._tps, self._fps, self._total)
 
-    def __repr__(self) -> str:
+    def topandas(self) -> PandasObject:
         d = dict(thr=self._thrs)
         d.update({k: v.values() for k, v in self.todict().items()})
-        df = pd.DataFrame(d)
-        return repr(df)
+        return pd.DataFrame(d)
+
+
+class MultiLabelAccuracy(BaseAccuracy[Dict[int, float]]):
+    def __init__(self, *args, num_classes: int, cumulative: bool = True, **kwargs):
+        super().__init__(*args, n=num_classes, **kwargs)
+        self._cumulative = cumulative
+
+    @property
+    def num_classes(self) -> int:
+        return self._corrects.size
+
+    def evaluate(self, preds: torch.Tensor, targets: List[Set[int]], accumulate: bool = True) -> Dict[int, float]:
+        """
+        Args:
+            preds: m x k
+            targets: m x c
+
+        Returns:
+            accuracies: n
+                Accuracy for each class.
+        """
+        assert preds.shape == (len(targets), self.num_classes)
+        corrects = np.zeros_like(self._corrects)
+        _, indices = preds.sort(dim=1, descending=True)
+        preds = indices.tolist()
+        for pred, target in zip(preds, targets):
+            if len(target) == 0:
+                continue
+            assert max(target) < self.num_classes
+            for i, label in enumerate(pred):
+                if label in target:
+                    corrects[i] += 1
+
+        if not accumulate:
+            return self._todict(corrects, corrects.sum())
+        self._accumulate(corrects, corrects.sum())
+        return self.todict()
+
+    def _todict(self, corrects: np.ndarray, total: int) -> Dict[int, float]:
+        if self._cumulative:
+            corrects = corrects.cumsum()
+        return dict(zip(
+            range(self.num_classes), corrects.tolist()
+        ))
+
+    def topandas(self) -> PandasObject:
+        accuracies = self.todict()
+        return pd.Series(accuracies.values())

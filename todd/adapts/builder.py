@@ -1,4 +1,5 @@
-from typing import Any, Dict, Iterable, List, Optional, Union
+import itertools
+from typing import Any, Dict, Iterable, Iterator, List, Optional, Union
 
 import einops.layers.torch as einops
 from mmcv.cnn import CONV_LAYERS, PLUGIN_LAYERS
@@ -45,25 +46,26 @@ class AdaptLayer(BaseModule):
         ]
         return tensors
 
+    @property
+    def adapts(self) -> Iterator[nn.Module]:
+        assert self._multilevel
+        adapts = (
+            self._adapt if isinstance(self._adapt, ModuleList) else 
+            itertools.repeat(self._adapt)
+        )
+        return adapts
+
+    def _adapt_tensors(self, tensors: Dict[str, Any], kwargs: dict):
+        if not self._multilevel:
+            return self._adapt(*tensors, **kwargs)
+        return [
+            adapt(*level_tensors, **kwargs) 
+            for adapt, *level_tensors in zip(self.adapts, *tensors)
+        ]
+
     def forward(self, hooked_tensors: Dict[str, Any], **kwargs) -> dict:
         tensors = self._get_tensors(hooked_tensors)
-        # TODO: simplify True and int
-        if isinstance(self._multilevel, bool):
-            if self._multilevel:
-                adapted_tensors = [
-                    self._adapt(*level_tensors, **kwargs) 
-                    for level_tensors in zip(*tensors)
-                ]
-            else:
-                adapted_tensors = self._adapt(*tensors, **kwargs)
-        elif isinstance(self._multilevel, int):
-            assert all(len(tensor) == self._multilevel for tensor in tensors)
-            adapted_tensors = [
-                self._adapt[i](*level_tensors, **kwargs) 
-                for i, level_tensors in enumerate(zip(*tensors))
-            ]
-        else:
-            assert False
+        adapted_tensors = self._adapt_tensors(tensors, kwargs)
 
         if isinstance(self._id, str):
             return {self._id: adapted_tensors}

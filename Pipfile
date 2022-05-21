@@ -15,6 +15,7 @@ setuptools = "*"
 lmdb = "*"
 tqdm = "*"
 pandas = "*"
+timm = "*"
 
 [dev-packages]
 

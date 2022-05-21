@@ -1,7 +1,8 @@
 from functools import cached_property
-from typing import Any, Optional, Tuple
+from typing import Any, Optional, Tuple, TypeVar
 import warnings
 
+import numpy as np
 import torch
 
 
@@ -10,8 +11,12 @@ def iou(bboxes1: torch.Tensor, bboxes2: Optional[torch.Tensor] = None, eps: floa
     return BBoxes(bboxes1).ious(BBoxes(bboxes2), eps)
 
 
+T = TypeVar('T', np.ndarray, torch.Tensor)
+
+
+# TODO: add support for numpy
 class BBoxes:
-    def __init__(self, bboxes: torch.Tensor):
+    def __init__(self, bboxes: T):
         """
         Args:
             bboxes: * x 4
@@ -20,18 +25,20 @@ class BBoxes:
         self._bboxes = bboxes
 
     def to_tensor(self) -> torch.Tensor:
-        return self._bboxes
+        if isinstance(self._bboxes, torch.Tensor):
+            return self._bboxes
+        return torch.as_tensor(self._bboxes)
 
     @property
     def empty(self) -> bool:
         return self._bboxes.shape[0] == 0
 
     @cached_property
-    def shapes(self) -> torch.Tensor:
+    def shapes(self) -> T:
         return self._bboxes[..., 2:] - self._bboxes[..., :2]
 
     @cached_property
-    def areas(self) -> torch.Tensor:
+    def areas(self) -> T:
         return self.shapes[..., 0] * self.shapes[..., 1]
 
     def __add__(self, other: 'BBoxes') -> 'BBoxes':
