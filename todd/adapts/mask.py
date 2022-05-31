@@ -294,3 +294,24 @@ class DenseCLIPMask(SingleLevelMask, LabelEncMask):
         for (x0, y0, x1, y1), label in zip(bboxes.int().tolist(), labels.tolist()):
             masks[label, y0:y1 + 1, x0:x1 + 1] = 1
         return masks
+
+
+@ADAPTS.register_module()
+class FRSMask(BaseAdapt):
+    def __init__(self, *args, with_logits: bool = True, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._with_logits = with_logits
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Args:
+            x: n x c x h x w
+
+        Returns:
+            masks: n x 1 x h x w
+        """
+        x = x.detach()
+        masks = einops.reduce(x, 'n c h w -> n 1 h w', reduction='max')
+        if self._with_logits:
+            masks = masks.sigmoid()
+        return masks
