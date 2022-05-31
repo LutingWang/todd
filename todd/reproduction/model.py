@@ -66,14 +66,18 @@ class EvalMode(Enum):
 
 def freeze_model(
     model: nn.Module, 
-    no_grad: Optional[dict] = None,
-    eval_: Optional[dict] = None,
+    no_grad: Optional[dict] = ...,
+    eval_: Optional[dict] = ...,
 ) -> nn.Module:
+    if no_grad is ...:
+        no_grad = dict(mode='ALL')
     if no_grad is not None:
         no_grad = dict(no_grad)
         no_grad_mode = cast(str, no_grad.pop('mode'))
         no_grad_mode = cast(NoGradMode, getattr(NoGradMode, no_grad_mode.upper()))
         no_grad_mode.no_grad(model, **no_grad)
+    if eval_ is ...:
+        eval_ = dict(mode='ALL')
     if eval_ is not None:
         eval_ = dict(eval_)
         eval_mode = cast(str, eval_.pop('mode'))
