@@ -11,13 +11,13 @@ import torch
 import torchvision.transforms as transforms
 
 from .logger import get_logger
-logger = get_logger()
+_logger = get_logger()
 
 
 try:
     from functools import cached_property
 except ImportError:
-    logger.warning("Monkey patching `functools.cached_property`.")
+    _logger.warning("Monkey patching `functools.cached_property`.")
 
     class cached_property:
         def __init__(self, func):
@@ -39,7 +39,7 @@ except ImportError:
 try:
     from functools import cache
 except ImportError:
-    logger.warning("Monkey patching `functools.cache`.")
+    _logger.warning("Monkey patching `functools.cache`.")
 
     def cache(user_function):
         return lru_cache(maxsize=None)(user_function)
@@ -49,7 +49,7 @@ except ImportError:
 try:
     from zipfile import Path
 except ImportError:
-    logger.warning("Monkey patching `zipfile.Path`.")
+    _logger.warning("Monkey patching `zipfile.Path`.")
 
     class Path:
         def __init__(self, root: str, at: str = ''):
@@ -87,7 +87,7 @@ except ImportError:
 try:
     from torch import maximum, minimum
 except ImportError:
-    logger.warning("Monkey patching `torch.maximum` and `torch.minimum`.")
+    _logger.warning("Monkey patching `torch.maximum` and `torch.minimum`.")
     torch.maximum = torch.max
     torch.Tensor.maximum = torch.Tensor.max
     torch.minimum = torch.min
@@ -96,13 +96,13 @@ except ImportError:
 try:
     from typing import Literal
 except ImportError:
-    logger.warning("Monkey patching `typing.Literal`.")
+    _logger.warning("Monkey patching `typing.Literal`.")
     typing.Literal = Literal
 
 try:
     from torchvision.transforms import InterpolationMode
 except ImportError:
-    logger.warning("Monkey patching `torchvision.transforms.InterpolationMode`.")
+    _logger.warning("Monkey patching `torchvision.transforms.InterpolationMode`.")
 
     class InterpolationMode(enum.Enum):
         BICUBIC = Image.BICUBIC
