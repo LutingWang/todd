@@ -2,6 +2,7 @@ einops
 ipdb
 lmdb
 # mmcv>=1.4.2
+mypy
 opencv-python
 pandas
 pytest

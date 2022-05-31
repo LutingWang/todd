@@ -16,6 +16,7 @@ lmdb = "*"
 tqdm = "*"
 pandas = "*"
 timm = "*"
+mypy = "*"
 
 [dev-packages]
 
