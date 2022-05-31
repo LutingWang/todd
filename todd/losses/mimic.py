@@ -9,11 +9,11 @@ import torch.nn.functional as F
 from ..schedulers import LinearScheduler
 
 from .builder import LOSSES
-from .functional import MSELoss
+from .functional import MSE2DLoss
 
 
 @LOSSES.register_module()
-class FGFILoss(MSELoss):
+class FGFILoss(MSE2DLoss):
     def forward(
         self, 
         pred: torch.Tensor, 
@@ -33,7 +33,7 @@ class FGFILoss(MSELoss):
 
 
 @LOSSES.register_module()
-class FGDLoss(MSELoss):
+class FGDLoss(MSE2DLoss):
     def forward(
         self,
         pred: torch.Tensor, target: torch.Tensor,
@@ -49,7 +49,7 @@ class FGDLoss(MSELoss):
 
 
 @LOSSES.register_module()
-class LabelEncLoss(MSELoss):
+class LabelEncLoss(MSE2DLoss):
     def __init__(self, *args, num_channels: int, weight: float = 1.0, **kwargs):
         weight = LinearScheduler(start_value=0, end_value=weight, start_iter=30000, end_iter=30000)
         super().__init__(*args, weight=weight, **kwargs)
@@ -72,7 +72,7 @@ class LabelEncLoss(MSELoss):
 
 
 @LOSSES.register_module()
-class DevLoss(MSELoss):
+class DevLoss(MSE2DLoss):
     def __init__(self, pos_share: float = 1, *args, **kwargs):
         assert 0 <= pos_share <= 1
         super().__init__(*args, **kwargs)

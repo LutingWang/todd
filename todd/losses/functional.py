@@ -7,17 +7,21 @@ from .base import BaseLoss
 from .builder import LOSSES
 
 
+# TODO: move to mimic.py
 class _2DMixin(BaseLoss):
     def forward(
         self, 
         pred: torch.Tensor, 
         target: torch.Tensor, 
+        mask: Optional[torch.Tensor] = None,
         *args, **kwargs,
     ) -> torch.Tensor:
+        _, _, h, w = pred.shape
         if pred.shape != target.shape:
-            _, _, h, w = pred.shape
             target = F.adaptive_avg_pool2d(target, (h, w))
-        return super().forward(pred, target, *args, **kwargs)
+        if mask is not None and pred.shape != mask.shape:
+            mask = F.adaptive_avg_pool2d(mask, (h, w))
+        return super().forward(pred, target, mask, *args, **kwargs)
 
 
 class NormMixin(BaseLoss):
