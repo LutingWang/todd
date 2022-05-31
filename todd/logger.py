@@ -1,8 +1,10 @@
+from typing import Optional
 import logging
 import getpass
 import os
 import socket
-from typing import Optional
+
+from ._base import ansi
 
 
 _logger_initialized = False
@@ -19,8 +21,8 @@ def get_logger(log_file: Optional[str] = None, level: str = 'DEBUG'):
             fmt=(
                 f"[{worker_pid:s}][%(asctime)s]"
                 f"[%(filename)s:%(funcName)s:%(lineno)d] "
-                f"\033[1;34m%(name)s %(levelname)s:\033[0m\n"
-                f"%(message)s"
+                + ansi.SGR.format("%(name)s %(levelname)s:", sgr=(ansi.SGR.BOLD, ansi.SGR.FG_BLUE)) + 
+                f"\n%(message)s"
             ),
             datefmt="%Y-%m-%d %H:%M:%S",
         )
