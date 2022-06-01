@@ -44,6 +44,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Compare Configs")
     parser.add_argument('a')
     parser.add_argument('b')
+    # TODO: add mutually exclusive parameter group
     parser.add_argument('--out')
     args = parser.parse_args()
     return args
