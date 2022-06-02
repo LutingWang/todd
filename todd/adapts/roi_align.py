@@ -17,7 +17,7 @@ class RoIAlign(BaseAdapt):
             for s in strides
         ])
 
-    def forward(self, feats: List[torch.Tensor], bboxes: List[torch.Tensor]) -> torch.Tensor:
+    def forward(self, feats: List[torch.Tensor], bboxes: List[torch.Tensor]) -> List[torch.Tensor]:
         """
         Args:
             feats: l x n x c x h x w
