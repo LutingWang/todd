@@ -1,8 +1,7 @@
-from abc import abstractmethod
 import contextlib
 import functools
 import itertools
-from typing import Any, Callable, Dict, Iterator, List, Optional, Type
+from typing import Any, Callable, Dict, Iterator, List, Optional, Protocol, Type, type_check_only
 
 from mmcv.runner import BaseModule
 import torch
@@ -146,9 +145,14 @@ class BaseDistiller(BaseModule):
         return losses
 
 
+class DecoratorProto(Protocol):
+    def __init__(self, student: nn.Module, *args, **kwargs) -> None:
+        pass
+
+
 class DecoratorMixin:
     @classmethod
-    def wrap(cls):
+    def wrap(cls: Type[DecoratorProto]) -> Callable[..., Any]:
 
         def wrapper(wrapped_cls):
 
@@ -161,7 +165,7 @@ class DecoratorMixin:
                         self._init_with_distiller()
 
                 @property
-                def distiller(self) -> DecoratorMixin:
+                def distiller(self) -> DecoratorProto:
                     return self._distiller
 
                 @property
