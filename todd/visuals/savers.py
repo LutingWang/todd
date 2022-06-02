@@ -2,7 +2,7 @@ from abc import abstractmethod
 from datetime import datetime
 from os import PathLike
 from pathlib import Path
-from typing import List, Optional
+from typing import Generic, List, Optional, Sequence, TypeVar, overload
 import cv2
 
 import numpy as np
@@ -13,7 +13,10 @@ from .base import BaseVisual
 from .builder import VISUALS
 
 
-class BaseSaver(BaseVisual):
+T = TypeVar('T')
+
+
+class BaseSaver(Generic[T], BaseVisual):
     def __init__(
         self, 
         *args, 
@@ -32,27 +35,25 @@ class BaseSaver(BaseVisual):
             visual_dir.mkdir(parents=True)
         self._visual_dir = visual_dir
 
-    def _get_path(self, as_str: bool = False, **kwargs) -> PathLike:
+    def _get_path(self, **kwargs) -> Path:
         assert 'iter' not in kwargs
         kwargs['iter'] = get_iter()
-        kwargs = '_'.join(f'{k}-{v}' for k, v in kwargs.items())
-        path = self._visual_dir / f'{kwargs}_{self._suffix}'
-        if as_str:
-            return str(path)
+        filename = '_'.join(f'{k}-{v}' for k, v in kwargs.items())
+        path = self._visual_dir / f'{filename}_{self._suffix}'
         return path
 
     @abstractmethod
-    def forward(self, *args, **kwargs):
+    def forward(self, data: Sequence[T], **kwargs) -> None:
         pass
 
 
 @VISUALS.register_module()
-class CV2Saver(BaseSaver):
+class CV2Saver(BaseSaver[np.ndarray]):
     def __init__(self, *args, suffix: str = '', **kwargs):
         super().__init__(*args, suffix=suffix + '.png', **kwargs)
 
-    def forward(self, images: List[np.ndarray], **kwargs):
-        for sample, image in enumerate(images):
-            path = self._get_path(as_str=True, sample=sample, **kwargs)
-            result = cv2.imwrite(path, image)
+    def forward(self, data: Sequence[np.ndarray], **kwargs) -> None:
+        for sample, image in enumerate(data):
+            path = self._get_path(sample=sample, **kwargs)
+            result = cv2.imwrite(str(path), image)
             assert result, path
