@@ -1,5 +1,7 @@
-from functools import cached_property, reduce
-from typing import Dict, List, Tuple, Union
+import itertools
+import operator
+from functools import reduce
+from typing import Iterable, Iterator, List, Mapping, Sequence, Tuple, Union, overload
 
 import einops
 import torch
@@ -8,59 +10,84 @@ from .base import BaseAdapt
 from .builder import ADAPTS
 
 
-class DictTensor:
-    def __init__(self, keys: Union[torch.Tensor, List[Tuple[int]]], values: torch.Tensor):
-        if isinstance(keys, torch.Tensor):
-            keys = [tuple(key) for key in keys.int().tolist()]
-        self._keys: List[Tuple[int]] = keys
+KeyType = Tuple[int, ...]
+
+
+class DictTensor(Mapping):
+    def __init__(
+        self, 
+        keys: Union[KeyType, List[KeyType]],
+        values: torch.Tensor,
+    ) -> None:
+        if not isinstance(keys, list):
+            keys = [keys]
+        self._keys = {key: i for i, key in enumerate(keys)}
         self._values = values
 
-    def __getitem__(self, keys: List[Tuple[int]]) -> torch.Tensor:
-        inds = self.inds(keys)
+    @overload
+    def __getitem__(self, keys: KeyType) -> torch.Tensor:
+        ...
+
+    @overload
+    def __getitem__(self, keys: List[KeyType]) -> torch.Tensor:
+        ...
+
+    def __getitem__(self, keys):
+        inds = (
+            self._keys[keys] if not isinstance(keys, list) else
+            [self._keys[key] for key in keys]
+        )
         return self._values[inds]
 
-    @property
-    def keys(self) -> List[Tuple[int]]:
-        return self._keys
+    def __len__(self) -> int:
+        return len(self._keys)
 
-    @property
-    def values(self) -> torch.Tensor:
-        return self._values
+    def __iter__(self) -> Iterator[KeyType]:
+        return iter(self._keys)
 
-    @cached_property
-    def key2ind(self) -> Dict[Tuple[int], int]:
-        return {key: i for i, key in enumerate(self._keys)}
+    def __contains__(self, keys: object) -> bool:
+        if not isinstance(keys, list):
+            return keys in self._keys
+        return all(key in self._keys for key in keys)
 
-    def inds(self, keys: List[Tuple[int]]) -> List[int]:
-        return [self.key2ind[key] for key in keys]
+    @classmethod
+    def from_tensor(cls, keys: torch.Tensor, values: torch.Tensor) -> 'DictTensor':
+        return DictTensor(list(map(tuple, keys.int().tolist())), values) 
+
+    @staticmethod
+    def union(dict_tensors: Sequence['DictTensor']) -> Tuple[List['DictTensor'], 'DictTensor']:
+        keys = list(set(itertools.chain(*dict_tensors)))
+        n = len(keys)
+        s = len(dict_tensors)
+
+        values = dict_tensors[0]._values.new_zeros((n, s))
+        mask = DictTensor(keys, values)
+
+        union_dict_tensors = []
+        for i, dict_tensor in enumerate(dict_tensors):
+            inds = [mask._keys[key] for key in dict_tensor._keys]
+            mask._values[inds, i] = 1
+
+            shape = (n,) + dict_tensor._values.shape[1:]
+            values = dict_tensor._values.new_zeros(shape)
+            values[inds] = dict_tensor._values
+            union_dict_tensor = DictTensor(keys, values)
+
+            union_dict_tensors.append(union_dict_tensor)
+        return union_dict_tensors, mask
+
+    @staticmethod
+    def intersect(dict_tensors: Iterable['DictTensor']) -> List['DictTensor']:
+        keys: List[KeyType] = list(reduce(operator.and_, map(set, dict_tensors)))
+        dict_tensors = [
+            DictTensor(keys, dict_tensor[keys]) 
+            for dict_tensor in dict_tensors
+        ]
+        return dict_tensors
 
 
-def _union(dict_tensors: List[DictTensor]) -> Tuple[List[DictTensor], DictTensor]:
-    key_set = list(set(pos for dict_tensor in dict_tensors for pos in dict_tensor.keys))
-    n = len(key_set)
-    s = len(dict_tensors)
-
-    mask = DictTensor(key_set, torch.zeros((n, s)))
-    union_dict_tensors = []
-    for i, dict_tensor in enumerate(dict_tensors):
-        inds = mask.inds(dict_tensor.keys)
-        mask[inds][i] = 1
-
-        shape = (n,) + dict_tensor.values.shape[1:]
-        union_dict_tensor = DictTensor(key_set, dict_tensor.values.new_zeros(shape))
-        union_dict_tensor[inds] = dict_tensor.values
-        union_dict_tensors.append(union_dict_tensor)
-    return union_dict_tensors, mask
-
-
-def _intersect(dict_tensors: List[DictTensor]) -> List[DictTensor]:
-    key_set = list(reduce(lambda a, b: a & b, (set(dict_tensor.keys) for dict_tensor in dict_tensors)))
-    intersect_dict_tensors = [DictTensor(key_set, dict_tensor[key_set]) for dict_tensor in dict_tensors]
-    return intersect_dict_tensors
-
-
-@ADAPTS.register_module()
-class Union(BaseAdapt):
+@ADAPTS.register_module(name='Union')
+class Union_(BaseAdapt):
     def forward(self, feats: List[torch.Tensor], ids: List[torch.Tensor]) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """Match `feats` accroding to their `poses`.
     
@@ -71,37 +98,43 @@ class Union(BaseAdapt):
         Args:
             feats: [n_s x d_1 x d_2 x ... x d_m]
                 Features from `s` different sources, each source can have different `n_s`.
-            ids: [n_s x m]
+            ids: [n_s x l]
                 Positions of each feature.
         
         Returns:
             union_feats: s x n x d_1 x d_2 x ... x d_m
-            ids: n x m
-            mask: s x n
+            union_ids: n x l
+            union_mask: s x n
         """
-        dict_tensors = [DictTensor(id_, feat) for feat, id_ in zip(feats, ids)]
-        union_dict_tensors, mask = _union(dict_tensors)
-        union_feats = torch.stack([dict_tensor.values] for dict_tensor in union_dict_tensors)
-        ids = torch.Tensor(mask.keys)
-        mask = einops.rearrange(mask.values, 'n s -> s n')
-        return union_feats, ids, mask
+        dict_tensors = [
+            DictTensor.from_tensor(id_, feat)
+            for id_, feat in zip(ids, feats)
+        ]
+        dict_tensors, mask = DictTensor.union(dict_tensors)
+        union_feats = torch.stack([dict_tensor._values for dict_tensor in dict_tensors])
+        union_ids = union_feats.new_tensor(mask._keys)
+        union_mask = einops.rearrange(mask._values, 'n s -> s n')
+        return union_feats, union_ids, union_mask
 
 
 @ADAPTS.register_module()
 class Intersect(BaseAdapt):
-    def forward(self, feats: List[torch.Tensor], ids: List[torch.Tensor]) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    def forward(self, feats: List[torch.Tensor], ids: List[torch.Tensor]) -> List[torch.Tensor]:
         """Match positions that show up both in `pred_poses` and `target_poses`.
 
         Args:
             feats: [n_s x d_1 x d_2 x ... x d_m]
                 Features from `s` different sources, each source can have different `n_s`.
-            ids: [n_s x m]
+            ids: [n_s x l]
                 Positions of each feature.
 
         Returns:
             intersect_feats: [n x d_1 x d_2 x ... x d_m]
         """
-        dict_tensors = [DictTensor(id_, feat) for feat, id_ in zip(feats, ids)]
-        intersect_dict_tensors = _intersect(dict_tensors)
-        intersect_feats = [dict_tensor.values for dict_tensor in intersect_dict_tensors]
+        dict_tensors = [
+            DictTensor.from_tensor(id_, feat)
+            for id_, feat in zip(ids, feats)
+        ]
+        dict_tensors = DictTensor.intersect(dict_tensors)
+        intersect_feats = [dict_tensor._values for dict_tensor in dict_tensors]
         return intersect_feats
