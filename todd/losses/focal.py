@@ -2,10 +2,10 @@ import torch
 
 from .base import BaseLoss
 from .builder import LOSSES
-from .functional import BCELoss, BCEWithLogitsLoss
+from .functional import BCELoss, BCEWithLogitsLoss, FunctionalLoss
 
 
-class FocalMixin(BaseLoss):
+class FocalMixin(FunctionalLoss):
     def __init__(
         self,
         *args,

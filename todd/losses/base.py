@@ -33,5 +33,5 @@ class BaseLoss(BaseModule):
             raise NotImplementedError(self._reduction)
         return loss
 
-    def forward(self, loss: torch.Tensor) -> torch.Tensor:
+    def weight(self, loss: torch.Tensor) -> torch.Tensor:
         return self._weight * loss

@@ -46,11 +46,11 @@ def ckd_loss(
 
 class MemoryPool:
     def __init__(self, size: int = 10):
-        self._memory = []
+        self._memory: List[torch.Tensor] = []
         self._size = size
         self._rank, self._world_size = get_dist_info()
 
-    def register(self, tensor: torch.Tensor) -> int:
+    def register(self, tensor: torch.Tensor) -> None:
         tensor = tensor.contiguous()
         if self._world_size > 1:
             tensor_list = [torch.zeros_like(tensor) for _ in range(self._world_size)]
@@ -79,7 +79,7 @@ class CKDLoss(BaseLoss):
         preds: torch.Tensor, 
         targets: torch.Tensor, 
         bboxes: Optional[List[torch.Tensor]] = None,
-    ):
+    ) -> torch.Tensor:
         """Compute CKD loss.
 
         Refer to http://arxiv.org/abs/2108.07482.
@@ -100,18 +100,15 @@ class CKDLoss(BaseLoss):
         if bboxes is None:
             loss = ckd_loss(preds, self._memory_pool.memory)
         else:
-            # TODO: more pythonic
-            ignore, ind = [], 0
+            ignore_x, ignore_y, ind = [], [], 0
             for bbox in bboxes:
                 ious = iou(bbox)
                 x, y = torch.where(ious > 0.5)
-                x += ind
-                y += ind
+                ignore_x.append(x + ind)
+                ignore_y.append(y + ind)
                 ind += bbox.shape[0]
-                ignore.append((x, y))
             assert ind == preds.shape[0], (ind, preds.shape)
-            x, y = zip(*ignore)
-            ignore = (torch.cat(x), torch.cat(y))
+            ignore = (torch.cat(ignore_x), torch.cat(ignore_y))
             loss = ckd_loss(preds, self._memory_pool.memory, ignore)
 
-        return super().forward(loss)
+        return self.weight(loss)

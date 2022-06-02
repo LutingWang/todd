@@ -1,11 +1,12 @@
-from abc import abstractstaticmethod
+from abc import abstractmethod
 from enum import IntEnum, auto
 from typing import Iterable, Union
 
 
 class ANSI:
-    @abstractstaticmethod
-    def format(text: str, *args, **kwargs) -> str:
+    @staticmethod
+    @abstractmethod
+    def format(text: str) -> str:
         pass
 
 
@@ -50,13 +51,15 @@ class SGR(ANSI, IntEnum):
             sgr = SGR[sgr.upper()]
         if isinstance(sgr, SGR):
             return str(sgr.value)
-        if isinstance(sgr, int):
+        elif isinstance(sgr, int):
             return str(sgr)
+        else:
+            raise TypeError(f"Unknown type {type(sgr)}.")
 
     @staticmethod
-    def format(text: str, sgr: Iterable[int]) -> str:
-        sgr = ';'.join(str(SGR(parameter).value) for parameter in sgr)
-        return f"\033[{sgr}m{text}\033[0m"
+    def format(text: str, sgr: Iterable[Union[int, str]] = tuple()) -> str:
+        sgr_list = ';'.join(SGR.to_str(parameter) for parameter in sgr)
+        return f"\033[{sgr_list}m{text}\033[m"
 
 
 if __name__ == '__main__':

@@ -17,6 +17,8 @@ class LossModuleList(AdaptModuleList):
     LAYER_TYPE = LossLayer
 
     def forward(self, *args, **kwargs) -> Dict[str, torch.Tensor]:
-        losses = super().forward(*args, inplace=False, **kwargs)
+        losses = super().forward(  # type: ignore[misc]
+            *args, inplace=False, **kwargs,
+        )
         losses = {f'loss_{k}': v for k, v in losses.items()}
         return losses
