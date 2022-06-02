@@ -1,5 +1,4 @@
-from contextlib import AbstractContextManager
-from typing import Any, Optional
+from typing import Any, cast
 import hashlib
 import random
 
@@ -10,7 +9,7 @@ import torch.backends.cudnn as cudnn
 import torch.distributed as dist
 
 from ..logger import get_logger
-from ..utils import DecoratorContextManager, get_iter
+from ..utils import DecoratorContextManager, get_iter, iter_initialized
 
 
 def _randint(high: int = 2 ** 30) -> int:
@@ -19,11 +18,14 @@ def _randint(high: int = 2 ** 30) -> int:
     if world_size > 1:
         tensor = torch.IntTensor(seed if rank == 0 else 0)
         dist.broadcast(tensor, src=0)
-        seed = tensor.item()
+        seed = cast(int, tensor.item())
     return seed
 
 
-def init_seed(seed=None, deterministic: bool = ...):
+def init_seed(
+    seed=None, 
+    deterministic: bool = ...,  # type: ignore[assignment]
+):
     if seed is None:
         seed = _randint()
     elif isinstance(seed, int):
@@ -34,9 +36,8 @@ def init_seed(seed=None, deterministic: bool = ...):
         seed = hashlib.blake2b(seed, digest_size=4).hexdigest()
         seed = int(seed, 16)
 
-    iter_ = get_iter()
-    if iter_ is not None:
-        seed += iter_
+    if iter_initialized():
+        seed += get_iter()
 
     random.seed(seed)
     np.random.seed(seed)
@@ -49,7 +50,11 @@ def init_seed(seed=None, deterministic: bool = ...):
 
 
 class set_seed_temp(DecoratorContextManager):
-    def __init__(self, seed=None, deterministic: bool = ...):
+    def __init__(
+        self, 
+        seed=None, 
+        deterministic: bool = ...,  # type: ignore[assignment]
+    ):
         if torch.cuda.device_count() > 1:
             get_logger().warn("Seeding is not recommended for multi-GPU training.")
         self._seed = seed
