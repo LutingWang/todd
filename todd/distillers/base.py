@@ -1,7 +1,8 @@
+from abc import abstractmethod
 import contextlib
 import functools
 import itertools
-from typing import Any, Callable, Dict, Iterator, List, Optional
+from typing import Any, Callable, Dict, Iterator, List, Optional, Type
 
 from mmcv.runner import BaseModule
 import torch
@@ -34,30 +35,30 @@ class BaseDistiller(BaseModule):
         self._models = models
 
         hooks = {} if hooks is None else hooks
-        hooks: Dict[str, HookModuleList] = {
+        hook_dict: Dict[int, HookModuleList] = {
             i: HookModuleList.build(hook) for i, hook in hooks.items()
         }
-        for i, hook in hooks.items():
+        for i, hook in hook_dict.items():
             hook.register_hook(models[i])
-        self._hooks = hooks
+        self._hooks = hook_dict
 
         trackings = {} if trackings is None else trackings
-        trackings: Dict[str, TrackingModuleList] = {
+        tracking_dict: Dict[int, TrackingModuleList] = {
             i: TrackingModuleList.build(tracking) for i, tracking in trackings.items()
         }
-        self._trackings = trackings
+        self._trackings = tracking_dict
 
-        adapts: AdaptModuleList = AdaptModuleList.build(adapts)
-        self._adapts = adapts
+        adapt_list: AdaptModuleList = AdaptModuleList.build(adapts)
+        self._adapts = adapt_list
 
-        visuals: VisualModuleList = VisualModuleList.build(visuals)
-        self._visuals = visuals
+        visual_list: VisualModuleList = VisualModuleList.build(visuals)
+        self._visuals = visual_list
 
-        losses: LossModuleList = LossModuleList.build(losses)
-        self._losses = losses
+        loss_list: LossModuleList = LossModuleList.build(losses)
+        self._losses = loss_list
 
-        schedulers: SchedulerModuleList = SchedulerModuleList.build(schedulers)
-        self._schedulers = schedulers
+        scheduler_list: SchedulerModuleList = SchedulerModuleList.build(schedulers)
+        self._schedulers = scheduler_list
 
         init_iter(iter_)
 
@@ -65,7 +66,7 @@ class BaseDistiller(BaseModule):
             ModelLoader.load_state_dicts(self, weight_transfer)
 
     @property
-    def models(self) -> nn.Module:
+    def models(self) -> List[nn.Module]:
         return self._models
 
     @property
@@ -137,26 +138,30 @@ class BaseDistiller(BaseModule):
         self.reset()
 
         if debug:
-            return losses, tensors
+            tensors = {
+                f'debug_{k}': v
+                for k, v in tensors.items()
+            }
+            return {**losses, **tensors}
         return losses
 
 
 class DecoratorMixin:
     @classmethod
-    def wrap(cls) -> Callable[[type], type]:
+    def wrap(cls):
 
-        def wrapper(wrapped_cls: type) -> type:
+        def wrapper(wrapped_cls):
 
             @functools.wraps(wrapped_cls, updated=())
             class WrapperClass(wrapped_cls):
                 def __init__(self, *args, distiller: dict, **kwargs):
                     super().__init__(*args, **kwargs)
-                    self._distiller = cls(self, **distiller)
+                    self._distiller = cls(self, **distiller)  # type: ignore[call-arg]
                     if hasattr(self, '_init_with_distiller'):
                         self._init_with_distiller()
 
                 @property
-                def distiller(self) -> BaseDistiller:
+                def distiller(self) -> DecoratorMixin:
                     return self._distiller
 
                 @property

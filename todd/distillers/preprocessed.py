@@ -22,7 +22,7 @@ class PreprocessedDistiller(SingleTeacherDistiller):
 
     def __init__(self, *args, teacher_cfg: AccessLayerConfig, **kwargs):
         teacher = PreprocessedTeacher(access_layer=teacher_cfg)
-        super().__init__(
+        super().__init__(  # type: ignore[misc]
             *args, 
             teacher=teacher, 
             teacher_hooks=None,
