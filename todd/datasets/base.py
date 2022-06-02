@@ -1,13 +1,13 @@
 import reprlib
-from abc import abstractmethod, abstractproperty
+from abc import abstractmethod
 from collections.abc import MutableMapping
 from enum import Enum
-from typing import Any, Generic, List, TypeVar, Union
+from typing import Any, Generic, Type, TypeVar, Union
 
 from torch.utils.data import Dataset
 
 
-from ..logger import get_logger
+from todd.logger import get_logger
 
 
 T = TypeVar('T')
@@ -49,7 +49,8 @@ class BaseAccessLayer(MutableMapping, Generic[T]):
     def _init(self, *args, **kwargs):
         pass
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def exists(self) -> bool:
         pass
 
@@ -57,13 +58,9 @@ class BaseAccessLayer(MutableMapping, Generic[T]):
     def touch(self):
         pass
 
-    @abstractproperty
-    def keys(self) -> List[T]:
-        pass
-
 
 class BaseDataset(Dataset, Generic[T]):
-    ACCESS_LAYER = BaseAccessLayer
+    ACCESS_LAYER: Type = BaseAccessLayer[T]
 
     def __init__(self, *args, access_layer, **kwargs):
         from .builder import ACCESS_LAYERS

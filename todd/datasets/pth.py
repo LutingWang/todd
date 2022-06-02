@@ -20,9 +20,8 @@ class PthAccessLayer(BaseAccessLayer[str]):
     def touch(self):
         self._pth_root.mkdir(parents=True, exist_ok=self._exist_ok)
 
-    def __iter__(self) -> Iterator[Any]:
-        for data_file in self._pth_root.glob('*.pth'):
-            yield torch.load(data_file, map_location='cpu')
+    def __iter__(self) -> Iterator[str]:
+        return (path.stem for path in self._pth_root.glob('*.pth'))
 
     def __len__(self) -> int:
         return len(list(self._pth_root.glob('*.pth')))
@@ -37,10 +36,6 @@ class PthAccessLayer(BaseAccessLayer[str]):
     def __delitem__(self, key: str):
         data_file = self._pth_root / f'{key}.pth'
         data_file.unlink()
-
-    @property
-    def keys(self) -> Iterator[str]:
-        return (path.stem for path in self._pth_root.glob('*.pth'))
 
 
 @DATASETS.register_module()

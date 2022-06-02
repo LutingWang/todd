@@ -34,10 +34,8 @@ class ZipAccessLayer(BaseAccessLayer[str]):
     def touch(self):
         raise NotImplementedError
 
-    def __iter__(self) -> Iterator[Any]:
-        for data_file in self._zip_root.iterdir():
-            bytes_io = BytesIO(data_file.read_bytes())
-            yield torch.load(bytes_io, map_location='cpu')
+    def __iter__(self) -> Iterator[str]:
+        return (path.name for path in self._zip_root.iterdir())
 
     def __len__(self) -> int:
         return len(list(self._zip_root.iterdir()))
@@ -52,10 +50,6 @@ class ZipAccessLayer(BaseAccessLayer[str]):
 
     def __delitem__(self, key: str):
         raise NotImplementedError
-
-    @property
-    def keys(self) -> Iterator[str]:
-        return (path.name for path in self._zip_root.iterdir())
 
 
 @DATASETS.register_module()
