@@ -1,6 +1,6 @@
 from abc import abstractmethod
 import math
-from typing import Any, List, Optional, Tuple, Union
+from typing import Any, Callable, List, Tuple
 
 import einops
 import torch
@@ -20,9 +20,10 @@ class MultiLevelMask:
         self._strides = strides
         self._ceil_mode = ceil_mode
         if ceil_mode:
-            self._div = lambda a, b: math.ceil(a / b)
+            div = lambda a, b: math.ceil(a / b)
         else:
-            self._div = lambda a, b: a // b
+            div = lambda a, b: a // b
+        self._div: Callable[[int, int], int] = div
         super().__init__(*args, **kwargs)
 
     @property
@@ -30,7 +31,12 @@ class MultiLevelMask:
         return self._strides
 
     @abstractmethod
-    def _forward(self, *args, **kwargs) -> torch.Tensor:
+    def _forward(
+        self, 
+        shape: Tuple[int, int], 
+        bboxes: List[torch.Tensor], 
+        *args, **kwargs,
+    ) -> torch.Tensor:
         pass
 
     def forward(
@@ -58,14 +64,14 @@ class MultiLevelMask:
 
 
 class SingleLevelMask(MultiLevelMask):
-    def __init__(self, *args, stride: List[int], **kwargs):
+    def __init__(self, *args, stride: int, **kwargs):
         super().__init__(*args, strides=[stride], **kwargs)
     
     @property
     def stride(self) -> int:
         return self.strides[0]
 
-    def forward(self, *args, **kwargs) -> torch.Tensor:
+    def forward(self, *args, **kwargs) -> torch.Tensor:  # type: ignore[override]
         masks = super().forward(*args, **kwargs)
         return masks[0]
     
@@ -135,8 +141,7 @@ class LabelEncMask(BaseAdapt):
             masks: n x k x h x w
         """
         masks = [self._mask(shape, bbox, label) for bbox, label in zip(bboxes, labels)]
-        masks = torch.stack(masks)
-        return masks
+        return torch.stack(masks)
 
 
 @ADAPTS.register_module()
@@ -191,6 +196,7 @@ class DeFeatMask(MultiLevelMask, BaseAdapt):
         self, 
         shape: Tuple[int, int], 
         bboxes: List[torch.Tensor], 
+        *args, **kwargs,
     ) -> torch.Tensor:
         """
         Args:
@@ -200,8 +206,7 @@ class DeFeatMask(MultiLevelMask, BaseAdapt):
         Returns:
             masks: n x 1 x h x w
         """
-        masks = [self._mask(shape, bbox) for bbox in bboxes]
-        masks = torch.stack(masks)
+        masks = torch.stack([self._mask(shape, bbox) for bbox in bboxes])
         masks = einops.rearrange(masks, 'n h w -> n 1 h w')
         masks = self._normalize_pos(masks)
         neg_masks = self._normalize_neg(masks <= 0)
@@ -262,8 +267,7 @@ class FGFIMask(BaseAdapt):
         Returns:
             masks: n x 1 x h x w
         """
-        masks = [self._instance(iou) for iou in ious]
-        masks = torch.stack(masks)
+        masks = torch.stack([self._instance(iou) for iou in ious])
         masks = einops.rearrange(masks, 'n h w -> n 1 h w')
         return masks
 
@@ -279,21 +283,21 @@ class FGFIMask(BaseAdapt):
         return masks
 
 
-@ADAPTS.register_module()
-class DenseCLIPMask(SingleLevelMask, LabelEncMask):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, stride=32, aug=False, **kwargs)
+# @ADAPTS.register_module()
+# class DenseCLIPMask(SingleLevelMask, LabelEncMask):
+#     def __init__(self, *args, **kwargs):
+#         super().__init__(*args, stride=32, aug=False, **kwargs)
 
-    def _mask(
-        self,
-        shape: Tuple[int, int],
-        bboxes: torch.Tensor,
-        labels: torch.Tensor,
-    ) -> torch.Tensor:
-        masks = bboxes.new_zeros(self._num_classes, *shape)
-        for (x0, y0, x1, y1), label in zip(bboxes.int().tolist(), labels.tolist()):
-            masks[label, y0:y1 + 1, x0:x1 + 1] = 1
-        return masks
+#     def _mask(
+#         self,
+#         shape: Tuple[int, int],
+#         bboxes: torch.Tensor,
+#         labels: torch.Tensor,
+#     ) -> torch.Tensor:
+#         masks = bboxes.new_zeros(self._num_classes, *shape)
+#         for (x0, y0, x1, y1), label in zip(bboxes.int().tolist(), labels.tolist()):
+#             masks[label, y0:y1 + 1, x0:x1 + 1] = 1
+#         return masks
 
 
 @ADAPTS.register_module()
