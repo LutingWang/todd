@@ -36,6 +36,7 @@ class BaseScheduler(BaseModule):
 class IntervalScheduler(BaseScheduler):
     def __init__(
         self, 
+        *, 
         start_value: float,
         end_value: float,
         start_iter: int = 0,
@@ -48,7 +49,11 @@ class IntervalScheduler(BaseScheduler):
         self._end_iter = float('inf') if end_iter is None else end_iter
 
     @abstractmethod
-    def _weight(self, cur_iter: int, total_iter: int) -> float:
+    def _weight(
+        self, 
+        cur_iter: int, 
+        total_iter: float,  # may be float('inf')
+    ) -> float:
         pass
 
     @property
