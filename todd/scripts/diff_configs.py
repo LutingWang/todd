@@ -14,8 +14,7 @@ class DiffMode(Enum):
 
     def diff(self, a: str, b: str) -> str:
         if self == DiffMode.TEXT:
-            diff = Differ().compare(a, b)
-            diff = '\n'.join(diff)
+            diff = '\n'.join(Differ().compare(a, b))
         elif self == DiffMode.HTML:
             diff = HtmlDiff().make_file(a, b)
         return diff
@@ -31,6 +30,7 @@ class OutputMode(Enum):
             assert filepath is None
             print(diff)
         elif self == OutputMode.FILE:
+            assert filepath is not None
             with open(filepath, 'w') as f:
                 f.write(diff)
         elif self == OutputMode.BROWSER:

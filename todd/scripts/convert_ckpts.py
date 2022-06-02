@@ -1,5 +1,5 @@
 from enum import Enum, auto
-from typing import Iterable, Mapping
+from typing import Iterable, Mapping, MutableMapping
 import argparse
 import re
 
@@ -19,6 +19,7 @@ class MatchMode(Enum):
             return re.match(pattern, key) is not None
         if self == MatchMode.EXACT:
             return key == pattern
+        raise ValueError(f"Unknown match mode: {self}")
 
 
 def parse_args():
@@ -33,7 +34,7 @@ def parse_args():
 
 
 def rename_exact(
-    state_dict: Mapping[str, torch.Tensor],
+    state_dict: MutableMapping[str, torch.Tensor],
     mapping: Mapping[str, str],
 ):
     for k, v in mapping.items():
@@ -42,7 +43,7 @@ def rename_exact(
 
 
 def rename(
-    state_dict: Mapping[str, torch.Tensor], 
+    state_dict: MutableMapping[str, torch.Tensor], 
     mapping: Mapping[str, str], 
     mode: MatchMode,
 ):
@@ -60,7 +61,7 @@ def rename(
 
 
 def remove_exact(
-    state_dict: Mapping[str, torch.Tensor],
+    state_dict: MutableMapping[str, torch.Tensor],
     patterns: Iterable[str],
 ):
     for k in patterns:
@@ -68,7 +69,7 @@ def remove_exact(
 
 
 def remove(
-    state_dict: Mapping[str, torch.Tensor], 
+    state_dict: MutableMapping[str, torch.Tensor], 
     patterns: Iterable[str],
     mode: MatchMode,
 ):
