@@ -1,7 +1,7 @@
 from typing import List
 
-from mmcv.runner import ModuleList
 import torch
+from mmcv.runner import ModuleList
 
 from .base import BaseAdapt
 from .builder import ADAPTS

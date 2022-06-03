@@ -3,7 +3,6 @@ from typing import List, Tuple
 import torch
 
 from .._base import BBoxesXYXY
-
 from .base import BaseAdapt
 from .builder import ADAPTS
 

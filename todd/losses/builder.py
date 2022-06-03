@@ -1,7 +1,7 @@
 from typing import Dict
 
-from mmcv.utils import Registry
 import torch
+from mmcv.utils import Registry
 
 from ..adapts import AdaptLayer, AdaptModuleList
 

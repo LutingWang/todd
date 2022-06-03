@@ -1,5 +1,5 @@
-from mmcv.utils import Registry
 import torch.nn as nn
+from mmcv.utils import Registry
 
 __all__ = [
     'NORM_LAYERS',

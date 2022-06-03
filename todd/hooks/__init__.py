@@ -1,5 +1,8 @@
 from .base import BaseHook
-from .builder import HOOKS, HookCfg, HookModuleList, HookModuleListCfg, TrackingModuleList, detach
+from .builder import (
+    HOOKS, HookCfg, HookModuleList, HookModuleListCfg, TrackingModuleList,
+    detach,
+)
 from .duplicated import DuplicatedHook
 from .multi_calls import MultiCallsHook
 from .multi_tensors import MultiTensorsHook

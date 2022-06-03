@@ -1,7 +1,10 @@
 from .base import BaseScheduler, IntervalScheduler
 from .builder import SCHEDULERS, SchedulerLayer, SchedulerModuleList
 from .cosine_annealing import CosineAnnealingScheduler
-from .linear import LinearScheduler, ConstantScheduler, WarmupScheduler, EarlyStopScheduler, DecayScheduler
+from .linear import (
+    ConstantScheduler, DecayScheduler, EarlyStopScheduler, LinearScheduler,
+    WarmupScheduler,
+)
 from .step import StepScheduler
 
 __all__ = [

@@ -1,14 +1,7 @@
-from . import _patches
-
-from . import adapts
-from . import distillers
-from . import hooks
-from . import logger
-from . import losses
-from . import reproduction
-from . import schedulers
-from . import utils
-from . import visuals
+from . import (
+    _patches, adapts, distillers, hooks, logger, losses, reproduction,
+    schedulers, utils, visuals,
+)
 
 __all__ = [
     'adapts',

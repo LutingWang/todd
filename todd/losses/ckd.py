@@ -1,13 +1,11 @@
-import itertools
 from typing import List, Optional, Tuple
 
-from mmcv.runner import get_dist_info
 import torch
 import torch.distributed as dist
 import torch.nn.functional as F
+from mmcv.runner import get_dist_info
 
 from .._base import BBoxesXYXY
-
 from .base import BaseLoss
 from .builder import LOSSES
 

@@ -1,10 +1,10 @@
-from enum import Enum, auto
 import itertools
+from enum import Enum, auto
 from typing import List, Optional, cast
 
+import torch.nn as nn
 from timm.models.layers import DropPath
 from torch.nn.modules.batchnorm import _BatchNorm
-import torch.nn as nn
 
 from ..utils import getattr_recur
 

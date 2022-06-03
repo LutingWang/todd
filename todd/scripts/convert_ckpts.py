@@ -1,10 +1,10 @@
-from enum import Enum, auto
-from typing import Iterable, Mapping, MutableMapping
 import argparse
 import re
+from enum import Enum, auto
+from typing import Iterable, Mapping, MutableMapping
 
-from mmcv import DictAction
 import torch
+from mmcv import DictAction
 
 
 class MatchMode(Enum):

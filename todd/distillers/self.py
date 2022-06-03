@@ -1,8 +1,8 @@
 from typing import Dict, Optional
+
 import torch.nn as nn
 
 from ..hooks import HookModuleListCfg
-
 from .base import BaseDistiller, DecoratorMixin
 from .builder import DISTILLERS
 

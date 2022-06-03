@@ -18,6 +18,7 @@ pandas = "*"
 timm = "*"
 mypy = "*"
 yapf = "*"
+isort = "*"
 
 [dev-packages]
 

@@ -1,19 +1,21 @@
 import contextlib
 import functools
 import itertools
-from typing import Any, Callable, Dict, Iterator, List, Optional, Protocol, Type, type_check_only
+from typing import (
+    Any, Callable, Dict, Iterator, List, Optional, Protocol, Type,
+)
 
-from mmcv.runner import BaseModule
 import torch
 import torch.nn as nn
+from mmcv.runner import BaseModule
 
 from ..adapts import AdaptModuleList, AdaptModuleListCfg
 from ..hooks import HookModuleList, HookModuleListCfg, TrackingModuleList
 from ..hooks import detach as DetachHookContext
 from ..losses import LossModuleList
 from ..schedulers import SchedulerModuleList
+from ..utils import ModelLoader, getattr_recur, inc_iter, init_iter
 from ..visuals import VisualModuleList
-from ..utils import ModelLoader, init_iter, inc_iter, getattr_recur
 
 
 class BaseDistiller(BaseModule):

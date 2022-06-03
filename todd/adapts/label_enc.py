@@ -1,9 +1,9 @@
 from typing import List
 
-from mmcv.runner import BaseModule, Sequential
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from mmcv.runner import BaseModule, Sequential
 
 from .base import BaseAdapt
 from .builder import ADAPTS

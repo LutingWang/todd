@@ -1,10 +1,10 @@
 from typing import Callable, List
 
 import einops
-from mmcv.cnn import ConvModule
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from mmcv.cnn import ConvModule
 
 from .builder import LOSSES
 from .functional import MSELoss

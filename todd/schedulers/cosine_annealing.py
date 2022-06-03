@@ -1,8 +1,6 @@
 import math
 from typing import Optional
 
-from ..utils import get_iter
-
 from .base import BaseScheduler
 from .builder import SCHEDULERS
 

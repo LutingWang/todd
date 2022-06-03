@@ -1,8 +1,8 @@
 from typing import Any
+
 from mmcv.runner import BaseModule
 
 from ..datasets import AccessLayerConfig, build_access_layer
-
 from .builder import DISTILLERS
 from .teacher import SingleTeacherDistiller
 

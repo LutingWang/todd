@@ -1,15 +1,14 @@
 from typing import List
 
-from mmcv.cnn import ConvModule
-from mmcv.runner import Sequential
 import einops
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from mmcv.cnn import ConvModule
+from mmcv.runner import Sequential
 
 from .._base.registries import NORM_LAYERS
 from ..schedulers import LinearScheduler
-
 from .builder import LOSSES
 from .functional import MSE2DLoss
 

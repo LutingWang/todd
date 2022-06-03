@@ -1,9 +1,9 @@
-from difflib import Differ, HtmlDiff
-from enum import Enum, auto
-from typing import Any, Optional, Sequence
 import argparse
 import tempfile
 import webbrowser
+from difflib import Differ, HtmlDiff
+from enum import Enum, auto
+from typing import Any, Optional, Sequence
 
 from mmcv import Config
 

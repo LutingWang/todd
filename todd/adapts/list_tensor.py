@@ -1,9 +1,6 @@
-from typing import Callable
-
 import torch
 
 from ..utils import ListTensor
-
 from .base import BaseAdapt
 from .builder import ADAPTS
 

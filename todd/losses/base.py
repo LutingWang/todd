@@ -1,7 +1,7 @@
 from typing import Literal, Optional
 
-from mmcv.runner import BaseModule
 import torch
+from mmcv.runner import BaseModule
 
 Reduction = Literal['none', 'mean', 'sum', 'prod']
 

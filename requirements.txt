@@ -1,5 +1,6 @@
 einops
 ipdb
+isort
 lmdb
 # mmcv>=1.4.2
 mypy

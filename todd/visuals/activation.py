@@ -1,6 +1,4 @@
-from datetime import datetime
-import os
-from typing import List, Literal, Optional
+from typing import List, Literal
 
 import cv2
 import einops
@@ -8,7 +6,6 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
-from ..utils import get_iter
 from .base import BaseVisual
 from .builder import VISUALS
 

@@ -1,6 +1,6 @@
-from typing import Any, Callable, TypeVar, cast
 import functools
 import inspect
+from typing import Any, Callable, TypeVar, cast
 
 FuncType = Callable[..., Any]
 F = TypeVar('F', bound=FuncType)

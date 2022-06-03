@@ -1,11 +1,13 @@
 import itertools
-from typing import Any, Dict, Iterable, Iterator, List, Optional, Sequence, Union
+from typing import (
+    Any, Dict, Iterable, Iterator, List, Optional, Sequence, Union,
+)
 
 import einops.layers.torch as einops
+import torch.nn as nn
 from mmcv.cnn import CONV_LAYERS, PLUGIN_LAYERS
 from mmcv.runner import BaseModule, ModuleList
 from mmcv.utils import Registry
-import torch.nn as nn
 
 ADAPTS = Registry('adapts')
 ADAPTS.module_dict.update(PLUGIN_LAYERS.module_dict)

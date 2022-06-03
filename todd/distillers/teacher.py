@@ -1,11 +1,10 @@
 from typing import Dict, List, Optional
 
-from mmcv.runner import ModuleList
 import torch.nn as nn
+from mmcv.runner import ModuleList
 
 from ..hooks import HookModuleListCfg
 from ..reproduction import freeze_model
-
 from .base import BaseDistiller, DecoratorMixin
 from .builder import DISTILLERS
 

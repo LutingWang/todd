@@ -1,5 +1,7 @@
 import numbers
-from typing import Callable, Generic, Iterable, List, Literal, Tuple, TypeVar, Union
+from typing import (
+    Callable, Generic, Iterable, List, Literal, Tuple, TypeVar, Union,
+)
 
 import torch
 

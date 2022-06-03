@@ -1,14 +1,12 @@
 from collections.abc import Iterable
 from contextlib import AbstractContextManager
 from typing import Any, Dict, Iterable, List, Optional, Union, cast
-from typing_extensions import reveal_type
 
 import torch.nn as nn
 from mmcv.runner import ModuleList
 from mmcv.utils import Registry
 
 from ..utils import getattr_recur
-
 from .base import BaseHook
 
 HOOKS = Registry('hooks')

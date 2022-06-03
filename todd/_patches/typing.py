@@ -1,8 +1,9 @@
-from typing_extensions import Literal
 import sys
 import typing
 
-from todd.logger import get_logger
+from typing_extensions import Literal
+
+from ..logger import get_logger
 
 _logger = get_logger()
 

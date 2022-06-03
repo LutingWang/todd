@@ -1,14 +1,12 @@
 from abc import abstractmethod
 from datetime import datetime
-from os import PathLike
 from pathlib import Path
 from typing import Generic, List, Optional, Sequence, TypeVar, overload
-import cv2
 
+import cv2
 import numpy as np
 
 from ..utils.iters import get_iter
-
 from .base import BaseVisual
 from .builder import VISUALS
 

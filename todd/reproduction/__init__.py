@@ -1,4 +1,4 @@
-from .model import freeze_model, FrozenMixin
+from .model import FrozenMixin, freeze_model
 from .seed import init_seed, set_seed_temp
 
 __all__ = [

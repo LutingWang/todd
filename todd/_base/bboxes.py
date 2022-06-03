@@ -1,7 +1,9 @@
 from abc import abstractmethod
-from typing import List, NamedTuple, Optional, Sized, Tuple, Type, TypeVar, Union
-import einops
+from typing import (
+    List, NamedTuple, Optional, Sized, Tuple, Type, TypeVar, Union,
+)
 
+import einops
 import numpy as np
 import torch
 

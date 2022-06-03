@@ -1,8 +1,9 @@
 import io
-import lmdb
-import torch
 from functools import cached_property
 from typing import Any, List, Literal, Optional
+
+import lmdb
+import torch
 
 from .base import BaseDataset
 from .builder import DATASETS

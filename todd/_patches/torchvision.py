@@ -1,11 +1,11 @@
 import enum
 
-from PIL import Image
-from packaging import version
 import torchvision
 import torchvision.transforms as transforms
+from packaging import version
+from PIL import Image
 
-from todd.logger import get_logger
+from ..logger import get_logger
 
 _logger = get_logger()
 
