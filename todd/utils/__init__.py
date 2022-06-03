@@ -1,6 +1,5 @@
 from .generic_tensors import CollectionTensor, ListTensor
 from .builders import build_metas
-from .criterions import Accuracy, BinaryAccuracy, MultiLabelAccuracy
 from .iters import iter_initialized, init_iter, get_iter, inc_iter
 from .attrs import getattr_recur, setattr_recur, setattr_temp
 from .models import ModelLoader
