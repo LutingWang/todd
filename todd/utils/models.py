@@ -35,6 +35,6 @@ class ModelLoader:
     @staticmethod
     def load_state_dicts(models, prefixes: Dict[str, str]):
         for target, source in prefixes.items():
-            target: BaseModule = getattr_recur(models, target, allow_list=True)
-            source: BaseModule = getattr_recur(models, source, allow_list=True)
-            ModelLoader.load_state_dict(target, source)
+            target_module = getattr_recur(models, target, allow_list=True)
+            source_module = getattr_recur(models, source, allow_list=True)
+            ModelLoader.load_state_dict(target_module, source_module)

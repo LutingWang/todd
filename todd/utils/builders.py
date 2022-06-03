@@ -13,17 +13,16 @@ def build(cls, cfg, **kwargs) -> BaseModule:
     return module
 
 
-def build_metas(name: str, base: Type[T]) -> Tuple[Registry, Type[Union[T, dict]], Callable[[Union[T, dict]], T]]:
+def build_metas(name: str, base: Type[T]) -> Tuple[Registry, Callable[[Union[T, dict]], T]]:
     registry = Registry(name)
-    config_type = Union[base, dict]
 
-    def build_func(cfg: config_type) -> base:
+    def build_func(cfg: Union[T, dict]) -> T:
         if isinstance(cfg, base):
             return cfg
         assert isinstance(cfg, dict)
         return registry.build(cfg)
 
-    return registry, config_type, build_func
+    return registry, build_func
 
 
 BaseModule.build = classmethod(build)

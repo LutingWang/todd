@@ -1,6 +1,12 @@
 from mmcv.utils import Registry
 import torch.nn as nn
 
+
+__all__ = [
+    'NORM_LAYERS',
+]
+
+
 NORM_LAYERS = Registry('norm layer')
 NORM_LAYERS.register_module('BN', module=nn.BatchNorm2d)
 NORM_LAYERS.register_module('BN1d', module=nn.BatchNorm1d)

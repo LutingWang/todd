@@ -4,8 +4,6 @@ import getpass
 import os
 import socket
 
-from ._base import ansi
-
 
 _logger_initialized = False
 
@@ -13,6 +11,8 @@ _logger_initialized = False
 def get_logger(log_file: Optional[str] = None, level: str = 'DEBUG'):
     global _logger_initialized
     if not _logger_initialized:
+        from ._base import SGR
+
         _logger_initialized = True
         logger = logging.getLogger('Todd')
         logger.setLevel(getattr(logging, level))
@@ -21,7 +21,7 @@ def get_logger(log_file: Optional[str] = None, level: str = 'DEBUG'):
             fmt=(
                 f"[{worker_pid:s}][%(asctime)s]"
                 f"[%(filename)s:%(funcName)s:%(lineno)d] "
-                + ansi.SGR.format("%(name)s %(levelname)s:", sgr=(ansi.SGR.BOLD, ansi.SGR.FG_BLUE)) + 
+                + SGR.format("%(name)s %(levelname)s:", sgr=(SGR.BOLD, SGR.FG_BLUE)) + 
                 f"\n%(message)s"
             ),
             datefmt="%Y-%m-%d %H:%M:%S",

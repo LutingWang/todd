@@ -188,7 +188,12 @@ class BBoxes(Sized):
         return self.unions(self, other)
 
     @classmethod
-    def ious(cls: Type[T], a: T, b: T, eps: float = 1e-6) -> torch.Tensor:
+    def ious(
+        cls: Type[T], 
+        a: T, 
+        b: T, 
+        eps: float = 1e-6,
+    ) -> torch.Tensor:
         """
         Args:
             a: *1 x 4
@@ -259,6 +264,10 @@ class BBoxesXY(BBoxes):
 
 
 class BBoxesXYXY(BBoxesXY):
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        assert self.wh.gt(0).all()
+
     @property
     def right(self) -> torch.Tensor:
         return self._bboxes[:, 2]

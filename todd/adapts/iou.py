@@ -2,7 +2,7 @@ from typing import List, Tuple
 
 import torch
 
-from ..utils import iou
+from .._base import BBoxesXYXY
 
 from .base import BaseAdapt
 from .builder import ADAPTS
@@ -42,7 +42,9 @@ class IoU(BaseAdapt):
         """
         bboxes1, shape1 = self._reshape(bboxes1)
         bboxes2, shape2 = self._reshape(bboxes2)
-        ious = iou(bboxes1, bboxes2, self._eps)
+        ious = BBoxesXYXY.ious(
+            BBoxesXYXY(bboxes1), BBoxesXYXY(bboxes2), self._eps,
+        )
         return ious.reshape(shape1 + shape2)
     
     def forward(

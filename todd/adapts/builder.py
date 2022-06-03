@@ -1,5 +1,5 @@
 import itertools
-from typing import Any, Dict, Iterable, Iterator, List, Optional, Union
+from typing import Any, Dict, Iterable, Iterator, List, Optional, Sequence, Union
 
 import einops.layers.torch as einops
 from mmcv.cnn import CONV_LAYERS, PLUGIN_LAYERS
@@ -39,12 +39,15 @@ class AdaptLayer(BaseModule):
             return self._id
         return str(self._id)
 
-    def _get_tensors(self, tensors: Dict[str, Any], tensor_names: Optional[List[str]] = None) -> Dict[str, Any]:
+    def _get_tensors(
+        self, 
+        tensors: Dict[str, Any], 
+        tensor_names: Optional[List[str]] = None,
+    ) -> list:
         tensor_names = self._tensor_names if tensor_names is None else tensor_names
-        tensors = [
+        return [
             tensors[tensor_name] for tensor_name in tensor_names
         ]
-        return tensors
 
     @property
     def adapts(self) -> Iterator[nn.Module]:
@@ -55,7 +58,7 @@ class AdaptLayer(BaseModule):
         )
         return adapts
 
-    def _adapt_tensors(self, tensors: Dict[str, Any], kwargs: dict):
+    def _adapt_tensors(self, tensors: list, kwargs: dict):
         if not self._multilevel:
             return self._adapt(*tensors, **kwargs)
         return [
@@ -69,7 +72,7 @@ class AdaptLayer(BaseModule):
 
         if isinstance(self._id, str):
             return {self._id: adapted_tensors}
-        if isinstance(self._id, Iterable):
+        if isinstance(self._id, Sequence):
             if self._multilevel:
                 assert all(len(self._id) == len(level_tensors) for level_tensors in adapted_tensors)
                 adapted_tensors = zip(*adapted_tensors)

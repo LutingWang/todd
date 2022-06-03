@@ -3,6 +3,11 @@ from enum import IntEnum, auto
 from typing import Iterable, Union
 
 
+__all__ = [
+    'SGR',
+]
+
+
 class ANSI:
     @staticmethod
     @abstractmethod

@@ -1,6 +1,7 @@
 from collections.abc import Iterable
 from contextlib import AbstractContextManager
-from typing import Any, Dict, Iterable, List, Optional, Union
+from typing import Any, Dict, Iterable, List, Optional, Union, cast
+from typing_extensions import reveal_type
 
 import torch.nn as nn
 from mmcv.runner import ModuleList
@@ -72,7 +73,7 @@ class detach(AbstractContextManager):
             hook_modules = [hook_modules]
         self._hook_modules = hook_modules
         self._detach = [
-            [hook._detach for hook in hook_module]
+            [hook._detach for hook in hook_module]  # type: ignore[union-attr]
             for hook_module in hook_modules
         ]
 

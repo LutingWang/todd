@@ -11,7 +11,7 @@ VISUALS = Registry('visuals')
 class VisualLayer(AdaptLayer):
     REGISTRY = VISUALS
 
-    def _adapt_tensors(self, tensors: Dict[str, Any], kwargs: dict):
+    def _adapt_tensors(self, tensors: list, kwargs: dict):
         if not self._multilevel:
             return self._adapt(*tensors, **kwargs)
 

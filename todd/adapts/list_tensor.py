@@ -9,7 +9,7 @@ from .builder import ADAPTS
 
 
 class ListTensorAdapt(BaseAdapt):
-    func: Callable[..., torch.Tensor]
+    func: staticmethod
 
     def forward(self, *args, **kwargs) -> torch.Tensor:
         return self.func(*args, **kwargs)

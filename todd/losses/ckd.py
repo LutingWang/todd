@@ -6,7 +6,7 @@ import torch
 import torch.distributed as dist
 import torch.nn.functional as F
 
-from ..utils import iou
+from .._base import BBoxesXYXY
 
 from .base import BaseLoss
 from .builder import LOSSES
@@ -102,11 +102,12 @@ class CKDLoss(BaseLoss):
         else:
             ignore_x, ignore_y, ind = [], [], 0
             for bbox in bboxes:
-                ious = iou(bbox)
+                bbox_ = BBoxesXYXY(bbox)
+                ious = BBoxesXYXY.ious(bbox_, bbox_)
                 x, y = torch.where(ious > 0.5)
                 ignore_x.append(x + ind)
                 ignore_y.append(y + ind)
-                ind += bbox.shape[0]
+                ind += len(bbox_)
             assert ind == preds.shape[0], (ind, preds.shape)
             ignore = (torch.cat(ignore_x), torch.cat(ignore_y))
             loss = ckd_loss(preds, self._memory_pool.memory, ignore)
