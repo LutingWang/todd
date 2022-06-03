@@ -1,8 +1,8 @@
 import torch
 
 from todd.logger import get_logger
-_logger = get_logger()
 
+_logger = get_logger()
 
 if torch.__version__ < '1.7.0':
     _logger.warning("Monkey patching `torch.maximum` and `torch.minimum`.")

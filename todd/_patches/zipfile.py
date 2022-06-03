@@ -5,22 +5,25 @@ import typing
 import zipfile
 
 from todd.logger import get_logger
-_logger = get_logger()
 
+_logger = get_logger()
 
 if sys.version_info < (3, 8):
     _logger.warning("Monkey patching `zipfile.Path`.")
 
     class Path:
+
         def __init__(self, root: str, at: str = ''):
             self._root = zipfile.ZipFile(root)
             self._at = at
-        
+
         def _next(self, at: str) -> 'Path':
             return Path(self._root.filename, at)
 
         def _is_child(self, path: 'Path') -> bool:
-            return os.path.dirname(path._at.rstrip("/")) == self._at.rstrip("/")
+            return (
+                os.path.dirname(path._at.rstrip("/")) == self._at.rstrip("/")
+            )
 
         @functools.cached_property
         def _namelist(self) -> typing.List[str]:
@@ -28,7 +31,7 @@ if sys.version_info < (3, 8):
 
         def read_bytes(self) -> bytes:
             return self._root.read(self._at)
-        
+
         def exists(self) -> bool:
             return self._at in self._namelist
 
