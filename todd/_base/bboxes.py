@@ -6,6 +6,11 @@ import numpy as np
 import torch
 
 
+__all__ = [
+    'BBoxesXYXY', 'BBoxesXYWH',
+]
+
+
 T = TypeVar('T', bound='BBoxes')
 
 
