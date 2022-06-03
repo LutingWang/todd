@@ -2,13 +2,13 @@ from abc import abstractmethod
 from enum import IntEnum, auto
 from typing import Iterable, Union
 
-
 __all__ = [
     'SGR',
 ]
 
 
 class ANSI:
+
     @staticmethod
     @abstractmethod
     def format(text: str) -> str:
@@ -71,7 +71,9 @@ if __name__ == '__main__':
     for fg_color in range(30, 38):
         for bg_color in range(40, 48):
             text = ' '.join(
-                SGR.format(f'{effect}:{fg_color};{bg_color}', (effect, fg_color, bg_color))
-                for effect in range(10)
+                SGR.format(
+                    f'{effect}:{fg_color};{bg_color}',
+                    (effect, fg_color, bg_color),
+                ) for effect in range(10)
             )
             print(text)
