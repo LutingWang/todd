@@ -12,22 +12,25 @@ from ..utils.iters import get_iter
 from .base import BaseVisual
 from .builder import VISUALS
 
-
 T = TypeVar('T')
 
 
 class BaseSaver(Generic[T], BaseVisual):
+
     def __init__(
-        self, 
-        *args, 
-        root_dir: str, 
-        trial_name: Optional[str] = None, 
+        self,
+        *args,
+        root_dir: str,
+        trial_name: Optional[str] = None,
         suffix: str = '',
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self._root_dir = Path(root_dir)
-        self._trial_name = datetime.now().strftime("%Y%m%dT%H%M%S%f") if trial_name is None else trial_name
+        self._trial_name = (
+            datetime.now().strftime("%Y%m%dT%H%M%S%f")
+            if trial_name is None else trial_name
+        )
         self._suffix = suffix
 
         visual_dir = self._root_dir / self._trial_name
@@ -49,6 +52,7 @@ class BaseSaver(Generic[T], BaseVisual):
 
 @VISUALS.register_module()
 class CV2Saver(BaseSaver[np.ndarray]):
+
     def __init__(self, *args, suffix: str = '', **kwargs):
         super().__init__(*args, suffix=suffix + '.png', **kwargs)
 

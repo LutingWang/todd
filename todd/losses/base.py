@@ -3,14 +3,16 @@ from typing import Literal, Optional
 from mmcv.runner import BaseModule
 import torch
 
-
 Reduction = Literal['none', 'mean', 'sum', 'prod']
 
 
 class BaseLoss(BaseModule):
+
     def __init__(
-        self, reduction: Reduction = 'mean', 
-        weight: float = 1.0, **kwargs,
+        self,
+        reduction: Reduction = 'mean',
+        weight: float = 1.0,
+        **kwargs,
     ):
         super().__init__(**kwargs)
         self._reduction = reduction
@@ -21,7 +23,9 @@ class BaseLoss(BaseModule):
         return self._reduction
 
     def reduce(
-        self, loss: torch.Tensor, mask: Optional[torch.Tensor] = None,
+        self,
+        loss: torch.Tensor,
+        mask: Optional[torch.Tensor] = None,
     ) -> torch.Tensor:
         if mask is not None:
             loss = loss * mask

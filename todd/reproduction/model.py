@@ -45,15 +45,30 @@ class EvalMode(Enum):
             return model
         # TODO: refactor
         modules = (
-            model.modules() if self == EvalMode.DETERMINISTIC else 
+            model.modules() if self == EvalMode.DETERMINISTIC else
             (getattr_recur(model, module) for module in kwargs['modules'])
         )
         if self != EvalMode.PARTIAL:
-            sms = kwargs.get('stochastic_module_types', DEFAULT_STOCHASTIC_MODULE_TYPES)
-            if self in [EvalMode.DETERMINISTIC, EvalMode.PARTIALLY_DETERMINISTIC]:
-                modules = (module for module in modules if any(isinstance(module, sm) for sm in sms))
+            sms = kwargs.get(
+                'stochastic_module_types',
+                DEFAULT_STOCHASTIC_MODULE_TYPES,
+            )
+            if self in [
+                EvalMode.DETERMINISTIC,
+                EvalMode.PARTIALLY_DETERMINISTIC,
+            ]:
+                modules = (
+                    module for module in modules
+                    if any(isinstance(module, sm) for sm in sms)
+                )
             elif self == EvalMode.DETERMINISTIC_AND_PARTIAL:
-                modules = itertools.chain(modules, (module for module in model.modules() if any(isinstance(module, sm) for sm in sms)))
+                modules = itertools.chain(
+                    modules,
+                    (
+                        module for module in model.modules()
+                        if any(isinstance(module, sm) for sm in sms)
+                    ),
+                )
             else:
                 raise NotImplementedError(f'EvalMode {self} not implemented')
         for module in modules:
@@ -62,7 +77,7 @@ class EvalMode(Enum):
 
 
 def freeze_model(
-    model: nn.Module, 
+    model: nn.Module,
     no_grad: Optional[dict] = ...,  # type: ignore[assignment]
     eval_: Optional[dict] = ...,  # type: ignore[assignment]
 ) -> nn.Module:
@@ -84,9 +99,10 @@ def freeze_model(
 
 
 class FrozenMixin(nn.Module):
+
     def __init__(
-        self, 
-        *args, 
+        self,
+        *args,
         freeze_cfg: Optional[dict] = None,
         **kwargs,
     ):
@@ -101,4 +117,3 @@ class FrozenMixin(nn.Module):
         if hasattr(self, '_eval_cfg'):
             freeze_model(self, no_grad=None, eval_=self._eval_cfg)
         return result
-    

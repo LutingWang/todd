@@ -9,20 +9,28 @@ from .builder import LOSSES
 
 
 class FunctionalLoss(BaseLoss):
+
     @staticmethod
     @abstractmethod
     def func(*args, **kwargs) -> torch.Tensor:
         pass
 
     def forward(
-        self, 
-        pred: torch.Tensor, 
-        target: torch.Tensor, 
+        self,
+        pred: torch.Tensor,
+        target: torch.Tensor,
         mask: Optional[torch.Tensor] = None,
-        *args, **kwargs,
+        *args,
+        **kwargs,
     ) -> torch.Tensor:
         if mask is None:
-            loss = self.func(pred, target, *args, reduction=self.reduction, **kwargs)
+            loss = self.func(
+                pred,
+                target,
+                *args,
+                reduction=self.reduction,
+                **kwargs,
+            )
         else:
             loss = self.func(pred, target, *args, reduction='none', **kwargs)
             loss = self.reduce(loss, mask)
@@ -31,12 +39,14 @@ class FunctionalLoss(BaseLoss):
 
 # TODO: move to mimic.py
 class _2DMixin(FunctionalLoss):
+
     def forward(
-        self, 
-        pred: torch.Tensor, 
-        target: torch.Tensor, 
+        self,
+        pred: torch.Tensor,
+        target: torch.Tensor,
         mask: Optional[torch.Tensor] = None,
-        *args, **kwargs,
+        *args,
+        **kwargs,
     ) -> torch.Tensor:
         _, _, h, w = pred.shape
         if pred.shape != target.shape:
@@ -47,15 +57,17 @@ class _2DMixin(FunctionalLoss):
 
 
 class NormMixin(FunctionalLoss):
+
     def __init__(self, *args, norm: bool = False, **kwargs):
         super().__init__(*args, **kwargs)
         self._norm = norm
 
     def forward(
-        self, 
-        pred: torch.Tensor, 
-        target: torch.Tensor, 
-        *args, **kwargs,
+        self,
+        pred: torch.Tensor,
+        target: torch.Tensor,
+        *args,
+        **kwargs,
     ) -> torch.Tensor:
         if self._norm:
             pred = F.normalize(pred)
@@ -65,6 +77,7 @@ class NormMixin(FunctionalLoss):
 
 @LOSSES.register_module()
 class L1Loss(NormMixin, FunctionalLoss):
+
     @staticmethod
     def func(*args, **kwargs) -> torch.Tensor:
         return F.l1_loss(*args, **kwargs)
@@ -77,6 +90,7 @@ class L12DLoss(_2DMixin, L1Loss):
 
 @LOSSES.register_module()
 class MSELoss(NormMixin, FunctionalLoss):
+
     @staticmethod
     def func(*args, **kwargs) -> torch.Tensor:
         return F.mse_loss(*args, **kwargs)
@@ -89,6 +103,7 @@ class MSE2DLoss(_2DMixin, MSELoss):
 
 @LOSSES.register_module()
 class BCELoss(FunctionalLoss):
+
     @staticmethod
     def func(*args, **kwargs) -> torch.Tensor:
         return F.binary_cross_entropy(*args, **kwargs)
@@ -96,6 +111,7 @@ class BCELoss(FunctionalLoss):
 
 @LOSSES.register_module()
 class BCEWithLogitsLoss(FunctionalLoss):
+
     @staticmethod
     def func(*args, **kwargs) -> torch.Tensor:
         return F.binary_cross_entropy_with_logits(*args, **kwargs)

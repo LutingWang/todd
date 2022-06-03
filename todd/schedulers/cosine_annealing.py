@@ -9,9 +9,14 @@ from .builder import SCHEDULERS
 
 @SCHEDULERS.register_module()
 class CosineAnnealingScheduler(BaseScheduler):
+
     def __init__(
-        self, *args, T: int, T_mult: int = 1, 
-        T_max: Optional[int] = None, **kwargs,
+        self,
+        *args,
+        T: int,
+        T_mult: int = 1,
+        T_max: Optional[int] = None,
+        **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self._last_iter = 0

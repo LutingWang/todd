@@ -1,6 +1,5 @@
 from todd.logger import get_logger
 
-
 _iter = None
 
 

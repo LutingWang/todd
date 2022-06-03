@@ -5,7 +5,6 @@ import torch
 
 from ..adapts import AdaptLayer, AdaptModuleList
 
-
 LOSSES = Registry('losses')
 
 
@@ -17,8 +16,10 @@ class LossModuleList(AdaptModuleList):
     LAYER_TYPE = LossLayer
 
     def forward(self, *args, **kwargs) -> Dict[str, torch.Tensor]:
+        # yapf: disable
         losses = super().forward(  # type: ignore[misc]
             *args, inplace=False, **kwargs,
         )
+        # yapf: enable
         losses = {f'loss_{k}': v for k, v in losses.items()}
         return losses

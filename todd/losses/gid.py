@@ -10,7 +10,6 @@
 # from .base import BaseLoss
 # from .builder import LOSSES
 
-
 # @LOSSES.register_module()
 # class GIDLoss(BaseLoss):
 #     def __init__(self, *args, **kwargs):
@@ -405,7 +404,7 @@
 #             te_box_features,
 #             reduction="sum",
 #         ) / max(1, st_box_features.shape[0] * st_box_features.shape[2] * st_box_features.shape[3]) * self.distill_weight
-        
+
 #         return st_box_features,te_box_features,distill_loss
 
 #     def get_GI_instance_mask(self, anchors, proposals):
@@ -586,7 +585,6 @@
 #         images = ImageList.from_tensors(images,
 #                                         self.backbone.size_divisibility)
 #         return images
-
 
 # class RetinaNetHead(nn.Module):
 #     """

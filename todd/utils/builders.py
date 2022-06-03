@@ -3,7 +3,6 @@ from typing import Any, Callable, Tuple, Type, TypeVar, Union
 from mmcv.runner import BaseModule
 from mmcv.utils import Registry
 
-
 T = TypeVar('T')
 
 
@@ -13,7 +12,10 @@ def build(cls, cfg, **kwargs) -> BaseModule:
     return module
 
 
-def build_metas(name: str, base: Type[T]) -> Tuple[Registry, Callable[[Union[T, dict]], T]]:
+def build_metas(
+    name: str,
+    base: Type[T],
+) -> Tuple[Registry, Callable[[Union[T, dict]], T]]:
     registry = Registry(name)
 
     def build_func(cfg: Union[T, dict]) -> T:

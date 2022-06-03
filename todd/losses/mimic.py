@@ -16,12 +16,14 @@ from .functional import MSE2DLoss
 
 @LOSSES.register_module()
 class FGFILoss(MSE2DLoss):
+
     def forward(  # type: ignore[override]
-        self, 
-        pred: torch.Tensor, 
-        target: torch.Tensor, 
-        mask: torch.Tensor, 
-        *args, **kwargs,
+        self,
+        pred: torch.Tensor,
+        target: torch.Tensor,
+        mask: torch.Tensor,
+        *args,
+        **kwargs,
     ) -> torch.Tensor:
         n, _, h, w = pred.shape
         target = F.adaptive_avg_pool2d(target, (h, w))
@@ -32,54 +34,83 @@ class FGFILoss(MSE2DLoss):
         mask = einops.rearrange(mask, 'n 1 h w -> n h w')
 
         return super().forward(  # type: ignore[misc]
-            pred[mask], 
-            target[mask], 
+            pred[mask],
+            target[mask],
             mask=None,
-            *args, **kwargs,
+            *args,
+            **kwargs,
         )
 
 
 @LOSSES.register_module()
 class FGDLoss(MSE2DLoss):
+
     def forward(  # type: ignore[override]
         self,
-        pred: torch.Tensor, target: torch.Tensor,
-        attn_spatial: torch.Tensor, attn_channel: torch.Tensor,
+        pred: torch.Tensor,
+        target: torch.Tensor,
+        attn_spatial: torch.Tensor,
+        attn_channel: torch.Tensor,
         mask: torch.Tensor,
-        *args, **kwargs,
+        *args,
+        **kwargs,
     ) -> torch.Tensor:
         _, _, h, w = pred.shape
         attn_spatial = F.adaptive_avg_pool2d(attn_spatial, (h, w))
         attn_channel = F.adaptive_avg_pool2d(attn_channel, (h, w))
         mask = attn_spatial * attn_channel * mask
         return super().forward(  # type: ignore[misc]
-            pred, target, 
-            mask=mask, 
-            *args, **kwargs,
+            pred,
+            target,
+            mask=mask,
+            *args,
+            **kwargs,
         )
 
 
 @LOSSES.register_module()
 class LabelEncLoss(MSE2DLoss):
-    def __init__(self, *args, num_channels: int, weight: float = 1.0, **kwargs):
-        weight = LinearScheduler(start_value=0, end_value=weight, start_iter=30000, end_iter=30000)
+
+    def __init__(
+        self,
+        *args,
+        num_channels: int,
+        weight: float = 1.0,
+        **kwargs,
+    ):
+        weight = LinearScheduler(
+            start_value=0,
+            end_value=weight,
+            start_iter=30000,
+            end_iter=30000,
+        )
         super().__init__(*args, weight=weight, **kwargs)
 
         norm_cfg = dict(type='GN', num_groups=1, affine=False)
         self._adapt = Sequential(
             ConvModule(num_channels, num_channels, 3, 1, 1),
             ConvModule(num_channels, num_channels, 3, 1, 1),
-            ConvModule(num_channels, num_channels, 3, 1, 1, norm_cfg=norm_cfg, act_cfg=None),
+            ConvModule(
+                num_channels,
+                num_channels,
+                3,
+                1,
+                1,
+                norm_cfg=norm_cfg,
+                act_cfg=None,
+            ),
         )
         self._target_norm: nn.Module = NORM_LAYERS.build(
-            norm_cfg, default_args=dict(num_features=num_channels),
+            norm_cfg,
+            default_args=dict(num_features=num_channels),
         )
- 
+
     def forward(  # type: ignore[override]
-        self, 
-        preds: List[torch.Tensor], 
-        targets: List[torch.Tensor], 
-        *args, **kwargs,
+        self,
+        preds: List[torch.Tensor],
+        targets: List[torch.Tensor],
+        *args,
+        **kwargs,
     ) -> List[torch.Tensor]:
         losses = []
         for pred, target in zip(preds, targets):
@@ -106,7 +137,7 @@ class LabelEncLoss(MSE2DLoss):
 #         weight.masked_fill_(mask, pos_frac)
 #         weight.masked_fill_(~mask, neg_frac)
 #         return weight
-    
+
 #     def iou_mask(self, mask: torch.Tensor, pos_thresh: float = 0.5, index: float = 2) -> torch.Tensor:
 #         """Adjust IoU mask to satisfy `pos_share` requirement.
 

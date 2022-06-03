@@ -10,6 +10,7 @@ from .builder import ADAPTS
 
 
 class Bottleneck(BaseModule):
+
     def __init__(
         self,
         in_channels,
@@ -20,16 +21,29 @@ class Bottleneck(BaseModule):
         super().__init__()
         stride = 2 if downsample else 1
         self._downsample = None if in_channels == out_channels else nn.Conv2d(
-            in_channels, out_channels, kernel_size=1, stride=stride, bias=False,
+            in_channels,
+            out_channels,
+            kernel_size=1,
+            stride=stride,
+            bias=False,
         )
         self._conv1 = nn.Conv2d(
-            in_channels, hidden_channels, kernel_size=1, stride=1,
+            in_channels,
+            hidden_channels,
+            kernel_size=1,
+            stride=1,
         )
         self._conv2 = nn.Conv2d(
-            hidden_channels, hidden_channels, kernel_size=3, stride=stride, padding=1,
+            hidden_channels,
+            hidden_channels,
+            kernel_size=3,
+            stride=stride,
+            padding=1,
         )
         self._conv3 = nn.Conv2d(
-            hidden_channels, out_channels, kernel_size=1,
+            hidden_channels,
+            out_channels,
+            kernel_size=1,
         )
 
     def init_weights(self):
@@ -57,52 +71,70 @@ class Bottleneck(BaseModule):
 
 
 class ResBlock(Sequential):
+
     def __init__(
-        self, 
-        *, 
-        base_channels: int, 
-        expansion: int = 2, 
+        self,
+        *,
+        base_channels: int,
+        expansion: int = 2,
         **kwargs,
     ):
         layer1 = Bottleneck(
-            base_channels * expansion, 
-            base_channels, 
-            base_channels * expansion ** 2, 
+            base_channels * expansion,
+            base_channels,
+            base_channels * expansion**2,
             downsample=True,
         )
         layer2 = Bottleneck(
-            base_channels * expansion ** 2, 
-            base_channels, 
-            base_channels * expansion ** 2,
+            base_channels * expansion**2,
+            base_channels,
+            base_channels * expansion**2,
         )
         super().__init__(layer1, layer2, **kwargs)
 
-    
+
 @ADAPTS.register_module()
 class LabelEncAdapt(BaseAdapt):
+
     def __init__(
-        self, 
-        *args, 
-        num_classes: int = 80, 
+        self,
+        *args,
+        num_classes: int = 80,
         base_channels: int = 32,
         expansion: int = 2,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self._stage1 = nn.Conv2d(
-            num_classes, base_channels * 4, kernel_size=7, stride=2, padding=3,
+            num_classes,
+            base_channels * 4,
+            kernel_size=7,
+            stride=2,
+            padding=3,
         )
         base_channels *= 2
         self._stage2 = Bottleneck(
-            base_channels * 2, base_channels, base_channels * 4, downsample=True,
+            base_channels * 2,
+            base_channels,
+            base_channels * 4,
+            downsample=True,
         )
         base_channels *= 2
-        self._stage3 = ResBlock(base_channels=base_channels, expansion=expansion)
+        self._stage3 = ResBlock(
+            base_channels=base_channels,
+            expansion=expansion,
+        )
         base_channels *= 2
-        self._stage4 = ResBlock(base_channels=base_channels, expansion=expansion)
+        self._stage4 = ResBlock(
+            base_channels=base_channels,
+            expansion=expansion,
+        )
         base_channels *= 2
         self._stage5 = Bottleneck(
-            base_channels * 2, base_channels, base_channels * 4, downsample=True,
+            base_channels * 2,
+            base_channels,
+            base_channels * 4,
+            downsample=True,
         )
 
     def forward(self, x: torch.Tensor) -> List[torch.Tensor]:

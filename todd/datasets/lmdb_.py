@@ -7,22 +7,26 @@ from typing import Any, List, Literal, Optional
 from .base import BaseDataset
 from .builder import DATASETS
 
-
 # TODO: update
 
 
 @DATASETS.register_module()
 class LmdbDataset(BaseDataset[bytes]):
+
     def __init__(
-        self, 
-        *args, 
-        filepath: str, 
-        db: Optional[str] = None, 
+        self,
+        *args,
+        filepath: str,
+        db: Optional[str] = None,
         decoder: Optional[Literal['None', 'pytorch']] = 'pytorch',
         **kwargs,
     ):
-        self._env: lmdb.Environment = lmdb.open(filepath, readonly=True, max_dbs=1)
-        self._db: Optional[lmdb._Database] = None if db is None else self._env.open_db(db.encode())
+        self._env: lmdb.Environment = lmdb.open(
+            filepath, readonly=True, max_dbs=1
+        )
+        self._db: Optional[lmdb._Database] = (  # yapf: disable
+            None if db is None else self._env.open_db(db.encode())
+        )
         self._decoder = decoder
         super().__init__(*args, **kwargs)
 

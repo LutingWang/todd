@@ -6,6 +6,7 @@ from .builder import ADAPTS
 
 @ADAPTS.register_module()
 class Custom(BaseAdapt):
+
     def __init__(self, *args, pattern: str, **kwargs):
         super().__init__(*args, **kwargs)
         self._pattern = pattern

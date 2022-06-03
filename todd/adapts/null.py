@@ -4,6 +4,7 @@ from .builder import ADAPTS
 
 @ADAPTS.register_module()
 class Null(BaseAdapt):
+
     def __init__(self, *args, **kwargs):
         super().__init__()
 

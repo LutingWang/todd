@@ -6,6 +6,7 @@ from .functional import BCELoss, BCEWithLogitsLoss, FunctionalLoss
 
 
 class FocalMixin(FunctionalLoss):
+
     def __init__(
         self,
         *args,
@@ -21,13 +22,17 @@ class FocalMixin(FunctionalLoss):
         self,
         pred: torch.Tensor,
         target: torch.Tensor,
-        *args, **kwargs,
+        *args,
+        **kwargs,
     ) -> torch.Tensor:
         pt = (1 - pred) * target + pred * (1 - target)
         weight = self._alpha * target + (1 - self._alpha) * (1 - target)
         return super().forward(
-            pred, target, weight * pt.pow(self._gamma), 
-            *args, **kwargs,
+            pred,
+            target,
+            weight * pt.pow(self._gamma),
+            *args,
+            **kwargs,
         )
 
 

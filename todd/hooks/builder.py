@@ -11,31 +11,32 @@ from ..utils import getattr_recur
 
 from .base import BaseHook
 
-
 HOOKS = Registry('hooks')
 HookCfg = Union[None, dict, BaseHook]
 
 
 class HookModuleList(List[BaseHook], ModuleList):
-    def __init__(self, hooks: Union[Dict[str, HookCfg], List[HookCfg]], **kwargs):
+
+    def __init__(
+        self,
+        hooks: Union[Dict[str, HookCfg], List[HookCfg]],
+        **kwargs,
+    ):
         if isinstance(hooks, dict):
-            hooks = [
+            hooks = [  # yapf: disable
                 dict(id_=id_, **hook) if isinstance(hook, dict) else hook
                 for id_, hook in hooks.items()
             ]
         hooks = [
             hook if isinstance(hook, BaseHook) else HOOKS.build(hook)
-            for hook in hooks if hook is not None
+            for hook in hooks
+            if hook is not None
         ]
         ModuleList.__init__(self, modules=hooks, **kwargs)
 
     @property
     def tensors(self) -> Dict[str, Any]:
-        return {
-            k: v
-            for hook in self
-            for k, v in hook.tensor.items()
-        }
+        return {k: v for hook in self for k, v in hook.tensor.items()}
 
     def get(self, tensor_name: str, default: Any = None) -> Any:
         for hook in self:
@@ -57,23 +58,26 @@ HookModuleListCfg = Union[Dict[str, HookCfg], List[HookCfg], HookModuleList]
 
 
 class TrackingModuleList(HookModuleList):
+
     def register_hook(self):
         raise NotImplementedError
 
     def register_tensor(self, model: nn.Module):
         for tracking in self:
-            tracking.register_tensor(
-                getattr_recur(model, tracking.path)
-            )
+            tracking.register_tensor(getattr_recur(model, tracking.path))
 
 
 class detach(AbstractContextManager):
-    def __init__(self, hook_modules: Union[HookModuleList, Iterable[HookModuleList]]):
+
+    def __init__(
+        self, hook_modules: Union[HookModuleList, Iterable[HookModuleList]]
+    ):
         if isinstance(hook_modules, HookModuleList):
             hook_modules = [hook_modules]
         self._hook_modules = hook_modules
         self._detach = [
-            [hook._detach for hook in hook_module]  # type: ignore[union-attr]
+            [hook._detach
+             for hook in hook_module]  # type: ignore[union-attr]
             for hook_module in hook_modules
         ]
 

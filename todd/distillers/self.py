@@ -9,15 +9,16 @@ from .builder import DISTILLERS
 
 @DISTILLERS.register_module()
 class SelfDistiller(DecoratorMixin, BaseDistiller):
+
     def __init__(
-        self, 
-        student: nn.Module, 
-        student_hooks: HookModuleListCfg = None, 
-        student_trackings: HookModuleListCfg = None, 
+        self,
+        student: nn.Module,
+        student_hooks: HookModuleListCfg = None,
+        student_trackings: HookModuleListCfg = None,
         weight_transfer: Optional[Dict[str, str]] = None,
         **kwargs,
     ):
-        assert 'hooks' not in kwargs 
+        assert 'hooks' not in kwargs
         assert 'trackings' not in kwargs
 
         hooks = {}
@@ -29,16 +30,16 @@ class SelfDistiller(DecoratorMixin, BaseDistiller):
             trackings[0] = student_trackings
 
         if weight_transfer is not None:
-            weight_transfer = {
-                'models.0.' + k: 'models.0.' + v 
+            weight_transfer = {  # yapf: disable
+                'models.0.' + k: 'models.0.' + v
                 for k, v in weight_transfer.items()
                 if k != '' and v != ''
             }
 
         super().__init__(
-            [student], 
-            hooks=hooks, 
-            trackings=trackings, 
-            weight_transfer=weight_transfer, 
+            [student],
+            hooks=hooks,
+            trackings=trackings,
+            weight_transfer=weight_transfer,
             **kwargs,
         )

@@ -8,6 +8,7 @@ from .teacher import SingleTeacherDistiller
 
 
 class PreprocessedTeacher(BaseModule):
+
     def __init__(self, *args, access_layer: AccessLayerConfig, **kwargs):
         super().__init__(*args, **kwargs)
         self._access_layer = build_access_layer(access_layer)
@@ -23,10 +24,10 @@ class PreprocessedDistiller(SingleTeacherDistiller):
     def __init__(self, *args, teacher_cfg: AccessLayerConfig, **kwargs):
         teacher = PreprocessedTeacher(access_layer=teacher_cfg)
         super().__init__(  # type: ignore[misc]
-            *args, 
-            teacher=teacher, 
+            *args,
+            teacher=teacher,
             teacher_hooks=None,
             teacher_trackings=None,
-            teacher_online=False, 
+            teacher_online=False,
             **kwargs,
         )

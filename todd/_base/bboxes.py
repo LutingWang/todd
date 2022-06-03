@@ -239,7 +239,8 @@ T_XY = TypeVar('T_XY', bound='BBoxesXY')
 
 class BBoxesXY(BBoxes):
     _BBoxType = NamedTuple(
-        '_BBoxType', [('lt', torch.Tensor), ('rb', torch.Tensor)],
+        '_BBoxType',
+        [('lt', torch.Tensor), ('rb', torch.Tensor)],
     )
 
     @property

@@ -6,9 +6,7 @@ from typing import Any, Generic, Type, TypeVar, Union
 
 from torch.utils.data import Dataset
 
-
-from todd.logger import get_logger
-
+from ..logger import get_logger
 
 T = TypeVar('T')
 
@@ -19,14 +17,15 @@ class Codec(Enum):
 
 
 class BaseAccessLayer(MutableMapping, Generic[T]):
+
     def __init__(
-        self, 
-        *args, 
-        data_root: str, 
+        self,
+        *args,
+        data_root: str,
         task_name: str = '',
         codec: Union[str, Codec] = 'pytorch',
         readonly: bool = True,
-        exist_ok: bool = False, 
+        exist_ok: bool = False,
         **kwargs,
     ):
         self._data_root = data_root
@@ -39,9 +38,13 @@ class BaseAccessLayer(MutableMapping, Generic[T]):
         self._init(*args, **kwargs)
 
         if readonly and not self.exists:
-            raise FileNotFoundError(f'{self._data_root} ({self._task_name}) does not exist.')
+            raise FileNotFoundError(
+                f'{self._data_root} ({self._task_name}) does not exist.',
+            )
         if not readonly and self.exists and not exist_ok:
-            raise FileExistsError(f'{self._data_root} ({self._task_name}) already exists.')
+            raise FileExistsError(
+                f'{self._data_root} ({self._task_name}) already exists.',
+            )
         if not readonly and not self.exists:
             self.touch()
 
@@ -66,12 +69,17 @@ class BaseDataset(Dataset, Generic[T]):
         from .builder import ACCESS_LAYERS
 
         super().__init__(*args, **kwargs)
-        self._access_layer = ACCESS_LAYERS.build(access_layer, default_args=dict(type=self.ACCESS_LAYER))
+        self._access_layer = ACCESS_LAYERS.build(
+            access_layer,
+            default_args=dict(type=self.ACCESS_LAYER),
+        )
         self._logger = get_logger()
 
         self._logger.debug("Initializing keys.")
         self._keys = list(self._access_layer.keys())
-        self._logger.debug(f"Keys {reprlib.repr(self._keys)} initialized with length {len(self)}.")
+        self._logger.debug(
+            f"Keys {reprlib.repr(self._keys)} initialized with length {len(self)}.",
+        )
 
     def __len__(self) -> int:
         return len(self._keys)

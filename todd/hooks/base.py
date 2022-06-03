@@ -7,7 +7,14 @@ from ..utils import getattr_recur
 
 
 class BaseHook:
-    def __init__(self, id_: str, path: str, on_input: bool = False, detach: bool = False):
+
+    def __init__(
+        self,
+        id_: str,
+        path: str,
+        on_input: bool = False,
+        detach: bool = False,
+    ):
         self._id = id_
         self._path = path
         self._on_input = on_input

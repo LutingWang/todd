@@ -12,3 +12,4 @@ torchvision
 tqdm
 typing_extensions
 setuptools
+yapf

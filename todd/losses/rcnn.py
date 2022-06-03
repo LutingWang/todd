@@ -12,10 +12,11 @@ from .functional import MSELoss
 
 @LOSSES.register_module()
 class SGFILoss(MSELoss):
+
     def __init__(
-        self, 
-        *args, 
-        in_channels: int = 256, 
+        self,
+        *args,
+        in_channels: int = 256,
         hidden_channels: int = 128,
         out_channels: int = 64,
         **kwargs,
@@ -28,10 +29,11 @@ class SGFILoss(MSELoss):
         self._tau = nn.Parameter(torch.tensor([1.0], dtype=torch.float32))
 
     def forward(  # type: ignore[override]
-        self, 
+        self,
         preds: List[torch.Tensor],
         targets: torch.Tensor,
-        *args, **kwargs,
+        *args,
+        **kwargs,
     ):
         """Re-implementation of G-DetKD.
 
@@ -51,28 +53,43 @@ class SGFILoss(MSELoss):
         embed_pred = self._embed(embed_pred)
         embed_target = self._embed(targets)
 
-        embed_pred = einops.rearrange(embed_pred, '(l r) out_channels 1 1 -> l r out_channels', l=l)
-        embed_target = einops.rearrange(embed_target, 'r out_channels 1 1 -> r out_channels')
-        similarity = torch.einsum('l r c, r c -> l r', embed_pred, embed_target)
+        embed_pred = einops.rearrange(
+            embed_pred,
+            '(l r) out_channels 1 1 -> l r out_channels',
+            l=l,
+        )
+        embed_target = einops.rearrange(
+            embed_target,
+            'r out_channels 1 1 -> r out_channels',
+        )
+        similarity = torch.einsum(
+            'l r c, r c -> l r',
+            embed_pred,
+            embed_target,
+        )
         similarity = F.softmax(similarity / self._tau, dim=1)
 
-        fused_pred = torch.einsum('l r c h w, l r -> r c h w', fused_preds, similarity)
+        fused_pred = torch.einsum(
+            'l r c h w, l r -> r c h w',
+            fused_preds,
+            similarity,
+        )
         return super().forward(fused_pred, targets, *args, **kwargs)
 
 
 # @LOSSES.register_module()
 # class DevRCNNLoss(MSELoss):
 #     def __init__(
-#         self, 
-#         *args, 
-#         pred_features: int = 256, 
+#         self,
+#         *args,
+#         pred_features: int = 256,
 #         target_features: int = 1024,
 #         **kwargs,
 #     ):
 #         super().__init__(*args, **kwargs)
 #         self._adapt: Callable[..., torch.Tensor] = nn.Linear(
-#             in_features=pred_features, 
-#             out_features=target_features, 
+#             in_features=pred_features,
+#             out_features=target_features,
 #             bias=False,
 #         )
 #         self._tau = nn.Parameter(torch.FloatTensor(data=[1]))

@@ -8,11 +8,12 @@ from .attrs import getattr_recur
 
 
 class ModelLoader:
+
     @staticmethod
     def load_mmlab_models(
         registry: Registry,
-        config: str, 
-        config_options: Optional[str] = None, 
+        config: str,
+        config_options: Optional[str] = None,
         ckpt: Optional[str] = None,
     ) -> BaseModule:
         config_dict = mmcv.Config.fromfile(config)
@@ -27,7 +28,9 @@ class ModelLoader:
     @staticmethod
     def load_state_dict(target: BaseModule, source: BaseModule):
         state_dict = source.state_dict()
-        missing_keys, unexpected_keys = target.load_state_dict(state_dict, strict=False)
+        missing_keys, unexpected_keys = target.load_state_dict(
+            state_dict, strict=False,
+        )
         if len(missing_keys) > 0 or len(unexpected_keys) > 0:
             print(missing_keys, unexpected_keys)  # TODO: enrich output
         target._is_init = True

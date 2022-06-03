@@ -8,11 +8,11 @@ from .builder import HOOKS
 
 @HOOKS.register_module()
 class MultiTensorsHook(BaseHook):
+
     def __init__(self, tensor_names: List[str], *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._id_tensor_names = [
-            f'{self.id_}_{tensor_name}' 
-            for tensor_name in tensor_names
+            f'{self.id_}_{tensor_name}' for tensor_name in tensor_names
         ]
 
     @property

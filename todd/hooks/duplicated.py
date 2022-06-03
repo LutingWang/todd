@@ -8,10 +8,13 @@ from .standard import StandardHook
 
 @HOOKS.register_module()
 class DuplicatedHook(StandardHook):
+
     def __init__(self, *args, num: int = 1, **kwargs):
         super().__init__(*args, **kwargs)
         self._num = num
 
     @property
-    def tensor(self) -> Dict[str, List[torch.Tensor]]:  # type: ignore[override]
+    def tensor(
+        self,
+    ) -> Dict[str, List[torch.Tensor]]:  # type: ignore[override]
         return {self.id_: [self._tensor] * self._num}

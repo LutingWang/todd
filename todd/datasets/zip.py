@@ -12,11 +12,15 @@ from .builder import ACCESS_LAYERS, DATASETS
 
 @ACCESS_LAYERS.register_module()
 class ZipAccessLayer(BaseAccessLayer[str]):
+
     def _init(self):
         assert self._readonly, 'ZipAccessLayer is read-only.'
         assert self._codec is Codec.PYTORCH, 'ZipAccessLayer only supports PyTorch.'
         data_root_parts = Path(self._data_root).parts
-        zip_indices = [i for i, part in enumerate(data_root_parts) if part.endswith('.zip')]
+        zip_indices = [  # yapf: disable
+            i for i, part in enumerate(data_root_parts)
+            if part.endswith('.zip')
+        ]
         if len(zip_indices) == 0:
             raise ValueError(f'{self._data_root} does not contain a zip file.')
         elif len(zip_indices) > 1:
@@ -24,7 +28,11 @@ class ZipAccessLayer(BaseAccessLayer[str]):
         zip_index = zip_indices[0]
         self._zip_root = zipfile.Path(
             os.path.join(*data_root_parts[:zip_index + 1]),
-            os.path.join(*data_root_parts[zip_index + 1:], self._task_name, ''),
+            os.path.join(
+                *data_root_parts[zip_index + 1:],
+                self._task_name,
+                '',
+            ),
         )
 
     @property

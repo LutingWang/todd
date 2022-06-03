@@ -5,10 +5,11 @@ from mmcv.runner import BaseModule
 
 from ..utils import CollectionTensor, get_iter
 
-
 # TODO: reimplement as descriptors
 
+
 class BaseScheduler(BaseModule):
+
     @abstractproperty
     def value(self) -> float:
         pass
@@ -34,9 +35,10 @@ class BaseScheduler(BaseModule):
 
 
 class IntervalScheduler(BaseScheduler):
+
     def __init__(
-        self, 
-        *, 
+        self,
+        *,
         start_value: float,
         end_value: float,
         start_iter: int = 0,
@@ -50,8 +52,8 @@ class IntervalScheduler(BaseScheduler):
 
     @abstractmethod
     def _weight(
-        self, 
-        cur_iter: int, 
+        self,
+        cur_iter: int,
         total_iter: float,  # may be float('inf')
     ) -> float:
         pass
@@ -63,7 +65,9 @@ class IntervalScheduler(BaseScheduler):
         if get_iter() >= self._end_iter:
             return self._end_value
         weight = self._weight(
-            get_iter() - self._start_iter, 
+            get_iter() - self._start_iter,
             self._end_iter - self._start_iter,
         )
-        return weight * (self._end_value - self._start_value) + self._start_value
+        return (
+            weight * (self._end_value - self._start_value) + self._start_value
+        )

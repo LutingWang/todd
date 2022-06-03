@@ -2,7 +2,6 @@ from mmcv.utils import Registry
 
 from ..adapts import AdaptLayer, AdaptModuleList
 
-
 SCHEDULERS = Registry('schedulers')
 
 

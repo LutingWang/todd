@@ -24,7 +24,14 @@ def setattr_recur(obj: Any, attr: str, value: Any, allow_list: bool = False):
 
 
 class setattr_temp(AbstractContextManager):
-    def __init__(self, obj: Any, attr: str, value: Any, allow_list: bool = False):
+
+    def __init__(
+        self,
+        obj: Any,
+        attr: str,
+        value: Any,
+        allow_list: bool = False,
+    ):
         self._obj = obj
         self._attr = attr
         self._value = value

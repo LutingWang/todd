@@ -8,6 +8,7 @@ from .builder import HOOKS
 
 @HOOKS.register_module()
 class MultiCallsHook(BaseHook):
+
     @property
     def tensor(self) -> Dict[str, List[torch.Tensor]]:
         return {self.id_: self._tensors}

@@ -10,9 +10,10 @@ from .builder import ADAPTS
 
 
 class MultiLevelMask:
+
     def __init__(
         self,
-        *args, 
+        *args,
         strides: List[int],
         ceil_mode: bool = False,
         **kwargs,
@@ -32,18 +33,20 @@ class MultiLevelMask:
 
     @abstractmethod
     def _forward(
-        self, 
-        shape: Tuple[int, int], 
-        bboxes: List[torch.Tensor], 
-        *args, **kwargs,
+        self,
+        shape: Tuple[int, int],
+        bboxes: List[torch.Tensor],
+        *args,
+        **kwargs,
     ) -> torch.Tensor:
         pass
 
     def forward(
-        self, 
-        shape: Tuple[int, int], 
+        self,
+        shape: Tuple[int, int],
         bboxes: List[torch.Tensor],
-        *args, **kwargs,
+        *args,
+        **kwargs,
     ) -> List[torch.Tensor]:
         """
         Args:
@@ -58,30 +61,36 @@ class MultiLevelMask:
         for stride in self._strides:
             level_shape = (self._div(h, stride), self._div(w, stride))
             level_bboxes = [bbox / stride for bbox in bboxes]
-            mask = self._forward(level_shape, level_bboxes, *args, **kwargs) 
+            mask = self._forward(level_shape, level_bboxes, *args, **kwargs)
             masks.append(mask)
         return masks
 
 
 class SingleLevelMask(MultiLevelMask):
+
     def __init__(self, *args, stride: int, **kwargs):
         super().__init__(*args, strides=[stride], **kwargs)
-    
+
     @property
     def stride(self) -> int:
         return self.strides[0]
 
-    def forward(self, *args, **kwargs) -> torch.Tensor:  # type: ignore[override]
+    def forward(
+        self,
+        *args,
+        **kwargs,
+    ) -> torch.Tensor:  # type: ignore[override]
         masks = super().forward(*args, **kwargs)
         return masks[0]
-    
+
 
 @ADAPTS.register_module()
 class LabelEncMask(BaseAdapt):
+
     def __init__(
-        self, 
-        *args, 
-        num_classes: int = 80, 
+        self,
+        *args,
+        num_classes: int = 80,
         aug: bool = True,
         **kwargs,
     ):
@@ -90,8 +99,8 @@ class LabelEncMask(BaseAdapt):
         self._aug = aug
 
     def _mask(
-        self, 
-        shape: Tuple[int, int], 
+        self,
+        shape: Tuple[int, int],
         bboxes: torch.Tensor,
         labels: torch.Tensor,
     ) -> torch.Tensor:
@@ -105,17 +114,20 @@ class LabelEncMask(BaseAdapt):
             mask: k x h x w
         """
         masks = bboxes.new_zeros(self._num_classes, *shape)
-        bboxes = torch.cat([
-            bboxes[:, 2:] - bboxes[:, :2], 
-            (bboxes[:, :2] + bboxes[:, 2:]) / 2,
-        ], dim=-1)
+        bboxes = torch.cat(
+            [
+                bboxes[:, 2:] - bboxes[:, :2],
+                (bboxes[:, :2] + bboxes[:, 2:]) / 2
+            ],
+            dim=-1,
+        )
         y, x = torch.meshgrid(
             torch.arange(0, shape[0], dtype=torch.float, device=bboxes.device),
             torch.arange(0, shape[1], dtype=torch.float, device=bboxes.device),
         )
         for (w, h, cx, cy), label in zip(bboxes.tolist(), labels.tolist()):
             value = torch.max(
-                torch.abs(x - cx) / w, 
+                torch.abs(x - cx) / w,
                 torch.abs(y - cy) / h,
             )
             value = (1 - value) * (value < 0.5)
@@ -126,9 +138,9 @@ class LabelEncMask(BaseAdapt):
         return masks
 
     def forward(
-        self, 
-        shape: Tuple[int, int], 
-        bboxes: List[torch.Tensor], 
+        self,
+        shape: Tuple[int, int],
+        bboxes: List[torch.Tensor],
         labels: List[torch.Tensor],
     ) -> torch.Tensor:
         """
@@ -140,16 +152,20 @@ class LabelEncMask(BaseAdapt):
         Returns:
             masks: n x k x h x w
         """
-        masks = [self._mask(shape, bbox, label) for bbox, label in zip(bboxes, labels)]
+        masks = [  # yapf: disable
+            self._mask(shape, bbox, label)
+            for bbox, label in zip(bboxes, labels)
+        ]
         return torch.stack(masks)
 
 
 @ADAPTS.register_module()
 class DeFeatMask(MultiLevelMask, BaseAdapt):
+
     def __init__(
-        self, 
-        *args, 
-        neg_gain: float = 4, 
+        self,
+        *args,
+        neg_gain: float = 4,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
@@ -164,7 +180,11 @@ class DeFeatMask(MultiLevelMask, BaseAdapt):
         Returns:
             normalized_masks: n x 1 x h x w
         """
-        values = einops.reduce(masks, 'n 1 h w -> n 1 1 1', reduction='sum').clamp_min_(1)
+        values = einops.reduce(
+            masks,
+            'n 1 h w -> n 1 1 1',
+            reduction='sum',
+        ).clamp_min_(1)
         normalized_masks = torch.true_divide(masks, values)
         return normalized_masks
 
@@ -175,8 +195,8 @@ class DeFeatMask(MultiLevelMask, BaseAdapt):
         return self._normalize(masks)
 
     def _mask(
-        self, 
-        shape: Tuple[int, int], 
+        self,
+        shape: Tuple[int, int],
         bboxes: torch.Tensor,
     ) -> torch.Tensor:
         """
@@ -193,10 +213,11 @@ class DeFeatMask(MultiLevelMask, BaseAdapt):
         return mask
 
     def _forward(
-        self, 
-        shape: Tuple[int, int], 
-        bboxes: List[torch.Tensor], 
-        *args, **kwargs,
+        self,
+        shape: Tuple[int, int],
+        bboxes: List[torch.Tensor],
+        *args,
+        **kwargs,
     ) -> torch.Tensor:
         """
         Args:
@@ -216,12 +237,13 @@ class DeFeatMask(MultiLevelMask, BaseAdapt):
 
 @ADAPTS.register_module()
 class FGDMask(DeFeatMask):
+
     def _normalize_pos(self, masks: torch.Tensor) -> torch.Tensor:
         return masks
 
     def _mask(
-        self, 
-        shape: Tuple[int, int], 
+        self,
+        shape: Tuple[int, int],
         bboxes: torch.Tensor,
     ) -> torch.Tensor:
         """
@@ -234,7 +256,10 @@ class FGDMask(DeFeatMask):
         """
         mask = bboxes.new_zeros(shape)
         bboxes = bboxes.int()
-        values = torch.true_divide(1.0, (bboxes[:, 2:] - bboxes[:, :2] + 2).prod(1))
+        values = torch.true_divide(
+            1.0,
+            (bboxes[:, 2:] - bboxes[:, :2] + 2).prod(1),
+        )
         for i, (x0, y0, x1, y1) in enumerate(bboxes.tolist()):
             area = mask[y0:y1 + 2, x0:x1 + 2]
             torch.maximum(area, values[i], out=area)
@@ -243,6 +268,7 @@ class FGDMask(DeFeatMask):
 
 @ADAPTS.register_module()
 class FGFIMask(BaseAdapt):
+
     def __init__(self, *args, thresh: float = 0.5, **kwargs):
         super().__init__(*args, **kwargs)
         self._thresh = thresh
@@ -255,7 +281,11 @@ class FGFIMask(BaseAdapt):
         Returns:
             mask: h x w
         """
-        thresh = einops.reduce(ious, 'h w k m -> 1 1 1 m', reduction='max') * self._thresh
+        thresh = einops.reduce(
+            ious,
+            'h w k m -> 1 1 1 m',
+            reduction='max',
+        ) * self._thresh
         mask = einops.reduce(ious > thresh, 'h w k m -> h w', reduction='max')
         return mask
 
@@ -302,6 +332,7 @@ class FGFIMask(BaseAdapt):
 
 @ADAPTS.register_module()
 class FRSMask(BaseAdapt):
+
     def __init__(self, *args, with_logits: bool = True, **kwargs):
         super().__init__(*args, **kwargs)
         self._with_logits = with_logits

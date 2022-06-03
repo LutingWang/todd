@@ -12,7 +12,7 @@ from .builder import VISUALS
 
 @VISUALS.register_module()
 class AnnotationVisual(BaseVisual):
-    PALETTE = [
+    PALETTE = [  # yapf: disable
         (106,   0, 228), (119,  11,  32), (165,  42,  42), (  0,   0, 192),
         (197, 226, 255), (  0,  60, 100), (  0,   0, 142), (255,  77, 255),
         (153,  69,   1), (120, 166, 157), (  0, 182, 199), (  0, 226, 252),
@@ -30,16 +30,16 @@ class AnnotationVisual(BaseVisual):
     #     (255, 179, 240), (  0, 125,  92), (209,   0, 151), (188, 208, 182),
     #     (  0, 220, 176), (255,  99, 164), ( 92,   0,  73), (133, 129, 255),
     #     ( 78, 180, 255), (  0, 228,   0), (174, 255, 243), ( 45,  89, 255),
-    #     (134, 134, 103), (145, 148, 174), (255, 208, 186), (197, 226, 255), 
-    #     (171, 134,   1), (109,  63,  54), (207, 138, 255), (151,   0,  95), 
-    #     (  9,  80,  61), ( 84, 105,  51), ( 74,  65, 105), (166, 196, 102), 
-    #     (208, 195, 210), (255, 109,  65), (  0, 143, 149), (179,   0, 194), 
-    #     (209,  99, 106), (  5, 121,   0), (227, 255, 205), (147, 186, 208), 
-    #     (153,  69,   1), (  3,  95, 161), (163, 255,   0), (119,   0, 170), 
-    #     (  0, 182, 199), (  0, 165, 120), (183, 130,  88), ( 95,  32,   0), 
-    #     (130, 114, 135), (110, 129, 133), (166,  74, 118), (219, 142, 185), 
-    #     ( 79, 210, 114), (178,  90,  62), ( 65,  70,  15), (127, 167, 115), 
-    #     ( 59, 105, 106), (142, 108,  45), (196, 172,   0), ( 95,  54,  80), 
+    #     (134, 134, 103), (145, 148, 174), (255, 208, 186), (197, 226, 255),
+    #     (171, 134,   1), (109,  63,  54), (207, 138, 255), (151,   0,  95),
+    #     (  9,  80,  61), ( 84, 105,  51), ( 74,  65, 105), (166, 196, 102),
+    #     (208, 195, 210), (255, 109,  65), (  0, 143, 149), (179,   0, 194),
+    #     (209,  99, 106), (  5, 121,   0), (227, 255, 205), (147, 186, 208),
+    #     (153,  69,   1), (  3,  95, 161), (163, 255,   0), (119,   0, 170),
+    #     (  0, 182, 199), (  0, 165, 120), (183, 130,  88), ( 95,  32,   0),
+    #     (130, 114, 135), (110, 129, 133), (166,  74, 118), (219, 142, 185),
+    #     ( 79, 210, 114), (178,  90,  62), ( 65,  70,  15), (127, 167, 115),
+    #     ( 59, 105, 106), (142, 108,  45), (196, 172,   0), ( 95,  54,  80),
     #     (128,  76, 255), (201,  57,   1), (246,   0, 122), (191, 162, 208),
     # ]
 
@@ -48,10 +48,10 @@ class AnnotationVisual(BaseVisual):
         return self.PALETTE[index]
 
     def forward(
-        self, 
-        images: List[np.ndarray], 
-        bboxes: List[np.ndarray], 
-        classes: List[np.ndarray], 
+        self,
+        images: List[np.ndarray],
+        bboxes: List[np.ndarray],
+        classes: List[np.ndarray],
         class_names: Optional[List[str]] = None,
     ) -> List[np.ndarray]:
         """Annotation visualizer.
@@ -67,10 +67,15 @@ class AnnotationVisual(BaseVisual):
             for (l, t, r, b), c in zip(bbox.tolist(), class_.tolist()):
                 color = self.get_palette(c)
                 cv2.rectangle(image, (l, t), (r, b), color, thickness=1)
-                class_name = class_names[c] if class_names is not None else str(c)
+                class_name = (
+                    str(c) if class_names is None else class_names[c]
+                )
                 cv2.putText(
-                    image, text=class_name, org=(l, t),
-                    fontFace=cv2.FONT_HERSHEY_COMPLEX, fontScale=0.5, 
+                    image,
+                    text=class_name,
+                    org=(l, t),
+                    fontFace=cv2.FONT_HERSHEY_COMPLEX,
+                    fontScale=0.5,
                     color=color,
                 )
             results.append(image)

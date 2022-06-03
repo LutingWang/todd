@@ -4,7 +4,6 @@ import getpass
 import os
 import socket
 
-
 _logger_initialized = False
 
 
@@ -18,10 +17,12 @@ def get_logger(log_file: Optional[str] = None, level: str = 'DEBUG'):
         logger.setLevel(getattr(logging, level))
         worker_pid = f"{getpass.getuser()}@{socket.gethostname()}:{os.getpid()}"
         formatter = logging.Formatter(
-            fmt=(
+            fmt=(  # yapf: disable
                 f"[{worker_pid:s}][%(asctime)s]"
                 f"[%(filename)s:%(funcName)s:%(lineno)d] "
-                + SGR.format("%(name)s %(levelname)s:", sgr=(SGR.BOLD, SGR.FG_BLUE)) + 
+                + SGR.format(
+                    "%(name)s %(levelname)s:", sgr=(SGR.BOLD, SGR.FG_BLUE),
+                ) +
                 f"\n%(message)s"
             ),
             datefmt="%Y-%m-%d %H:%M:%S",

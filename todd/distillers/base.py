@@ -17,11 +17,12 @@ from ..utils import ModelLoader, init_iter, inc_iter, getattr_recur
 
 
 class BaseDistiller(BaseModule):
+
     def __init__(
-        self, 
+        self,
         models: List[nn.Module],
-        hooks: Optional[Dict[int, HookModuleListCfg]] = None, 
-        trackings: Optional[Dict[int, HookModuleListCfg]] = None, 
+        hooks: Optional[Dict[int, HookModuleListCfg]] = None,
+        trackings: Optional[Dict[int, HookModuleListCfg]] = None,
         adapts: Optional[AdaptModuleListCfg] = None,
         visuals: Optional[AdaptModuleListCfg] = None,
         losses: Optional[AdaptModuleListCfg] = None,
@@ -35,15 +36,17 @@ class BaseDistiller(BaseModule):
 
         hooks = {} if hooks is None else hooks
         hook_dict: Dict[int, HookModuleList] = {
-            i: HookModuleList.build(hook) for i, hook in hooks.items()
+            i: HookModuleList.build(hook)
+            for i, hook in hooks.items()
         }
         for i, hook in hook_dict.items():
             hook.register_hook(models[i])
         self._hooks = hook_dict
 
         trackings = {} if trackings is None else trackings
-        tracking_dict: Dict[int, TrackingModuleList] = {
-            i: TrackingModuleList.build(tracking) for i, tracking in trackings.items()
+        tracking_dict: Dict[int, TrackingModuleList] = {  # yapf: disable
+            i: TrackingModuleList.build(tracking)
+            for i, tracking in trackings.items()
         }
         self._trackings = tracking_dict
 
@@ -56,7 +59,9 @@ class BaseDistiller(BaseModule):
         loss_list: LossModuleList = LossModuleList.build(losses)
         self._losses = loss_list
 
-        scheduler_list: SchedulerModuleList = SchedulerModuleList.build(schedulers)
+        scheduler_list: SchedulerModuleList = SchedulerModuleList.build(
+            schedulers,
+        )
         self._schedulers = scheduler_list
 
         init_iter(iter_)
@@ -78,15 +83,18 @@ class BaseDistiller(BaseModule):
                 model._apply(fn)
         return super()._apply(fn)
 
-    def detach_context(self, mode: bool = True) -> contextlib.AbstractContextManager:
+    def detach_context(
+        self,
+        mode: bool = True,
+    ) -> contextlib.AbstractContextManager:
         if mode:
             return DetachHookContext(self._hooks_and_trackings)
         return contextlib.nullcontext()
 
     @property
     def tensors(self) -> Dict[str, Any]:
-        return {
-            k: v 
+        return {  # yapf: disable
+            k: v
             for hook in self._hooks_and_trackings
             for k, v in hook.tensors.items()
         }
@@ -103,7 +111,12 @@ class BaseDistiller(BaseModule):
         for hook in self._hooks.values():
             hook.reset()
 
-    def visualize(self, *args, custom_tensors: Optional[Dict[str, Any]] = None, **kwargs):
+    def visualize(
+        self,
+        *args,
+        custom_tensors: Optional[Dict[str, Any]] = None,
+        **kwargs,
+    ):
         for i, trackings in self._trackings.items():
             trackings.register_tensor(self._models[i])
         tensors = self.tensors
@@ -112,9 +125,9 @@ class BaseDistiller(BaseModule):
         self._visuals(tensors, *args, **kwargs)
 
     def distill(
-        self, 
-        custom_tensors: Optional[Dict[str, torch.Tensor]] = None, 
-        adapt_kwargs: Optional[dict] = None, 
+        self,
+        custom_tensors: Optional[Dict[str, torch.Tensor]] = None,
+        adapt_kwargs: Optional[dict] = None,
         loss_kwargs: Optional[dict] = None,
         debug: bool = False,
     ) -> Dict[str, torch.Tensor]:
@@ -137,20 +150,19 @@ class BaseDistiller(BaseModule):
         self.reset()
 
         if debug:
-            tensors = {
-                f'debug_{k}': v
-                for k, v in tensors.items()
-            }
+            tensors = {f'debug_{k}': v for k, v in tensors.items()}
             return {**losses, **tensors}
         return losses
 
 
 class DecoratorProto(Protocol):
+
     def __init__(self, student: nn.Module, *args, **kwargs) -> None:
         pass
 
 
 class DecoratorMixin:
+
     @classmethod
     def wrap(cls: Type[DecoratorProto]) -> Callable[..., Any]:
 
@@ -158,9 +170,13 @@ class DecoratorMixin:
 
             @functools.wraps(wrapped_cls, updated=())
             class WrapperClass(wrapped_cls):
+
                 def __init__(self, *args, distiller: dict, **kwargs):
                     super().__init__(*args, **kwargs)
-                    self._distiller = cls(self, **distiller)  # type: ignore[call-arg]
+                    self._distiller = cls(
+                        self,
+                        **distiller,
+                    )  # type: ignore[call-arg]
                     if hasattr(self, '_init_with_distiller'):
                         self._init_with_distiller()
 

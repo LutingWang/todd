@@ -12,7 +12,7 @@ from ..logger import get_logger
 from ..utils import DecoratorContextManager, get_iter, iter_initialized
 
 
-def _randint(high: int = 2 ** 30) -> int:
+def _randint(high: int = 2**30) -> int:
     seed = np.random.randint(high)
     rank, world_size = get_dist_info()
     if world_size > 1:
@@ -23,13 +23,13 @@ def _randint(high: int = 2 ** 30) -> int:
 
 
 def init_seed(
-    seed=None, 
+    seed=None,
     deterministic: bool = ...,  # type: ignore[assignment]
 ):
     if seed is None:
         seed = _randint()
     elif isinstance(seed, int):
-        seed %= 2 ** 30
+        seed %= 2**30
     else:
         if not isinstance(seed, bytes):
             seed = str(seed).encode()
@@ -50,13 +50,16 @@ def init_seed(
 
 
 class set_seed_temp(DecoratorContextManager):
+
     def __init__(
-        self, 
-        seed=None, 
+        self,
+        seed=None,
         deterministic: bool = ...,  # type: ignore[assignment]
     ):
         if torch.cuda.device_count() > 1:
-            get_logger().warn("Seeding is not recommended for multi-GPU training.")
+            get_logger().warn(
+                "Seeding is not recommended for multi-GPU training.",
+            )
         self._seed = seed
         self._deterministic = deterministic
 

@@ -26,7 +26,11 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Convert Checkpoints")
     parser.add_argument('ckpt')
     for mode in MatchMode:
-        parser.add_argument(f'--rename-{mode.name.lower()}', nargs='+', action=DictAction)
+        parser.add_argument(
+            f'--rename-{mode.name.lower()}',
+            nargs='+',
+            action=DictAction,
+        )
         parser.add_argument(f'--remove-{mode.name.lower()}', nargs='+')
     parser.add_argument('--out')
     args = parser.parse_args()
@@ -43,8 +47,8 @@ def rename_exact(
 
 
 def rename(
-    state_dict: MutableMapping[str, torch.Tensor], 
-    mapping: Mapping[str, str], 
+    state_dict: MutableMapping[str, torch.Tensor],
+    mapping: Mapping[str, str],
     mode: MatchMode,
 ):
     if mode == MatchMode.EXACT:
@@ -69,7 +73,7 @@ def remove_exact(
 
 
 def remove(
-    state_dict: MutableMapping[str, torch.Tensor], 
+    state_dict: MutableMapping[str, torch.Tensor],
     patterns: Iterable[str],
     mode: MatchMode,
 ):
@@ -90,7 +94,7 @@ def main():
     state_dict = ckpt
     if 'state_dict' in state_dict:
         state_dict = state_dict['state_dict']
-    
+
     if args.out is None:
         args.out = args.ckpt + '.converted'
 
@@ -98,14 +102,14 @@ def main():
         mapping = getattr(args, f'rename_{mode.name.lower()}')
         if mapping is not None:
             rename(state_dict, mapping, mode)
-    
+
     for mode in MatchMode:
         patterns = getattr(args, f'remove_{mode.name.lower()}')
         if patterns is not None:
             remove(state_dict, patterns, mode)
 
     torch.save(state_dict, args.out)
-    
+
 
 if __name__ == '__main__':
     main()

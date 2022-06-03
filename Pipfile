@@ -17,6 +17,7 @@ tqdm = "*"
 pandas = "*"
 timm = "*"
 mypy = "*"
+yapf = "*"
 
 [dev-packages]
 

@@ -35,7 +35,10 @@ class OutputMode(Enum):
                 f.write(diff)
         elif self == OutputMode.BROWSER:
             assert filepath is None
-            with tempfile.NamedTemporaryFile(suffix='.html', delete=False) as f:
+            with tempfile.NamedTemporaryFile(
+                suffix='.html',
+                delete=False,
+            ) as f:
                 f.write(diff.encode('utf-8'))
                 webbrowser.open('file://' + f.name)
 
@@ -64,7 +67,10 @@ def load_config(filepath: str) -> Sequence[str]:
     except Exception as e:
         print(f"Error when loading {filepath}.")
         raise e
-    config = Config(cfg_dict=_sort(config._cfg_dict.to_dict()), filename=filepath)
+    config = Config(
+        cfg_dict=_sort(config._cfg_dict.to_dict()),
+        filename=filepath,
+    )
     return config.dump().split('\n')
 
 
