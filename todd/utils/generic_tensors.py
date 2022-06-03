@@ -1,5 +1,5 @@
 import numbers
-from typing import Callable, Generic, List, Tuple, TypeVar
+from typing import Callable, Generic, Iterable, List, Literal, Tuple, TypeVar, Union
 
 import torch
 
@@ -9,13 +9,13 @@ T = TypeVar('T', torch.Tensor, list, tuple, dict)
 
 class CollectionTensor(Generic[T]):
     @staticmethod
-    def apply(feat: T, op: Callable[[T], T]) -> T:
+    def apply(feat: T, op: Callable[[torch.Tensor], torch.Tensor]) -> T:
         if isinstance(feat, torch.Tensor):
             return op(feat)
         if isinstance(feat, list):
             return [CollectionTensor.apply(f, op) for f in feat]
         if isinstance(feat, tuple):
-            return tuple(CollectionTensor.apply(f, op) for f in feat)
+            return tuple(CollectionTensor.apply(f, op) for f in feat)  # type: ignore[return-value]
         if isinstance(feat, dict):
             return {k: CollectionTensor.apply(v, op) for k, v in feat.items()}
         raise TypeError(f'Unknown type {type(feat)}.')
@@ -53,8 +53,8 @@ class CollectionTensor(Generic[T]):
     def reduce(
         feat: T, 
         tensor_op: Callable[[torch.Tensor], torch.Tensor], 
-        tensors_op: Callable[[List[torch.Tensor]], torch.Tensor],
-    ) -> torch.Tensor:
+        tensors_op: Callable[[Iterable[Union[torch.Tensor, Literal[0]]]], Union[torch.Tensor, Literal[0]]],
+    ) -> Union[torch.Tensor, Literal[0]]:
         if isinstance(feat, torch.Tensor):
             return tensor_op(feat)
         if isinstance(feat, list) or isinstance(feat, tuple):
@@ -70,7 +70,7 @@ class CollectionTensor(Generic[T]):
         raise TypeError(f'Unknown type {type(feat)}.')
 
     @staticmethod
-    def sum(feat: T) -> T:
+    def sum(feat: T) -> Union[torch.Tensor, Literal[0]]:
         return CollectionTensor.reduce(feat, torch.sum, sum)
 
 
@@ -79,16 +79,15 @@ class ListTensor(CollectionTensor[T]):
     def stack(feat: T) -> torch.Tensor:
         if isinstance(feat, torch.Tensor):
             return feat
-        feat = [ListTensor.stack(f) for f in feat]
-        return torch.stack(feat)
+        return torch.stack([ListTensor.stack(f) for f in feat])
     
     @staticmethod
-    def shape(feat: T, depth: int = 0) -> Tuple[int]:
+    def shape(feat: T, depth: int = 0) -> Tuple[int, ...]:
         if isinstance(feat, torch.Tensor):
             return feat.shape[max(depth, 0):]
-        shape = {ListTensor.shape(f, depth - 1) for f in feat}
-        assert len(shape) == 1
-        shape = shape.pop()
+        shapes = {ListTensor.shape(f, depth - 1) for f in feat}
+        assert len(shapes) == 1
+        shape = shapes.pop()
         if depth <= 0:
             shape = (len(feat),) + shape
         return shape
@@ -117,8 +116,8 @@ class ListTensor(CollectionTensor[T]):
             shape = ListTensor.shape(feat, n)
             return ListTensor.new_empty(feat, 0, *shape)
         if n == 0:
-            feat = ListTensor.stack(feat)
-            return feat.unsqueeze(0).repeat(m, *[1] * feat.ndim)
+            indexed_feat = ListTensor.stack(feat)
+            return indexed_feat.unsqueeze(0).repeat(m, *[1] * indexed_feat.ndim)
     
         pos = pos.long()
         if isinstance(feat, torch.Tensor):
