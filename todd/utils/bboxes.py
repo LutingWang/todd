@@ -1,185 +1,353 @@
-from functools import cached_property
-from typing import Any, Optional, Tuple, TypeVar
-import warnings
+from abc import abstractmethod
+from typing import List, NamedTuple, Optional, Sized, Tuple, Type, TypeVar, Union
+import einops
 
 import numpy as np
 import torch
 
 
-def iou(bboxes1: torch.Tensor, bboxes2: Optional[torch.Tensor] = None, eps: float = 1e-6):
-    warnings.warn("iou is deprecated, use BBoxes.ious instead.")
-    return BBoxes(bboxes1).ious(BBoxes(bboxes2), eps)
+T = TypeVar('T', bound='BBoxes')
 
 
-T = TypeVar('T', np.ndarray, torch.Tensor)
-
-
-# TODO: add support for numpy
-class BBoxes:
-    def __init__(self, bboxes: T):
+class BBoxes(Sized):
+    def __init__(self, bboxes: Union[np.ndarray, torch.Tensor]) -> None:
         """
         Args:
             bboxes: * x 4
                 (x1, y1, x2, y2)
         """
+        if isinstance(bboxes, np.ndarray):
+            bboxes = torch.from_numpy(bboxes)
         self._bboxes = bboxes
 
-    def to_tensor(self) -> torch.Tensor:
-        if isinstance(self._bboxes, torch.Tensor):
-            return self._bboxes
-        return torch.as_tensor(self._bboxes)
+    def __len__(self) -> int:
+        return self._bboxes.shape[0]
 
     @property
+    @abstractmethod
+    def left(self) -> torch.Tensor:
+        pass
+
+    @property
+    @abstractmethod
+    def right(self) -> torch.Tensor:
+        pass
+
+    @property
+    @abstractmethod
+    def top(self) -> torch.Tensor:
+        pass
+
+    @property
+    @abstractmethod
+    def bottom(self) -> torch.Tensor:
+        pass
+
+    @property
+    @abstractmethod
+    def width(self) -> torch.Tensor:
+        pass
+
+    @property
+    @abstractmethod
+    def height(self) -> torch.Tensor:
+        pass
+
+    @property
+    @abstractmethod
+    def center_x(self) -> torch.Tensor:
+        pass
+
+    @property
+    @abstractmethod
+    def center_y(self) -> torch.Tensor:
+        pass
+
+    @property
+    @abstractmethod
+    def lt(self) -> torch.Tensor:
+        pass
+
+    @property
+    @abstractmethod
+    def rb(self) -> torch.Tensor:
+        pass
+
+    @property
+    @abstractmethod
+    def wh(self) -> torch.Tensor:
+        pass
+
+    @property
+    @abstractmethod
+    def center(self) -> torch.Tensor:
+        pass
+
+    def to_tensor(self) -> torch.Tensor:
+        return self._bboxes
+
     def empty(self) -> bool:
-        return self._bboxes.shape[0] == 0
+        return len(self) == 0
 
-    @cached_property
-    def shapes(self) -> T:
-        return self._bboxes[..., 2:] - self._bboxes[..., :2]
+    @property
+    def shapes(self) -> torch.Tensor:
+        return self.wh
 
-    @cached_property
-    def areas(self) -> T:
-        return self.shapes[..., 0] * self.shapes[..., 1]
+    @property
+    def areas(self) -> torch.Tensor:
+        return self.width * self.height
 
-    def __add__(self, other: 'BBoxes') -> 'BBoxes':
+    @classmethod
+    def cat(cls: Type[T], a: T, b: T) -> T:
         """
         Args:
-            other: *1 x 4
+            a: *1 x 4
+            b: *2 x 4
         
         Returns:
-            ious: (* + *1) x 4
+            ious: (*1 + *2) x 4
         """
-        assert isinstance(other, self.__class__)
-        bboxes = torch.cat([self.to_tensor(), other.to_tensor()])
-        return self.__class__(bboxes)
+        bboxes = torch.cat([a.to_tensor(), b.to_tensor()])
+        return cls(bboxes)
 
+    def __add__(self: T, other: T) -> T:
+        return self.cat(self, other)
 
-    def __getitem__(self, index: Any) -> 'BBoxes':
-        bboxes = self.to_tensor()
-        return self.__class__(bboxes[index])
-
-    @staticmethod
-    def _xyxy(bboxes: torch.Tensor) -> torch.Tensor:
-        return bboxes.clone()
-
-    def xyxy(self) -> 'BBoxes':
-        bboxes = self._xyxy(self._bboxes)
-        return BBoxes(bboxes)
-
-    @staticmethod
-    def _xywh(bboxes: torch.Tensor) -> torch.Tensor:
-        bboxes = bboxes.clone()
-        bboxes[:, 2:] -= bboxes[:, :2]
-        return bboxes
-
-    def xywh(self) -> 'BBoxesXYWH':
-        bboxes = self._xywh(self._bboxes)
-        return BBoxesXYWH(bboxes)
-
-    @staticmethod
-    def _round(bboxes: torch.Tensor) -> torch.Tensor:
-        bboxes = bboxes.clone()
-        bboxes[:, :2].floor_()
-        bboxes[:, 2:].ceil_()
-        return bboxes
-
-    def round(self) -> 'BBoxes':
-        bboxes = self._round(self._bboxes)
-        return BBoxes(bboxes)
-
-    def intersections(self, other: 'BBoxes') -> torch.Tensor:
+    @classmethod
+    def select(
+        cls: Type[T], 
+        bboxes: T, 
+        indices: Union[
+            int, slice, torch.Tensor, List[int], Tuple[int, ...],
+        ],
+    ) -> T:
         """
         Args:
-            other: *1 x 4
+            bboxes: n x 4
+            indices: m
         
         Returns:
-            intersections: * x *1
+            bboxes: m x 4
         """
-        lt = torch.maximum(  # [*, *1, 2]
-            self._bboxes[:, None, :2],
-            other._bboxes[None, :, :2],
+        return cls(bboxes.to_tensor()[indices])
+
+    def __getitem__(
+        self: T, 
+        indices: Union[
+            int, slice, torch.Tensor, List[int], Tuple[int, ...],
+        ],
+    ) -> T:
+        return self.select(self, indices)
+
+    @classmethod
+    def intersections(cls: Type[T], a: T, b: T) -> torch.Tensor:
+        """
+        Args:
+            a: *1 x 4
+            b: *2 x 4
+        
+        Returns:
+            intersections: *1 x *2
+        """
+        lt = torch.maximum(  # [*1, *2, 2]
+            einops.rearrange('n1 lt -> n1 1 lt', a.lt),
+            einops.rearrange('n2 lt -> 1 n2 lt', b.lt),
         )
-        rb = torch.minimum(  # [*, *1, 2]
-            self._bboxes[:, None, 2:],
-            other._bboxes[None, :, 2:],
+        rb = torch.minimum(  # [*1, *2, 2]
+            einops.rearrange('n1 rb -> n1 1 rb', a.rb),
+            einops.rearrange('n2 rb -> 1 n2 rb', b.rb),
         )
-        wh = (rb - lt).clamp_min_(0)
+        wh = rb - lt
+        wh = wh.clamp_min_(0)
         return wh[..., 0] * wh[..., 1]
 
-    def _unions(self, other: 'BBoxes', intersections: torch.Tensor) -> torch.Tensor:
+    def __and__(self: T, other: T) -> torch.Tensor:
+        return self.intersections(self, other)
+
+    @classmethod
+    def unions(cls: Type[T], a: T, b: T, intersections: Optional[torch.Tensor] = None) -> torch.Tensor:
         """
         Args:
-            other: *1 x 4
-            intersections: * x *1
+            a: *1 x 4
+            b: *2 x 4
+            intersections: *1 x *2
             
         Returns:
-            unions: * x *1
+            unions: *1 x *2
         """
-        area1 = self.areas
-        area2 = other.areas
-        return area1[:, None] + area2[None, :] - intersections
+        if intersections is None:
+            intersections = cls.intersections(a, b)
+        return a.areas[:, None] + b.areas[None, :] - intersections
 
-    def unions(self, other: 'BBoxes') -> torch.Tensor:
+    def __or__(self: T, other: T) -> torch.Tensor:
+        return self.unions(self, other)
+
+    @classmethod
+    def ious(cls: Type[T], a: T, b: T, eps: float = 1e-6) -> torch.Tensor:
         """
         Args:
-            other: *1 x 4
+            a: *1 x 4
+            b: *2 x 4
         
         Returns:
-            unions: * x *1
+            ious: *1 x *2
         """
-        intersections = self.intersections(other)
-        return self._unions(other, intersections)
+        if a.empty() or b.empty():
+            return a.to_tensor().new_empty((len(a), len(b)))
 
-    def ious(self, other: 'BBoxes', eps: float = 1e-6) -> torch.Tensor:
-        """
-        Args:
-            other: *1 x 4
-        
-        Returns:
-            ious: * x *1
-        """
-        if self.empty or other.empty:
-            return self._bboxes.new_empty((self._bboxes.shape[0], other._bboxes.shape[0]))
-
-        intersections = self.intersections(other)
-        unions = self._unions(other, intersections)
-        unions = unions.clamp_min_(eps)
+        intersections = a & b
+        unions = cls.unions(a, b, intersections).clamp_min_(eps)
         ious = intersections / unions
         return ious
 
-    def expand(self, ratio: float, image_shape: Optional[Tuple[int]] = None) -> 'BBoxes':
+    @classmethod
+    @abstractmethod
+    def round(cls: Type[T], bboxes: T) -> T:
+        pass
+
+    @classmethod
+    @abstractmethod
+    def expand(cls: Type[T], bboxes: T, ratio: float, image_shape: Optional[Tuple[int, int]] = None) -> T:
         """
         Args:
-            bboxes: * x 4
-        
+            bboxes: n x 4
+
         Returns:
-            expanded_bboxes: * x 4
+            expanded_bboxes: n x 4
         """
-        offsets = self.shapes * (ratio - 1) / 2
-        bboxes = self._bboxes.clone()
-        bboxes[..., :2] -= offsets
-        bboxes[..., 2:] += offsets
+        pass
 
-        bboxes[..., :2].clamp_min_(0)
+
+T_XY = TypeVar('T_XY', bound='BBoxesXY')
+
+
+class BBoxesXY(BBoxes):
+    _BBoxType = NamedTuple('_BBoxType', [('lt', torch.Tensor), ('rb', torch.Tensor)])
+
+    @property
+    def left(self) -> torch.Tensor:
+        return self._bboxes[:, 0]
+
+    @property
+    def top(self) -> torch.Tensor:
+        return self._bboxes[:, 1]
+
+    @property
+    def lt(self) -> torch.Tensor:
+        return self._bboxes[:, :2]
+
+    def _round(self) -> 'BBoxesXY._BBoxType':
+        lt = self.lt.floor()
+        rb = self.rb.ceil()
+        return self._BBoxType(lt, rb)
+
+    def _expand(self, ratio: float, image_shape: Optional[Tuple[int, int]] = None) -> 'BBoxesXY._BBoxType':
+        offsets = self.wh * (ratio - 1) / 2
+        lt = self.lt - offsets
+        rb = self.rb + offsets
+
+        lt.clamp_min_(0)
         if image_shape is not None:
-            h, w = image_shape
-            bboxes[..., 2].clamp_max_(w)
-            bboxes[..., 3].clamp_max_(h)
+            rb.clamp_max_(torch.as_tensor(image_shape))
         
-        return self.__class__(bboxes)
+        return self._BBoxType(lt, rb)
 
 
-class BBoxesXYWH(BBoxes):
-    def __init__(self, bboxes: torch.Tensor):
-        bboxes = bboxes.clone()
-        bboxes[:, 2:] += bboxes[:, :2]
-        super().__init__(bboxes)
+class BBoxesXYXY(BBoxesXY):
+    @property
+    def right(self) -> torch.Tensor:
+        return self._bboxes[:, 2]
 
-    def to_tensor(self) -> torch.Tensor:
-        bboxes = super().to_tensor()
-        return self._xywh(bboxes)
+    @property
+    def bottom(self) -> torch.Tensor:
+        return self._bboxes[:, 3]
 
-    def round(self) -> 'BBoxesXYWH':
-        bboxes = self._round(self._bboxes)
-        bboxes = self._xywh(bboxes)
-        return BBoxesXYWH(bboxes)
+    @property
+    def width(self) -> torch.Tensor:
+        return self.right - self.left
+
+    @property
+    def height(self) -> torch.Tensor:
+        return self.bottom - self.top
+
+    @property
+    def center_x(self) -> torch.Tensor:
+        return (self.left + self.right) / 2
+
+    @property
+    def center_y(self) -> torch.Tensor:
+        return (self.top + self.bottom) / 2
+
+    @property
+    def rb(self) -> torch.Tensor:
+        return self._bboxes[:, 2:]
+
+    @property
+    def wh(self) -> torch.Tensor:
+        return self.rb - self.lt
+
+    @property
+    def center(self) -> torch.Tensor:
+        return (self.lt + self.rb) / 2
+
+    @classmethod
+    def round(cls: Type[T_XY], bboxes: T_XY) -> T_XY:
+        lt, rb = bboxes._round()
+        rounded_bboxes = torch.cat([lt, rb], dim=-1)
+        return cls(rounded_bboxes)
+
+    @classmethod
+    def expand(cls: Type[T_XY], bboxes: T_XY, ratio: float, image_shape: Optional[Tuple[int, int]] = None) -> T_XY:
+        lt, rb = bboxes._expand(ratio, image_shape)
+        expanded_bboxes = torch.cat([lt, rb], dim=-1)
+        return cls(expanded_bboxes)
+
+
+class BBoxesXYWH(BBoxesXY):
+    @property
+    def width(self) -> torch.Tensor:
+        return self._bboxes[:, 2]
+
+    @property
+    def height(self) -> torch.Tensor:
+        return self._bboxes[:, 3]
+
+    @property
+    def right(self) -> torch.Tensor:
+        return self.left + self.width
+
+    @property
+    def bottom(self) -> torch.Tensor:
+        return self.top + self.height
+
+    @property
+    def center_x(self) -> torch.Tensor:
+        return self.left + self.width / 2
+
+    @property
+    def center_y(self) -> torch.Tensor:
+        return self.top + self.height / 2
+
+    @property
+    def wh(self) -> torch.Tensor:
+        return self._bboxes[:, 2:]
+
+    @property
+    def rb(self) -> torch.Tensor:
+        return self.lt + self.wh
+
+    @property
+    def center(self) -> torch.Tensor:
+        return self.lt + self.wh / 2
+
+    @classmethod
+    def round(cls: Type[T_XY], bboxes: T_XY) -> T_XY:
+        lt, rb = bboxes._round()
+        rounded_bboxes = torch.cat([lt, rb - lt], dim=-1)
+        return cls(rounded_bboxes)
+
+    @classmethod
+    def expand(cls: Type[T_XY], bboxes: T_XY, ratio: float, image_shape: Optional[Tuple[int, int]] = None) -> T_XY:
+        lt, rb = bboxes._expand(ratio, image_shape)
+        expanded_bboxes = torch.cat([lt, rb - lt], dim=-1)
+        return cls(expanded_bboxes)
