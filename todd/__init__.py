@@ -9,6 +9,7 @@ from . import (
     utils,
     visuals,
 )
+from ._base import *
 from ._patches import *
 
 __all__ = [
