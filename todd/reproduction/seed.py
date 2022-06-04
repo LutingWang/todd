@@ -8,7 +8,7 @@ import torch.backends.cudnn as cudnn
 import torch.distributed as dist
 from mmcv.runner import get_dist_info
 
-from ..logger import get_logger
+from .._patches import get_logger
 from ..utils import DecoratorContextManager, get_iter, iter_initialized
 
 

@@ -3,19 +3,18 @@ from . import (
     adapts,
     distillers,
     hooks,
-    logger,
     losses,
     reproduction,
     schedulers,
     utils,
     visuals,
 )
+from ._patches import *
 
 __all__ = [
     'adapts',
     'distillers',
     'hooks',
-    'logger',
     'losses',
     'reproduction',
     'schedulers',

@@ -10,7 +10,7 @@ _logger_initialized = False
 def get_logger(log_file: Optional[str] = None, level: str = 'DEBUG'):
     global _logger_initialized
     if not _logger_initialized:
-        from ._base import SGR
+        from .._base import SGR
 
         _logger_initialized = True
         logger = logging.getLogger('Todd')

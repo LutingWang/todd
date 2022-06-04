@@ -3,7 +3,7 @@ import typing
 
 from typing_extensions import Literal
 
-from ..logger import get_logger
+from .logging import get_logger
 
 _logger = get_logger()
 

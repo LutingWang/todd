@@ -1,4 +1,4 @@
-from todd.logger import get_logger
+from .._patches import get_logger
 
 _iter = None
 
