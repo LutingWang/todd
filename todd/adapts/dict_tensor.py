@@ -2,7 +2,14 @@ import itertools
 import operator
 from functools import reduce
 from typing import (
-    Iterable, Iterator, List, Mapping, Sequence, Tuple, Union, overload,
+    Iterable,
+    Iterator,
+    List,
+    Mapping,
+    Sequence,
+    Tuple,
+    Union,
+    overload,
 )
 
 import einops

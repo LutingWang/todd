@@ -1,6 +1,10 @@
 from .base import BaseHook
 from .builder import (
-    HOOKS, HookCfg, HookModuleList, HookModuleListCfg, TrackingModuleList,
+    HOOKS,
+    HookCfg,
+    HookModuleList,
+    HookModuleListCfg,
+    TrackingModuleList,
     detach,
 )
 from .duplicated import DuplicatedHook

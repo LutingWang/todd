@@ -2,7 +2,14 @@ import contextlib
 import functools
 import itertools
 from typing import (
-    Any, Callable, Dict, Iterator, List, Optional, Protocol, Type,
+    Any,
+    Callable,
+    Dict,
+    Iterator,
+    List,
+    Optional,
+    Protocol,
+    Type,
 )
 
 import torch
