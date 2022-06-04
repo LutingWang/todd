@@ -111,17 +111,17 @@ class Union_(BaseAdapt):
         ids: List[torch.Tensor],
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """Match `feats` according to their `poses`.
-    
-        Align the `feats` coming from different sources to have same `matched_pos` and stack them togethor. 
-        For positions where some of `feats` do not show up, an all-zero tensor is added as default. 
+
+        Align the `feats` coming from different sources to have same `matched_pos` and stack them togethor.
+        For positions where some of `feats` do not show up, an all-zero tensor is added as default.
         A 2D `mask` is returned to indicate the type of a matched feature, where `1` corresponds to features coming from `feats` and `0` for added default all-zero tensors.
-    
+
         Args:
             feats: [n_s x d_1 x d_2 x ... x d_m]
                 Features from `s` different sources, each source can have different `n_s`.
             ids: [n_s x l]
                 Positions of each feature.
-        
+
         Returns:
             union_feats: s x n x d_1 x d_2 x ... x d_m
             union_ids: n x l

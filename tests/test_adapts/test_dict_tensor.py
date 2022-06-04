@@ -5,6 +5,7 @@ from todd.adapts.dict_tensor import Intersect
 
 
 class TestIntersect:
+
     @pytest.fixture(scope='class')
     def intersect(self):
         return Intersect()

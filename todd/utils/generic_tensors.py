@@ -123,11 +123,11 @@ class ListTensor(CollectionTensor[T]):
     @staticmethod
     def index(feat: T, pos: torch.Tensor) -> torch.Tensor:
         """Generalized `feat[pos]`.
-    
+
         Args:
             feat: d_0 x d_1 x ... x d_(n-1) x *
             pos: m x n
-    
+
         Returns:
             indexed_feat: m x *
         """

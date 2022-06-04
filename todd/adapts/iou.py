@@ -29,7 +29,7 @@ class IoU(BaseAdapt):
         """
         Args:
             bboxes: * x 4
-        
+
         Returns:
             bboxes: prod(*) x 4
             shape: tuple(*)
@@ -49,7 +49,7 @@ class IoU(BaseAdapt):
         Args:
             bboxes1: *1 x 4
             bboxes2: *2 x 4
-        
+
         Returns:
             ious: *1 x *2
         """
@@ -71,7 +71,7 @@ class IoU(BaseAdapt):
         Args:
             bboxes1: n1 x m1 x 4
             bboxes2: n2 x m2 x 4
-        
+
         Returns:
             ious: n1 x n2 x m1 x m2
         """

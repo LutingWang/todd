@@ -5,6 +5,7 @@ from todd.adapts import IoU
 
 
 class TestIoU:
+
     @pytest.fixture(scope='class')
     def iou(self):
         return IoU()

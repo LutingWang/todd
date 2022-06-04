@@ -9,10 +9,10 @@ opencv-python
 pandas
 pre-commit
 pytest
+setuptools
 timm
 torch
 torchvision
 tqdm
 typing_extensions
-setuptools
 yapf

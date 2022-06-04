@@ -30,4 +30,3 @@ repos:
     hooks:
     -   id: codespell
         args: ["todd", "tests"]
-

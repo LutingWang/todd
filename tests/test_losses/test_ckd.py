@@ -11,6 +11,7 @@ from todd.utils import CollectionTensor
 
 @ADAPTS.register_module()
 class CustomAdapt(BaseAdapt):
+
     def __init__(self, stride: int = 1, **kwargs):
         super().__init__(**kwargs)
         self._stride = stride
@@ -35,29 +36,26 @@ class CustomAdapt(BaseAdapt):
 
 
 class TestCKD:
+
     @pytest.fixture()
     def adapt(self):
         return AdaptModuleList({
-            'pred_reshaped':
-            dict(
+            'pred_reshaped': dict(
                 type='Rearrange',
                 tensor_names=['preds'],
                 multilevel=True,
                 pattern='bs dim h w -> bs h w dim',
             ),
-            ('targets', 'bboxes', 'bbox_poses', 'anchor_ids'):
-            dict(
+            ('targets', 'bboxes', 'bbox_poses', 'anchor_ids'): dict(
                 type='CustomAdapt',
                 tensor_names=['targets', 'bboxes', 'bbox_ids'],
                 stride=1,
             ),
-            'pred_indexed':
-            dict(
+            'pred_indexed': dict(
                 type='Index',
                 tensor_names=['pred_reshaped', 'bbox_poses'],
             ),
-            'preds':
-            dict(
+            'preds': dict(
                 type='Decouple',
                 tensor_names=['pred_indexed', 'anchor_ids'],
                 num=9,
@@ -69,13 +67,15 @@ class TestCKD:
 
     @pytest.fixture()
     def ckd(self):
-        return LossModuleList(dict(
-            ckd=dict(
-                type='CKDLoss',
-                tensor_names=['preds', 'targets', 'bboxes'],
-                weight=0.5,
+        return LossModuleList(
+            dict(
+                ckd=dict(
+                    type='CKDLoss',
+                    tensor_names=['preds', 'targets', 'bboxes'],
+                    weight=0.5,
+                ),
             ),
-        ))
+        )
 
     @pytest.fixture(scope='class')
     def result(self) -> Dict[str, dict]:
@@ -101,15 +101,23 @@ class TestCKD:
             }
             tensors = adapt(inputs, inplace=False)
             losses = ckd(tensors)
-            result[rank] = CollectionTensor.apply({
-                'state_dict': adapt.state_dict(),
-                'inputs': inputs,
-                'tensors': tensors,
-                'losses': losses,
-            }, lambda f: f.contiguous())
+            result[rank] = CollectionTensor.apply(
+                {
+                    'state_dict': adapt.state_dict(),
+                    'inputs': inputs,
+                    'tensors': tensors,
+                    'losses': losses,
+                },
+                lambda f: f.contiguous(),
+            )
         torch.save(result, filename)
 
-    def test_ckd(self, adapt: AdaptModuleList, ckd: CKDLoss, result: Dict[str, dict]):
+    def test_ckd(
+        self,
+        adapt: AdaptModuleList,
+        ckd: CKDLoss,
+        result: Dict[str, dict],
+    ):
         for rank in range(4):
             rank_result = result[f'rank{rank}']
             adapt.load_state_dict(rank_result['state_dict'])

@@ -19,7 +19,7 @@ def ckd_loss(
     """Warpper of CKD loss.
 
     Refer to http://arxiv.org/abs/2108.07482.
-    
+
     Args:
         pred: n x dim
             Normalized predictions.
@@ -90,7 +90,7 @@ class CKDLoss(BaseLoss):
         """Compute CKD loss.
 
         Refer to http://arxiv.org/abs/2108.07482.
-    
+
         Args:
             preds: m x dim
             targets: m x dim

@@ -117,7 +117,7 @@ class BBoxes(Sized):
         Args:
             a: *1 x 4
             b: *2 x 4
-        
+
         Returns:
             ious: (*1 + *2) x 4
         """
@@ -137,7 +137,7 @@ class BBoxes(Sized):
         Args:
             bboxes: n x 4
             indices: m
-        
+
         Returns:
             bboxes: m x 4
         """
@@ -155,7 +155,7 @@ class BBoxes(Sized):
         Args:
             a: *1 x 4
             b: *2 x 4
-        
+
         Returns:
             intersections: *1 x *2
         """
@@ -186,7 +186,7 @@ class BBoxes(Sized):
             a: *1 x 4
             b: *2 x 4
             intersections: *1 x *2
-            
+
         Returns:
             unions: *1 x *2
         """
@@ -208,7 +208,7 @@ class BBoxes(Sized):
         Args:
             a: *1 x 4
             b: *2 x 4
-        
+
         Returns:
             ious: *1 x *2
         """

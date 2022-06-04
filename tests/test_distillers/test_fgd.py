@@ -9,10 +9,13 @@ from todd.utils import CollectionTensor
 
 
 class TestFGD:
+
     @pytest.fixture()
     def distiller(self):
         distiller = BaseDistiller(
-            models=None, hooks=None, trackings=None,
+            models=None,
+            hooks=None,
+            trackings=None,
             adapts={
                 'attn_spatial': dict(
                     type='AbsMeanSpatialAttention',
@@ -63,7 +66,13 @@ class TestFGD:
             losses={
                 'feat': dict(
                     type='FGDLoss',
-                    tensor_names=['neck', 'teacher_neck', 'teacher_attn_spatial', 'teacher_attn_channel', 'masks'],
+                    tensor_names=[
+                        'neck',
+                        'teacher_neck',
+                        'teacher_attn_spatial',
+                        'teacher_attn_channel',
+                        'masks',
+                    ],
                     multilevel=True,
                     weight=5e-4,
                     reduction='sum',
@@ -132,7 +141,9 @@ class TestFGD:
         losses, tensors = distiller.distill(inputs, debug=True)
         result = {
             'state_dict': distiller.state_dict(),
-            'inputs': inputs, 'tensors': tensors, 'losses': losses, 
+            'inputs': inputs,
+            'tensors': tensors,
+            'losses': losses,
         }
         filename = os.path.join(os.path.dirname(__file__), 'fgd1.pth')
         torch.save(result, filename)
