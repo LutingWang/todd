@@ -11,7 +11,7 @@ def iter_initialized() -> bool:
 def init_iter(iter_: int = 0):
     global _iter
     if _iter is not None:
-        get_logger().warn(f"iter={_iter} has been reset to {iter_}.")
+        get_logger().warning(f"iter={_iter} has been reset to {iter_}.")
     _iter = iter_
 
 

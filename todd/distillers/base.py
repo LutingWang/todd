@@ -26,6 +26,7 @@ from ..visuals import VisualModuleList
 
 
 class BaseDistiller(BaseModule):
+    DEBUG_PREFIX = '_debug_'
 
     def __init__(
         self,
@@ -159,7 +160,7 @@ class BaseDistiller(BaseModule):
         self.reset()
 
         if debug:
-            tensors = {f'debug_{k}': v for k, v in tensors.items()}
+            tensors = {self.DEBUG_PREFIX + k: v for k, v in tensors.items()}
             return {**losses, **tensors}
         return losses
 

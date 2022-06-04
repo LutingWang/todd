@@ -160,12 +160,12 @@ class BBoxes(Sized):
             intersections: *1 x *2
         """
         lt = torch.maximum(  # [*1, *2, 2]
-            einops.rearrange('n1 lt -> n1 1 lt', a.lt),
-            einops.rearrange('n2 lt -> 1 n2 lt', b.lt),
+            einops.rearrange(a.lt, 'n1 lt -> n1 1 lt'),
+            einops.rearrange(b.lt, 'n2 lt -> 1 n2 lt'),
         )
         rb = torch.minimum(  # [*1, *2, 2]
-            einops.rearrange('n1 rb -> n1 1 rb', a.rb),
-            einops.rearrange('n2 rb -> 1 n2 rb', b.rb),
+            einops.rearrange(a.rb, 'n1 rb -> n1 1 rb'),
+            einops.rearrange(b.rb, 'n2 rb -> 1 n2 rb'),
         )
         wh = rb - lt
         wh = wh.clamp_min_(0)

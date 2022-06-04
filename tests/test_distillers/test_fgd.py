@@ -148,9 +148,17 @@ class TestFGD:
         filename = os.path.join(os.path.dirname(__file__), 'fgd1.pth')
         torch.save(result, filename)
 
+    @pytest.mark.usefixtures('setup_teardown_iter')
     def test_fgd(self, distiller: BaseDistiller, result: Dict[str, dict]):
         distiller.load_state_dict(result['state_dict'])
-        losses, tensors = distiller.distill(result['inputs'], debug=True)
+        losses = distiller.distill(result['inputs'], debug=True)
+        tensors = {  # yapf: disable
+            k[len(distiller.DEBUG_PREFIX):]: v
+            for k, v in losses.items()
+            if k.startswith(distiller.DEBUG_PREFIX)
+        }
+        for k in tensors:
+            losses.pop(distiller.DEBUG_PREFIX + k)
         assert CollectionTensor.allclose(result['tensors'], tensors)
         assert CollectionTensor.allclose(result['losses'], losses)
 

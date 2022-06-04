@@ -1,8 +1,10 @@
+import pytest
 import torch
 
 from todd.reproduction.seed import init_seed, set_seed_temp
 
 
+@pytest.mark.usefixtures('setup_teardown_iter')
 class TestSeed:
 
     def test_torch(self):
