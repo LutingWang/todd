@@ -75,11 +75,11 @@ class SingleLevelMask(MultiLevelMask):
     def stride(self) -> int:
         return self.strides[0]
 
-    def forward(
+    def forward(  # type: ignore[override]
         self,
         *args,
         **kwargs,
-    ) -> torch.Tensor:  # type: ignore[override]
+    ) -> torch.Tensor:
         masks = super().forward(*args, **kwargs)
         return masks[0]
 

@@ -19,6 +19,8 @@ timm = "*"
 mypy = "*"
 yapf = "*"
 isort = "*"
+pre-commit = "*"
+codespell = "*"
 
 [dev-packages]
 

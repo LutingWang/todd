@@ -24,9 +24,9 @@ class CollectionTensor(Generic[T]):
         if isinstance(feat, list):
             return [CollectionTensor.apply(f, op) for f in feat]
         if isinstance(feat, tuple):
-            return tuple(
+            return tuple(  # type: ignore[return-value]
                 CollectionTensor.apply(f, op) for f in feat
-            )  # type: ignore[return-value]
+            )
         if isinstance(feat, dict):
             return {k: CollectionTensor.apply(v, op) for k, v in feat.items()}
         raise TypeError(f'Unknown type {type(feat)}.')

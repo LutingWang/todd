@@ -110,7 +110,7 @@ class Union_(BaseAdapt):
         feats: List[torch.Tensor],
         ids: List[torch.Tensor],
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-        """Match `feats` accroding to their `poses`.
+        """Match `feats` according to their `poses`.
     
         Align the `feats` coming from different sources to have same `matched_pos` and stack them togethor. 
         For positions where some of `feats` do not show up, an all-zero tensor is added as default. 
