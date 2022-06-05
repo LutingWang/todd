@@ -15,6 +15,19 @@ jobs:
             mmcv: "1.4.7"
     steps:
     - uses: actions/checkout@master
+    - name: Create LFS file list
+      shell: bash
+      run: |
+        git lfs ls-files --long | cut -d ' ' -f1 | sort > .lfs-assets-id
+    - name: Restore LFS cache
+      uses: actions/cache@v3
+      id: lfs-cache
+      with:
+        path: .git/lfs
+        key: lfs-${{ hashFiles('.lfs-assets-id') }}-v1
+    - name: Git LFS Pull
+      shell: bash
+      run: git lfs pull
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@master
       with:
@@ -25,7 +38,8 @@ jobs:
         pip install torch==${{ matrix.torch }} torchvision==${{ matrix.torchvision }} -f https://download.pytorch.org/whl/torch_stable.html
         pip install mmcv==${{ matrix.mmcv }}
         pip install -r requirements.txt
-    - name: Run unittests and generate coverage report
+    - name: Run unittests
       run: |
-        coverage run --branch --source mmdet -m pytest tests/
+        coverage run
+    - name: Generate coverage report
         coverage report -m
