@@ -12,8 +12,8 @@ pre-commit
 pytest
 setuptools
 timm
-torch
-torchvision
+# torch
+# torchvision
 tqdm
 typing_extensions
 yapf
