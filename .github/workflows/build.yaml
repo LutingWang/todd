@@ -15,19 +15,21 @@ jobs:
             mmcv: "1.4.7"
     steps:
     - uses: actions/checkout@master
-    - name: Create LFS file list
-      shell: bash
-      run: |
-        git lfs ls-files --long | cut -d ' ' -f1 | sort > .lfs-assets-id
-    - name: Restore LFS cache
-      uses: actions/cache@v3
-      id: lfs-cache
       with:
-        path: .git/lfs
-        key: lfs-${{ hashFiles('.lfs-assets-id') }}-v1
-    - name: Git LFS Pull
-      shell: bash
-      run: git lfs pull
+        lfs: true
+    # - name: Create LFS file list
+    #   shell: bash
+    #   run: |
+    #     git lfs ls-files --long | cut -d ' ' -f1 | sort > .lfs-assets-id
+    # - name: Restore LFS cache
+    #   uses: actions/cache@v3
+    #   id: lfs-cache
+    #   with:
+    #     path: .git/lfs
+    #     key: lfs-${{ hashFiles('.lfs-assets-id') }}-v1
+    # - name: Git LFS Pull
+    #   shell: bash
+    #   run: git lfs pull
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@master
       with:
