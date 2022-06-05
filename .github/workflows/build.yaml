@@ -2,36 +2,34 @@ name: build
 
 on:
   workflow_dispatch:
-  # push:
-  #   branches: [ "master" ]
+  push:
+    branches: [ "master" ]
 
 jobs:
   lint:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.8"]
+        python-version: [3.8]
         include:
-          - torch: "1.11.0"
-            torchvision: "0.12.0"
-            mmcv: "1.4.7"
+          - torch: 1.11.0
+            torchvision: 0.12.0
+            mmcv: 1.4.7
     steps:
     - uses: actions/checkout@master
+    - name: Create LFS file list
+      shell: bash
+      run: |
+        git lfs ls-files --long | cut -d ' ' -f1 | sort > .lfs-assets-id
+    - name: Restore LFS cache
+      uses: actions/cache@v3
+      id: lfs-cache
       with:
-        lfs: true
-    # - name: Create LFS file list
-    #   shell: bash
-    #   run: |
-    #     git lfs ls-files --long | cut -d ' ' -f1 | sort > .lfs-assets-id
-    # - name: Restore LFS cache
-    #   uses: actions/cache@v3
-    #   id: lfs-cache
-    #   with:
-    #     path: .git/lfs
-    #     key: lfs-${{ hashFiles('.lfs-assets-id') }}-v1
-    # - name: Git LFS Pull
-    #   shell: bash
-    #   run: git lfs pull
+        path: .git/lfs
+        key: lfs-${{ hashFiles('.lfs-assets-id') }}-v1
+    - name: Git LFS Pull
+      shell: bash
+      run: git lfs pull
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@master
       with:
@@ -47,4 +45,7 @@ jobs:
         coverage run
     - name: Generate coverage report
       run: |
+        coverage xml
         coverage report -m
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@master
