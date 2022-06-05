@@ -21,6 +21,7 @@ yapf = "*"
 isort = "*"
 pre-commit = "*"
 codespell = "*"
+coverage = "*"
 
 [dev-packages]
 

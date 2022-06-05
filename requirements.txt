@@ -1,4 +1,5 @@
 codespell
+coverage
 einops
 ipdb
 isort
