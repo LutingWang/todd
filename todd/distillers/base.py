@@ -10,6 +10,9 @@ from typing import (
     Optional,
     Protocol,
     Type,
+    TypeVar,
+    cast,
+    no_type_check,
 )
 
 import torch
@@ -165,33 +168,55 @@ class BaseDistiller(BaseModule):
         return losses
 
 
-class DecoratorProto(Protocol):
+class DistillerProto(Protocol):
 
     def __init__(self, student: nn.Module, *args, **kwargs) -> None:
         pass
 
 
+DistillerType = TypeVar('DistillerType', bound=DistillerProto)
+
+
+class WrapperProto(Protocol[DistillerType]):
+    _distiller: DistillerType
+
+
+WrapperType = TypeVar('WrapperType', bound=WrapperProto)
+
+WrappedType = TypeVar('WrappedType')
+
+
 class DecoratorMixin:
 
     @classmethod
-    def wrap(cls: Type[DecoratorProto]) -> Callable[..., Any]:
+    def wrap(
+        cls: Type[DistillerType],
+    ) -> Callable[[Type[WrappedType]], Type[WrappedType]]:
 
-        def wrapper(wrapped_cls):
+        @no_type_check
+        def wrapper(wrapped_cls: Type[WrappedType]) -> Type[WrappedType]:
+
+            class WrapperMeta(wrapped_cls.__class__):
+
+                def __call__(
+                    wrapper_cls: Type[WrapperType],
+                    *args,
+                    distiller: dict,
+                    **kwargs,
+                ) -> WrapperType:
+                    obj: WrapperType = super().__call__(*args, **kwargs)
+                    obj._distiller = cls(
+                        cast(nn.Module, obj),
+                        **distiller,
+                    )
+                    return obj
 
             @functools.wraps(wrapped_cls, updated=())
-            class WrapperClass(wrapped_cls):
-
-                def __init__(self, *args, distiller: dict, **kwargs):
-                    super().__init__(*args, **kwargs)
-                    self._distiller = cls(
-                        self,
-                        **distiller,
-                    )  # type: ignore[call-arg]
-                    if hasattr(self, '_init_with_distiller'):
-                        self._init_with_distiller()
+            class WrapperClass(wrapped_cls, metaclass=WrapperMeta):
+                _distiller: DistillerType
 
                 @property
-                def distiller(self) -> DecoratorProto:
+                def distiller(self) -> DistillerType:
                     return self._distiller
 
                 @property

@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, Iterable
 
 import torch
 
@@ -9,7 +9,7 @@ from .builder import HOOKS
 @HOOKS.register_module()
 class MultiTensorsHook(BaseHook):
 
-    def __init__(self, tensor_names: List[str], *args, **kwargs):
+    def __init__(self, tensor_names: Iterable[str], *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._id_tensor_names = [
             f'{self.id_}_{tensor_name}' for tensor_name in tensor_names
@@ -22,7 +22,7 @@ class MultiTensorsHook(BaseHook):
     def reset(self):
         self._tensors = []
 
-    def register_tensor(self, tensors: List[torch.Tensor]):
+    def register_tensor(self, tensors: Iterable[torch.Tensor]):
         if self._detach:
             tensors = [tensor.detach() for tensor in tensors]
         self._tensors = tensors
