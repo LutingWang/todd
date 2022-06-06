@@ -7,7 +7,7 @@ __all__ = [
 ]
 
 
-class ANSI:
+class ANSI(IntEnum):  # fix bug in python<=3.7.1
 
     @staticmethod
     @abstractmethod
@@ -15,7 +15,7 @@ class ANSI:
         pass
 
 
-class SGR(ANSI, IntEnum):
+class SGR(ANSI):
     """Select Graphic Rendition.
 
     Refer to https://en.wikipedia.org/wiki/ANSI_escape_code.

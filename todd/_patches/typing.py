@@ -1,12 +1,13 @@
 import sys
 import typing
 
-from typing_extensions import Literal
+from typing_extensions import Literal, Protocol
 
 from .logging import get_logger
 
 _logger = get_logger()
 
 if sys.version_info < (3, 8):
-    _logger.warning("Monkey patching `typing.Literal`.")
+    _logger.warning("Monkey patching `typing.Literal` and `typing.Protocol`.")
     typing.Literal = Literal
+    typing.Protocol = Protocol
