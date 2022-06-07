@@ -9,6 +9,16 @@ __all__ = [
 
 class ANSI(IntEnum):  # fix bug in python<=3.7.1
 
+    @classmethod
+    def to_str(cls, value: Union[int, str]) -> str:
+        if isinstance(value, str):
+            return str(cls[value.upper()].value)
+        if isinstance(value, cls):
+            return str(value.value)
+        if isinstance(value, int):
+            return str(value)
+        raise TypeError(f"Unknown type {type(value)}.")
+
     @staticmethod
     @abstractmethod
     def format(text: str) -> str:
@@ -50,20 +60,13 @@ class SGR(ANSI):
     BG_CYAN = auto()
     BG_WHITE = auto()
 
-    @staticmethod
-    def to_str(sgr: Union[int, str]) -> str:
-        if isinstance(sgr, str):
-            sgr = SGR[sgr.upper()]
-        if isinstance(sgr, SGR):
-            return str(sgr.value)
-        elif isinstance(sgr, int):
-            return str(sgr)
-        else:
-            raise TypeError(f"Unknown type {type(sgr)}.")
-
-    @staticmethod
-    def format(text: str, sgr: Iterable[Union[int, str]] = tuple()) -> str:
-        sgr_list = ';'.join(SGR.to_str(parameter) for parameter in sgr)
+    @classmethod
+    def format(
+        cls,
+        text: str,
+        sgr: Iterable[Union[int, str]] = tuple(),
+    ) -> str:
+        sgr_list = ';'.join(cls.to_str(parameter) for parameter in sgr)
         return f"\033[{sgr_list}m{text}\033[m"
 
 

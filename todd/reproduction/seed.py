@@ -6,17 +6,15 @@ import numpy as np
 import torch
 import torch.backends.cudnn as cudnn
 import torch.distributed as dist
-from mmcv.runner import get_dist_info
 
-from .._patches import get_logger
+from .._patches import get_logger, get_rank, get_world_size
 from ..utils import DecoratorContextManager, get_iter, iter_initialized
 
 
 def _randint(high: int = 2**30) -> int:
     seed = np.random.randint(high)
-    rank, world_size = get_dist_info()
-    if world_size > 1:
-        tensor = torch.IntTensor(seed if rank == 0 else 0)
+    if get_world_size() > 1:
+        tensor = torch.IntTensor(seed if get_rank() == 0 else 0)
         dist.broadcast(tensor, src=0)
         seed = cast(int, tensor.item())
     return seed

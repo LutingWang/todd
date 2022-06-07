@@ -3,9 +3,9 @@ from typing import List, Optional, Tuple
 import torch
 import torch.distributed as dist
 import torch.nn.functional as F
-from mmcv.runner import get_dist_info
 
 from .._base import BBoxesXYXY
+from .._patches import get_rank, get_world_size
 from .base import BaseLoss
 from .builder import LOSSES
 
@@ -51,7 +51,8 @@ class MemoryPool:
     def __init__(self, size: int = 10):
         self._memory: List[torch.Tensor] = []
         self._size = size
-        self._rank, self._world_size = get_dist_info()
+        self._rank = get_rank()
+        self._world_size = get_world_size()
 
     def register(self, tensor: torch.Tensor) -> None:
         tensor = tensor.contiguous()

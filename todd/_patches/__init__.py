@@ -1,6 +1,3 @@
-from . import builtins, functools, torch, torchvision, typing, zipfile
-from .logging import get_logger
-
-__all__ = [
-    'get_logger',
-]
+from . import builtins, functools, torchvision, typing, zipfile
+from .logging import *
+from .torch import *
