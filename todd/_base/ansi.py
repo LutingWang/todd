@@ -10,14 +10,12 @@ __all__ = [
 class ANSI(IntEnum):  # fix bug in python<=3.7.1
 
     @classmethod
-    def to_str(cls, value: Union[int, str]) -> str:
-        if isinstance(value, str):
-            return str(cls[value.upper()].value)
-        if isinstance(value, cls):
-            return str(value.value)
-        if isinstance(value, int):
-            return str(value)
-        raise TypeError(f"Unknown type {type(value)}.")
+    def to_str(cls, key) -> str:
+        if isinstance(key, str):
+            return str(cls[key.upper()].value)
+        if isinstance(key, cls):
+            return str(key.value)
+        return str(int(key))
 
     @staticmethod
     @abstractmethod
@@ -64,9 +62,9 @@ class SGR(ANSI):
     def format(
         cls,
         text: str,
-        sgr: Iterable[Union[int, str]] = tuple(),
+        sgr: Iterable = tuple(),
     ) -> str:
-        sgr_list = ';'.join(cls.to_str(parameter) for parameter in sgr)
+        sgr_list = ';'.join(map(cls.to_str, sgr))
         return f"\033[{sgr_list}m{text}\033[m"
 
 
