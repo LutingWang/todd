@@ -115,3 +115,11 @@ class BCEWithLogitsLoss(FunctionalLoss):
     @staticmethod
     def func(*args, **kwargs) -> torch.Tensor:
         return F.binary_cross_entropy_with_logits(*args, **kwargs)
+
+
+@LOSSES.register_module()
+class CrossEntropyLoss(FunctionalLoss):
+
+    @staticmethod
+    def func(*args, **kwargs) -> torch.Tensor:
+        return F.cross_entropy(*args, **kwargs)

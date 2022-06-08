@@ -1,3 +1,4 @@
+"""Toolkit for Object Detection Distillation."""
 from . import (
     _patches,
     adapts,
@@ -22,3 +23,5 @@ __all__ = [
     'utils',
     'visuals',
 ]
+__version__ = '0.0.1'
+__author__ = 'Luting Wang'
