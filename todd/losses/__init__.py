@@ -3,7 +3,7 @@ from .builder import LOSSES, LossLayer, LossModuleList
 from .ckd import CKDLoss, ckd_loss
 from .focal import FocalLoss, FocalWithLogitsLoss
 from .functional import L1Loss, MSELoss
-from .mimic import FGDLoss, FGFILoss, LabelEncLoss
+from .mimic import FGDLoss, FGFILoss
 from .rcnn import SGFILoss
 
 __all__ = [

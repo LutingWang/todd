@@ -1,7 +1,11 @@
-from typing import Literal, Optional
+import numbers
+from typing import Literal, Optional, Union
 
 import torch
+from mmcv import ConfigDict
 from mmcv.runner import BaseModule
+
+from ..schedulers import SCHEDULERS
 
 Reduction = Literal['none', 'mean', 'sum', 'prod']
 
@@ -11,12 +15,14 @@ class BaseLoss(BaseModule):
     def __init__(
         self,
         reduction: Reduction = 'mean',
-        weight: float = 1.0,
+        weight: Union[numbers.Real, ConfigDict] = 1.0,
         **kwargs,
     ):
         super().__init__(**kwargs)
         self._reduction = reduction
-        self._weight = weight
+        if not isinstance(weight, numbers.Real):
+            weight = SCHEDULERS.build(weight)
+        self._weight: numbers.Real = weight
 
     @property
     def reduction(self) -> Reduction:

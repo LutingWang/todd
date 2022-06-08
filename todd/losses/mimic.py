@@ -67,58 +67,57 @@ class FGDLoss(MSE2DLoss):
         )
 
 
-@LOSSES.register_module()
-class LabelEncLoss(MSE2DLoss):
+# @LOSSES.register_module()
+# class LabelEncLoss(MSE2DLoss):
 
-    def __init__(
-        self,
-        *args,
-        num_channels: int,
-        weight: float = 1.0,
-        **kwargs,
-    ):
-        weight = LinearScheduler(
-            start_value=0,
-            end_value=weight,
-            start_iter=30000,
-            end_iter=30000,
-        )
-        super().__init__(*args, weight=weight, **kwargs)
+#     def __init__(
+#         self,
+#         *args,
+#         num_channels: int,
+#         weight: float = 1.0,
+#         **kwargs,
+#     ):
+#         weight = LinearScheduler(
+#             start_value=0,
+#             end_value=weight,
+#             start_iter=30000,
+#             end_iter=30000,
+#         )
+#         super().__init__(*args, weight=weight, **kwargs)
 
-        norm_cfg = dict(type='GN', num_groups=1, affine=False)
-        self._adapt = Sequential(
-            ConvModule(num_channels, num_channels, 3, 1, 1),
-            ConvModule(num_channels, num_channels, 3, 1, 1),
-            ConvModule(
-                num_channels,
-                num_channels,
-                3,
-                1,
-                1,
-                norm_cfg=norm_cfg,
-                act_cfg=None,
-            ),
-        )
-        self._target_norm: nn.Module = NORM_LAYERS.build(
-            norm_cfg,
-            default_args=dict(num_features=num_channels),
-        )
+#         norm_cfg = dict(type='GN', num_groups=1, affine=False)
+#         self._adapt = Sequential(
+#             ConvModule(num_channels, num_channels, 3, 1, 1),
+#             ConvModule(num_channels, num_channels, 3, 1, 1),
+#             ConvModule(
+#                 num_channels,
+#                 num_channels,
+#                 3,
+#                 1,
+#                 1,
+#                 norm_cfg=norm_cfg,
+#                 act_cfg=None,
+#             ),
+#         )
+#         self._target_norm: nn.Module = NORM_LAYERS.build(
+#             norm_cfg,
+#             default_args=dict(num_features=num_channels),
+#         )
 
-    def forward(  # type: ignore[override]
-        self,
-        preds: List[torch.Tensor],
-        targets: List[torch.Tensor],
-        *args,
-        **kwargs,
-    ) -> List[torch.Tensor]:
-        losses = []
-        for pred, target in zip(preds, targets):
-            pred = self._adapt(pred)
-            target = self._target_norm(target.detach())
-            loss = super().forward(pred, target, *args, **kwargs)
-            losses.append(loss)
-        return losses
-
+#     def forward(  # type: ignore[override]
+#         self,
+#         preds: List[torch.Tensor],
+#         targets: List[torch.Tensor],
+#         *args,
+#         **kwargs,
+#     ) -> List[torch.Tensor]:
+#         losses = []
+#         for pred, target in zip(preds, targets):
+#             pred = self._adapt(pred)
+#             target = self._target_norm(target.detach())
+#             loss = super().forward(pred, target, *args, **kwargs)
+#             losses.append(loss)
+#         return losses
 
 # @LOSSES.register_module()
 # class DevLoss(MSE2DLoss):

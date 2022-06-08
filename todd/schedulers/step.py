@@ -4,6 +4,10 @@ from ..utils import get_iter
 from .base import BaseScheduler
 from .builder import SCHEDULERS
 
+__all__ = [
+    'StepScheduler',
+]
+
 
 @SCHEDULERS.register_module()
 class StepScheduler(BaseScheduler):

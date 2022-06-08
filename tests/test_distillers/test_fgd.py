@@ -149,6 +149,10 @@ class TestFGD:
         torch.save(result, filename)
 
     @pytest.mark.usefixtures('setup_teardown_iter')
+    @pytest.mark.parametrize(
+        'setup_value,teardown_value',
+        [(None, None)],
+    )
     def test_fgd(self, distiller: BaseDistiller, result: Dict[str, dict]):
         distiller.load_state_dict(result['state_dict'])
         losses = distiller.distill(result['inputs'], debug=True)

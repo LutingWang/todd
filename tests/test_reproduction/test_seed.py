@@ -4,9 +4,13 @@ import torch
 from todd.reproduction.seed import init_seed, set_seed_temp
 
 
-@pytest.mark.usefixtures('setup_teardown_iter')
 class TestSeed:
 
+    @pytest.mark.usefixtures('setup_teardown_iter')
+    @pytest.mark.parametrize(
+        'setup_value,teardown_value',
+        [(None, None)],
+    )
     def test_torch(self):
         # yapf: disable
         target1 = torch.IntTensor([42, 67, 76, 14, 26, 35, 20, 24, 50, 13])

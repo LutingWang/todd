@@ -1,37 +1,91 @@
-from abc import abstractmethod, abstractproperty
+import math
+import numbers
+from abc import abstractmethod
 from typing import Optional
 
-from mmcv.runner import BaseModule
+from ..utils import get_iter
 
-from ..utils import CollectionTensor, get_iter
+__all__ = [
+    'BaseScheduler',
+    'IntervalScheduler',
+]
 
-# TODO: reimplement as descriptors
 
+class BaseScheduler(numbers.Real):
 
-class BaseScheduler(BaseModule):
-
-    @abstractproperty
+    @property
+    @abstractmethod
     def value(self) -> float:
         pass
 
-    def __add__(self, tensors):
-        value = self.value
-        op = lambda tensor: value + tensor
-        return CollectionTensor.apply(tensors, op)
+    def __add__(self, other):
+        return self.value + other
 
-    def __radd__(self, *args):
-        return self.__add__(*args)
+    def __radd__(self, other):
+        return other + self.value
 
-    def __mul__(self, tensors):
-        value = self.value
-        op = lambda tensor: value * tensor
-        return CollectionTensor.apply(tensors, op)
+    def __neg__(self):
+        return -self.value
 
-    def __rmul__(self, *args):
-        return self.__mul__(*args)
+    def __pos__(self):
+        return +self.value
 
-    def forward(self, *tensors):
-        return self.__mul__(tensors)
+    def __mul__(self, other):
+        return self.value * other
+
+    def __rmul__(self, other):
+        return other * self.value
+
+    def __truediv__(self, other):
+        return self.value / other
+
+    def __rtruediv__(self, other):
+        return other / self.value
+
+    def __pow__(self, exponent):
+        return self.value**exponent
+
+    def __rpow__(self, base):
+        return base**self.value
+
+    def __abs__(self):
+        return abs(self.value)
+
+    def __eq__(self, other):
+        return self.value == other
+
+    def __float__(self) -> float:
+        return float(self.value)
+
+    def __trunc__(self) -> int:
+        return math.trunc(self.value)
+
+    def __floor__(self) -> int:
+        return math.floor(self.value)
+
+    def __ceil__(self) -> int:
+        return math.ceil(self.value)
+
+    def __round__(self, ndigits=None):
+        return round(self.value, ndigits)
+
+    def __floordiv__(self, other):
+        return self.value // other
+
+    def __rfloordiv__(self, other):
+        return other // self.value
+
+    def __mod__(self, other):
+        return self.value % other
+
+    def __rmod__(self, other):
+        return other % self.value
+
+    def __lt__(self, other):
+        return self.value < other
+
+    def __le__(self, other):
+        return self.value <= other
 
 
 class IntervalScheduler(BaseScheduler):
@@ -43,7 +97,7 @@ class IntervalScheduler(BaseScheduler):
         end_value: float,
         start_iter: int = 0,
         end_iter: Optional[int] = None,
-    ):
+    ) -> None:
         super().__init__()
         self._start_value = start_value
         self._end_value = end_value

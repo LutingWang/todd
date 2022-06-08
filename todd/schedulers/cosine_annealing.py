@@ -4,6 +4,10 @@ from typing import Optional
 from .base import BaseScheduler
 from .builder import SCHEDULERS
 
+__all__ = [
+    'CosineAnnealingScheduler',
+]
+
 
 @SCHEDULERS.register_module()
 class CosineAnnealingScheduler(BaseScheduler):

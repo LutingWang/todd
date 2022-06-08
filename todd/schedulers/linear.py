@@ -1,6 +1,14 @@
 from .base import IntervalScheduler
 from .builder import SCHEDULERS
 
+__all__ = [
+    'LinearScheduler',
+    'ConstantScheduler',
+    'WarmupScheduler',
+    'EarlyStopScheduler',
+    'DecayScheduler',
+]
+
 
 @SCHEDULERS.register_module()
 class LinearScheduler(IntervalScheduler):
@@ -12,7 +20,7 @@ class LinearScheduler(IntervalScheduler):
 @SCHEDULERS.register_module()
 class ConstantScheduler(LinearScheduler):
 
-    def __init__(self, *, value: float = 1):
+    def __init__(self, *, value: float = 1) -> None:
         super().__init__(
             start_value=value,
             end_value=value,
@@ -24,7 +32,7 @@ class ConstantScheduler(LinearScheduler):
 @SCHEDULERS.register_module()
 class WarmupScheduler(LinearScheduler):
 
-    def __init__(self, *, value: float = 1, iter_: int):
+    def __init__(self, *, value: float = 1, iter_: int) -> None:
         super().__init__(
             start_value=0,
             end_value=value,
@@ -36,7 +44,7 @@ class WarmupScheduler(LinearScheduler):
 @SCHEDULERS.register_module()
 class EarlyStopScheduler(LinearScheduler):
 
-    def __init__(self, *, value: float = 1, iter_: int):
+    def __init__(self, *, value: float = 1, iter_: int) -> None:
         super().__init__(
             start_value=value,
             end_value=0,
@@ -48,7 +56,7 @@ class EarlyStopScheduler(LinearScheduler):
 @SCHEDULERS.register_module()
 class DecayScheduler(LinearScheduler):
 
-    def __init__(self, *, value: float = 1, iter_: int):
+    def __init__(self, *, value: float = 1, iter_: int) -> None:
         super().__init__(
             start_value=value,
             end_value=0,
