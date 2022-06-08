@@ -45,8 +45,8 @@ class CollectionTensor(Generic[T]):
 
     @staticmethod
     def allclose(
-        feat1: T,
-        feat2: T,
+        feat1: Union[T, numbers.Complex],
+        feat2: Union[T, numbers.Complex],
         rtol: float = 1e-5,
         atol: float = 1e-8,
     ) -> bool:
@@ -65,8 +65,8 @@ class CollectionTensor(Generic[T]):
             return all(
                 CollectionTensor.allclose(feat1[k], feat2[k]) for k in feat1
             )
-        if isinstance(feat1, numbers.Number):
-            assert isinstance(feat2, numbers.Number)
+        if isinstance(feat1, numbers.Complex):
+            assert isinstance(feat2, numbers.Complex)
             return abs(feat1 - feat2) <= atol + rtol * abs(feat2)
         raise TypeError(f'Unknown type {type(feat1)}.')
 

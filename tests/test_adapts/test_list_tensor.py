@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, List
 
 import pytest
 import torch
@@ -6,81 +6,107 @@ import torch
 from todd.utils import ListTensor
 
 
+@pytest.fixture(scope='module')
+def tensor_feat() -> torch.Tensor:
+    return torch.arange(720).reshape(6, 5, 4, 3, 2)
+
+
 # yapf: disable
-@pytest.fixture(scope='module', params=['tensor', 'list', 'hybrid'])
-def feat(request: pytest.FixtureRequest) -> Any:
-    if request.param == 'tensor':
-        return torch.arange(720).reshape(6, 5, 4, 3, 2)
-    if request.param == 'list':
-        return [
-            [[torch.arange(6).reshape(3, 2) + a * 120 + b * 24 + c * 6
-              for c in range(4)]
-             for b in range(5)]
-            for a in range(6)
-        ]
-    if request.param == 'hybrid':
-        return [
-            torch.arange(120).reshape(5, 4, 3, 2),
-            [torch.arange(24).reshape(4, 3, 2) + 120 + b * 24
-             for b in range(5)],
-            [[torch.arange(6).reshape(3, 2) + 240 + b * 24 + c * 6
-              for c in range(4)]
-             for b in range(5)],
-            [[[torch.arange(2) + 360 + b * 24 + c * 6 + d * 2
-               for d in range(3)]
-              for c in range(4)]
-             for b in range(5)],
-            [[[[torch.tensor(480 + b * 24 + c * 6 + d * 2 + e)
-                for e in range(2)]
-               for d in range(3)]
-              for c in range(4)]
-             for b in range(5)],
-            [torch.arange(24).reshape(4, 3, 2) + 600,
-             [torch.arange(6).reshape(3, 2) + 624 + c * 6
-              for c in range(4)],
-             [[torch.arange(2) + 648 + c * 6 + d * 2
-               for d in range(3)]
-              for c in range(4)],
-             [[[torch.tensor(672 + c * 6 + d * 2 + e)
-                for e in range(2)]
-               for d in range(3)]
-              for c in range(4)],
-             [torch.arange(6).reshape(3, 2) + 696,
-              [torch.arange(2) + 702 + d * 2 for d in range(3)],
-              [[torch.tensor(708 + d * 2 + e)
-                for e in range(2)]
-               for d in range(3)],
-              [torch.arange(2) + 714,
-               [torch.tensor(716 + e) for e in range(2)],
-               [torch.tensor(718 + e) for e in range(2)]]]],
-        ]
-    raise ValueError(request.param)
+@pytest.fixture(scope='module')
+def list_feat() -> List[List[List[torch.Tensor]]]:
+    return [
+        [[torch.arange(6).reshape(3, 2) + a * 120 + b * 24 + c * 6
+          for c in range(4)]
+         for b in range(5)]
+        for a in range(6)
+    ]
+
+
+@pytest.fixture(scope='module')
+def hybrid_feat() -> list:
+    return [
+        torch.arange(120).reshape(5, 4, 3, 2),
+        [torch.arange(24).reshape(4, 3, 2) + 120 + b * 24
+         for b in range(5)],
+        [[torch.arange(6).reshape(3, 2) + 240 + b * 24 + c * 6
+          for c in range(4)]
+         for b in range(5)],
+        [[[torch.arange(2) + 360 + b * 24 + c * 6 + d * 2
+           for d in range(3)]
+          for c in range(4)]
+         for b in range(5)],
+        [[[[torch.tensor(480 + b * 24 + c * 6 + d * 2 + e)
+            for e in range(2)]
+           for d in range(3)]
+          for c in range(4)]
+         for b in range(5)],
+        [torch.arange(24).reshape(4, 3, 2) + 600,
+         [torch.arange(6).reshape(3, 2) + 624 + c * 6
+          for c in range(4)],
+         [[torch.arange(2) + 648 + c * 6 + d * 2
+           for d in range(3)]
+          for c in range(4)],
+         [[[torch.tensor(672 + c * 6 + d * 2 + e)
+            for e in range(2)]
+           for d in range(3)]
+          for c in range(4)],
+         [torch.arange(6).reshape(3, 2) + 696,
+          [torch.arange(2) + 702 + d * 2 for d in range(3)],
+          [[torch.tensor(708 + d * 2 + e)
+            for e in range(2)]
+           for d in range(3)],
+          [torch.arange(2) + 714,
+           [torch.tensor(716 + e) for e in range(2)],
+           [torch.tensor(718 + e) for e in range(2)]]]],
+    ]
 # yapf: enable
 
 
 class TestStack:
 
-    def test_normal(self, feat: Any):
-        stacked_feat = ListTensor.stack(feat)
-        assert torch.all(stacked_feat.reshape(-1) == torch.arange(720))
+    @pytest.mark.parametrize(
+        'feat',
+        ['tensor_feat', 'list_feat', 'hybrid_feat'],
+    )
+    def test_normal(self, feat: str, request: pytest.FixtureRequest) -> None:
+        feat_ = request.getfixturevalue(feat)
+        stacked_feat = ListTensor.stack(feat_).reshape(-1)
+        assert torch.arange(720).eq(stacked_feat).all()
 
 
 class TestIndex:
 
-    def test_empty_pos(self, feat: Any):
-        for n in range(5):
-            indexed_feat = ListTensor.index(feat, torch.zeros([0, n]))
-            assert indexed_feat.shape == (0, ) + (6, 5, 4, 3, 2)[n:]
-        m = 100
-        indexed_feat = ListTensor.index(feat, torch.zeros([m, 0]))
-        assert indexed_feat.shape == (m, 6, 5, 4, 3, 2)
+    @pytest.mark.parametrize(
+        'feat',
+        ['tensor_feat', 'list_feat', 'hybrid_feat'],
+    )
+    def test_empty_pos(
+        self, feat: str, request: pytest.FixtureRequest
+    ) -> None:
+        feat_ = request.getfixturevalue(feat)
+        indexed_feat = ListTensor.index(feat_, torch.zeros([0, 0]))
+        assert indexed_feat.shape == (0, 6, 5, 4, 3, 2)
+        indexed_feat = ListTensor.index(feat_, torch.zeros([0, 1]))
+        assert indexed_feat.shape == (0, 5, 4, 3, 2)
+        indexed_feat = ListTensor.index(feat_, torch.zeros([0, 2]))
+        assert indexed_feat.shape == (0, 4, 3, 2)
+        indexed_feat = ListTensor.index(feat_, torch.zeros([0, 3]))
+        assert indexed_feat.shape == (0, 3, 2)
+        indexed_feat = ListTensor.index(feat_, torch.zeros([0, 4]))
+        assert indexed_feat.shape == (0, 2)
+        indexed_feat = ListTensor.index(feat_, torch.zeros([100, 0]))
+        assert indexed_feat.shape == (100, 6, 5, 4, 3, 2)
 
-    def test_normal(self, feat: Any):
+    @pytest.mark.parametrize(
+        'feat',
+        ['tensor_feat', 'list_feat', 'hybrid_feat'],
+    )
+    def test_normal(self, feat: str, request: pytest.FixtureRequest) -> None:
+        feat_ = request.getfixturevalue(feat)
         pos = torch.Tensor([[0, 1], [1, 0], [1, 2]])
-        indexed_feat = ListTensor.index(feat, pos)
-        result = torch.stack([
+        indexed_feat = ListTensor.index(feat_, pos)
+        assert torch.stack([
             torch.arange(24, 48).reshape(4, 3, 2),
             torch.arange(120, 144).reshape(4, 3, 2),
             torch.arange(168, 192).reshape(4, 3, 2),
-        ])
-        return torch.all(indexed_feat == result)
+        ]).eq(indexed_feat).all()

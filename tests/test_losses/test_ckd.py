@@ -27,12 +27,12 @@ class CustomAdapt(BaseAdapt):
         bboxes = bboxes[valid_idx]
         pos = pos[valid_idx]
         bs, level, h, w, id_ = pos.split(1, 1)
-        bboxes = [bboxes[bs.flatten() == i] for i in range(2)]
+        bbox_list = [bboxes[bs.flatten() == i] for i in range(2)]
         h = torch.div(h, self._stride, rounding_mode='trunc')
         w = torch.div(w, self._stride, rounding_mode='trunc')
         pos = torch.cat((level, bs, h, w), dim=-1)
         id_ = id_.reshape(-1)
-        return feat, bboxes, pos, id_
+        return feat, bbox_list, pos, id_
 
 
 class TestCKD:
