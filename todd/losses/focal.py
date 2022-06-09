@@ -1,6 +1,5 @@
 import torch
 
-from .base import BaseLoss
 from .builder import LOSSES
 from .functional import BCELoss, BCEWithLogitsLoss, FunctionalLoss
 

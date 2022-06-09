@@ -1,8 +1,12 @@
-from typing import Any, Dict
-
 from mmcv.utils import Registry
 
 from ..adapts import AdaptLayer, AdaptModuleList
+
+__all__ = [
+    'VISUALS',
+    'VisualLayer',
+    'VisualModuleList',
+]
 
 VISUALS = Registry('visuals')
 
@@ -18,7 +22,7 @@ class VisualLayer(AdaptLayer):
 
         adapted_tensors = []
         for level, (adapt, *level_tensors) in \
-            enumerate(zip(self.adapts, *tensors)):
+                enumerate(zip(self.adapts, *tensors)):
             level_kwargs = kwargs
             if isinstance(adapt, BaseSaver):
                 level_kwargs = dict(level=level, **level_kwargs)

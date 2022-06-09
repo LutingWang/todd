@@ -78,7 +78,8 @@ class BaseDataset(Dataset, Generic[T]):
         self._logger.debug("Initializing keys.")
         self._keys = list(self._access_layer.keys())
         self._logger.debug(
-            f"Keys {reprlib.repr(self._keys)} initialized with length {len(self)}.",
+            f"Keys {reprlib.repr(self._keys)} initialized "
+            f"with length {len(self)}."
         )
 
     def __len__(self) -> int:

@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 import torch
 
-from todd._base.bboxes import BBoxesXYWH, BBoxesXYXY
+from todd._base.bboxes import BBoxesXYXY
 
 
 class TestBBoxesXYXY:

@@ -4,7 +4,7 @@ import mmcv
 from mmcv.runner import BaseModule, load_checkpoint
 from mmcv.utils import Registry
 
-from .attrs import getattr_recur
+from .._base import getattr_recur
 
 
 class ModelLoader:

@@ -20,11 +20,11 @@ class MultiTeacherDistiller(DecoratorMixin, BaseDistiller):
         student_hooks: HookModuleListCfg = None,
         student_trackings: HookModuleListCfg = None,
         online_teacher_hooks: Optional[Dict[int, HookModuleListCfg]] = None,
-        online_teacher_trackings: Optional[Dict[int, HookModuleListCfg]] \
-            = None,
+        online_teacher_trackings:  # yapf: disable
+        Optional[Dict[int, HookModuleListCfg]] = None,  # noqa: E131
         offline_teacher_hooks: Optional[Dict[int, HookModuleListCfg]] = None,
-        offline_teacher_trackings: Optional[Dict[int, HookModuleListCfg]] \
-            = None,
+        offline_teacher_trackings:  # yapf: disable
+        Optional[Dict[int, HookModuleListCfg]] = None,  # noqa: E131
         **kwargs,
     ):
         assert 'hooks' not in kwargs

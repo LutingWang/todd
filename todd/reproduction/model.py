@@ -1,12 +1,12 @@
 import itertools
 from enum import Enum, auto
-from typing import List, Optional, cast
+from typing import Optional
 
 import torch.nn as nn
 from timm.models.layers import DropPath
 from torch.nn.modules.batchnorm import _BatchNorm
 
-from ..utils import getattr_recur
+from .._base import getattr_recur
 
 
 class NoGradMode(Enum):

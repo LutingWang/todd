@@ -1,4 +1,4 @@
-from typing import Any, Callable, Tuple, Type, TypeVar, Union
+from typing import Callable, Tuple, Type, TypeVar, Union
 
 from mmcv.runner import BaseModule
 from mmcv.utils import Registry
@@ -7,7 +7,8 @@ T = TypeVar('T')
 
 
 def build(cls, cfg, **kwargs) -> BaseModule:
-    if cfg is None: return None
+    if cfg is None:
+        return None
     module = cfg if isinstance(cfg, cls) else cls(cfg, **kwargs)
     return module
 

@@ -11,7 +11,8 @@ from .builder import ACCESS_LAYERS, DATASETS
 class PthAccessLayer(BaseAccessLayer[str]):
 
     def _init(self):
-        assert self._codec is Codec.PYTORCH, 'PthAccessLayer only supports PyTorch.'
+        assert self._codec is Codec.PYTORCH, \
+            'PthAccessLayer only supports PyTorch.'
         self._pth_root = Path(self._data_root) / self._task_name
 
     @property

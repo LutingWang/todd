@@ -1,5 +1,12 @@
 from .._patches import get_logger
 
+__all__ = [
+    'iter_initialized',
+    'init_iter',
+    'get_iter',
+    'inc_iter',
+]
+
 _iter = None
 
 

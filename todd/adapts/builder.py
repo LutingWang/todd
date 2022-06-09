@@ -1,14 +1,5 @@
 import itertools
-from typing import (
-    Any,
-    Dict,
-    Iterable,
-    Iterator,
-    List,
-    Optional,
-    Sequence,
-    Union,
-)
+from typing import Any, Dict, Iterator, List, Optional, Sequence, Union
 
 import einops.layers.torch as einops
 import torch.nn as nn
@@ -52,7 +43,9 @@ class AdaptLayer(BaseModule):
         tensors: Dict[str, Any],
         tensor_names: Optional[List[str]] = None,
     ) -> list:
-        tensor_names = self._tensor_names if tensor_names is None else tensor_names
+        tensor_names = (
+            self._tensor_names if tensor_names is None else tensor_names
+        )
         return [tensors[tensor_name] for tensor_name in tensor_names]
 
     @property

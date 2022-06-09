@@ -19,11 +19,12 @@ import torch
 import torch.nn as nn
 from mmcv.runner import BaseModule
 
+from .._base import inc_iter, init_iter
 from ..adapts import AdaptModuleList, AdaptModuleListCfg
 from ..hooks import HookModuleList, HookModuleListCfg, TrackingModuleList
 from ..hooks import detach as DetachHookContext
 from ..losses import LossModuleList
-from ..utils import ModelLoader, inc_iter, init_iter
+from ..utils import ModelLoader
 from ..visuals import VisualModuleList
 
 
@@ -137,8 +138,10 @@ class BaseDistiller(BaseModule):
         loss_kwargs: Optional[dict] = None,
         debug: bool = False,
     ) -> Dict[str, torch.Tensor]:
-        if adapt_kwargs is None: adapt_kwargs = {}
-        if loss_kwargs is None: loss_kwargs = {}
+        if adapt_kwargs is None:
+            adapt_kwargs = {}
+        if loss_kwargs is None:
+            loss_kwargs = {}
 
         for i, trackings in self._trackings.items():
             trackings.register_tensor(self._models[i])

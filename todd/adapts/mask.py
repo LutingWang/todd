@@ -1,6 +1,6 @@
 import math
 from abc import abstractmethod
-from typing import Any, Callable, List, Tuple
+from typing import List, Tuple
 
 import einops
 import torch
@@ -20,11 +20,6 @@ class MultiLevelMask:
     ):
         self._strides = strides
         self._ceil_mode = ceil_mode
-        if ceil_mode:
-            div = lambda a, b: math.ceil(a / b)
-        else:
-            div = lambda a, b: a // b
-        self._div: Callable[[int, int], int] = div
         super().__init__(*args, **kwargs)
 
     @property
@@ -40,6 +35,11 @@ class MultiLevelMask:
         **kwargs,
     ) -> torch.Tensor:
         pass
+
+    def _div(self, a: int, b: int) -> int:
+        if self._ceil_mode:
+            return math.ceil(a / b)
+        return a // b
 
     def forward(
         self,
@@ -325,7 +325,10 @@ class FGFIMask(BaseAdapt):
 #         labels: torch.Tensor,
 #     ) -> torch.Tensor:
 #         masks = bboxes.new_zeros(self._num_classes, *shape)
-#         for (x0, y0, x1, y1), label in zip(bboxes.int().tolist(), labels.tolist()):
+#         for (x0, y0, x1, y1), label in zip(
+#             bboxes.int().tolist(),
+#             labels.tolist(),
+#         ):
 #             masks[label, y0:y1 + 1, x0:x1 + 1] = 1
 #         return masks
 

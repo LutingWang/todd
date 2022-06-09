@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import Callable, Optional
+from typing import Optional
 
 import torch
 import torch.nn.functional as F

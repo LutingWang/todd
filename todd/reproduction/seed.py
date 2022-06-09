@@ -1,5 +1,6 @@
 import hashlib
 import random
+from contextlib import ContextDecorator
 from typing import Any, cast
 
 import numpy as np
@@ -7,8 +8,8 @@ import torch
 import torch.backends.cudnn as cudnn
 import torch.distributed as dist
 
+from .._base import get_iter, iter_initialized
 from .._patches import get_logger, get_rank, get_world_size
-from ..utils import DecoratorContextManager, get_iter, iter_initialized
 
 
 def _randint(high: int = 2**30) -> int:
@@ -47,7 +48,7 @@ def init_seed(
         cudnn.benchmark = not deterministic
 
 
-class set_seed_temp(DecoratorContextManager):
+class set_seed_temp(ContextDecorator):
 
     def __init__(
         self,

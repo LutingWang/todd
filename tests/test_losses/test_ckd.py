@@ -79,7 +79,7 @@ class TestCKD:
 
     @pytest.fixture(scope='class')
     def result(self) -> Dict[str, dict]:
-        filename = os.path.join(os.path.dirname(__file__), f'ckd.pth')
+        filename = os.path.join(os.path.dirname(__file__), 'ckd.pth')
         return torch.load(filename, map_location='cpu')
 
     @torch.no_grad()

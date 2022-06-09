@@ -1,6 +1,6 @@
 """Toolkit for Object Detection Distillation."""
+from . import _patches  # noqa: F401
 from . import (
-    _patches,
     adapts,
     distillers,
     hooks,
@@ -10,8 +10,8 @@ from . import (
     utils,
     visuals,
 )
-from ._base import *
-from ._patches import *
+from ._base import *  # noqa: F401,F403
+from ._patches import *  # noqa: F401,F403
 
 __all__ = [
     'adapts',

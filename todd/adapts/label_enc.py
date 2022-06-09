@@ -48,9 +48,9 @@ class Bottleneck(BaseModule):
 
     def init_weights(self):
         assert not self.is_init
-        for l in self.children():
-            assert isinstance(l, nn.Conv2d)
-            nn.init.kaiming_uniform_(l.weight, a=1)
+        for layer in self.children():
+            assert isinstance(layer, nn.Conv2d)
+            nn.init.kaiming_uniform_(layer.weight, a=1)
         self._is_init = True
 
     def forward(self, x):

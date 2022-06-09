@@ -9,6 +9,10 @@ import torch.nn.functional as F
 from .base import BaseVisual
 from .builder import VISUALS
 
+__all__ = [
+    'ActivationVisual',
+]
+
 
 @VISUALS.register_module()
 class ActivationVisual(BaseVisual):

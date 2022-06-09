@@ -1,9 +1,9 @@
 from abc import abstractmethod, abstractproperty
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 import torch.nn as nn
 
-from ..utils import getattr_recur
+from .._base import getattr_recur
 
 
 class BaseHook:

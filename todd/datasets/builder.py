@@ -1,4 +1,4 @@
-from typing import Any, Union
+from typing import Union
 
 from ..utils import build_metas
 from .base import BaseAccessLayer, BaseDataset

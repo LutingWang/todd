@@ -1,5 +1,11 @@
-from contextlib import AbstractContextManager
+from contextlib import ContextDecorator
 from typing import Any
+
+__all__ = [
+    'getattr_recur',
+    'setattr_recur',
+    'setattr_temp',
+]
 
 
 def getattr_recur(obj: Any, attr: str, allow_list: bool = False) -> Any:
@@ -23,7 +29,7 @@ def setattr_recur(obj: Any, attr: str, value: Any, allow_list: bool = False):
         setattr(obj, attr, value)
 
 
-class setattr_temp(AbstractContextManager):
+class setattr_temp(ContextDecorator):
 
     def __init__(
         self,
