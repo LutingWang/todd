@@ -1,19 +1,183 @@
+from functools import partial
+from queue import Queue
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    Optional,
+    Protocol,
+    TypeVar,
+    overload,
+)
+
 import torch.nn as nn
-from mmcv.utils import Registry
 
 __all__ = [
     'NORM_LAYERS',
+    'Registry',
 ]
 
-NORM_LAYERS = Registry('norm layer')
-NORM_LAYERS.register_module('BN', module=nn.BatchNorm2d)
-NORM_LAYERS.register_module('BN1d', module=nn.BatchNorm1d)
-NORM_LAYERS.register_module('BN2d', module=nn.BatchNorm2d)
-NORM_LAYERS.register_module('BN3d', module=nn.BatchNorm3d)
-NORM_LAYERS.register_module('SyncBN', module=nn.SyncBatchNorm)
-NORM_LAYERS.register_module('GN', module=nn.GroupNorm)
-NORM_LAYERS.register_module('LN', module=nn.LayerNorm)
-NORM_LAYERS.register_module('IN', module=nn.InstanceNorm2d)
-NORM_LAYERS.register_module('IN1d', module=nn.InstanceNorm1d)
-NORM_LAYERS.register_module('IN2d', module=nn.InstanceNorm2d)
-NORM_LAYERS.register_module('IN3d', module=nn.InstanceNorm3d)
+
+class ModuleProto(Protocol):
+    __name__: str
+
+
+ModuleType = TypeVar('ModuleType', bound=ModuleProto)
+BuildFunc = Callable[['Registry', Dict[str, Any], Optional[Dict[str, Any]]],
+                     ModuleProto]
+
+
+class Registry:
+    _build_func: Optional[BuildFunc]
+
+    def __init__(
+        self,
+        name: str,
+        parent: Optional['Registry'] = None,
+        build_func: Optional[BuildFunc] = None,
+    ) -> None:
+        assert '.' not in name
+        if parent is not None:
+            parent._children[name] = (self)
+            if build_func is None:
+                build_func = parent._build_func
+
+        self._name = name
+        self._parent = parent
+        self._build_func = build_func
+
+        self._modules: Dict[str, ModuleProto] = dict()
+        self._children: Dict[str, 'Registry'] = dict()
+
+    @property
+    def name(self) -> str:
+        return self._name
+
+    @property
+    def parent(self) -> Optional['Registry']:
+        return self._parent
+
+    @property
+    def modules(self) -> Dict[str, ModuleProto]:
+        return self._modules
+
+    @property
+    def children(self) -> Dict[str, 'Registry']:
+        return self._children
+
+    @property
+    def root(self) -> 'Registry':
+        if self._parent is None:
+            return self
+        return self._parent.root
+
+    def __len__(self) -> int:
+        return len(self._modules)
+
+    def __contains__(self, key: str) -> bool:
+        return self.get(key) is not None
+
+    def __getitem__(self, key: str) -> ModuleProto:
+        item = self.get(key)
+        if item is None:
+            raise KeyError(f'{key} does not exist in {self.name} registry')
+        return item
+
+    def _register_module(
+        self,
+        cls: ModuleType,
+        name: Optional[str] = None,
+        aliases: Iterable[str] = tuple(),
+        force: bool = False,
+    ) -> ModuleType:
+        if name is None:
+            name = cls.__name__
+        names = [name] + list(aliases)
+        if not force and len(names & self._modules.keys()) > 0:
+            raise KeyError(f'{name} already exists in {self.name} registry')
+        self._modules.update({name: cls for name in names})
+        return cls
+
+    @overload
+    def register_module(
+        self,
+        *,
+        name: Optional[str] = None,
+        aliases: Iterable[str] = tuple(),
+        force: bool = False,
+    ) -> Callable[[ModuleType], ModuleType]:
+        ...
+
+    @overload
+    def register_module(
+        self,
+        cls: ModuleType,
+        *,
+        name: Optional[str] = None,
+        aliases: Iterable[str] = tuple(),
+        force: bool = False,
+    ) -> ModuleType:
+        ...
+
+    def register_module(
+        self,
+        cls=None,
+        *,
+        name=None,
+        aliases=tuple(),
+        force=False,
+    ):
+        register = partial(
+            self._register_module,
+            name=name,
+            aliases=aliases,
+            force=force,
+        )
+        if cls is None:
+            return register
+        return register(cls=cls)
+
+    def get(self, key: str) -> Optional[ModuleProto]:
+        if '.' not in key:
+            return self._modules.get(key)
+        name, subkey = key.split('.', 1)
+        if name not in self._children:
+            return None
+        return self._children[name].get(subkey)
+
+    def build(
+        self,
+        cfg: Dict,
+        default_args: Optional[Dict[str, Any]] = None,
+    ) -> ModuleProto:
+        if self._build_func is not None:
+            return self._build_func(self, cfg, default_args)
+
+        cfg = cfg.copy()
+        if default_args is not None:
+            for k, v in default_args.items():
+                cfg.setdefault(k, v)
+
+        if 'type' not in cfg:
+            raise KeyError(f'{cfg} cfg does not specify type')
+
+        type_ = cfg.pop('type')
+        if isinstance(type_, str):
+            type_ = self[type_]
+        try:
+            return type_(**cfg)
+        except Exception as e:
+            raise type(e)(f'{type_.__name__}: {e}')
+
+
+NORM_LAYERS = Registry('norm layers')
+NORM_LAYERS.register_module(cls=nn.BatchNorm1d, name='BN1d')
+NORM_LAYERS.register_module(cls=nn.BatchNorm2d, name='BN2d', aliases=['BN'])
+NORM_LAYERS.register_module(cls=nn.BatchNorm3d, name='BN3d')
+NORM_LAYERS.register_module(cls=nn.SyncBatchNorm, name='SyncBN')
+NORM_LAYERS.register_module(cls=nn.GroupNorm, name='GN')
+NORM_LAYERS.register_module(cls=nn.LayerNorm, name='LN')
+NORM_LAYERS.register_module(cls=nn.InstanceNorm1d, name='IN1d')
+NORM_LAYERS.register_module(cls=nn.InstanceNorm2d, name='IN2d', aliases=['IN'])
+NORM_LAYERS.register_module(cls=nn.InstanceNorm3d, name='IN3d')
