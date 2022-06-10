@@ -343,9 +343,14 @@ class TestRegistry:
         assert isinstance(model, ResNeXt)
         assert model.depth == 50 and model.stages == 3
 
+        def transform_build_func(registry: Registry, cfg: dict):
+            type_ = registry[cfg.pop('transformer_class')]
+            return type_(depth=100, stages=8)  # type: ignore[operator]
+
         TRANSFORMER_BACKBONES = Registry(
             'transformer_backbone',
             parent=BACKBONES,
+            build_func=transform_build_func,
         )
 
         @TRANSFORMER_BACKBONES.register_module()
@@ -355,7 +360,7 @@ class TestRegistry:
                 self.depth = depth
                 self.stages = stages
 
-        cfg = dict(class_='Transformer')
+        cfg = dict(transformer_class='Transformer')
         model = TRANSFORMER_BACKBONES.build(cfg)
         assert isinstance(model, Transformer)
-        assert model.depth == 50 and model.stages == 3
+        assert model.depth == 100 and model.stages == 8
