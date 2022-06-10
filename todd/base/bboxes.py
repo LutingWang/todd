@@ -303,7 +303,9 @@ class BBoxesXY(BBoxes):
 
         lt.clamp_min_(0)
         if image_shape is not None:
-            rb.clamp_max_(torch.as_tensor(image_shape))
+            h, w = image_shape
+            rb[:, 0].clamp_max_(w)
+            rb[:, 1].clamp_max_(h)
 
         return self._BBoxType(lt, rb)
 
