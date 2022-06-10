@@ -32,6 +32,12 @@ class BBoxes(Sized):
         """
         if isinstance(bboxes, np.ndarray):
             bboxes = torch.from_numpy(bboxes)
+        if bboxes.numel() == 0:
+            raise ValueError('bboxes is empty')
+        if bboxes.ndim < 2:
+            raise ValueError('bboxes must be at least 2-dim')
+        if bboxes.shape[-1] != 4:
+            raise ValueError('bboxes must have 4 columns')
         self._bboxes = bboxes
 
     def __len__(self) -> int:
@@ -100,9 +106,6 @@ class BBoxes(Sized):
     def to_tensor(self) -> torch.Tensor:
         return self._bboxes
 
-    def empty(self) -> bool:
-        return len(self) == 0
-
     @property
     def shapes(self) -> torch.Tensor:
         return self.wh
@@ -112,7 +115,7 @@ class BBoxes(Sized):
         return self.width * self.height
 
     @classmethod
-    def cat(cls: Type[T], a: T, b: T) -> T:
+    def _cat(cls: Type[T], a: T, b: T) -> T:
         """
         Args:
             a: *1 x 4
@@ -124,11 +127,14 @@ class BBoxes(Sized):
         bboxes = torch.cat([a.to_tensor(), b.to_tensor()])
         return cls(bboxes)
 
+    def cat(self: T, other: T) -> T:
+        return self._cat(self, other)
+
     def __add__(self: T, other: T) -> T:
-        return self.cat(self, other)
+        return self.cat(other)
 
     @classmethod
-    def select(
+    def _select(
         cls: Type[T],
         bboxes: T,
         indices: Union[int, slice, torch.Tensor, List[int], Tuple[int, ...]],
@@ -143,14 +149,20 @@ class BBoxes(Sized):
         """
         return cls(bboxes.to_tensor()[indices])
 
+    def select(
+        self: T,
+        indices: Union[int, slice, torch.Tensor, List[int], Tuple[int, ...]],
+    ) -> T:
+        return self._select(self, indices)
+
     def __getitem__(
         self: T,
         indices: Union[int, slice, torch.Tensor, List[int], Tuple[int, ...]],
     ) -> T:
-        return self.select(self, indices)
+        return self.select(indices)
 
     @classmethod
-    def intersections(cls: Type[T], a: T, b: T) -> torch.Tensor:
+    def _intersections(cls: Type[T], a: T, b: T) -> torch.Tensor:
         """
         Args:
             a: *1 x 4
@@ -171,11 +183,14 @@ class BBoxes(Sized):
         wh = wh.clamp_min_(0)
         return wh[..., 0] * wh[..., 1]
 
+    def intersections(self: T, other: T) -> torch.Tensor:
+        return self._intersections(self, other)
+
     def __and__(self: T, other: T) -> torch.Tensor:
-        return self.intersections(self, other)
+        return self.intersections(other)
 
     @classmethod
-    def unions(
+    def _unions(
         cls: Type[T],
         a: T,
         b: T,
@@ -194,16 +209,17 @@ class BBoxes(Sized):
             intersections = cls.intersections(a, b)
         return a.areas[:, None] + b.areas[None, :] - intersections
 
-    def __or__(self: T, other: T) -> torch.Tensor:
-        return self.unions(self, other)
-
-    @classmethod
-    def ious(
-        cls: Type[T],
-        a: T,
-        b: T,
-        eps: float = 1e-6,
+    def unions(
+        self: T,
+        other: T,
+        intersections: Optional[torch.Tensor] = None,
     ) -> torch.Tensor:
+        return self._unions(self, other, intersections)
+
+    def __or__(self: T, other: T) -> torch.Tensor:
+        return self.unions(other)
+
+    def ious(self: T, other: T, eps: float = 1e-6) -> torch.Tensor:
         """
         Args:
             a: *1 x 4
@@ -212,22 +228,22 @@ class BBoxes(Sized):
         Returns:
             ious: *1 x *2
         """
-        if a.empty() or b.empty():
-            return a.to_tensor().new_empty((len(a), len(b)))
-
-        intersections = a & b
-        unions = cls.unions(a, b, intersections).clamp_min_(eps)
+        intersections = self & other
+        unions = self.unions(other, intersections).clamp_min_(eps)
         ious = intersections / unions
         return ious
 
     @classmethod
     @abstractmethod
-    def round(cls: Type[T], bboxes: T) -> T:
+    def _round(cls: Type[T], bboxes: T) -> T:
         pass
+
+    def round(self: T) -> T:
+        return self._round(self)
 
     @classmethod
     @abstractmethod
-    def expand(
+    def _expand(
         cls: Type[T],
         bboxes: T,
         ratio: float,
@@ -241,6 +257,13 @@ class BBoxes(Sized):
             expanded_bboxes: n x 4
         """
         pass
+
+    def expand(
+        self: T,
+        ratio: float,
+        image_shape: Optional[Tuple[int, int]] = None,
+    ) -> T:
+        return self._expand(self, ratio, image_shape)
 
 
 T_XY = TypeVar('T_XY', bound='BBoxesXY')
@@ -264,12 +287,12 @@ class BBoxesXY(BBoxes):
     def lt(self) -> torch.Tensor:
         return self._bboxes[:, :2]
 
-    def _round(self) -> 'BBoxesXY._BBoxType':
+    def _round_lt_rb(self) -> 'BBoxesXY._BBoxType':
         lt = self.lt.floor()
         rb = self.rb.ceil()
         return self._BBoxType(lt, rb)
 
-    def _expand(
+    def _expand_lt_rb(
         self,
         ratio: float,
         image_shape: Optional[Tuple[int, int]] = None,
@@ -328,19 +351,19 @@ class BBoxesXYXY(BBoxesXY):
         return (self.lt + self.rb) / 2
 
     @classmethod
-    def round(cls: Type[T_XY], bboxes: T_XY) -> T_XY:
-        lt, rb = bboxes._round()
+    def _round(cls: Type[T_XY], bboxes: T_XY) -> T_XY:
+        lt, rb = bboxes._round_lt_rb()
         rounded_bboxes = torch.cat([lt, rb], dim=-1)
         return cls(rounded_bboxes)
 
     @classmethod
-    def expand(
+    def _expand(
         cls: Type[T_XY],
         bboxes: T_XY,
         ratio: float,
         image_shape: Optional[Tuple[int, int]] = None,
     ) -> T_XY:
-        lt, rb = bboxes._expand(ratio, image_shape)
+        lt, rb = bboxes._expand_lt_rb(ratio, image_shape)
         expanded_bboxes = torch.cat([lt, rb], dim=-1)
         return cls(expanded_bboxes)
 
@@ -384,18 +407,18 @@ class BBoxesXYWH(BBoxesXY):
         return self.lt + self.wh / 2
 
     @classmethod
-    def round(cls: Type[T_XY], bboxes: T_XY) -> T_XY:
-        lt, rb = bboxes._round()
+    def _round(cls: Type[T_XY], bboxes: T_XY) -> T_XY:
+        lt, rb = bboxes._round_lt_rb()
         rounded_bboxes = torch.cat([lt, rb - lt], dim=-1)
         return cls(rounded_bboxes)
 
     @classmethod
-    def expand(
+    def _expand(
         cls: Type[T_XY],
         bboxes: T_XY,
         ratio: float,
         image_shape: Optional[Tuple[int, int]] = None,
     ) -> T_XY:
-        lt, rb = bboxes._expand(ratio, image_shape)
+        lt, rb = bboxes._expand_lt_rb(ratio, image_shape)
         expanded_bboxes = torch.cat([lt, rb - lt], dim=-1)
         return cls(expanded_bboxes)

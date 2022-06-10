@@ -1,4 +1,5 @@
 [flake8]
+ignore = E126,E201,E241
 extend-exclude =
     build/
 per-file-ignores =
