@@ -1,6 +1,6 @@
 import pytest
 
-from todd._base import Registry
+from todd.base import Registry
 
 
 class TestRegistry:

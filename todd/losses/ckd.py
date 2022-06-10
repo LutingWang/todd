@@ -4,8 +4,8 @@ import torch
 import torch.distributed as dist
 import torch.nn.functional as F
 
-from .._base import BBoxesXYXY
 from .._patches import get_rank, get_world_size
+from ..base import BBoxesXYXY
 from .base import BaseLoss
 from .builder import LOSSES
 

@@ -1,6 +1,6 @@
 import pytest
 
-from todd._base import get_iter, init_iter, iter_initialized
+from todd.base import get_iter, init_iter, iter_initialized
 
 
 @pytest.fixture

@@ -6,7 +6,7 @@ from typing import Generic, Optional, Sequence, TypeVar
 import cv2
 import numpy as np
 
-from .._base import get_iter
+from ..base import get_iter
 from .base import BaseVisual
 from .builder import VISUALS
 

@@ -1,0 +1,6 @@
+[flake8]
+extend-exclude =
+    build/
+per-file-ignores =
+    todd/__init__.py:F401,F403
+    todd/**/__init__.py:F401,F403

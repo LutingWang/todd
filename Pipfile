@@ -23,6 +23,7 @@ pre-commit = "*"
 codespell = "*"
 coverage = "*"
 docformatter = "*"
+flake8 = "*"
 
 [dev-packages]
 

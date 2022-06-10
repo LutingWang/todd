@@ -19,8 +19,8 @@ import torch
 import torch.nn as nn
 from mmcv.runner import BaseModule
 
-from .._base import inc_iter, init_iter
 from ..adapts import AdaptModuleList, AdaptModuleListCfg
+from ..base import inc_iter, init_iter
 from ..hooks import HookModuleList, HookModuleListCfg, TrackingModuleList
 from ..hooks import detach as DetachHookContext
 from ..losses import LossModuleList

@@ -5,7 +5,7 @@ import torch.nn as nn
 from mmcv.runner import ModuleList
 from mmcv.utils import Registry
 
-from .._base import getattr_recur
+from ..base import getattr_recur
 from .base import BaseHook
 
 HOOKS = Registry('hooks')

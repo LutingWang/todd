@@ -3,7 +3,7 @@ from typing import Any, Dict
 
 import torch.nn as nn
 
-from .._base import getattr_recur
+from ..base import getattr_recur
 
 
 class BaseHook:

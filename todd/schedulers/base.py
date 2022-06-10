@@ -3,7 +3,7 @@ import numbers
 from abc import abstractmethod
 from typing import Optional
 
-from .._base import get_iter
+from ..base import get_iter
 
 __all__ = [
     'BaseScheduler',
