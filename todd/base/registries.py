@@ -104,7 +104,7 @@ class Registry:
         name: Optional[str] = None,
         aliases: Iterable[str] = tuple(),
         force: bool = False,
-    ) -> Callable[[ModuleType], ModuleType]:  # pragma: no cover
+    ) -> Callable[[ModuleType], ModuleType]:
         ...
 
     @overload
@@ -115,7 +115,7 @@ class Registry:
         name: Optional[str] = None,
         aliases: Iterable[str] = tuple(),
         force: bool = False,
-    ) -> ModuleType:  # pragma: no cover
+    ) -> ModuleType:
         ...
 
     def register_module(
