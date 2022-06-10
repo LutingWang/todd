@@ -342,3 +342,20 @@ class TestRegistry:
         model = BACKBONES.build(cfg)
         assert isinstance(model, ResNeXt)
         assert model.depth == 50 and model.stages == 3
+
+        TRANSFORMER_BACKBONES = Registry(
+            'transformer_backbone',
+            parent=BACKBONES,
+        )
+
+        @TRANSFORMER_BACKBONES.register_module()
+        class Transformer:
+
+            def __init__(self, depth, stages=4):
+                self.depth = depth
+                self.stages = stages
+
+        cfg = dict(class_='Transformer')
+        model = TRANSFORMER_BACKBONES.build(cfg)
+        assert isinstance(model, Transformer)
+        assert model.depth == 50 and model.stages == 3
