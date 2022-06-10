@@ -310,3 +310,35 @@ class TestRegistry:
         cfg = dict(type='ResNet', non_existing_arg=50)
         with pytest.raises(TypeError):
             model = BACKBONES.build(cfg)
+
+    def test_build_func(self):
+
+        def build_func(registry: Registry, cfg: dict):
+            type_ = registry[cfg.pop('class_')]
+            return type_(depth=50, stages=3)  # type: ignore[operator]
+
+        BACKBONES = Registry('backbone', build_func=build_func)
+
+        @BACKBONES.register_module()
+        class ResNet:
+
+            def __init__(self, depth, stages=4):
+                self.depth = depth
+                self.stages = stages
+
+        @BACKBONES.register_module()
+        class ResNeXt:
+
+            def __init__(self, depth, stages=4):
+                self.depth = depth
+                self.stages = stages
+
+        cfg = dict(class_='ResNet')
+        model = BACKBONES.build(cfg)
+        assert isinstance(model, ResNet)
+        assert model.depth == 50 and model.stages == 3
+
+        cfg = dict(class_='ResNeXt')
+        model = BACKBONES.build(cfg)
+        assert isinstance(model, ResNeXt)
+        assert model.depth == 50 and model.stages == 3

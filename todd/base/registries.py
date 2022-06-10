@@ -23,8 +23,7 @@ class ModuleProto(Protocol):
 
 
 ModuleType = TypeVar('ModuleType', bound=ModuleProto)
-BuildFunc = Callable[['Registry', Dict[str, Any], Optional[Dict[str, Any]]],
-                     ModuleProto]
+BuildFunc = Callable[['Registry', Dict[str, Any]], Any]
 
 
 class Registry:
@@ -149,14 +148,14 @@ class Registry:
         self,
         cfg: Dict,
         default_args: Optional[Dict[str, Any]] = None,
-    ) -> ModuleProto:
-        if self._build_func is not None:
-            return self._build_func(self, cfg, default_args)
-
+    ):
         cfg = cfg.copy()
         if default_args is not None:
             for k, v in default_args.items():
                 cfg.setdefault(k, v)
+
+        if self._build_func is not None:
+            return self._build_func(self, cfg)
 
         if 'type' not in cfg:
             raise KeyError(f'{cfg} cfg does not specify type')
