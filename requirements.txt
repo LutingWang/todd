@@ -9,6 +9,7 @@ mypy
 opencv-python
 pandas
 pre-commit
+pydocstyle
 pytest
 python-docs-theme
 setuptools

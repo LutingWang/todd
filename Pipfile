@@ -26,6 +26,7 @@ docformatter = "*"
 flake8 = "*"
 sphinx = "*"
 python-docs-theme = "*"
+pydocstyle = "*"
 
 [dev-packages]
 
