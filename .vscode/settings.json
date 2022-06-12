@@ -1,5 +1,6 @@
 {
     "yaml.schemas": {
         "https://json.schemastore.org/github-workflow.json": "file:///Users/lutingwang/Developer/todd/.github/workflows/build.yaml"
-    }
+    },
+    "C_Cpp.default.configurationProvider": "ms-vscode.makefile-tools"
 }

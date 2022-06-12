@@ -24,6 +24,8 @@ codespell = "*"
 coverage = "*"
 docformatter = "*"
 flake8 = "*"
+sphinx = "*"
+python-docs-theme = "*"
 
 [dev-packages]
 

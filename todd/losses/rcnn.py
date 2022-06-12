@@ -43,6 +43,7 @@ class SGFILoss(MSELoss):
             pred: l x r x c x h x w
                 Each of the `l` levels generate `r` RoIs.
                 Typical shape is 4 x 1024 x 256 x 7 x 7.
+
             target: r x c x h x w
 
         Returns:

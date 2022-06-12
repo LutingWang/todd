@@ -23,8 +23,10 @@ def ckd_loss(
     Args:
         pred: n x dim
             Normalized predictions.
+
         target: m x dim
             Normalized targets. First `n` targets correspond to `pred`.
+
         ignore: (n, n)
 
     Returns:

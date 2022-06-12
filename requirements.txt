@@ -10,7 +10,9 @@ opencv-python
 pandas
 pre-commit
 pytest
+python-docs-theme
 setuptools
+sphinx
 timm
 # torch
 # torchvision
