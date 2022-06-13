@@ -1,0 +1,6 @@
+codespell
+isort
+mypy
+pre-commit
+pydocstyle
+yapf
