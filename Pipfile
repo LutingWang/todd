@@ -27,6 +27,7 @@ flake8 = "*"
 sphinx = "*"
 python-docs-theme = "*"
 pydocstyle = "*"
+sphinx-rtd-theme = "*"
 
 [dev-packages]
 

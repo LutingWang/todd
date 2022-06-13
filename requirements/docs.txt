@@ -1,2 +1,3 @@
 python-docs-theme
 sphinx
+sphinx_rtd_theme

@@ -12,7 +12,13 @@ Welcome to todd's documentation!
    :caption: Get Started:
 
    get_started/*
-   api
+
+.. toctree::
+   :glob:
+   :maxdepth: 2
+   :caption: API Reference:
+
+   api_reference/*
 
 Indices and tables
 ==================
