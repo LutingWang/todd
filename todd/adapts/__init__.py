@@ -10,7 +10,7 @@ from .builder import (
 from .custom import Custom
 from .decouple import Decouple
 from .detach import Detach, ListDetach
-from .dict_tensor import Intersect, Union
+from .dict_tensor import *
 from .iou import IoU
 from .label_enc import LabelEncAdapt
 from .list_tensor import Index, Stack
@@ -31,8 +31,6 @@ __all__ = [
     'Decouple',
     'Detach',
     'ListDetach',
-    'Union',
-    'Intersect',
     'IoU',
     'LabelEncAdapt',
     'Stack',

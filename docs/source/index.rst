@@ -12,19 +12,7 @@ Welcome to todd's documentation!
    :caption: Get Started:
 
    get_started/*
-
-.. toctree::
-   :glob:
-   :maxdepth: 2
-   :caption: APIs:
-
-   apis/todd.*
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Modules:
-
-   apis/modules
+   api
 
 Indices and tables
 ==================

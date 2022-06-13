@@ -18,6 +18,12 @@ import torch
 from .base import BaseAdapt
 from .builder import ADAPTS
 
+__all__ = [
+    'DictTensor',
+    'Union_',
+    'Intersect',
+]
+
 KeyType = Tuple[int, ...]
 
 
