@@ -34,7 +34,7 @@ class FunctionalLoss(BaseLoss):
         else:
             loss = self.func(pred, target, *args, reduction='none', **kwargs)
             loss = self.reduce(loss, mask)
-        return self.weight(loss)
+        return loss
 
 
 # TODO: move to mimic.py

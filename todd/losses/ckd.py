@@ -122,4 +122,4 @@ class CKDLoss(BaseLoss):
             ignore = (torch.cat(ignore_x), torch.cat(ignore_y))
             loss = ckd_loss(preds, self._memory_pool.memory, ignore)
 
-        return self.weight(loss)
+        return loss
