@@ -8,8 +8,13 @@ import torch
 import torch.backends.cudnn as cudnn
 import torch.distributed as dist
 
-from .._patches import get_logger, get_rank, get_world_size
-from ..base import get_iter, iter_initialized
+from ..base import (
+    get_iter,
+    get_logger,
+    get_rank,
+    get_world_size,
+    iter_initialized,
+)
 
 
 def _randint(high: int = 2**30) -> int:

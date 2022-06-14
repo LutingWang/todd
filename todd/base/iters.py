@@ -1,4 +1,4 @@
-from .._patches import get_logger
+from .logger import get_logger
 
 __all__ = [
     'iter_initialized',

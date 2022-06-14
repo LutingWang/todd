@@ -1,6 +1,5 @@
 """Toolkit for Object Detection Distillation."""
 from . import (
-    _patches,
     adapts,
     distillers,
     hooks,
@@ -10,7 +9,6 @@ from . import (
     utils,
     visuals,
 )
-from ._patches import *
 from .base import *
 
 __all__ = [

@@ -5,7 +5,7 @@ import torchvision.transforms as transforms
 from packaging import version
 from PIL import Image
 
-from .logging import get_logger
+from ..logger import get_logger
 
 _logger = get_logger()
 

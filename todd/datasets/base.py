@@ -6,7 +6,7 @@ from typing import Any, Generic, Type, TypeVar, Union
 
 from torch.utils.data import Dataset
 
-from .._patches import get_logger
+from ..base import get_logger
 
 T = TypeVar('T')
 

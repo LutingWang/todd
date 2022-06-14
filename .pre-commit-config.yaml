@@ -9,7 +9,7 @@ repos:
     -   id: check-merge-conflict
     -   id: check-yaml
     -   id: debug-statements
-        exclude: ^todd/_patches/builtins.py$
+        exclude: ^todd/base/_patches/builtins.py$
     -   id: end-of-file-fixer
     -   id: fix-encoding-pragma
         args: ["--remove"]
