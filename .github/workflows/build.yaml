@@ -1,7 +1,6 @@
 name: build
 
 on:
-  workflow_dispatch:
   push:
     branches: [ "master" ]
 
@@ -9,6 +8,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         include:
           - python: 3.6

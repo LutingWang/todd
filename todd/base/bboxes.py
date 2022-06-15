@@ -27,7 +27,7 @@ class BBoxes(Sized):
     def __init__(self, bboxes: Union[np.ndarray, torch.Tensor]) -> None:
         """
         Args:
-            bboxes: * x 4
+            bboxes: \\* x 4
                 (x1, y1, x2, y2)
         """
         if isinstance(bboxes, np.ndarray):
