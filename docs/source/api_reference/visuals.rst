@@ -1,0 +1,4 @@
+Visuals
+=======
+
+.. automodule:: todd.visuals
