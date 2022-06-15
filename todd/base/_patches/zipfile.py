@@ -6,10 +6,8 @@ import zipfile
 
 from ..logger import get_logger
 
-_logger = get_logger()
-
 if sys.version_info < (3, 8):
-    _logger.warning("Monkey patching `zipfile.Path`.")
+    get_logger().warning("Monkey patching `zipfile.Path`.")
 
     class Path:
 

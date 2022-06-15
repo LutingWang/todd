@@ -8,10 +8,10 @@ __all__ = [
     'get_world_size',
 ]
 
-_logger = get_logger()
-
 if torch.__version__ < '1.7.0':
-    _logger.warning("Monkey patching `torch.maximum` and `torch.minimum`.")
+    get_logger().warning(
+        "Monkey patching `torch.maximum` and `torch.minimum`.",
+    )
     torch.maximum = torch.max
     torch.Tensor.maximum = torch.Tensor.max
     torch.minimum = torch.min

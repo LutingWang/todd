@@ -3,10 +3,8 @@ import sys
 
 from ..logger import get_logger
 
-_logger = get_logger()
-
 if sys.version_info < (3, 8):
-    _logger.warning("Monkey patching `functools.cached_property`.")
+    get_logger().warning("Monkey patching `functools.cached_property`.")
 
     class cached_property:
 
@@ -27,5 +25,5 @@ if sys.version_info < (3, 8):
     functools.cached_property = cached_property
 
 if sys.version_info < (3, 9):
-    _logger.warning("Monkey patching `functools.cache`.")
+    get_logger().warning("Monkey patching `functools.cache`.")
     functools.cache = functools.lru_cache(maxsize=None)

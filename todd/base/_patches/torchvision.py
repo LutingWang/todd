@@ -7,10 +7,8 @@ from PIL import Image
 
 from ..logger import get_logger
 
-_logger = get_logger()
-
 if version.parse(torchvision.__version__) < version.parse('0.9.0'):
-    _logger.warning(
+    get_logger().warning(
         "Monkey patching `torchvision.transforms.InterpolationMode`.",
     )
 

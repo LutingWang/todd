@@ -2,16 +2,15 @@ import getpass
 import logging
 import os
 import socket
+import sys
 from abc import abstractmethod
 from enum import IntEnum, auto
-from typing import Iterable, Optional
+from typing import Iterable
 
 __all__ = [
     'SGR',
     'get_logger',
 ]
-
-_logger_initialized = False
 
 
 class ANSI(IntEnum):  # fix bug in python<=3.7.1
@@ -74,36 +73,68 @@ class SGR(ANSI):
         return f"\033[{sgr_list}m{text}\033[m"
 
 
-def get_logger(log_file: Optional[str] = None, level: str = 'DEBUG'):
-    global _logger_initialized
-    if not _logger_initialized:
+DEFAULT_FORMAT = (
+    "[%(asctime)s]"
+    "[Todd %(name)s]"
+    "[%(filename)s:%(funcName)s:%(lineno)d]"
+    " %(levelname)s: %(message)s"
+)
 
-        _logger_initialized = True
-        logger = logging.getLogger('Todd')
-        logger.setLevel(getattr(logging, level))
-        worker_pid = (
-            f"{getpass.getuser()}@{socket.gethostname()}:{os.getpid()}"
-        )
-        formatter = logging.Formatter(
-            fmt=(  # yapf: disable
-                f"[{worker_pid:s}][%(asctime)s]"
-                "[%(filename)s:%(funcName)s:%(lineno)d] "
-                + SGR.format(
-                    "%(name)s %(levelname)s:", sgr=(SGR.BOLD, SGR.FG_BLUE),
-                ) +
-                "\n%(message)s"
+
+# pragma: no cover
+class Formatter(logging.Formatter):
+    FORMATTERS = dict(
+        zip(
+            (
+                logging.DEBUG,
+                logging.WARNING,
+                logging.ERROR,
+                logging.CRITICAL,
             ),
-            datefmt="%Y-%m-%d %H:%M:%S",
-        )
+            map(
+                lambda sgr: logging.Formatter(
+                    SGR.format(DEFAULT_FORMAT, sgr),
+                ),
+                (
+                    (SGR.FAINT, ),
+                    (SGR.BOLD, SGR.FG_YELLOW),
+                    (SGR.BOLD, SGR.FG_RED),
+                    (SGR.BOLD, SGR.BLINK_SLOW, SGR.FG_RED),
+                ),
+            ),
+        ),
+    )
+
+    def __init__(self) -> None:
+        super().__init__(DEFAULT_FORMAT)
+
+    def format(self, record: logging.LogRecord) -> str:
+        formatter = self.FORMATTERS.get(record.levelno)
+        if formatter is None:
+            return super().format(record)
+        return formatter.format(record)
+
+
+def get_logger(log_file=None) -> logging.Logger:
+    name = sys._getframe(1).f_globals.get('__name__')
+    logger = logging.getLogger(name)
+    if not getattr(logger, '_isinitialized', False):
+        logger._isinitialized = True  # type: ignore[attr-defined]
+        logger.setLevel(logging.DEBUG)
+        logger.addHandler(logging.StreamHandler())
         if log_file:
-            fh = logging.FileHandler(log_file)
-            fh.setFormatter(formatter)
-            logger.addHandler(fh)
-        sh = logging.StreamHandler()
-        sh.setFormatter(formatter)
-        logger.addHandler(sh)
+            logger.addHandler(logging.FileHandler(log_file))
+        formatter = Formatter()
+        for handler in logger.handlers:
+            handler.setFormatter(formatter)
         logger.propagate = False
-    return logging.getLogger('Todd')
+        logger.debug(
+            f"logger initialized by"
+            f" {getpass.getuser()}"
+            f"@{socket.gethostname()}"
+            f":{os.getpid()}"
+        )
+    return logger
 
 
 if __name__ == '__main__':
