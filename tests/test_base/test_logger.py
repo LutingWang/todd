@@ -4,7 +4,7 @@ import re
 
 import pytest
 
-from todd.base.logger import ANSI, SGR, get_logger
+from todd.base._extensions.logging import ANSI, SGR, get_logger
 
 
 class TestANSI:

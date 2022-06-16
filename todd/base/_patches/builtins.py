@@ -1,6 +1,6 @@
 import builtins
 
-from ..logger import get_logger
+from .._extensions import get_logger
 
 try:
     import ipdb

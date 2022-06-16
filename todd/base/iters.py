@@ -1,4 +1,4 @@
-from .logger import get_logger
+from ._extensions import get_logger
 
 __all__ = [
     'iter_initialized',

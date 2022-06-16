@@ -1,4 +1,4 @@
-from .logger import *  # isort: skip
+from ._extensions import *
 from ._patches import *
 from .attrs import *
 from .bboxes import *

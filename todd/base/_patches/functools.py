@@ -1,7 +1,7 @@
 import functools
 import sys
 
-from ..logger import get_logger
+from .._extensions import get_logger
 
 if sys.version_info < (3, 8):
     get_logger().warning("Monkey patching `functools.cached_property`.")
