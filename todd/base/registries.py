@@ -6,8 +6,10 @@ from typing import (
     Iterable,
     Optional,
     Protocol,
+    Type,
     TypeVar,
     overload,
+    runtime_checkable,
 )
 
 import torch.nn as nn
@@ -18,6 +20,7 @@ __all__ = [
 ]
 
 
+@runtime_checkable
 class ModuleProto(Protocol):
     __name__: str
 
@@ -32,6 +35,7 @@ class Registry:
     def __init__(
         self,
         name: str,
+        base: Optional[Type[ModuleType]] = None,
         parent: Optional['Registry'] = None,
         build_func: Optional[BuildFunc] = None,
     ) -> None:
@@ -42,6 +46,7 @@ class Registry:
                 build_func = parent._build_func
 
         self._name = name
+        self._base = base
         self._parent = parent
         self._build_func = build_func
 
@@ -144,13 +149,46 @@ class Registry:
             return None
         return self._children[name].get(subkey)
 
+    @overload
     def build(
         self,
-        cfg: Dict,
-        default_args: Optional[Dict[str, Any]] = None,
-    ):
+        cfg: ModuleType,
+    ) -> ModuleType:
+        pass
+
+    @overload
+    def build(
+        self,
+        cfg: dict,
+        default_args: Optional[dict] = None,
+    ) -> ModuleType:
+        pass
+
+    def build(self, cfg, default_args=None):
+        if self._base is not None and isinstance(cfg, self._base):
+            if default_args is not None:
+                raise ValueError(
+                    '`default_args` is not supported when `cfg` is an '
+                    f'instance of {self._base.__name__}'
+                )
+            return cfg
+
+        if not isinstance(cfg, dict):
+            if self._base is None:
+                message = f"cfg must be a dictionary, but got {type(cfg)}"
+            else:
+                message = (
+                    f"cfg must be an instance of {self._base.__name__} or a "
+                    f"dictionary, but got {type(cfg)}"
+                )
+            raise TypeError(message)
         cfg = cfg.copy()
         if default_args is not None:
+            if not isinstance(default_args, dict):
+                raise TypeError(
+                    "default_args must be a dictionary, but got "
+                    f"{type(default_args)}"
+                )
             for k, v in default_args.items():
                 cfg.setdefault(k, v)
 
@@ -166,7 +204,11 @@ class Registry:
         try:
             return type_(**cfg)
         except Exception as e:
-            raise type(e)(f'{type_.__name__}: {e}')
+            # raise type(e)(f'{type_.__name__}: {e}')
+            raise RuntimeError(
+                f'Registry {self.name} failed to build {type_.__name__} with '
+                f'cfg {cfg}. {e.__class__.__name__}: {e}'
+            )
 
 
 NORM_LAYERS = Registry('norm layers')

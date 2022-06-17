@@ -263,53 +263,99 @@ class TestRegistry:
                 self.depth = depth
                 self.stages = stages
 
+        model = BACKBONES.build(dict(type='ResNet', depth=50))
+        assert isinstance(model, ResNet)
+        assert model.depth == 50 and model.stages == 4
+
+        model = BACKBONES.build(dict(type='ResNet', depth=50, stages=3))
+        assert isinstance(model, ResNet)
+        assert model.depth == 50 and model.stages == 3
+
+        model = BACKBONES.build(
+            dict(type='ResNet', depth=50),
+            default_args=dict(stages=3),
+        )
+        assert isinstance(model, ResNet)
+        assert model.depth == 50 and model.stages == 3
+
+        model = BACKBONES.build(
+            dict(depth=50),
+            default_args=dict(type='ResNet'),
+        )
+        assert isinstance(model, ResNet)
+        assert model.depth == 50 and model.stages == 4
+
+        model = BACKBONES.build(
+            dict(depth=50),
+            default_args=dict(type=ResNet),
+        )
+        assert isinstance(model, ResNet)
+        assert model.depth == 50 and model.stages == 4
+
+        with pytest.raises(TypeError, match='int'):
+            BACKBONES.build(
+                0,
+                default_args=dict(type=ResNet, depth=50),
+            )
+        with pytest.raises(TypeError, match='int'):
+            BACKBONES.build(
+                dict(type=ResNet, depth=50),
+                default_args=0,
+            )
+
+        with pytest.raises(KeyError):
+            BACKBONES.build(dict(depth=50, stages=4))
+        with pytest.raises(KeyError):
+            BACKBONES.build(
+                dict(depth=50),
+                default_args=dict(stages=4),
+            )
+        with pytest.raises(KeyError):
+            BACKBONES.build(dict(type='ResNeXt'))
+
+        with pytest.raises(
+            RuntimeError,
+            match=(
+                "Registry backbone failed to build ResNet with cfg "
+                "\\{'non_existing_arg': 50\\}. TypeError: __init__\\(\\) got "
+                "an unexpected keyword argument 'non_existing_arg'"
+            ),
+        ):
+            BACKBONES.build(dict(type='ResNet', non_existing_arg=50))
+
+    def test_build_base(self):
+
+        class BaseBackbone:
+            pass
+
+        BACKBONES = Registry('backbone', base=BaseBackbone)
+
         @BACKBONES.register_module()
-        class ResNeXt:
+        class ResNet(BaseBackbone):
 
             def __init__(self, depth, stages=4):
                 self.depth = depth
                 self.stages = stages
 
-        cfg = dict(type='ResNet', depth=50)
-        model = BACKBONES.build(cfg)
+        model = BACKBONES.build(dict(type='ResNet', depth=50))
         assert isinstance(model, ResNet)
         assert model.depth == 50 and model.stages == 4
 
-        cfg = dict(type='ResNeXt', depth=50, stages=3)
-        model = BACKBONES.build(cfg)
-        assert isinstance(model, ResNeXt)
-        assert model.depth == 50 and model.stages == 3
-
-        cfg = dict(type='ResNet', depth=50)
-        model = BACKBONES.build(cfg, default_args={'stages': 3})
-        assert isinstance(model, ResNet)
-        assert model.depth == 50 and model.stages == 3
-
-        cfg = dict(depth=50)
-        model = BACKBONES.build(cfg, default_args=dict(type='ResNet'))
-        assert isinstance(model, ResNet)
-        assert model.depth == 50 and model.stages == 4
-
-        cfg = dict(depth=50)
-        model = BACKBONES.build(cfg, default_args=dict(type=ResNet))
-        assert isinstance(model, ResNet)
-        assert model.depth == 50 and model.stages == 4
-
-        cfg = dict(depth=50, stages=4)
-        with pytest.raises(KeyError):
-            model = BACKBONES.build(cfg)
-
-        cfg = dict(depth=50)
-        with pytest.raises(KeyError):
-            model = BACKBONES.build(cfg, default_args=dict(stages=4))
-
-        cfg = dict(type='VGG')
-        with pytest.raises(KeyError):
-            model = BACKBONES.build(cfg)
-
-        cfg = dict(type='ResNet', non_existing_arg=50)
         with pytest.raises(TypeError):
-            model = BACKBONES.build(cfg)
+            BACKBONES.build(
+                0,
+                default_args=dict(type=ResNet, depth=50),
+            )
+
+        model = ResNet(depth=50)
+        assert model is BACKBONES.build(model)
+
+        model = ResNet(depth=50)
+        with pytest.raises(ValueError):
+            BACKBONES.build(
+                model,
+                default_args=dict(depth=50),
+            )
 
     def test_build_func(self):
 
@@ -326,21 +372,8 @@ class TestRegistry:
                 self.depth = depth
                 self.stages = stages
 
-        @BACKBONES.register_module()
-        class ResNeXt:
-
-            def __init__(self, depth, stages=4):
-                self.depth = depth
-                self.stages = stages
-
-        cfg = dict(class_='ResNet')
-        model = BACKBONES.build(cfg)
+        model = BACKBONES.build(dict(class_='ResNet'))
         assert isinstance(model, ResNet)
-        assert model.depth == 50 and model.stages == 3
-
-        cfg = dict(class_='ResNeXt')
-        model = BACKBONES.build(cfg)
-        assert isinstance(model, ResNeXt)
         assert model.depth == 50 and model.stages == 3
 
         def transform_build_func(registry: Registry, cfg: dict):
@@ -360,7 +393,18 @@ class TestRegistry:
                 self.depth = depth
                 self.stages = stages
 
-        cfg = dict(transformer_class='Transformer')
-        model = TRANSFORMER_BACKBONES.build(cfg)
+        model = TRANSFORMER_BACKBONES.build(
+            dict(transformer_class='Transformer'),
+        )
         assert isinstance(model, Transformer)
         assert model.depth == 100 and model.stages == 8
+
+    def test_build_errors(self):
+        BACKBONES = Registry('backbone')
+
+        @BACKBONES.register_module()
+        class ResNet:
+
+            def __init__(self, depth, stages=4):
+                self.depth = depth
+                self.stages = stages
