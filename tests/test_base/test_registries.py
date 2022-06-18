@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Type
 
 import pytest
 
@@ -11,18 +12,10 @@ class TestRegistry:
     def cats(self) -> Registry:
         return Registry('cats')
 
-    @pytest.fixture()
-    def dogs(self) -> Registry:
-        return Registry('dogs')
-
-    @pytest.mark.parametrize('registry', ['cats', 'dogs'])
-    def test_init(self, registry: str, request: pytest.FixtureRequest):
-        registry_: Registry = request.getfixturevalue(registry)
-        assert registry_.name == registry
-        assert registry_.parent is None
-        assert registry_.modules == dict()
-        assert registry_.children == dict()
-        assert registry_.root == registry_
+    def test_init(self, cats: Registry):
+        assert cats.name == 'cats'
+        assert cats.modules == dict()
+        assert cats.children == dict()
 
     def test_register_module_decorator(self, cats: Registry):
         assert len(cats) == 0
@@ -65,18 +58,6 @@ class TestRegistry:
         assert cats.get('BritishShorthair') is BritishShorthair
         assert cats.get('Munchkin') is Munchkin
 
-        @cats.register_module()
-        def munchkin():
-            pass
-
-        assert len(cats) == 3
-        assert 'BritishShorthair' in cats
-        assert 'Munchkin' in cats
-        assert 'munchkin' in cats
-        assert cats.get('BritishShorthair') is BritishShorthair
-        assert cats.get('Munchkin') is Munchkin
-        assert cats.get('munchkin') is munchkin
-
         assert 'PersianCat' not in cats
         with pytest.raises(KeyError):
             cats['PersianCat']
@@ -86,7 +67,7 @@ class TestRegistry:
         class SiameseCat:
             pass
 
-        assert len(cats) == 6
+        assert len(cats) == 5
         assert 'SiameseCat' not in cats
         assert 'Siamese' in cats
         assert 'Siamese1' in cats
@@ -99,7 +80,7 @@ class TestRegistry:
 
         with pytest.raises(TypeError):
 
-            @cats.register_module()
+            @cats.register_module()  # type: ignore[misc]
             class DomesticCat(ABC):
 
                 @abstractmethod
@@ -140,18 +121,6 @@ class TestRegistry:
         assert cats.get('BritishShorthair') is BritishShorthair
         assert cats.get('Munchkin') is Munchkin
 
-        def munchkin():
-            pass
-
-        cats.register_module(munchkin)
-        assert len(cats) == 3
-        assert 'BritishShorthair' in cats
-        assert 'Munchkin' in cats
-        assert 'munchkin' in cats
-        assert cats.get('BritishShorthair') is BritishShorthair
-        assert cats.get('Munchkin') is Munchkin
-        assert cats.get('munchkin') is munchkin
-
         assert 'PersianCat' not in cats
         with pytest.raises(KeyError):
             cats['PersianCat']
@@ -165,7 +134,7 @@ class TestRegistry:
             name='Siamese',
             aliases=('Siamese1', 'Siamese2'),
         )
-        assert len(cats) == 6
+        assert len(cats) == 5
         assert 'SiameseCat' not in cats
         assert 'Siamese' in cats
         assert 'Siamese2' in cats
@@ -180,12 +149,12 @@ class TestRegistry:
             pass
 
         cats.register_module(SphynxCat, name='Sphynx')
-        assert len(cats) == 7
+        assert len(cats) == 6
         assert 'Sphynx' in cats
         assert cats.get('Sphynx') is SphynxCat
 
         cats.register_module(SphynxCat, name='Sphynx1', aliases=['Sphynx2'])
-        assert len(cats) == 9
+        assert len(cats) == 8
         assert 'Sphynx1' in cats
         assert 'Sphynx2' in cats
         assert cats.get('Sphynx1') is SphynxCat
@@ -198,80 +167,7 @@ class TestRegistry:
                 pass
 
         with pytest.raises(TypeError):
-            cats.register_module(DomesticCat)
-
-    def test_inheritance(self, dogs: Registry):
-        assert len(dogs) == 0
-
-        @dogs.register_module()
-        class GoldenRetriever:
-            pass
-
-        hounds = Registry('hounds', parent=dogs)
-        assert dogs.children == dict(hounds=hounds)
-        assert hounds.parent == dogs
-        assert hounds.root == dogs
-
-        assert dogs.get('GoldenRetriever') is GoldenRetriever
-        assert hounds.get('GoldenRetriever') is None
-
-        @hounds.register_module()
-        class BloodHound:
-            pass
-
-        assert len(dogs) == 1
-        assert len(hounds) == 1
-        assert dogs.get('GoldenRetriever') is GoldenRetriever
-        assert dogs.get('BloodHound') is None
-        assert dogs.get('hounds.BloodHound') is BloodHound
-        assert hounds.get('GoldenRetriever') is None
-        assert hounds.get('BloodHound') is BloodHound
-        assert hounds.get('hounds.BloodHound') is None
-
-        little_hounds = Registry('little hounds', parent=hounds)
-        assert dogs.children == dict(hounds=hounds)
-        assert hounds.children == {'little hounds': little_hounds}
-        assert hounds.parent == dogs
-        assert little_hounds.parent == hounds
-        assert hounds.root == dogs
-        assert little_hounds.root == dogs
-
-        @little_hounds.register_module()
-        class Dachshund:
-            pass
-
-        assert dogs.get('Dachshund') is None
-        assert dogs.get('hounds.Dachshund') is None
-        assert dogs.get('little hounds.Dachshund') is None
-        assert dogs.get('hounds.little hounds.Dachshund') is Dachshund
-        assert hounds.get('Dachshund') is None
-        assert hounds.get('hounds.Dachshund') is None
-        assert hounds.get('little hounds.Dachshund') is Dachshund
-        assert hounds.get('hounds.little hounds.Dachshund') is None
-
-        mid_hounds = Registry('mid hounds', parent=hounds)
-        assert dogs.children == dict(hounds=hounds)
-        assert hounds.children == {
-            'little hounds': little_hounds,
-            'mid hounds': mid_hounds,
-        }
-        assert hounds.parent == dogs
-        assert little_hounds.parent == hounds
-        assert mid_hounds.parent == hounds
-        assert hounds.root == dogs
-        assert little_hounds.root == dogs
-        assert mid_hounds.root == dogs
-
-        @mid_hounds.register_module()
-        class Beagle:
-            pass
-
-        assert dogs.get('hounds.mid hounds.Beagle') is Beagle
-        assert hounds.get('mid hounds.Beagle') is Beagle
-        assert mid_hounds.get('Beagle') is Beagle
-
-        assert little_hounds.parent.get('mid hounds.Beagle') is Beagle
-        assert little_hounds.root.get('hounds.mid hounds.Beagle') is Beagle
+            cats.register_module(DomesticCat)  # type: ignore[misc]
 
     def test_build(self):
         BACKBONES = Registry('backbone')
@@ -333,17 +229,135 @@ class TestRegistry:
         with pytest.raises(KeyError):
             BACKBONES.build(dict(type='ResNeXt'))
 
-        with pytest.raises(
-            RuntimeError,
-            match=(
-                "Registry backbone failed to build ResNet with cfg "
-                "\\{'non_existing_arg': 50\\}. TypeError: __init__\\(\\) got "
-                "an unexpected keyword argument 'non_existing_arg'"
-            ),
-        ):
+        with pytest.raises(TypeError):
             BACKBONES.build(dict(type='ResNet', non_existing_arg=50))
 
-    def test_build_base(self):
+
+class TestParentMixin:
+
+    @pytest.fixture()
+    def dogs(self) -> Registry:
+        return Registry('dogs')
+
+    def test_parent(self, dogs: Registry):
+        assert len(dogs) == 0
+        assert not dogs.has_parent()
+        with pytest.raises(AttributeError):
+            dogs.parent
+        assert dogs.root is dogs
+
+        @dogs.register_module()
+        class GoldenRetriever:
+            pass
+
+        hounds = Registry('hounds', parent=dogs)
+        assert dogs.children == dict(hounds=hounds)
+        assert hounds.has_parent()
+        assert hounds.parent is dogs
+        assert hounds.root is dogs
+
+        assert dogs.get('GoldenRetriever') is GoldenRetriever
+        assert hounds.get('GoldenRetriever') is None
+
+        @hounds.register_module()
+        class BloodHound:
+            pass
+
+        assert len(dogs) == 1
+        assert len(hounds) == 1
+        assert dogs.get('GoldenRetriever') is GoldenRetriever
+        assert dogs.get('BloodHound') is None
+        assert dogs.get('hounds.BloodHound') is BloodHound
+        assert hounds.get('GoldenRetriever') is None
+        assert hounds.get('BloodHound') is BloodHound
+        assert hounds.get('hounds.BloodHound') is None
+
+        little_hounds = Registry('little hounds', parent=hounds)
+        assert dogs.children == dict(hounds=hounds)
+        assert hounds.children == {'little hounds': little_hounds}
+        assert hounds.parent is dogs
+        assert little_hounds.parent is hounds
+        assert hounds.root is dogs
+        assert little_hounds.root is dogs
+
+        @little_hounds.register_module()
+        class Dachshund:
+            pass
+
+        assert dogs.get('Dachshund') is None
+        assert dogs.get('hounds.Dachshund') is None
+        assert dogs.get('little hounds.Dachshund') is None
+        assert dogs.get('hounds.little hounds.Dachshund') is Dachshund
+        assert hounds.get('Dachshund') is None
+        assert hounds.get('hounds.Dachshund') is None
+        assert hounds.get('little hounds.Dachshund') is Dachshund
+        assert hounds.get('hounds.little hounds.Dachshund') is None
+
+        mid_hounds = Registry('mid hounds', parent=hounds)
+        assert dogs.children == dict(hounds=hounds)
+        assert hounds.children == {
+            'little hounds': little_hounds,
+            'mid hounds': mid_hounds,
+        }
+        assert hounds.parent is dogs
+        assert little_hounds.parent is hounds
+        assert mid_hounds.parent is hounds
+        assert hounds.root is dogs
+        assert little_hounds.root is dogs
+        assert mid_hounds.root is dogs
+
+        @mid_hounds.register_module()
+        class Beagle:
+            pass
+
+        assert dogs.get('hounds.mid hounds.Beagle') is Beagle
+        assert hounds.get('mid hounds.Beagle') is Beagle
+        assert mid_hounds.get('Beagle') is Beagle
+
+        assert little_hounds.parent.get('mid hounds.Beagle') is Beagle
+        assert little_hounds.root.get('hounds.mid hounds.Beagle') is Beagle
+
+
+class TestBaseMixin:
+
+    def test_init(self):
+
+        class BaseBackbone:
+            pass
+
+        BACKBONES = Registry('backbone', base=BaseBackbone)
+        assert BACKBONES.has_base()
+        assert BACKBONES.base is BaseBackbone
+
+        CONV_BACKBONES = Registry('conv backbone', parent=BACKBONES)
+        assert CONV_BACKBONES.has_base()
+        assert CONV_BACKBONES.base is BaseBackbone
+
+        class BaseMLP:
+            pass
+
+        MLP_BACKBONES = Registry(
+            'mlp_backbone',
+            parent=BACKBONES,
+            base=BaseMLP,
+        )
+        assert MLP_BACKBONES.base is BaseMLP
+
+        class BaseTransformer(ABC):
+
+            @abstractmethod
+            def forward(self):
+                pass
+
+        TRANSFORMER_BACKBONES = Registry(
+            'transformer_backbone',
+            base=BaseTransformer,
+        )
+
+        with pytest.raises(KeyError):
+            TRANSFORMER_BACKBONES.build(dict(type='BaseTransformer'))
+
+    def test_register_module(self):
 
         class BaseBackbone:
             pass
@@ -352,6 +366,26 @@ class TestRegistry:
 
         model = BACKBONES.build(dict(type='BaseBackbone'))
         assert isinstance(model, BaseBackbone)
+
+        @BACKBONES.register_module()
+        class ResNet(BaseBackbone):
+
+            def __init__(self, depth, stages=4):
+                self.depth = depth
+                self.stages = stages
+
+        with pytest.raises(TypeError, match='BaseBackbone'):
+
+            @BACKBONES.register_module()
+            class ResNeXt:
+                pass
+
+    def test_build(self):
+
+        class BaseBackbone:
+            pass
+
+        BACKBONES = Registry('backbone', base=BaseBackbone)
 
         @BACKBONES.register_module()
         class ResNet(BaseBackbone):
@@ -380,24 +414,41 @@ class TestRegistry:
                 default_args=dict(depth=50),
             )
 
-        class BaseTransformer(ABC):
 
-            @abstractmethod
-            def forward(self):
-                pass
+class TestBuildFuncMixin:
 
-        TRANSFORMER_BACKBONES = Registry(
-            'transformer_backbone',
-            base=BaseTransformer,
+    def test_init(self):
+
+        class BaseBackbone:
+            pass
+
+        def build_base_backbone(registry: Registry, cfg: dict) -> BaseBackbone:
+            return BaseBackbone(**cfg)
+
+        BACKBONES = Registry('backbone', build_func=build_base_backbone)
+        assert BACKBONES.has_build_func()
+        assert BACKBONES.build_func is build_base_backbone
+
+        CONV_BACKBONES = Registry('conv backbones', parent=BACKBONES)
+        assert CONV_BACKBONES.has_build_func()
+        assert CONV_BACKBONES.build_func is build_base_backbone
+
+        def build_func(registry: Registry, cfg: dict):
+            type_: Type = registry[cfg.pop('class_')]
+            return type_(depth=50, stages=3)  # type: ignore[operator]
+
+        MLP_BACKBONES = Registry(
+            'mlp backbones',
+            build_func=build_func,
+            parent=BACKBONES,
         )
-
-        with pytest.raises(KeyError):
-            TRANSFORMER_BACKBONES.build(dict(type='BaseTransformer'))
+        assert MLP_BACKBONES.has_build_func()
+        assert MLP_BACKBONES.build_func is build_func
 
     def test_build_func(self):
 
         def build_func(registry: Registry, cfg: dict):
-            type_ = registry[cfg.pop('class_')]
+            type_: Type = registry[cfg.pop('class_')]
             return type_(depth=50, stages=3)  # type: ignore[operator]
 
         BACKBONES = Registry('backbone', build_func=build_func)
@@ -414,7 +465,7 @@ class TestRegistry:
         assert model.depth == 50 and model.stages == 3
 
         def transform_build_func(registry: Registry, cfg: dict):
-            type_ = registry[cfg.pop('transformer_class')]
+            type_: Type = registry[cfg.pop('transformer_class')]
             return type_(depth=100, stages=8)  # type: ignore[operator]
 
         TRANSFORMER_BACKBONES = Registry(
@@ -435,13 +486,3 @@ class TestRegistry:
         )
         assert isinstance(model, Transformer)
         assert model.depth == 100 and model.stages == 8
-
-    def test_build_errors(self):
-        BACKBONES = Registry('backbone')
-
-        @BACKBONES.register_module()
-        class ResNet:
-
-            def __init__(self, depth, stages=4):
-                self.depth = depth
-                self.stages = stages

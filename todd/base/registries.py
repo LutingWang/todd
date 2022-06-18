@@ -6,78 +6,41 @@ from typing import (
     Dict,
     Iterable,
     Optional,
-    Protocol,
     Type,
     TypeVar,
+    Union,
+    cast,
     overload,
-    runtime_checkable,
 )
 
 import torch.nn as nn
+
+from ._extensions import get_logger
 
 __all__ = [
     'NORM_LAYERS',
     'Registry',
 ]
 
-
-@runtime_checkable
-class ModuleProto(Protocol):
-    __name__: str
+ModuleType = TypeVar('ModuleType')
 
 
-ModuleType = TypeVar('ModuleType', bound=ModuleProto)
-BuildFunc = Callable[['Registry', Dict[str, Any]], Any]
+class _Registry:
 
-
-class Registry:
-    _build_func: Optional[BuildFunc]
-
-    def __init__(
-        self,
-        name: str,
-        base: Optional[Type[ModuleType]] = None,
-        parent: Optional['Registry'] = None,
-        build_func: Optional[BuildFunc] = None,
-    ) -> None:
+    def __init__(self, name: str) -> None:
         assert '.' not in name
-        if parent is not None:
-            parent._children[name] = (self)
-            if build_func is None:
-                build_func = parent._build_func
-
         self._name = name
-        self._base = base
-        self._parent = parent
-        self._build_func = build_func
 
-        self._modules: Dict[str, ModuleProto] = dict()
-        self._children: Dict[str, 'Registry'] = dict()
-
-        if base is not None and not inspect.isabstract(base):
-            self._register_module(base)
+        self._modules: Dict[str, Type] = dict()
+        self._logger = get_logger()
 
     @property
     def name(self) -> str:
         return self._name
 
     @property
-    def parent(self) -> Optional['Registry']:
-        return self._parent
-
-    @property
-    def modules(self) -> Dict[str, ModuleProto]:
+    def modules(self) -> Dict[str, Type[ModuleType]]:
         return self._modules
-
-    @property
-    def children(self) -> Dict[str, 'Registry']:
-        return self._children
-
-    @property
-    def root(self) -> 'Registry':
-        if self._parent is None:
-            return self
-        return self._parent.root
 
     def __len__(self) -> int:
         return len(self._modules)
@@ -85,19 +48,19 @@ class Registry:
     def __contains__(self, key: str) -> bool:
         return self.get(key) is not None
 
-    def __getitem__(self, key: str) -> ModuleProto:
-        item = self.get(key)
+    def __getitem__(self, key: str) -> Type[ModuleType]:
+        item: Optional[Type[ModuleType]] = self.get(key)
         if item is None:
             raise KeyError(f'{key} does not exist in {self.name} registry')
         return item
 
     def _register_module(
         self,
-        cls: ModuleType,
+        cls: Type[ModuleType],
         name: Optional[str] = None,
         aliases: Iterable[str] = tuple(),
         force: bool = False,
-    ) -> ModuleType:
+    ) -> Type[ModuleType]:
         if inspect.isabstract(cls):
             raise TypeError(f'{cls} is an abstract class')
         if name is None:
@@ -115,18 +78,18 @@ class Registry:
         name: Optional[str] = None,
         aliases: Iterable[str] = tuple(),
         force: bool = False,
-    ) -> Callable[[ModuleType], ModuleType]:
+    ) -> Callable[[Type[ModuleType]], Type[ModuleType]]:
         ...
 
     @overload
     def register_module(
         self,
-        cls: ModuleType,
+        cls: Type[ModuleType],
         *,
         name: Optional[str] = None,
         aliases: Iterable[str] = tuple(),
         force: bool = False,
-    ) -> ModuleType:
+    ) -> Type[ModuleType]:
         ...
 
     def register_module(
@@ -147,60 +110,10 @@ class Registry:
             return register
         return register(cls=cls)
 
-    def get(self, key: str) -> Optional[ModuleProto]:
-        if '.' not in key:
-            return self._modules.get(key)
-        name, subkey = key.split('.', 1)
-        if name not in self._children:
-            return None
-        return self._children[name].get(subkey)
+    def get(self, key: str) -> Optional[Type[ModuleType]]:
+        return self._modules.get(key)
 
-    @overload
-    def build(
-        self,
-        cfg: ModuleType,
-    ) -> ModuleType:
-        pass
-
-    @overload
-    def build(
-        self,
-        cfg: dict,
-        default_args: Optional[dict] = None,
-    ) -> ModuleType:
-        pass
-
-    def build(self, cfg, default_args=None):
-        if self._base is not None and isinstance(cfg, self._base):
-            if default_args is not None:
-                raise ValueError(
-                    '`default_args` is not supported when `cfg` is an '
-                    f'instance of {self._base.__name__}'
-                )
-            return cfg
-
-        if not isinstance(cfg, dict):
-            if self._base is None:
-                message = f"cfg must be a dictionary, but got {type(cfg)}"
-            else:
-                message = (
-                    f"cfg must be an instance of {self._base.__name__} or a "
-                    f"dictionary, but got {type(cfg)}"
-                )
-            raise TypeError(message)
-        cfg = cfg.copy()
-        if default_args is not None:
-            if not isinstance(default_args, dict):
-                raise TypeError(
-                    "default_args must be a dictionary, but got "
-                    f"{type(default_args)}"
-                )
-            for k, v in default_args.items():
-                cfg.setdefault(k, v)
-
-        if self._build_func is not None:
-            return self._build_func(self, cfg)
-
+    def _build(self, cfg: dict) -> ModuleType:
         if 'type' not in cfg:
             raise KeyError(f'{cfg} cfg does not specify type')
 
@@ -210,11 +123,159 @@ class Registry:
         try:
             return type_(**cfg)
         except Exception as e:
-            # raise type(e)(f'{type_.__name__}: {e}')
-            raise RuntimeError(
-                f'Registry {self.name} failed to build {type_.__name__} with '
-                f'cfg {cfg}. {e.__class__.__name__}: {e}'
+            self._logger.error(
+                f'Failed to build {type_.__name__} with config {cfg}',
             )
+            raise e
+
+    def build(
+        self,
+        cfg: dict,
+        default_args: Optional[dict] = None,
+    ) -> ModuleType:
+        cfg = cfg.copy()
+        if default_args is not None:
+            if not isinstance(default_args, dict):
+                raise TypeError(
+                    "default_args must be a dictionary, but got "
+                    f"{type(default_args)}"
+                )
+            for k, v in default_args.items():
+                cfg.setdefault(k, v)
+        return self._build(cfg)
+
+
+class _ParentMixin(_Registry):
+
+    def __init__(
+        self,
+        *args,
+        parent: Optional['Registry'] = None,
+        **kwargs,
+    ) -> None:
+        super().__init__(*args, **kwargs)
+        self._children: Dict[str, 'Registry'] = dict()
+
+        if parent is None:
+            return
+        parent._children[self._name] = cast(Registry, self)
+        self._parent = parent
+
+    @property
+    def children(self) -> Dict[str, 'Registry']:
+        return self._children
+
+    def has_parent(self) -> bool:
+        return hasattr(self, '_parent')
+
+    @property
+    def parent(self) -> 'Registry':
+        return self._parent
+
+    @property
+    def root(self) -> 'Registry':
+        if self.has_parent():
+            return self._parent.root
+        return cast(Registry, self)
+
+    def get(self, key: str) -> Optional[Type[ModuleType]]:
+        if '.' not in key:
+            return super().get(key)
+        name, subkey = key.split('.', 1)
+        if name not in self._children:
+            return None
+        return self._children[name].get(subkey)
+
+
+class _BaseMixin(_ParentMixin):
+
+    def __init__(
+        self,
+        *args,
+        base: Optional[Type[ModuleType]] = None,
+        **kwargs,
+    ) -> None:
+        super().__init__(*args, **kwargs)
+        if base is None:
+            if not self.has_parent() or not self.parent.has_base():
+                return
+            base = self.parent._base
+
+        self._base: Type[ModuleType] = base
+        if not inspect.isabstract(base):
+            self._register_module(base)
+
+    def has_base(self) -> bool:
+        return hasattr(self, '_base')
+
+    @property
+    def base(self) -> Type[ModuleType]:
+        return self._base
+
+    def _register_module(
+        self,
+        cls: Type[ModuleType],
+        *args,
+        **kwargs,
+    ) -> Type[ModuleType]:
+        if self.has_base() and not issubclass(cls, self._base):
+            raise TypeError(f'{cls} is not a subclass of {self._base}')
+        return super()._register_module(cls, *args, **kwargs)
+
+    def build(
+        self,
+        cfg: Union[dict, ModuleType],
+        default_args: Optional[dict] = None,
+    ) -> ModuleType:
+        if not self.has_base() or not isinstance(cfg, self._base):
+            if not isinstance(cfg, dict):
+                raise TypeError(
+                    'cfg must be a dictionary or a subclass of `self._base`'
+                    f'but got {type(cfg)}'
+                )
+            return super().build(cfg, default_args)
+
+        if default_args is not None:
+            raise ValueError(
+                '`default_args` is not supported when `cfg` is an '
+                f'instance of {self._base.__name__}'
+            )
+        return cfg
+
+
+BuildFunc = Callable[['Registry', Dict[str, Any]], ModuleType]
+
+
+class _BuildFuncMixin(_ParentMixin):
+
+    def __init__(
+        self,
+        *args,
+        build_func: Optional[BuildFunc] = None,
+        **kwargs,
+    ) -> None:
+        super().__init__(*args, **kwargs)
+        if build_func is None:
+            if not self.has_parent() or not self.parent.has_build_func():
+                return
+            build_func = self.parent._build_func
+        self._build_func: BuildFunc = build_func
+
+    def has_build_func(self) -> bool:
+        return hasattr(self, '_build_func')
+
+    @property
+    def build_func(self) -> BuildFunc:
+        return self._build_func
+
+    def _build(self, cfg: dict) -> ModuleType:
+        if self.has_build_func():
+            return self._build_func(cast(Registry, self), cfg)
+        return super()._build(cfg)
+
+
+class Registry(_BuildFuncMixin, _BaseMixin, _ParentMixin, _Registry):
+    pass
 
 
 NORM_LAYERS = Registry('norm layers')
