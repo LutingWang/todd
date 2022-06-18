@@ -1,3 +1,4 @@
+import inspect
 from functools import partial
 from typing import (
     Any,
@@ -53,6 +54,9 @@ class Registry:
         self._modules: Dict[str, ModuleProto] = dict()
         self._children: Dict[str, 'Registry'] = dict()
 
+        if base is not None and not inspect.isabstract(base):
+            self._register_module(base)
+
     @property
     def name(self) -> str:
         return self._name
@@ -94,6 +98,8 @@ class Registry:
         aliases: Iterable[str] = tuple(),
         force: bool = False,
     ) -> ModuleType:
+        if inspect.isabstract(cls):
+            raise TypeError(f'{cls} is an abstract class')
         if name is None:
             name = cls.__name__
         names = [name] + list(aliases)

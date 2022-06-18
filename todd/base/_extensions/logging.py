@@ -1,11 +1,12 @@
 import getpass
+import inspect
 import logging
 import os
 import socket
-import sys
 from abc import abstractmethod
 from enum import IntEnum, auto
-from typing import Iterable
+from types import FrameType
+from typing import Iterable, cast
 
 __all__ = [
     'SGR',
@@ -116,7 +117,9 @@ class Formatter(logging.Formatter):
 
 
 def get_logger(log_file=None) -> logging.Logger:
-    name = sys._getframe(1).f_globals.get('__name__')
+    frame = cast(FrameType, inspect.currentframe())
+    frame = cast(FrameType, frame.f_back)
+    name = frame.f_globals.get('__name__')
     logger = logging.getLogger(name)
     if not getattr(logger, '_isinitialized', False):
         logger._isinitialized = True  # type: ignore[attr-defined]

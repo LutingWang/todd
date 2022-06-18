@@ -1,3 +1,5 @@
+from abc import ABC, abstractmethod
+
 import pytest
 
 from todd.base import Registry
@@ -95,6 +97,15 @@ class TestRegistry:
         assert cats['Siamese1'].__name__ == 'SiameseCat'
         assert cats['Siamese2'].__name__ == 'SiameseCat'
 
+        with pytest.raises(TypeError):
+
+            @cats.register_module()
+            class DomesticCat(ABC):
+
+                @abstractmethod
+                def meow(self) -> None:
+                    pass
+
     def test_register_module_function(self, cats: Registry):
         assert len(cats) == 0
 
@@ -179,6 +190,15 @@ class TestRegistry:
         assert 'Sphynx2' in cats
         assert cats.get('Sphynx1') is SphynxCat
         assert cats.get('Sphynx2') is SphynxCat
+
+        class DomesticCat(ABC):
+
+            @abstractmethod
+            def meow(self) -> None:
+                pass
+
+        with pytest.raises(TypeError):
+            cats.register_module(DomesticCat)
 
     def test_inheritance(self, dogs: Registry):
         assert len(dogs) == 0
@@ -330,6 +350,9 @@ class TestRegistry:
 
         BACKBONES = Registry('backbone', base=BaseBackbone)
 
+        model = BACKBONES.build(dict(type='BaseBackbone'))
+        assert isinstance(model, BaseBackbone)
+
         @BACKBONES.register_module()
         class ResNet(BaseBackbone):
 
@@ -356,6 +379,20 @@ class TestRegistry:
                 model,
                 default_args=dict(depth=50),
             )
+
+        class BaseTransformer(ABC):
+
+            @abstractmethod
+            def forward(self):
+                pass
+
+        TRANSFORMER_BACKBONES = Registry(
+            'transformer_backbone',
+            base=BaseTransformer,
+        )
+
+        with pytest.raises(KeyError):
+            TRANSFORMER_BACKBONES.build(dict(type='BaseTransformer'))
 
     def test_build_func(self):
 
