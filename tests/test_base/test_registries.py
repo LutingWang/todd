@@ -336,14 +336,14 @@ class TestBaseMixin:
         class BaseMLP:
             pass
 
-        MLP_BACKBONES = Registry(
-            'mlp_backbone',
-            parent=BACKBONES,
-            base=BaseMLP,
-        )
-        assert MLP_BACKBONES.base is BaseMLP
+        with pytest.raises(TypeError):
+            Registry(
+                'mlp_backbone',
+                parent=BACKBONES,
+                base=BaseMLP,
+            )
 
-        class BaseTransformer(ABC):
+        class BaseTransformer(BaseBackbone, ABC):
 
             @abstractmethod
             def forward(self):
@@ -406,13 +406,6 @@ class TestBaseMixin:
 
         model = ResNet(depth=50)
         assert model is BACKBONES.build(model)
-
-        model = ResNet(depth=50)
-        with pytest.raises(ValueError):
-            BACKBONES.build(
-                model,
-                default_args=dict(depth=50),
-            )
 
 
 class TestBuildFuncMixin:

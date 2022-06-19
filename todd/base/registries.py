@@ -196,10 +196,17 @@ class _BaseMixin(_ParentMixin):
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
+        parent_has_base = self.has_parent() and self.parent.has_base()
         if base is None:
-            if not self.has_parent() or not self.parent.has_base():
+            if parent_has_base:
+                base = self.parent._base
+            else:
                 return
-            base = self.parent._base
+        else:
+            if parent_has_base and not issubclass(base, self.parent._base):
+                raise TypeError(
+                    f'{base} is not a subclass of {self.parent._base}',
+                )
 
         self._base: Type[ModuleType] = base
         if not inspect.isabstract(base):
@@ -235,11 +242,6 @@ class _BaseMixin(_ParentMixin):
                 )
             return super().build(cfg, default_args)
 
-        if default_args is not None:
-            raise ValueError(
-                '`default_args` is not supported when `cfg` is an '
-                f'instance of {self._base.__name__}'
-            )
         return cfg
 
 
