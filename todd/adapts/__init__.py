@@ -1,12 +1,6 @@
 from .attention import AbsMeanChannelAttention, AbsMeanSpatialAttention
 from .base import BaseAdapt
-from .builder import (
-    ADAPTS,
-    AdaptLayer,
-    AdaptLayerCfg,
-    AdaptModuleList,
-    AdaptModuleListCfg,
-)
+from .builder import ADAPTS, AdaptLayer, AdaptModuleList, AdaptModuleListCfg
 from .custom import Custom
 from .decouple import Decouple
 from .detach import Detach, ListDetach
@@ -24,7 +18,6 @@ __all__ = [
     'BaseAdapt',
     'ADAPTS',
     'AdaptLayer',
-    'AdaptLayerCfg',
     'AdaptModuleList',
     'AdaptModuleListCfg',
     'Custom',

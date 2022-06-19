@@ -19,7 +19,7 @@ import torch
 import torch.nn as nn
 from mmcv.runner import BaseModule
 
-from ..adapts import AdaptModuleList, AdaptModuleListCfg
+from ..adapts import AdaptModuleList
 from ..base import inc_iter, init_iter
 from ..hooks import HookModuleList, HookModuleListCfg, TrackingModuleList
 from ..hooks import detach as DetachHookContext
@@ -34,11 +34,12 @@ class BaseDistiller(BaseModule):
     def __init__(
         self,
         models: List[nn.Module],
+        *,
         hooks: Optional[Dict[int, HookModuleListCfg]] = None,
         trackings: Optional[Dict[int, HookModuleListCfg]] = None,
-        adapts: Optional[AdaptModuleListCfg] = None,
-        visuals: Optional[AdaptModuleListCfg] = None,
-        losses: Optional[AdaptModuleListCfg] = None,
+        adapts=None,
+        visuals=None,
+        losses,
         iter_: int = 0,
         weight_transfer: Optional[Dict[str, str]] = None,
         **kwargs,
@@ -62,10 +63,14 @@ class BaseDistiller(BaseModule):
         }
         self._trackings = tracking_dict
 
-        adapt_list: AdaptModuleList = AdaptModuleList.build(adapts)
+        adapt_list: Optional[AdaptModuleList] = (
+            None if adapts is None else AdaptModuleList.build(adapts)
+        )
         self._adapts = adapt_list
 
-        visual_list: VisualModuleList = VisualModuleList.build(visuals)
+        visual_list: Optional[VisualModuleList] = (
+            None if visuals is None else VisualModuleList.build(visuals)
+        )
         self._visuals = visual_list
 
         loss_list: LossModuleList = LossModuleList.build(losses)
@@ -124,6 +129,7 @@ class BaseDistiller(BaseModule):
         custom_tensors: Optional[Dict[str, Any]] = None,
         **kwargs,
     ):
+        assert self._visuals is not None
         for i, trackings in self._trackings.items():
             trackings.register_tensor(self._models[i])
         tensors = self.tensors
