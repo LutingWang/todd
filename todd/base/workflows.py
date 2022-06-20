@@ -1,5 +1,6 @@
 from typing import (
     Any,
+    Callable,
     Dict,
     Iterable,
     Optional,
@@ -12,7 +13,7 @@ from typing import (
 
 import torch.nn as nn
 
-from ._extensions import get_logger
+from ._extensions import ModuleList, SequenceProto, get_logger
 from .misc import strict_zip_len
 from .registries import Registry
 
@@ -56,15 +57,16 @@ class Step:
         self._parallel = parallel
         self._logger = get_logger()
 
-        executer: Any
+        self._executor: Callable[..., Any]
+        self._executors: SequenceProto[Callable[..., Any]]
         if isinstance(parallel, bool):
-            executer = self.REGISTRY.build(default_args)
+            self._executor = self.REGISTRY.build(default_args)
         elif isinstance(parallel, int):
-            executer = tuple(
+            self._executors = tuple(
                 self.REGISTRY.build(default_args) for _ in range(parallel)
             )
         elif isinstance(parallel, Iterable):
-            executer = tuple(
+            self._executors = tuple(
                 self.REGISTRY.build(kwargs, default_args)
                 for kwargs in parallel
             )
@@ -73,30 +75,29 @@ class Step:
                 "`parallel` must be a bool, int, or Iterable, "
                 f"but got {type(parallel)}"
             )
-        self._executer = executer
 
     def _forward(self, inputs: tuple, kwargs: dict):
         if isinstance(self._parallel, bool):
             if not self._parallel:
-                return self._executer(*inputs, **kwargs)
+                return self._executor(*inputs, **kwargs)
             return tuple(
-                self._executer(*parallel_inputs, **kwargs)
+                self._executor(*parallel_inputs, **kwargs)
                 for parallel_inputs in zip(*inputs)
             )
         return tuple(  # yapf: disable
-            executer(*parallel_inputs, **kwargs)
-            for executer, *parallel_inputs in zip(self._executer, *inputs)
+            executor(*parallel_inputs, **kwargs)
+            for executor, *parallel_inputs in zip(self._executors, *inputs)
         )
 
     def forward(self, message: dict, **kwargs) -> dict:
         inputs = tuple(message[field] for field in self._fields)
         if not isinstance(self._parallel, bool):
             input_len = strict_zip_len(inputs)
-            if len(self._executer) != input_len:
+            if len(self._executors) != input_len:
                 raise ValueError(
                     "Lengths of `inputs` and `self._executer` must be equal, "
                     f"but got input_len={input_len} and len(self._executer)="
-                    f"{len(self._executer)}"
+                    f"{len(self._executors)}"
                 )
 
         try:
@@ -179,10 +180,10 @@ class ModuleStep(Step, nn.Module):
         )
         if isinstance(self._parallel, bool):
             return
-        self._executer = nn.ModuleList(self._executer)
+        self._executors = ModuleList(self._executors)
 
 
-class ModuleJob(Job, nn.ModuleList):
+class ModuleJob(Job, ModuleList):
     STEP_TYPE = ModuleStep
 
     def __init__(
@@ -191,4 +192,4 @@ class ModuleJob(Job, nn.ModuleList):
     ) -> None:
         Job.__init__(self, steps)
         self._steps = cast(Tuple[ModuleStep], self._steps)
-        nn.ModuleList.__init__(self, self._steps)  # TODO: clean up
+        ModuleList.__init__(self, self._steps)  # TODO: clean up
