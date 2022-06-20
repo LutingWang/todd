@@ -256,8 +256,7 @@ class _BuildFuncMixin(_ParentMixin[ModuleType]):
         self,
         *args,
         build_func: Optional[  # yapf: disable
-            Callable[['Registry', Dict[str, Any]], ModuleType],
-        ] = None,
+            Callable[['Registry', Dict[str, Any]], ModuleType]] = None,
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)

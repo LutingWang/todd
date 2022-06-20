@@ -4,7 +4,6 @@ from typing import (
     Dict,
     Iterable,
     Optional,
-    Tuple,
     Type,
     TypeVar,
     Union,
@@ -139,20 +138,19 @@ class Job:
         self,
         steps: Union[Dict[str, StepCfg], Iterable[StepCfg]],
     ) -> None:
+        self._steps: SequenceProto[Step]
+        step_type = STEPS[self.STEP_TYPE]
         if isinstance(steps, dict):
             self._steps = tuple(  # yapf: disable
-                STEPS.build(
+                step_type.build(
                     step,
-                    default_args=dict(type=self.STEP_TYPE, id_=id_),
+                    default_args=dict(id_=id_),
                 )
                 for id_, step in steps.items()
             )
         elif isinstance(steps, Iterable):
             steps = cast(Iterable[StepCfg], steps)
-            self._steps = tuple(
-                STEPS.build(step, default_args=dict(type=self.STEP_TYPE))
-                for step in steps
-            )
+            self._steps = tuple(step_type.build(step) for step in steps)
         else:
             raise TypeError(
                 "`steps` must be a dict or Iterable, "
@@ -193,13 +191,13 @@ class ModuleStep(Step, nn.Module):
         self._executors = ModuleList(self._executors)
 
 
-class ModuleJob(Job, ModuleList):
+class ModuleJob(Job, nn.Module):
     STEP_TYPE = 'ModuleStep'
 
     def __init__(
         self,
         steps: Union[Dict[str, StepCfg], Iterable[StepCfg]],
     ) -> None:
+        nn.Module.__init__(self)
         Job.__init__(self, steps)
-        self._steps = cast(Tuple[ModuleStep], self._steps)
-        ModuleList.__init__(self, self._steps)  # TODO: clean up
+        self._steps = ModuleList(self._steps)
