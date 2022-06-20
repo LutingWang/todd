@@ -1,9 +1,11 @@
 import inspect
 from functools import partial
 from typing import (
+    TYPE_CHECKING,
     Any,
     Callable,
     Dict,
+    Generic,
     Iterable,
     Optional,
     Type,
@@ -25,7 +27,7 @@ __all__ = [
 ModuleType = TypeVar('ModuleType')
 
 
-class _Registry:
+class _Registry(Generic[ModuleType]):
 
     def __init__(self, name: str) -> None:
         assert '.' not in name
@@ -145,7 +147,7 @@ class _Registry:
         return self._build(cfg)
 
 
-class _ParentMixin(_Registry):
+class _ParentMixin(_Registry[ModuleType]):
 
     def __init__(
         self,
@@ -187,7 +189,7 @@ class _ParentMixin(_Registry):
         return self._children[name].get(subkey)
 
 
-class _BaseMixin(_ParentMixin):
+class _BaseMixin(_ParentMixin[ModuleType]):
 
     def __init__(
         self,
@@ -248,26 +250,29 @@ class _BaseMixin(_ParentMixin):
 BuildFunc = Callable[['Registry', Dict[str, Any]], ModuleType]
 
 
-class _BuildFuncMixin(_ParentMixin):
+class _BuildFuncMixin(_ParentMixin[ModuleType]):
 
     def __init__(
         self,
         *args,
-        build_func: Optional[BuildFunc] = None,
+        build_func: Optional[  # yapf: disable
+            Callable[['Registry', Dict[str, Any]], ModuleType],
+        ] = None,
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
+        self._build_func: Callable[['Registry', Dict[str, Any]], ModuleType]
         if build_func is None:
             if not self.has_parent() or not self.parent.has_build_func():
                 return
             build_func = self.parent._build_func
-        self._build_func: BuildFunc = build_func
+        self._build_func = build_func
 
     def has_build_func(self) -> bool:
         return hasattr(self, '_build_func')
 
     @property
-    def build_func(self) -> BuildFunc:
+    def build_func(self) -> Callable[['Registry', Dict[str, Any]], ModuleType]:
         return self._build_func
 
     def _build(self, cfg: dict) -> ModuleType:
@@ -276,11 +281,30 @@ class _BuildFuncMixin(_ParentMixin):
         return super()._build(cfg)
 
 
-class Registry(_BuildFuncMixin, _BaseMixin, _ParentMixin, _Registry):
-    pass
+class Registry(
+    _BuildFuncMixin[ModuleType],
+    _BaseMixin[ModuleType],
+    _ParentMixin[ModuleType],
+    _Registry[ModuleType],
+):
+
+    if TYPE_CHECKING:
+
+        def __init__(
+            self,
+            name: str,
+            *,
+            parent: Optional['Registry[ModuleType]'] = None,
+            base: Optional[Type[ModuleType]] = None,
+            build_func: Optional[  # yapf: disable
+                Callable[['Registry', Dict[str, Any]], ModuleType],
+            ] = None,
+            **kwargs,
+        ) -> None:
+            ...
 
 
-NORM_LAYERS = Registry('norm layers')
+NORM_LAYERS: Registry[nn.Module] = Registry('norm layers', base=nn.Module)
 NORM_LAYERS.register_module(cls=nn.BatchNorm1d, name='BN1d')
 NORM_LAYERS.register_module(cls=nn.BatchNorm2d, name='BN2d', aliases=['BN'])
 NORM_LAYERS.register_module(cls=nn.BatchNorm3d, name='BN3d')

@@ -5,7 +5,7 @@ import torch.nn as nn
 from mmcv.cnn import CONV_LAYERS, PLUGIN_LAYERS
 from mmcv.utils import Registry
 
-from ..base import ModuleJob, ModuleStep
+from ..base import STEPS, ModuleJob, ModuleStep
 
 ADAPTS = Registry('adapts')
 ADAPTS.module_dict.update(PLUGIN_LAYERS.module_dict)
@@ -15,12 +15,13 @@ ADAPTS.register_module(module=einops.Rearrange)
 ADAPTS.register_module(module=einops.Reduce)
 
 
+@STEPS.register_module()
 class AdaptLayer(ModuleStep):
     REGISTRY = ADAPTS
 
 
 class AdaptModuleList(ModuleJob):
-    STEP_TYPE = AdaptLayer
+    STEP_TYPE = 'AdaptLayer'
 
 
 AdaptModuleListCfg = Union[  # yapf: disable

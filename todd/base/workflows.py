@@ -18,6 +18,7 @@ from .misc import strict_zip_len
 from .registries import Registry
 
 __all__ = [
+    'STEPS',
     'Step',
     'Job',
     'ModuleStep',
@@ -39,7 +40,10 @@ class Step:
     ) -> StepType:
         if isinstance(cfg, cls):
             return cfg
-        cfg = cast(dict, cfg)
+        if not isinstance(cfg, dict):
+            raise TypeError(
+                f'Step config must be a dict or an instance of {cls.__name__}'
+            )
         if default_args is not None:
             for k, v in default_args.items():
                 cfg.setdefault(k, v)
@@ -112,11 +116,12 @@ class Step:
             return dict(zip(self._id, outputs))
 
 
+STEPS = Registry('steps', base=Step)
 StepCfg = Union[dict, Step]
 
 
 class Job:
-    STEP_TYPE: Type = Step
+    STEP_TYPE = 'Step'
 
     @classmethod
     def build(
@@ -135,20 +140,24 @@ class Job:
         steps: Union[Dict[str, StepCfg], Iterable[StepCfg]],
     ) -> None:
         if isinstance(steps, dict):
-            steps = tuple(  # yapf: disable
-                self.STEP_TYPE.build(step, default_args=dict(id_=id_))
+            self._steps = tuple(  # yapf: disable
+                STEPS.build(
+                    step,
+                    default_args=dict(type=self.STEP_TYPE, id_=id_),
+                )
                 for id_, step in steps.items()
             )
         elif isinstance(steps, Iterable):
             steps = cast(Iterable[StepCfg], steps)
-            steps = tuple(self.STEP_TYPE.build(step) for step in steps)
+            self._steps = tuple(
+                STEPS.build(step, default_args=dict(type=self.STEP_TYPE))
+                for step in steps
+            )
         else:
             raise TypeError(
                 "`steps` must be a dict or Iterable, "
                 f"but got steps={steps}"
             )
-
-        self._steps = cast(Tuple[Step], steps)
 
     def forward(self, message: dict, inplace: bool = False) -> dict:
         if not inplace:
@@ -161,6 +170,7 @@ class Job:
         return updated_message
 
 
+@STEPS.register_module()
 class ModuleStep(Step, nn.Module):
 
     def __init__(
@@ -184,7 +194,7 @@ class ModuleStep(Step, nn.Module):
 
 
 class ModuleJob(Job, ModuleList):
-    STEP_TYPE = ModuleStep
+    STEP_TYPE = 'ModuleStep'
 
     def __init__(
         self,

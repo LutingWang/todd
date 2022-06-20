@@ -1,6 +1,6 @@
 from mmcv.utils import Registry
 
-from ..base import ModuleJob, ModuleStep
+from ..base import STEPS, ModuleJob, ModuleStep
 
 __all__ = [
     'VISUALS',
@@ -11,6 +11,7 @@ __all__ = [
 VISUALS = Registry('visuals')
 
 
+@STEPS.register_module()
 class VisualLayer(ModuleStep):
     REGISTRY = VISUALS
 
@@ -30,4 +31,4 @@ class VisualLayer(ModuleStep):
 
 
 class VisualModuleList(ModuleJob):
-    LAYER_TYPE = VisualLayer
+    LAYER_TYPE = 'VisualLayer'
