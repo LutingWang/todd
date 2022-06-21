@@ -3,56 +3,61 @@ from typing import (
     Callable,
     Dict,
     Iterable,
+    Iterator,
     Optional,
-    Type,
-    TypeVar,
+    Tuple,
     Union,
     cast,
+    overload,
 )
 
 import torch.nn as nn
 
-from ._extensions import ModuleList, SequenceProto, get_logger
+from ._extensions import get_logger
 from .misc import strict_zip_len
 from .registries import Registry
 
 __all__ = [
     'STEPS',
     'Step',
+    'StepCfg',
     'Job',
-    'ModuleStep',
-    'ModuleJob',
+    'JobCfg',
+    'Workflow',
 ]
 
-StepType = TypeVar('StepType', bound='Step')
-JobType = TypeVar('JobType', bound='Job')
+STEPS: Registry[Callable[..., Any]] = Registry('steps')
 
 
 class Step:
-    REGISTRY: Registry
 
-    @classmethod
-    def build(
-        cls: Type[StepType],
-        cfg: Union[dict, StepType],
-        default_args: Optional[dict] = None,
-    ) -> StepType:
-        if isinstance(cfg, cls):
-            return cfg
-        if not isinstance(cfg, dict):
-            raise TypeError(
-                f'Step config must be a dict or an instance of {cls.__name__}'
-            )
-        if default_args is not None:
-            for k, v in default_args.items():
-                cfg.setdefault(k, v)
-        return cls(**cfg)
+    @overload
+    def __init__(
+        self,
+        job_id: str,
+        id_: str,
+        fields: Iterable[str],
+        parallel: Union[bool, int, Iterable[dict]] = False,
+        **default_args,
+    ) -> None:
+        ...
+
+    @overload
+    def __init__(
+        self,
+        job_id: str,
+        id_: Iterable[str],
+        fields: Iterable[str],
+        **default_args,
+    ) -> None:
+        ...
 
     def __init__(
         self,
-        id_: Union[str, Iterable[str]],
-        fields: Iterable[str],
-        parallel: Union[bool, int, Iterable[dict]] = False,
+        job_id,
+        id_,
+        fields,
+        parallel=False,
         **default_args,
     ) -> None:
         self._id = id_
@@ -60,17 +65,16 @@ class Step:
         self._parallel = parallel
         self._logger = get_logger()
 
-        self._executor: Callable[..., Any]
-        self._executors: SequenceProto[Callable[..., Any]]
         if isinstance(parallel, bool):
-            self._executor = self.REGISTRY.build(default_args)
+            self._executor = STEPS.index_descendent(job_id).build(default_args)
         elif isinstance(parallel, int):
             self._executors = tuple(
-                self.REGISTRY.build(default_args) for _ in range(parallel)
+                STEPS.index_descendent(job_id).build(default_args)
+                for _ in range(parallel)
             )
         elif isinstance(parallel, Iterable):
             self._executors = tuple(
-                self.REGISTRY.build(kwargs, default_args)
+                STEPS.index_descendent(job_id).build(kwargs, default_args)
                 for kwargs in parallel
             )
         else:
@@ -78,6 +82,10 @@ class Step:
                 "`parallel` must be a bool, int, or Iterable, "
                 f"but got {type(parallel)}"
             )
+
+    @property
+    def parallel(self) -> bool:
+        return isinstance(self._parallel, bool) and self._parallel
 
     def _forward(self, inputs: tuple, kwargs: dict):
         if isinstance(self._parallel, bool):
@@ -114,52 +122,80 @@ class Step:
         else:
             return dict(zip(self._id, outputs))
 
+    def to_module(self) -> nn.Module:
+        if isinstance(self._parallel, bool):
+            return cast(nn.Module, self._executor)
+        return nn.ModuleList(self._executors)
 
-STEPS = Registry('steps', base=Step)
-StepCfg = Union[dict, Step]
+
+StepId = Union[str, Iterable[str]]
+StepCfg = Union[Dict[str, Any], Step]
 
 
 class Job:
-    STEP_TYPE = 'Step'
 
-    @classmethod
-    def build(
-        cls: Type[JobType],
-        cfg: Union[Dict[str, StepCfg], Iterable[StepCfg], JobType],
-        *args,
-        **kwargs,
-    ) -> JobType:
-        if isinstance(cfg, cls):
-            return cfg
-        cfg = cast(Union[Dict[str, StepCfg], Iterable[StepCfg]], cfg)
-        return cls(cfg, *args, **kwargs)
+    def _build_steps(
+        self,
+        steps: Union[Dict[StepId, StepCfg], Iterable[StepCfg]],
+    ) -> Tuple[Step, ...]:
+        if isinstance(steps, dict):
+            steps = cast(Dict[StepId, StepCfg], steps)
+            return tuple(  # yapf: disable
+                step if isinstance(step, Step) else
+                Step(self._id, step_id, **step)
+                for step_id, step in steps.items()
+            )
+        if isinstance(steps, Iterable):
+            steps = cast(Iterable[StepCfg], steps)
+            return tuple(
+                step if isinstance(step, Step) else Step(self._id, **step)
+                for step in steps
+            )
+        raise TypeError(
+            "`steps` must be a dict or Iterable, "
+            f"but got steps={steps}"
+        )
 
+    @overload
     def __init__(
         self,
-        steps: Union[Dict[str, StepCfg], Iterable[StepCfg]],
+        id_: str,
+        steps: Dict[StepId, StepCfg],
+        /,
     ) -> None:
-        self._steps: SequenceProto[Step]
-        step_type = STEPS[self.STEP_TYPE]
-        if isinstance(steps, dict):
-            self._steps = tuple(  # yapf: disable
-                step_type.build(
-                    step,
-                    default_args=dict(id_=id_),
-                )
-                for id_, step in steps.items()
-            )
-        elif isinstance(steps, Iterable):
-            steps = cast(Iterable[StepCfg], steps)
-            self._steps = tuple(step_type.build(step) for step in steps)
-        else:
-            raise TypeError(
-                "`steps` must be a dict or Iterable, "
-                f"but got steps={steps}"
-            )
+        ...
 
-    def forward(self, message: dict, inplace: bool = False) -> dict:
-        if not inplace:
-            message = dict(message)
+    @overload
+    def __init__(
+        self,
+        id_: str,
+        steps: Iterable[StepCfg],
+        /,
+    ) -> None:
+        ...
+
+    @overload
+    def __init__(
+        self,
+        id_: str,
+        /,
+        **steps: StepCfg,
+    ) -> None:
+        ...
+
+    def __init__(self, id_, steps=None, /, **kwargs) -> None:
+        if steps is not None and len(kwargs) > 0:
+            raise ValueError("`steps` and `kwargs` cannot be both specified")
+
+        self._id = id_
+        self._steps = self._build_steps(
+            cast(Dict[StepId, StepCfg], steps or kwargs),
+        )
+
+    def __iter__(self) -> Iterator[Step]:
+        return iter(self._steps)
+
+    def forward(self, message: dict) -> dict:
         updated_message = dict()
         for step in self._steps:
             updates = step.forward(message)
@@ -167,37 +203,52 @@ class Job:
             updated_message.update(updates)
         return updated_message
 
+    def to_module(self) -> nn.Module:
+        return nn.ModuleList([step.to_module() for step in self._steps])
 
-@STEPS.register_module()
-class ModuleStep(Step, nn.Module):
 
+JobCfg = Union[Dict[StepId, StepCfg], Iterable[StepCfg], Job]
+
+
+class Workflow:
+
+    def _build_jobs(self, jobs: Dict[str, JobCfg]) -> Dict[str, Job]:
+        jobs = jobs.copy()
+        for job_id, job in jobs.items():
+            if not isinstance(job, Job):
+                jobs[job_id] = Job(job_id, job)
+        return cast(Dict[str, Job], jobs)
+
+    @overload
     def __init__(
         self,
-        id_: Union[str, Iterable[str]],
-        tensor_names: Iterable[str],
-        multilevel: Union[bool, int, Iterable[dict]] = False,
-        **default_args,
+        id_: str,
+        jobs: Dict[str, JobCfg],
+        /,
     ) -> None:
-        nn.Module.__init__(self)
-        Step.__init__(
-            self,
-            id_=id_,
-            fields=tensor_names,
-            parallel=multilevel,
-            **default_args,
-        )
-        if isinstance(self._parallel, bool):
-            return
-        self._executors = ModuleList(self._executors)
+        ...
 
-
-class ModuleJob(Job, nn.Module):
-    STEP_TYPE = 'ModuleStep'
-
+    @overload
     def __init__(
         self,
-        steps: Union[Dict[str, StepCfg], Iterable[StepCfg]],
+        id_: str,
+        /,
+        **jobs: JobCfg,
     ) -> None:
-        nn.Module.__init__(self)
-        Job.__init__(self, steps)
-        self._steps = ModuleList(self._steps)
+        ...
+
+    def __init__(self, id_, jobs=None, /, **kwargs) -> None:
+        if jobs is not None and len(kwargs) > 0:
+            raise ValueError("`jobs` and `kwargs` cannot be both specified")
+
+        self._id = id_
+        self._jobs = self._build_jobs(jobs or kwargs)
+
+    def has_job(self, job_id: str) -> bool:
+        return job_id in self._jobs
+
+    def index_job(self, job_id: str) -> Job:
+        return self._jobs[job_id]
+
+    def get_job(self, job_id: str) -> Optional[Job]:
+        return self._jobs.get(job_id)

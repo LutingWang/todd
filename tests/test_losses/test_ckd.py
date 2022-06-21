@@ -4,8 +4,8 @@ from typing import Dict, List, Tuple
 import pytest
 import torch
 
-from todd.adapts import ADAPTS, AdaptModuleList, BaseAdapt
-from todd.losses import CKDLoss, LossModuleList
+from todd.adapts import ADAPTS, BaseAdapt
+from todd.base import Job
 from todd.utils import CollectionTensor
 
 
@@ -38,42 +38,44 @@ class CustomAdapt(BaseAdapt):
 class TestCKD:
 
     @pytest.fixture()
-    def adapt(self):
-        return AdaptModuleList({
-            'pred_reshaped': dict(
-                type='Rearrange',
-                tensor_names=['preds'],
-                multilevel=True,
-                pattern='bs dim h w -> bs h w dim',
-            ),
-            ('targets', 'bboxes', 'bbox_poses', 'anchor_ids'): dict(
-                type='CustomAdapt',
-                tensor_names=['targets', 'bboxes', 'bbox_ids'],
-                stride=1,
-            ),
-            'pred_indexed': dict(
-                type='Index',
-                tensor_names=['pred_reshaped', 'bbox_poses'],
-            ),
-            'preds': dict(
-                type='Decouple',
-                tensor_names=['pred_indexed', 'anchor_ids'],
-                num=9,
-                in_features=4,
-                out_features=16,
-                bias=False,
-            ),
-        })
+    def adapt(self) -> Job:
+        return Job(
+            'adapts',
+            {
+                'pred_reshaped': dict(
+                    type='Rearrange',
+                    fields=['preds'],
+                    parallel=True,
+                    pattern='bs dim h w -> bs h w dim',
+                ),
+                ('targets', 'bboxes', 'bbox_poses', 'anchor_ids'): dict(
+                    type='CustomAdapt',
+                    fields=['targets', 'bboxes', 'bbox_ids'],
+                    stride=1,
+                ),
+                'pred_indexed': dict(
+                    type='Index',
+                    fields=['pred_reshaped', 'bbox_poses'],
+                ),
+                'preds': dict(
+                    type='Decouple',
+                    fields=['pred_indexed', 'anchor_ids'],
+                    num=9,
+                    in_features=4,
+                    out_features=16,
+                    bias=False,
+                ),
+            }
+        )
 
     @pytest.fixture()
-    def ckd(self):
-        return LossModuleList(
-            dict(
-                ckd=dict(
-                    type='CKDLoss',
-                    tensor_names=['preds', 'targets', 'bboxes'],
-                    weight=0.5,
-                ),
+    def ckd(self) -> Job:
+        return Job(
+            'losses',
+            loss_ckd=dict(
+                type='CKDLoss',
+                fields=['preds', 'targets', 'bboxes'],
+                weight=0.5,
             ),
         )
 
@@ -114,16 +116,16 @@ class TestCKD:
 
     def test_ckd(
         self,
-        adapt: AdaptModuleList,
-        ckd: CKDLoss,
+        adapt: Job,
+        ckd: Job,
         result: Dict[str, dict],
     ):
         for rank in range(4):
             rank_result = result[f'rank{rank}']
-            adapt.load_state_dict(rank_result['state_dict'])
-            tensors = adapt(rank_result['inputs'], inplace=False)
+            adapt.to_module().load_state_dict(rank_result['state_dict'])
+            tensors = adapt.forward(rank_result['inputs'])
             assert CollectionTensor.allclose(rank_result['tensors'], tensors)
-            losses = ckd(tensors)
+            losses = ckd.forward(tensors)
             assert CollectionTensor.allclose(rank_result['losses'], losses)
 
 

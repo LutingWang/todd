@@ -15,8 +15,7 @@ from typing import (
 import einops
 import torch
 
-from .base import BaseAdapt
-from .builder import ADAPTS
+from .base import ADAPTS, BaseAdapt
 
 __all__ = [
     'DictTensor',

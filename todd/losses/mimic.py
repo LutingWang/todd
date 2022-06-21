@@ -2,7 +2,7 @@ import einops
 import torch
 import torch.nn.functional as F
 
-from .builder import LOSSES
+from .base import LOSSES
 from .functional import MSE2DLoss
 
 

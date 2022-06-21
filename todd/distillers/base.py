@@ -19,16 +19,13 @@ import torch
 import torch.nn as nn
 from mmcv.runner import BaseModule
 
-from ..adapts import AdaptModuleList
-from ..base import inc_iter, init_iter
+from ..base import JobCfg, Workflow, inc_iter, init_iter
 from ..hooks import HookModuleList, HookModuleListCfg, TrackingModuleList
 from ..hooks import detach as DetachHookContext
-from ..losses import LossModuleList
 from ..utils import ModelLoader
-from ..visuals import VisualModuleList
 
 
-class BaseDistiller(BaseModule):
+class BaseDistiller(Workflow, BaseModule):
     DEBUG_PREFIX = '_debug_'
 
     def __init__(
@@ -37,14 +34,11 @@ class BaseDistiller(BaseModule):
         *,
         hooks: Optional[Dict[int, HookModuleListCfg]] = None,
         trackings: Optional[Dict[int, HookModuleListCfg]] = None,
-        adapts=None,
-        visuals=None,
-        losses,
         iter_: int = 0,
         weight_transfer: Optional[Dict[str, str]] = None,
-        **kwargs,
+        **jobs: JobCfg,
     ):
-        super().__init__(**kwargs)
+        BaseModule.__init__(self)
         self._models = models
 
         hooks = {} if hooks is None else hooks
@@ -63,23 +57,14 @@ class BaseDistiller(BaseModule):
         }
         self._trackings = tracking_dict
 
-        adapt_list: Optional[AdaptModuleList] = (
-            None if adapts is None else AdaptModuleList.build(adapts)
-        )
-        self._adapts = adapt_list
-
-        visual_list: Optional[VisualModuleList] = (
-            None if visuals is None else VisualModuleList.build(visuals)
-        )
-        self._visuals = visual_list
-
-        loss_list: LossModuleList = LossModuleList.build(losses)
-        self._losses = loss_list
-
         init_iter(iter_)
 
         if weight_transfer is not None:
             ModelLoader.load_state_dicts(self, weight_transfer)
+
+        Workflow.__init__(self, self.__class__.__name__, jobs)
+        for job_id, job in self._jobs.items():
+            self.add_module(f'_{job_id}', job.to_module())
 
     @property
     def models(self) -> List[nn.Module]:
@@ -123,20 +108,6 @@ class BaseDistiller(BaseModule):
         for hook in self._hooks.values():
             hook.reset()
 
-    def visualize(
-        self,
-        *args,
-        custom_tensors: Optional[Dict[str, Any]] = None,
-        **kwargs,
-    ):
-        assert self._visuals is not None
-        for i, trackings in self._trackings.items():
-            trackings.register_tensor(self._models[i])
-        tensors = self.tensors
-        if custom_tensors is not None:
-            tensors.update(custom_tensors)
-        self._visuals(tensors, *args, **kwargs)
-
     def distill(
         self,
         custom_tensors: Optional[Dict[str, torch.Tensor]] = None,
@@ -155,9 +126,11 @@ class BaseDistiller(BaseModule):
         tensors = self.tensors
         if custom_tensors is not None:
             tensors.update(custom_tensors)
-        if self._adapts is not None:
-            self._adapts(tensors, inplace=True, **adapt_kwargs)
-        losses = self._losses(tensors, **loss_kwargs)
+        if self.has_job('adapts'):
+            self.index_job('adapts').forward(tensors)
+        if self.has_job('visuals'):
+            self.index_job('visuals').forward(tensors)
+        losses = self.index_job('losses').forward(tensors.copy())
 
         inc_iter()
         self.reset()

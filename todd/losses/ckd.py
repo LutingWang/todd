@@ -5,8 +5,7 @@ import torch.distributed as dist
 import torch.nn.functional as F
 
 from ..base import BBoxesXYXY, get_rank, get_world_size
-from .base import BaseLoss
-from .builder import LOSSES
+from .base import LOSSES, BaseLoss
 
 
 def ckd_loss(

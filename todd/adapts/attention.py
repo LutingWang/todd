@@ -2,8 +2,7 @@ import einops
 import torch
 import torch.nn.functional as F
 
-from .base import BaseAdapt
-from .builder import ADAPTS
+from .base import ADAPTS, BaseAdapt
 
 
 @ADAPTS.register_module()

@@ -3,8 +3,7 @@ from typing import List
 import torch
 from mmcv.runner import ModuleList
 
-from .base import BaseAdapt
-from .builder import ADAPTS
+from .base import ADAPTS, BaseAdapt
 
 
 @ADAPTS.register_module()

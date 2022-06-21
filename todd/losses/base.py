@@ -6,7 +6,13 @@ import torch.nn as nn
 from mmcv import ConfigDict
 from mmcv.runner import BaseModule
 
+from ..base import STEPS, Registry
 from ..schedulers import SCHEDULERS
+
+__all__ = [
+    'BaseLoss',
+    'LOSSES',
+]
 
 Reduction = Literal['none', 'mean', 'sum', 'prod']
 
@@ -70,3 +76,10 @@ class BaseLoss(BaseModule):
 
         output = weight * output
         return output
+
+
+LOSSES: Registry[nn.Module] = Registry(
+    'losses',
+    parent=STEPS,
+    base=nn.Module,
+)

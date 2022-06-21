@@ -3,8 +3,7 @@ from typing import List, Tuple
 import torch
 
 from ..base import BBoxesXYXY
-from .base import BaseAdapt
-from .builder import ADAPTS
+from .base import ADAPTS, BaseAdapt
 
 
 @ADAPTS.register_module()

@@ -1,8 +1,7 @@
 import torch
 
 from ..utils import ListTensor
-from .base import BaseAdapt
-from .builder import ADAPTS
+from .base import ADAPTS, BaseAdapt
 
 
 class ListTensorAdapt(BaseAdapt):

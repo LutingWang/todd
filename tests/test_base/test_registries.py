@@ -250,7 +250,7 @@ class TestParentMixin:
         class GoldenRetriever:
             pass
 
-        hounds = Registry('hounds', parent=dogs)
+        hounds: Registry = Registry('hounds', parent=dogs)
         assert dogs.children == dict(hounds=hounds)
         assert hounds.has_parent()
         assert hounds.parent is dogs
@@ -272,7 +272,7 @@ class TestParentMixin:
         assert hounds.get('BloodHound') is BloodHound
         assert hounds.get('hounds.BloodHound') is None
 
-        little_hounds = Registry('little hounds', parent=hounds)
+        little_hounds: Registry = Registry('little hounds', parent=hounds)
         assert dogs.children == dict(hounds=hounds)
         assert hounds.children == {'little hounds': little_hounds}
         assert hounds.parent is dogs
@@ -293,7 +293,7 @@ class TestParentMixin:
         assert hounds.get('little hounds.Dachshund') is Dachshund
         assert hounds.get('hounds.little hounds.Dachshund') is None
 
-        mid_hounds = Registry('mid hounds', parent=hounds)
+        mid_hounds: Registry = Registry('mid hounds', parent=hounds)
         assert dogs.children == dict(hounds=hounds)
         assert hounds.children == {
             'little hounds': little_hounds,

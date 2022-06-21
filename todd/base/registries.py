@@ -1,7 +1,6 @@
 import inspect
 from functools import partial
 from typing import (
-    TYPE_CHECKING,
     Any,
     Callable,
     Dict,
@@ -24,10 +23,10 @@ __all__ = [
     'Registry',
 ]
 
-ModuleType = TypeVar('ModuleType')
+T = TypeVar('T')
 
 
-class _Registry(Generic[ModuleType]):
+class _Registry(Generic[T]):
 
     def __init__(self, name: str) -> None:
         assert '.' not in name
@@ -41,7 +40,7 @@ class _Registry(Generic[ModuleType]):
         return self._name
 
     @property
-    def modules(self) -> Dict[str, Type[ModuleType]]:
+    def modules(self) -> Dict[str, Type[T]]:
         return self._modules
 
     def __len__(self) -> int:
@@ -50,19 +49,19 @@ class _Registry(Generic[ModuleType]):
     def __contains__(self, key: str) -> bool:
         return self.get(key) is not None
 
-    def __getitem__(self, key: str) -> Type[ModuleType]:
-        item: Optional[Type[ModuleType]] = self.get(key)
+    def __getitem__(self, key: str) -> Type[T]:
+        item: Optional[Type[T]] = self.get(key)
         if item is None:
             raise KeyError(f'{key} does not exist in {self.name} registry')
         return item
 
     def _register_module(
         self,
-        cls: Type[ModuleType],
+        cls: Type[T],
         name: Optional[str] = None,
         aliases: Iterable[str] = tuple(),
         force: bool = False,
-    ) -> Type[ModuleType]:
+    ) -> Type[T]:
         if inspect.isabstract(cls):
             raise TypeError(f'{cls} is an abstract class')
         if name is None:
@@ -80,18 +79,18 @@ class _Registry(Generic[ModuleType]):
         name: Optional[str] = None,
         aliases: Iterable[str] = tuple(),
         force: bool = False,
-    ) -> Callable[[Type[ModuleType]], Type[ModuleType]]:
+    ) -> Callable[[Type[T]], Type[T]]:
         ...
 
     @overload
     def register_module(
         self,
-        cls: Type[ModuleType],
+        cls: Type[T],
         *,
         name: Optional[str] = None,
         aliases: Iterable[str] = tuple(),
         force: bool = False,
-    ) -> Type[ModuleType]:
+    ) -> Type[T]:
         ...
 
     def register_module(
@@ -112,10 +111,10 @@ class _Registry(Generic[ModuleType]):
             return register
         return register(cls=cls)
 
-    def get(self, key: str) -> Optional[Type[ModuleType]]:
+    def get(self, key: str) -> Optional[Type[T]]:
         return self._modules.get(key)
 
-    def _build(self, cfg: dict) -> ModuleType:
+    def _build(self, cfg: dict) -> T:
         if 'type' not in cfg:
             raise KeyError(f'{cfg} cfg does not specify type')
 
@@ -134,7 +133,7 @@ class _Registry(Generic[ModuleType]):
         self,
         cfg: dict,
         default_args: Optional[dict] = None,
-    ) -> ModuleType:
+    ) -> T:
         cfg = cfg.copy()
         if default_args is not None:
             if not isinstance(default_args, dict):
@@ -147,7 +146,7 @@ class _Registry(Generic[ModuleType]):
         return self._build(cfg)
 
 
-class _ParentMixin(_Registry[ModuleType]):
+class _ParentMixin(_Registry[T]):
 
     def __init__(
         self,
@@ -167,6 +166,22 @@ class _ParentMixin(_Registry[ModuleType]):
     def children(self) -> Dict[str, 'Registry']:
         return self._children
 
+    def index_descendent(self, name: str) -> 'Registry':
+        descendent = self.get_descendent(name)
+        if descendent is None:
+            raise KeyError(
+                f"Registry {self._name} does not have descendent named {name}."
+            )
+        return descendent
+
+    def get_descendent(self, name: str) -> Optional['Registry']:
+        current = self
+        for child_name in name.split('.'):
+            if child_name not in current._children:
+                return None
+            current = current._children[child_name]
+        return cast(Registry, current)
+
     def has_parent(self) -> bool:
         return hasattr(self, '_parent')
 
@@ -180,37 +195,38 @@ class _ParentMixin(_Registry[ModuleType]):
             return self._parent.root
         return cast(Registry, self)
 
-    def get(self, key: str) -> Optional[Type[ModuleType]]:
+    def get(self, key: str) -> Optional[Type[T]]:
         if '.' not in key:
             return super().get(key)
-        name, subkey = key.split('.', 1)
-        if name not in self._children:
+        descendent_name, key = key.rsplit('.', 1)
+        descendent = self.get_descendent(descendent_name)
+        if descendent is None:
             return None
-        return self._children[name].get(subkey)
+        return descendent.get(key)
 
 
-class _BaseMixin(_ParentMixin[ModuleType]):
+class _BaseMixin(_ParentMixin[T]):
 
     def __init__(
         self,
         *args,
-        base: Optional[Type[ModuleType]] = None,
+        base: Optional[Type[T]] = None,
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
         parent_has_base = self.has_parent() and self.parent.has_base()
         if base is None:
             if parent_has_base:
-                base = self.parent._base
+                base = self.parent.base
             else:
                 return
         else:
-            if parent_has_base and not issubclass(base, self.parent._base):
+            if parent_has_base and not issubclass(base, self.parent.base):
                 raise TypeError(
-                    f'{base} is not a subclass of {self.parent._base}',
+                    f'{base} is not a subclass of {self.parent.base}',
                 )
 
-        self._base: Type[ModuleType] = base
+        self._base = cast(Type[T], base)
         if not inspect.isabstract(base):
             self._register_module(base)
 
@@ -218,24 +234,24 @@ class _BaseMixin(_ParentMixin[ModuleType]):
         return hasattr(self, '_base')
 
     @property
-    def base(self) -> Type[ModuleType]:
+    def base(self) -> Type[T]:
         return self._base
 
     def _register_module(
         self,
-        cls: Type[ModuleType],
+        cls: Type[T],
         *args,
         **kwargs,
-    ) -> Type[ModuleType]:
+    ) -> Type[T]:
         if self.has_base() and not issubclass(cls, self._base):
             raise TypeError(f'{cls} is not a subclass of {self._base}')
         return super()._register_module(cls, *args, **kwargs)
 
     def build(
         self,
-        cfg: Union[dict, ModuleType],
+        cfg: Union[dict, T],
         default_args: Optional[dict] = None,
-    ) -> ModuleType:
+    ) -> T:
         if not self.has_base() or not isinstance(cfg, self._base):
             if not isinstance(cfg, dict):
                 raise TypeError(
@@ -247,60 +263,41 @@ class _BaseMixin(_ParentMixin[ModuleType]):
         return cfg
 
 
-BuildFunc = Callable[['Registry', Dict[str, Any]], ModuleType]
-
-
-class _BuildFuncMixin(_ParentMixin[ModuleType]):
+class _BuildFuncMixin(_ParentMixin[T]):
 
     def __init__(
         self,
         *args,
-        build_func: Optional[  # yapf: disable
-            Callable[['Registry', Dict[str, Any]], ModuleType]] = None,
+        build_func: Optional[Callable[['Registry', Dict[str, Any]], T]] = None,
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
-        self._build_func: Callable[['Registry', Dict[str, Any]], ModuleType]
         if build_func is None:
             if not self.has_parent() or not self.parent.has_build_func():
                 return
-            build_func = self.parent._build_func
+            build_func = self.parent.build_func
         self._build_func = build_func
 
     def has_build_func(self) -> bool:
         return hasattr(self, '_build_func')
 
     @property
-    def build_func(self) -> Callable[['Registry', Dict[str, Any]], ModuleType]:
+    def build_func(self) -> Callable[['Registry', Dict[str, Any]], T]:
         return self._build_func
 
-    def _build(self, cfg: dict) -> ModuleType:
+    def _build(self, cfg: dict) -> T:
         if self.has_build_func():
             return self._build_func(cast(Registry, self), cfg)
         return super()._build(cfg)
 
 
 class Registry(
-    _BuildFuncMixin[ModuleType],
-    _BaseMixin[ModuleType],
-    _ParentMixin[ModuleType],
-    _Registry[ModuleType],
+    _BuildFuncMixin[T],
+    _BaseMixin[T],
+    _ParentMixin[T],
+    _Registry[T],
 ):
-
-    if TYPE_CHECKING:
-
-        def __init__(
-            self,
-            name: str,
-            *,
-            parent: Optional['Registry[ModuleType]'] = None,
-            base: Optional[Type[ModuleType]] = None,
-            build_func: Optional[  # yapf: disable
-                Callable[['Registry', Dict[str, Any]], ModuleType],
-            ] = None,
-            **kwargs,
-        ) -> None:
-            ...
+    pass
 
 
 NORM_LAYERS: Registry[nn.Module] = Registry('norm layers', base=nn.Module)

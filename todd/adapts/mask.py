@@ -5,8 +5,7 @@ from typing import List, Tuple
 import einops
 import torch
 
-from .base import BaseAdapt
-from .builder import ADAPTS
+from .base import ADAPTS, BaseAdapt
 
 
 class MultiLevelMask:

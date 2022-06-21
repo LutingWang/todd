@@ -3,8 +3,7 @@ from typing import List, Optional, Tuple
 import cv2
 import numpy as np
 
-from .base import BaseVisual
-from .builder import VISUALS
+from .base import VISUALS, BaseVisual
 
 __all__ = [
     'AnnotationVisual',

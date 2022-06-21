@@ -6,8 +6,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
-from .base import BaseVisual
-from .builder import VISUALS
+from .base import VISUALS, BaseVisual
 
 __all__ = [
     'ActivationVisual',

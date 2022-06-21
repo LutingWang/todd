@@ -4,8 +4,7 @@ from typing import Optional
 import torch
 import torch.nn.functional as F
 
-from .base import BaseLoss
-from .builder import LOSSES
+from .base import LOSSES, BaseLoss
 
 
 class FunctionalLoss(BaseLoss):
