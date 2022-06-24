@@ -22,7 +22,7 @@ class MatchMode(Enum):
         raise ValueError(f"Unknown match mode: {self}")
 
 
-def parse_args():
+def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Convert Checkpoints")
     parser.add_argument('ckpt')
     for mode in MatchMode:

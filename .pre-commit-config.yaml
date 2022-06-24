@@ -9,7 +9,7 @@ repos:
     -   id: check-merge-conflict
     -   id: check-yaml
     -   id: debug-statements
-        exclude: ^todd/base/_patches/builtins.py$
+        exclude: ^todd/base/_patches/builtins\.py$
     -   id: end-of-file-fixer
     -   id: fix-encoding-pragma
         args: ["--remove"]
@@ -20,6 +20,7 @@ repos:
         args: ["--fix=crlf"]
         files: '\.bat$'
     -   id: requirements-txt-fixer
+        files: 'requirements.txt|requirements/.*'
     -   id: trailing-whitespace
 -   repo: https://gitlab.com/pycqa/flake8
     rev: 3.9.2

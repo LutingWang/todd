@@ -8,6 +8,7 @@ from typing import (
     Tuple,
     Union,
     cast,
+    final,
     overload,
 )
 
@@ -29,6 +30,7 @@ __all__ = [
 STEPS: Registry[Callable[..., Any]] = Registry('steps')
 
 
+@final
 class Step:
 
     @overload
@@ -132,6 +134,7 @@ StepId = Union[str, Iterable[str]]
 StepCfg = Union[Dict[str, Any], Step]
 
 
+@final
 class Job:
 
     def _build_steps(

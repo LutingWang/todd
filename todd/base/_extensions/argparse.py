@@ -1,5 +1,5 @@
 import argparse
-from typing import Any, Dict, List, Optional, Sequence, Union
+from typing import Any, Dict, Optional, Sequence, Union
 
 __all__ = [
     'DictAction',
@@ -21,24 +21,22 @@ class DictAction(argparse.Action):
         """
         Args:
             nargs: The number of dictionary arguments that should be consumed.
-                By default, one set of arguments will be consumed and a single
-                dictionary will be produces. To provide a list of dictionaries,
-                use ``nargs=argparse.ZERO_OR_MORE``.
         """
-        if nargs is None:
-            append = False
-            default = None
-        elif nargs == argparse.ZERO_OR_MORE:
-            append = True
-            default = []
-        else:
-            raise ValueError(
-                f'nargs must be None or ZERO_OR_MORE, but got {nargs}',
-            )
+        if nargs not in [
+            None,
+            argparse.OPTIONAL,
+            argparse.ZERO_OR_MORE,
+            argparse.ONE_OR_MORE,
+        ]:
+            raise ValueError(f"Invalid nargs={nargs}")
 
+        append = nargs in [argparse.ZERO_OR_MORE, argparse.ONE_OR_MORE]
+        required = nargs in [None, argparse.ONE_OR_MORE]
+        default = [] if append else None
         super().__init__(
             *args,
             nargs=argparse.ZERO_OR_MORE,
+            required=required,
             default=default,
             **kwargs,
         )
@@ -57,10 +55,11 @@ class DictAction(argparse.Action):
             raise ValueError(f'values must be strings, but got {values}')
         value_dict: Dict[str, Any] = {}
         for value in values:
-            k, v = value.split('=', 1)
-            value_dict[k] = eval(v)
+            k, v = value.split(':', 1)
+            value_dict[k.strip()] = eval(v)
         if self._append:
-            value_dict_list: List[dict] = getattr(namespace, self.dest)
+            value_dict_list = getattr(namespace, self.dest, [])
             value_dict_list.append(value_dict)
+            setattr(namespace, self.dest, value_dict_list)
         else:
             setattr(namespace, self.dest, value_dict)

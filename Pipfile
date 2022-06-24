@@ -28,8 +28,10 @@ sphinx = "*"
 python-docs-theme = "*"
 pydocstyle = "*"
 sphinx-rtd-theme = "*"
+tensorboard = "*"
 
 [dev-packages]
+torch-tb-profiler = "*"
 
 [requires]
 python_version = "3.8"
