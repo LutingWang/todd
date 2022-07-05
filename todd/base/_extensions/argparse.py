@@ -13,7 +13,7 @@ class DictAction(argparse.Action):
         >>> parser = argparse.ArgumentParser()
         >>> parser.add_argument('--dict', action=DictAction)
         DictAction(...)
-        >>> parser.parse_args('--dict key1="value1" key2="value2"'.split())
+        >>> parser.parse_args('--dict key1:"value1" key2:"value2"'.split())
         Namespace(dict={'key1': 'value1', 'key2': 'value2'})
     """
 

@@ -68,15 +68,15 @@ class Step:
         self._logger = get_logger()
 
         if isinstance(parallel, bool):
-            self._executor = STEPS.index_descendent(job_id).build(default_args)
+            self._executor = STEPS.descendent(job_id).build(default_args)
         elif isinstance(parallel, int):
             self._executors = tuple(
-                STEPS.index_descendent(job_id).build(default_args)
+                STEPS.descendent(job_id).build(default_args)
                 for _ in range(parallel)
             )
         elif isinstance(parallel, Iterable):
             self._executors = tuple(
-                STEPS.index_descendent(job_id).build(kwargs, default_args)
+                STEPS.descendent(job_id).build(kwargs, default_args)
                 for kwargs in parallel
             )
         else:
@@ -250,7 +250,7 @@ class Workflow:
     def has_job(self, job_id: str) -> bool:
         return job_id in self._jobs
 
-    def index_job(self, job_id: str) -> Job:
+    def job(self, job_id: str) -> Job:
         return self._jobs[job_id]
 
     def get_job(self, job_id: str) -> Optional[Job]:

@@ -127,10 +127,10 @@ class BaseDistiller(Workflow, BaseModule):
         if custom_tensors is not None:
             tensors.update(custom_tensors)
         if self.has_job('adapts'):
-            self.index_job('adapts').forward(tensors)
+            self.job('adapts').forward(tensors)
         if self.has_job('visuals'):
-            self.index_job('visuals').forward(tensors)
-        losses = self.index_job('losses').forward(tensors.copy())
+            self.job('visuals').forward(tensors)
+        losses = self.job('losses').forward(tensors.copy())
 
         inc_iter()
         self.reset()

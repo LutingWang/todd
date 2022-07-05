@@ -14,6 +14,6 @@ exclude_lines =
 
     if __name__ == .__main__.:
 
-    class .*\bProtocol\):
+    class .*\(.*\bProtocol\b.*\):
     @(abc\.)?abstractmethod
     @overload

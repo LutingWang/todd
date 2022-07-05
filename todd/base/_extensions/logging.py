@@ -122,7 +122,7 @@ def get_logger(log_file=None) -> logging.Logger:
     name = frame.f_globals.get('__name__')
     logger = logging.getLogger(name)
     if not getattr(logger, '_isinitialized', False):
-        logger._isinitialized = True  # type: ignore[attr-defined]
+        setattr(logger, '_isinitialized', True)
         logger.setLevel(logging.DEBUG)
         logger.addHandler(logging.StreamHandler())
         if log_file:
