@@ -1,20 +1,15 @@
-from typing import Dict, List
+from typing import Any, List
 
-import torch
-
-from .builder import HOOKS
+from .base import HOOKS
 from .standard import StandardHook
 
 
 @HOOKS.register_module()
 class DuplicatedHook(StandardHook):
 
-    def __init__(self, *args, num: int = 1, **kwargs):
+    def __init__(self, *args, num: int = 1, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._num = num
 
-    @property
-    def tensor(  # type: ignore[override]
-        self,
-    ) -> Dict[str, List[torch.Tensor]]:
-        return {self.id_: [self._tensor] * self._num}
+    def _tensor(self) -> List[Any]:
+        return [super()._tensor()] * self._num

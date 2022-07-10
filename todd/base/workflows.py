@@ -1,257 +1,229 @@
+__all__ = [
+    'Message',
+    'STEPS',
+    'WorkflowConfig',
+    'Workflow',
+]
+
+from abc import abstractmethod
 from typing import (
     Any,
     Callable,
     Dict,
+    Generator,
     Iterable,
     Iterator,
     Optional,
     Tuple,
     Union,
-    cast,
-    final,
-    overload,
 )
 
-import torch.nn as nn
-
-from ._extensions import get_logger
-from .misc import strict_zip_len
+from ._extensions import Config, get_logger
 from .registries import Registry
 
-__all__ = [
-    'STEPS',
-    'Step',
-    'StepCfg',
-    'Job',
-    'JobCfg',
-    'Workflow',
-]
+Message = Dict[str, Any]
 
-STEPS: Registry[Callable[..., Any]] = Registry('steps')
+Step = Callable[..., Any]
+STEPS: Registry[Step] = Registry('steps')
 
 
-@final
-class Step:
+class BaseStepManager:
 
-    @overload
-    def __init__(
-        self,
-        job_id: str,
-        id_: str,
-        fields: Iterable[str],
-        parallel: Union[bool, int, Iterable[dict]] = False,
-        **default_args,
-    ) -> None:
-        ...
+    @abstractmethod
+    def __iter__(self) -> Generator[Any, None, None]:
+        pass
 
-    @overload
-    def __init__(
-        self,
-        job_id: str,
-        id_: Iterable[str],
-        fields: Iterable[str],
-        **default_args,
-    ) -> None:
-        ...
-
-    def __init__(
-        self,
-        job_id,
-        id_,
-        fields,
-        parallel=False,
-        **default_args,
-    ) -> None:
-        self._id = id_
-        self._fields = tuple(fields)
-        self._parallel = parallel
-        self._logger = get_logger()
-
-        if isinstance(parallel, bool):
-            self._executor = STEPS.descendent(job_id).build(default_args)
-        elif isinstance(parallel, int):
-            self._executors = tuple(
-                STEPS.descendent(job_id).build(default_args)
-                for _ in range(parallel)
-            )
-        elif isinstance(parallel, Iterable):
-            self._executors = tuple(
-                STEPS.descendent(job_id).build(kwargs, default_args)
-                for kwargs in parallel
-            )
-        else:
-            raise TypeError(
-                "`parallel` must be a bool, int, or Iterable, "
-                f"but got {type(parallel)}"
-            )
+    @abstractmethod
+    def __call__(self, args: Tuple[Any, ...], kwargs: Dict[str, Any]):
+        pass
 
     @property
-    def parallel(self) -> bool:
-        return isinstance(self._parallel, bool) and self._parallel
+    @abstractmethod
+    def step(self):
+        pass
 
-    def _forward(self, inputs: tuple, kwargs: dict):
-        if isinstance(self._parallel, bool):
-            if not self._parallel:
-                return self._executor(*inputs, **kwargs)
-            return tuple(
-                self._executor(*parallel_inputs, **kwargs)
-                for parallel_inputs in zip(*inputs)
-            )
+
+class SingleStepManager(BaseStepManager):
+
+    def __init__(self, step: Step) -> None:
+        self._step = step
+
+    def __iter__(self) -> Generator[Any, None, None]:
+        yield self._step
+
+    def __call__(self, args: Tuple[Any, ...], kwargs: Dict[str, Any]):
+        return self._step(*args, **kwargs)
+
+    @property
+    def step(self) -> Step:
+        return self._step
+
+
+class ParallelSingleStepManager(SingleStepManager):
+
+    def __call__(self, args: Tuple[Any, ...], kwargs: Dict[str, Any]):
+        super_call = super().__call__
+        return tuple(super_call(p_args, kwargs) for p_args in zip(*args))
+
+
+class ParallelMultiStepManager(BaseStepManager):
+
+    def __init__(self, steps: Iterable[Step]) -> None:
+        self._steps = tuple(steps)
+
+    def __iter__(self) -> Generator[Any, None, None]:
+        yield from self._steps
+
+    def __call__(self, args: Tuple[Any, ...], kwargs: Dict[str, Any]):
         return tuple(  # yapf: disable
-            executor(*parallel_inputs, **kwargs)
-            for executor, *parallel_inputs in zip(self._executors, *inputs)
+            step(*p_args, **kwargs)
+            for step, *p_args in zip(self._steps, *args)
         )
 
-    def forward(self, message: dict, **kwargs) -> dict:
-        inputs = tuple(message[field] for field in self._fields)
-        if not isinstance(self._parallel, bool):
-            input_len = strict_zip_len(inputs)
-            if len(self._executors) != input_len:
-                raise ValueError(
-                    "Lengths of `inputs` and `self._executer` must be equal, "
-                    f"but got input_len={input_len} and len(self._executer)="
-                    f"{len(self._executors)}"
-                )
-
-        try:
-            outputs = self._forward(inputs, kwargs)
-        except Exception:
-            self._logger.error(f"Failed to forward {self._id}")
-            raise
-
-        if isinstance(self._id, str):
-            return {self._id: outputs}
-        else:
-            return dict(zip(self._id, outputs))
-
-    def to_module(self) -> nn.Module:
-        if isinstance(self._parallel, bool):
-            return cast(nn.Module, self._executor)
-        return nn.ModuleList(self._executors)
+    @property
+    def step(self) -> Tuple[Step, ...]:
+        return self._steps
 
 
-StepId = Union[str, Iterable[str]]
-StepCfg = Union[Dict[str, Any], Step]
+class BaseOutputDict:
+
+    @abstractmethod
+    def __call__(self, output) -> Dict[str, Any]:
+        pass
 
 
-@final
+class SingleOutputDict(BaseOutputDict):
+
+    def __init__(self, key: str) -> None:
+        self._key = key
+
+    def __call__(self, data) -> Dict[str, Any]:
+        return {self._key: data}
+
+
+class MultiOutputDict(BaseOutputDict):
+
+    def __init__(self, keys: Iterable[str]) -> None:
+        self._keys = tuple(keys)
+
+    def __call__(self, output) -> Dict[str, Any]:
+        return dict(zip(self._keys, output))
+
+
+class ParallelMultiOutputDict(MultiOutputDict):
+
+    def __call__(self, output) -> Dict[str, Tuple[Any, ...]]:
+        output = zip(*output)
+        return dict(zip(self._keys, output))
+
+
+OutputKey = Union[str, Tuple[str, ...]]
+
+
 class Job:
 
-    def _build_steps(
-        self,
-        steps: Union[Dict[StepId, StepCfg], Iterable[StepCfg]],
-    ) -> Tuple[Step, ...]:
-        if isinstance(steps, dict):
-            steps = cast(Dict[StepId, StepCfg], steps)
-            return tuple(  # yapf: disable
-                step if isinstance(step, Step) else
-                Step(self._id, step_id, **step)
-                for step_id, step in steps.items()
+    @staticmethod
+    def build_step_manager(
+        config: Config,
+        registry: Registry[Step],
+        parallel,
+    ) -> BaseStepManager:
+        if isinstance(parallel, bool):
+            step = registry.build(config)
+            if parallel:
+                return ParallelSingleStepManager(step)
+            return SingleStepManager(step)
+        if isinstance(parallel, int):
+            steps = tuple(registry.build(config) for _ in range(parallel))
+            return ParallelMultiStepManager(steps)
+        if isinstance(parallel, Iterable):
+            steps = tuple(
+                registry.build(p_config, config) for p_config in parallel
             )
-        if isinstance(steps, Iterable):
-            steps = cast(Iterable[StepCfg], steps)
-            return tuple(
-                step if isinstance(step, Step) else Step(self._id, **step)
-                for step in steps
-            )
+            return ParallelMultiStepManager(steps)
         raise TypeError(
-            "`steps` must be a dict or Iterable, "
-            f"but got steps={steps}"
+            "`parallel` must be a bool, int, or Iterable, "
+            f"but got {type(parallel)}"
         )
 
-    @overload
+    @staticmethod
+    def build_output_dict(key: OutputKey, parallel) -> BaseOutputDict:
+        if isinstance(key, str):
+            return SingleOutputDict(key)
+        if parallel:
+            return ParallelMultiOutputDict(key)
+        return MultiOutputDict(key)
+
+    @staticmethod
+    def build(
+        step_descendent_name: str,
+        /,
+        config: Config,
+        output_key: OutputKey,
+    ) -> 'Job':
+        registry = STEPS.descendent(step_descendent_name)
+        parallel = config.pop('parallel', False)
+        fields = config.pop('fields', tuple())
+        step_manager = Job.build_step_manager(config, registry, parallel)
+        output_dict = Job.build_output_dict(output_key, parallel)
+        return Job(step_manager, output_dict, fields)
+
     def __init__(
         self,
-        id_: str,
-        steps: Dict[StepId, StepCfg],
-        /,
+        step_manager: BaseStepManager,
+        output_dict: BaseOutputDict,
+        fields: Iterable[str] = tuple(),
     ) -> None:
-        ...
+        self._step_manager = step_manager
+        self._output_dict = output_dict
+        self._fields = tuple(fields)
+        self._logger = get_logger()
 
-    @overload
-    def __init__(
-        self,
-        id_: str,
-        steps: Iterable[StepCfg],
-        /,
-    ) -> None:
-        ...
+    def __iter__(self) -> Iterator[Any]:
+        return iter(self._step_manager)
 
-    @overload
-    def __init__(
-        self,
-        id_: str,
-        /,
-        **steps: StepCfg,
-    ) -> None:
-        ...
+    def __call__(self, message: Message, **kwargs) -> Message:
+        inputs = tuple(message[field] for field in self._fields)
+        try:
+            output = self._step_manager(inputs, kwargs)
+        except Exception:
+            self._logger.error(f"Failed to forward {self}")
+            raise
+        return self._output_dict(output)
 
-    def __init__(self, id_, steps=None, /, **kwargs) -> None:
-        if steps is not None and len(kwargs) > 0:
-            raise ValueError("`steps` and `kwargs` cannot be both specified")
-
-        self._id = id_
-        self._steps = self._build_steps(
-            cast(Dict[StepId, StepCfg], steps or kwargs),
-        )
-
-    def __iter__(self) -> Iterator[Step]:
-        return iter(self._steps)
-
-    def forward(self, message: dict) -> dict:
-        updated_message = dict()
-        for step in self._steps:
-            updates = step.forward(message)
-            message.update(updates)
-            updated_message.update(updates)
-        return updated_message
-
-    def to_module(self) -> nn.Module:
-        return nn.ModuleList([step.to_module() for step in self._steps])
+    @property
+    def step(self):
+        return self._step_manager.step
 
 
-JobCfg = Union[Dict[StepId, StepCfg], Iterable[StepCfg], Job]
+WorkflowConfig = Dict[OutputKey, Config]
 
 
 class Workflow:
 
-    def _build_jobs(self, jobs: Dict[str, JobCfg]) -> Dict[str, Job]:
-        jobs = jobs.copy()
-        for job_id, job in jobs.items():
-            if not isinstance(job, Job):
-                jobs[job_id] = Job(job_id, job)
-        return cast(Dict[str, Job], jobs)
-
-    @overload
-    def __init__(
-        self,
-        id_: str,
-        jobs: Dict[str, JobCfg],
+    @staticmethod
+    def build(
+        step_descendent_name: str,
+        configs: Optional[WorkflowConfig] = None,
         /,
-    ) -> None:
-        ...
+        **kwargs: Config,
+    ) -> 'Workflow':
+        jobs = tuple(  # yapf: disable
+            Job.build(step_descendent_name, config, output_key)
+            for output_key, config in (configs or kwargs).items()
+        )
+        return Workflow(jobs)
 
-    @overload
-    def __init__(
-        self,
-        id_: str,
-        /,
-        **jobs: JobCfg,
-    ) -> None:
-        ...
+    def __init__(self, jobs: Iterable[Job]) -> None:
+        self._jobs = tuple(jobs)
 
-    def __init__(self, id_, jobs=None, /, **kwargs) -> None:
-        if jobs is not None and len(kwargs) > 0:
-            raise ValueError("`jobs` and `kwargs` cannot be both specified")
+    def __iter__(self) -> Iterator[Job]:
+        return iter(self._jobs)
 
-        self._id = id_
-        self._jobs = self._build_jobs(jobs or kwargs)
-
-    def has_job(self, job_id: str) -> bool:
-        return job_id in self._jobs
-
-    def job(self, job_id: str) -> Job:
-        return self._jobs[job_id]
-
-    def get_job(self, job_id: str) -> Optional[Job]:
-        return self._jobs.get(job_id)
+    def __call__(self, message: Message) -> Message:
+        updated: Message = dict()
+        for job in self._jobs:
+            updates = job(message)
+            message.update(updates)
+            updated.update(updates)
+        return updated

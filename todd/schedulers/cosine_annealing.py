@@ -1,8 +1,7 @@
 import math
 from typing import Optional
 
-from .base import BaseScheduler
-from .builder import SCHEDULERS
+from .base import SCHEDULERS, BaseScheduler
 
 __all__ = [
     'CosineAnnealingScheduler',

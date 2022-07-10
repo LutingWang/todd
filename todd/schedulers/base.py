@@ -1,12 +1,14 @@
 import math
 import numbers
 from abc import abstractmethod
-from typing import Optional
+from typing import Any, Optional, Union
 
-from ..base import get_iter
+from ..base import Registry, get_iter
 
 __all__ = [
     'BaseScheduler',
+    'SCHEDULERS',
+    'SchedulerConfig',
     'IntervalScheduler',
 ]
 
@@ -86,6 +88,13 @@ class BaseScheduler(numbers.Real):
 
     def __le__(self, other):
         return self.value <= other
+
+
+SCHEDULERS: Registry[Any] = Registry(
+    'schedulers',
+    base=BaseScheduler,
+)
+SchedulerConfig = Union[dict, BaseScheduler]
 
 
 class IntervalScheduler(BaseScheduler):

@@ -5,7 +5,8 @@ import pytest
 import torch
 
 from todd.adapts import ADAPTS, BaseAdapt
-from todd.base import Job
+from todd.base import Workflow
+from todd.distillers import BaseDistiller
 from todd.utils import CollectionTensor
 
 
@@ -38,8 +39,8 @@ class CustomAdapt(BaseAdapt):
 class TestCKD:
 
     @pytest.fixture()
-    def adapt(self) -> Job:
-        return Job(
+    def adaptflow(self) -> Workflow:
+        return Workflow.build(
             'adapts',
             {
                 'pred_reshaped': dict(
@@ -69,8 +70,8 @@ class TestCKD:
         )
 
     @pytest.fixture()
-    def ckd(self) -> Job:
-        return Job(
+    def ckdflow(self) -> Workflow:
+        return Workflow.build(
             'losses',
             loss_ckd=dict(
                 type='CKDLoss',
@@ -116,16 +117,18 @@ class TestCKD:
 
     def test_ckd(
         self,
-        adapt: Job,
-        ckd: Job,
+        adaptflow: Workflow,
+        ckdflow: Workflow,
         result: Dict[str, dict],
     ):
         for rank in range(4):
             rank_result = result[f'rank{rank}']
-            adapt.to_module().load_state_dict(rank_result['state_dict'])
-            tensors = adapt.forward(rank_result['inputs'])
+            BaseDistiller.workflow_to_module(adaptflow).load_state_dict(
+                rank_result['state_dict'],
+            )
+            tensors = adaptflow(rank_result['inputs'])
             assert CollectionTensor.allclose(rank_result['tensors'], tensors)
-            losses = ckd.forward(tensors)
+            losses = ckdflow(tensors)
             assert CollectionTensor.allclose(rank_result['losses'], losses)
 
 

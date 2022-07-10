@@ -1,8 +1,7 @@
 from typing import List, cast
 
 from ..base import get_iter
-from .base import BaseScheduler
-from .builder import SCHEDULERS
+from .base import SCHEDULERS, BaseScheduler
 
 __all__ = [
     'StepScheduler',

@@ -3,7 +3,7 @@ from typing import Dict, List, Optional
 import torch.nn as nn
 from mmcv.runner import ModuleList
 
-from ..hooks import HookModuleListCfg
+from ..base import WorkflowConfig
 from ..reproduction import freeze_model
 from .base import BaseDistiller, DecoratorMixin
 from .builder import DISTILLERS
@@ -17,18 +17,12 @@ class MultiTeacherDistiller(DecoratorMixin, BaseDistiller):
         student: nn.Module,
         online_teachers: List[nn.Module] = None,
         offline_teachers: List[nn.Module] = None,
-        student_hooks: HookModuleListCfg = None,
-        student_trackings: HookModuleListCfg = None,
-        online_teacher_hooks: Optional[Dict[int, HookModuleListCfg]] = None,
-        online_teacher_trackings:  # yapf: disable
-        Optional[Dict[int, HookModuleListCfg]] = None,  # noqa: E131
-        offline_teacher_hooks: Optional[Dict[int, HookModuleListCfg]] = None,
-        offline_teacher_trackings:  # yapf: disable
-        Optional[Dict[int, HookModuleListCfg]] = None,  # noqa: E131
+        student_hooks: WorkflowConfig = None,
+        online_teacher_hooks: Optional[Dict[int, WorkflowConfig]] = None,
+        offline_teacher_hooks: Optional[Dict[int, WorkflowConfig]] = None,
         **kwargs,
     ):
         assert 'hooks' not in kwargs
-        assert 'trackings' not in kwargs
 
         online_teachers = [] if online_teachers is None else online_teachers
         online_teacher_slice = slice(1, 1 + len(online_teachers))
@@ -52,24 +46,9 @@ class MultiTeacherDistiller(DecoratorMixin, BaseDistiller):
                 for i, hook in offline_teacher_hooks.items()
             })
 
-        trackings = {}
-        if student_trackings is not None:
-            trackings[0] = student_trackings
-        if online_teacher_trackings is not None:
-            trackings.update({  # yapf: disable
-                online_teacher_slice.start + i: tracking
-                for i, tracking in online_teacher_trackings.items()
-            })
-        if offline_teacher_trackings is not None:
-            trackings.update({  # yapf: disable
-                offline_teacher_slice.start + i: tracking
-                for i, tracking in offline_teacher_trackings.items()
-            })
-
         super().__init__(
             [student] + online_teachers + offline_teachers,
             hooks=hooks,
-            trackings=trackings,
             **kwargs,
         )
         self._online_teachers = ModuleList(online_teachers)
@@ -100,24 +79,18 @@ class SingleTeacherDistiller(MultiTeacherDistiller):
         self,
         student: nn.Module,
         teacher: nn.Module,
-        teacher_hooks: HookModuleListCfg = None,
-        teacher_trackings: HookModuleListCfg = None,
+        teacher_hooks: WorkflowConfig = None,
         teacher_online: bool = False,
         **kwargs,
     ):
         assert 'online_teacher_hooks' not in kwargs
-        assert 'online_teacher_trackings' not in kwargs
         assert 'offline_teacher_hooks' not in kwargs
-        assert 'offline_teacher_trackings' not in kwargs
         assert 'online_teacher_weight_transfer' not in kwargs
-        assert 'offline_teacher_weight_transfer' not in kwargs
 
         arg_prefix = ['offline', 'online'][teacher_online]
         kwargs[arg_prefix + '_teachers'] = [teacher]
         if teacher_hooks is not None:
             kwargs[arg_prefix + '_teacher_hooks'] = {0: teacher_hooks}
-        if teacher_trackings is not None:
-            kwargs[arg_prefix + '_teacher_trackings'] = {0: teacher_trackings}
         super().__init__(student, **kwargs)
 
     @property

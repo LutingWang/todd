@@ -1,22 +1,18 @@
-from typing import Dict, List
+from typing import List
 
 import torch
 
-from .base import BaseHook
-from .builder import HOOKS
+from .base import HOOKS, BaseHook
 
 
 @HOOKS.register_module()
 class MultiCallsHook(BaseHook):
 
-    @property
-    def tensor(self) -> Dict[str, List[torch.Tensor]]:
-        return {self.id_: self._tensors}
-
-    def reset(self):
+    def _reset(self):
         self._tensors = []
 
-    def register_tensor(self, tensor: torch.Tensor):
-        if self._detach:
-            tensor = tensor.detach()
+    def _tensor(self) -> List[torch.Tensor]:
+        return self._tensors
+
+    def _register_tensor(self, tensor: torch.Tensor) -> None:
         self._tensors.append(tensor)

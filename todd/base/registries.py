@@ -1,7 +1,6 @@
 import logging
 from functools import partial
 from typing import (
-    Any,
     Callable,
     Dict,
     Iterable,
@@ -15,7 +14,7 @@ from typing import (
 
 import torch.nn as nn
 
-from ._extensions import get_logger
+from ._extensions import Config, get_logger
 
 __all__ = [
     'NORM_LAYERS',
@@ -25,14 +24,14 @@ __all__ = [
 T = TypeVar('T')
 
 
-class _RegistryProto(Protocol[T]):
+class _RegistryProto(Protocol[T]):  # TODO: inherit from MutatbleMapping
     _name: str
     _logger: logging.Logger
     _modules: Dict[str, Type[T]]
     _children: Dict[str, 'Registry']
     _parent: 'Registry'
     _base: Type[T]
-    _build_func: Callable[['Registry', Dict[str, Any]], T]
+    _build_func: Callable[['Registry', Config], T]
 
     def __getitem__(self, key: str) -> Type[T]:
         pass
@@ -114,16 +113,16 @@ class _ModulesMixin(_RegistryProto[T]):
     def get(self, key: str) -> Optional[Type[T]]:
         return self._modules.get(key)
 
-    def build(self, cfg: dict) -> T:
-        cfg = cfg.copy()
-        type_ = cfg.pop('type')
+    def build(self, config: Config) -> T:
+        config = config.copy()
+        type_ = config.pop('type')
         if isinstance(type_, str):
             type_ = self[type_]
         try:
-            return type_(**cfg)
+            return type_(**config)
         except Exception as e:
             self._logger.error(
-                f'Failed to build {type_.__name__} with config {cfg}',
+                f'Failed to build {type_.__name__} with config {config}',
             )
             raise e
 
@@ -199,13 +198,13 @@ class _BuildFuncMixin(_RegistryProto[T]):
 
     def __init__(
         self,
-        build_func: Optional[Callable[['Registry', Dict[str, Any]], T]] = None,
+        build_func: Optional[Callable[['Registry', Config], T]] = None,
     ) -> None:
         if build_func is not None:
             self._build_func = build_func
 
     @property
-    def build_func(self) -> Callable[['Registry', Dict[str, Any]], T]:
+    def build_func(self) -> Callable[['Registry', Config], T]:
         return self._build_func
 
     def has_build_func(self) -> bool:
@@ -226,7 +225,7 @@ class Registry(
         parent: Optional['Registry'] = None,
         base: Optional[Type[T]] = None,
         register_base: bool = False,
-        build_func: Optional[Callable[['Registry', Dict[str, Any]], T]] = None,
+        build_func: Optional[Callable[['Registry', Config], T]] = None,
     ) -> None:
         assert '.' not in name
         self._name = name
@@ -278,22 +277,22 @@ class Registry(
 
     def build(
         self,
-        cfg: Union[dict, T],
-        default_args: Optional[dict] = None,
+        config: Union[Config, T],
+        default_args: Optional[Config] = None,
     ) -> T:
         if self.has_base():
-            if isinstance(cfg, self._base):
-                return cfg
-            if not isinstance(cfg, dict):
+            if isinstance(config, self._base):
+                return config
+            if not isinstance(config, dict):
                 raise TypeError(
-                    f"{cfg.__class__.__name__} is neither dict nor "
+                    f"{config.__class__.__name__} is neither dict nor "
                     f"{self._base.__name__}"
                 )
         else:
-            if not isinstance(cfg, dict):
-                return cfg
+            if not isinstance(config, dict):
+                return config
         default_args = dict() if default_args is None else default_args.copy()
-        default_args.update(cfg)
+        default_args.update(config)
         if self.has_build_func():
             return self._build_func(self, default_args)
         return _ModulesMixin.build(self, default_args)

@@ -1,6 +1,6 @@
 import pytest
 
-from todd.schedulers import SCHEDULERS, WarmupScheduler
+from todd.schedulers import SCHEDULERS, BaseScheduler
 
 
 class TestLinearScheduler:
@@ -14,7 +14,7 @@ class TestConstantScheduler:
 class TestWarmupScheduler:
 
     @pytest.fixture(scope='class')
-    def scheduler(self) -> WarmupScheduler:
+    def scheduler(self) -> BaseScheduler:
         scheduler = SCHEDULERS.build(
             dict(
                 type='WarmupScheduler',
@@ -32,7 +32,7 @@ class TestWarmupScheduler:
     def test_warmup(
         self,
         setup_value: int,
-        scheduler: WarmupScheduler,
+        scheduler: BaseScheduler,
     ) -> None:
         assert scheduler.value == setup_value / 10
 
@@ -41,7 +41,7 @@ class TestWarmupScheduler:
         'setup_value,teardown_value',
         [(11, None)],
     )
-    def test_after(self, setup_value: int, scheduler: WarmupScheduler) -> None:
+    def test_after(self, setup_value: int, scheduler: BaseScheduler) -> None:
         assert scheduler.value == 1
 
 

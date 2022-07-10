@@ -1,5 +1,4 @@
-from .base import IntervalScheduler
-from .builder import SCHEDULERS
+from .base import SCHEDULERS, IntervalScheduler
 
 __all__ = [
     'LinearScheduler',

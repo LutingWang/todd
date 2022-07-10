@@ -13,9 +13,8 @@ class TestFGD:
     @pytest.fixture()
     def distiller(self):
         distiller = BaseDistiller(
-            models=None,
-            hooks=None,
-            trackings=None,
+            models=list(),
+            hooks=dict(),
             adapts={
                 'attn_spatial': dict(
                     type='AbsMeanSpatialAttention',
@@ -155,7 +154,7 @@ class TestFGD:
     )
     def test_fgd(self, distiller: BaseDistiller, result: Dict[str, dict]):
         distiller.load_state_dict(result['state_dict'])
-        losses = distiller.distill(result['inputs'], debug=True)
+        losses = distiller.distill(result['inputs'], debug=True, updated=True)
         tensors = {  # yapf: disable
             k[len(distiller.DEBUG_PREFIX):]: v
             for k, v in losses.items()

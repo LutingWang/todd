@@ -1,22 +1,14 @@
-from typing import Dict
-
-import torch
-
-from .base import BaseHook
-from .builder import HOOKS
+from .base import HOOKS, BaseHook
 
 
 @HOOKS.register_module()
 class StandardHook(BaseHook):
 
-    @property
-    def tensor(self) -> Dict[str, torch.Tensor]:
-        return {self.id_: self._tensor}
+    def _reset(self):
+        self.__tensor = None
 
-    def reset(self):
-        self._tensor = None
+    def _tensor(self):
+        return self.__tensor
 
-    def register_tensor(self, tensor: torch.Tensor):
-        if self._detach:
-            tensor = tensor.detach()
-        self._tensor = tensor
+    def _register_tensor(self, tensor) -> None:
+        self.__tensor = tensor

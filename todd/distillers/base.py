@@ -1,10 +1,8 @@
-import contextlib
 import functools
-import itertools
 from typing import (
-    Any,
     Callable,
     Dict,
+    Generator,
     Iterator,
     List,
     Optional,
@@ -17,123 +15,121 @@ from typing import (
 
 import torch
 import torch.nn as nn
+import warnings
 from mmcv.runner import BaseModule
 
-from ..base import JobCfg, Workflow, inc_iter, init_iter
-from ..hooks import HookModuleList, HookModuleListCfg, TrackingModuleList
-from ..hooks import detach as DetachHookContext
+from ..base import Message, Workflow, WorkflowConfig, inc_iter, init_iter
+from ..hooks import BaseHook
 from ..utils import ModelLoader
 
+T = TypeVar('T', bound='BaseDistiller')
 
-class BaseDistiller(Workflow, BaseModule):
+
+class BaseDistiller(BaseModule):
     DEBUG_PREFIX = '_debug_'
+
+    @staticmethod
+    def workflow_to_module(workflow: Workflow) -> nn.Module:
+        module = nn.ModuleList()
+        for job in workflow:
+            step = job.step
+            if not isinstance(step, nn.Module):
+                step = nn.ModuleList(step)
+            module.append(step)
+        return module
 
     def __init__(
         self,
         models: List[nn.Module],
         *,
-        hooks: Optional[Dict[int, HookModuleListCfg]] = None,
-        trackings: Optional[Dict[int, HookModuleListCfg]] = None,
+        hooks: Dict[int, WorkflowConfig],
+        adapts: WorkflowConfig,
+        losses: WorkflowConfig,
         iter_: int = 0,
         weight_transfer: Optional[Dict[str, str]] = None,
-        **jobs: JobCfg,
     ):
         BaseModule.__init__(self)
         self._models = models
 
-        hooks = {} if hooks is None else hooks
-        hook_dict: Dict[int, HookModuleList] = {
-            i: HookModuleList.build(hook)
-            for i, hook in hooks.items()
+        self._hookflows: Dict[int, Workflow] = {  # yapf: disable
+            i: Workflow.build('hooks', hooks_config)
+            for i, hooks_config in hooks.items()
         }
-        for i, hook in hook_dict.items():
-            hook.register_hook(models[i])
-        self._hooks = hook_dict
-
-        trackings = {} if trackings is None else trackings
-        tracking_dict: Dict[int, TrackingModuleList] = {  # yapf: disable
-            i: TrackingModuleList.build(tracking)
-            for i, tracking in trackings.items()
-        }
-        self._trackings = tracking_dict
+        self._adaptflow = Workflow.build('adapts', adapts)
+        self._lossflow = Workflow.build('losses', losses)
 
         init_iter(iter_)
-
         if weight_transfer is not None:
             ModelLoader.load_state_dicts(self, weight_transfer)
 
-        Workflow.__init__(self, self.__class__.__name__, jobs)
-        for job_id, job in self._jobs.items():
-            self.add_module(f'_{job_id}', job.to_module())
+        for i, workflow in self._hookflows.items():
+            for job in workflow:
+                for step in job:
+                    cast(BaseHook, step).bind(self._models[i])
+
+        self.add_module(
+            '_adapts',
+            self.workflow_to_module(self._adaptflow),
+        )
+        self.add_module(
+            '_losses',
+            self.workflow_to_module(self._lossflow),
+        )
 
     @property
     def models(self) -> List[nn.Module]:
         return self._models
 
-    @property
-    def _hooks_and_trackings(self) -> Iterator[HookModuleList]:
-        return itertools.chain(self._hooks.values(), self._trackings.values())
-
-    def _apply(self, fn: Callable[..., None]) -> 'BaseDistiller':
+    def _apply(self: T, fn: Callable[..., None]) -> T:
         for model in self._models:
             if getattr(model, 'sync_apply', True):
                 model._apply(fn)
         return super()._apply(fn)
 
-    def detach_context(
-        self,
-        mode: bool = True,
-    ) -> contextlib.AbstractContextManager:
-        if mode:
-            return DetachHookContext(self._hooks_and_trackings)
-        return contextlib.nullcontext()
+    def hookflows(self) -> Iterator[Workflow]:
+        return iter(self._hookflows.values())
 
-    @property
-    def tensors(self) -> Dict[str, Any]:
-        return {  # yapf: disable
-            k: v
-            for hook in self._hooks_and_trackings
-            for k, v in hook.tensors.items()
-        }
+    def hooks(self) -> Generator[BaseHook, None, None]:
+        for workflow in self.hookflows():
+            for job in workflow:
+                yield from job
 
-    def get(self, tensor_name: str, default: Any = None) -> Any:
-        for hook in self._hooks_and_trackings:
-            tensor = hook.get(tensor_name)
-            if tensor is not None:
-                return tensor
-        return default
+    def track_tensors(self) -> None:
+        for hook in filter(
+            lambda hook: hook.tracking_mode,
+            self.hooks(),
+        ):
+            hook.track_tensor()
 
-    def reset(self):
-        # reset hooks since trackings use StandardHooks
-        for hook in self._hooks.values():
+    def tensors(self) -> Message:
+        tensors: Message = dict()
+        for job in self.hookflows():
+            job(tensors)
+        return tensors
+
+    def reset(self) -> None:
+        for hook in self.hooks():
             hook.reset()
 
     def distill(
         self,
         custom_tensors: Optional[Dict[str, torch.Tensor]] = None,
-        adapt_kwargs: Optional[dict] = None,
-        loss_kwargs: Optional[dict] = None,
         debug: bool = False,
+        updated: bool = False,  # TODO: remove
     ) -> Dict[str, torch.Tensor]:
-        if adapt_kwargs is None:
-            adapt_kwargs = {}
-        if loss_kwargs is None:
-            loss_kwargs = {}
+        if not updated:
+            warnings.warn("needs to update")
+            self.track_tensors()
 
-        for i, trackings in self._trackings.items():
-            trackings.register_tensor(self._models[i])
-
-        tensors = self.tensors
+        tensors = self.tensors()
         if custom_tensors is not None:
             tensors.update(custom_tensors)
-        if self.has_job('adapts'):
-            self.job('adapts').forward(tensors)
-        if self.has_job('visuals'):
-            self.job('visuals').forward(tensors)
-        losses = self.job('losses').forward(tensors.copy())
+        self._adaptflow(tensors)
+        losses = self._lossflow(tensors.copy())
 
-        inc_iter()
-        self.reset()
+        if not updated:
+            inc_iter()
+            self.reset()
 
         if debug:
             tensors = {self.DEBUG_PREFIX + k: v for k, v in tensors.items()}
@@ -167,21 +163,18 @@ class DecoratorMixin:
     ) -> Callable[[Type[WrappedType]], Type[WrappedType]]:
 
         @no_type_check
-        def wrapper(wrapped_cls: Type[WrappedType]) -> Type[WrappedType]:
+        def wrapper(wrapped_cls):
 
             class WrapperMeta(wrapped_cls.__class__):
 
                 def __call__(
-                    wrapper_cls: Type[WrapperType],
+                    wrapper_cls,
                     *args,
-                    distiller: dict,
+                    distiller,
                     **kwargs,
                 ) -> WrapperType:
                     obj: WrapperType = super().__call__(*args, **kwargs)
-                    obj._distiller = cls(
-                        cast(nn.Module, obj),
-                        **distiller,
-                    )
+                    obj._distiller = cls(obj, **distiller)
                     return obj
 
             @functools.wraps(wrapped_cls, updated=())
@@ -189,7 +182,7 @@ class DecoratorMixin:
                 _distiller: DistillerType
 
                 @property
-                def distiller(self) -> DistillerType:
+                def distiller(self):
                     return self._distiller
 
                 @property
