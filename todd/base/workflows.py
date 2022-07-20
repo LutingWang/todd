@@ -157,7 +157,6 @@ class Job:
     @staticmethod
     def build(
         step_descendent_name: str,
-        /,
         config: Config,
         output_key: OutputKey,
     ) -> 'Job':
@@ -205,7 +204,6 @@ class Workflow:
     def build(
         step_descendent_name: str,
         configs: Optional[WorkflowConfig] = None,
-        /,
         **kwargs: Config,
     ) -> 'Workflow':
         jobs = tuple(  # yapf: disable
