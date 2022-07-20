@@ -1,33 +1,26 @@
-import functools
 from abc import abstractmethod
 from enum import IntEnum, auto
-from typing import (
-    Any,
-    Callable,
-    Protocol,
-    Sequence,
-    TypeVar,
-    Union,
-    no_type_check,
-)
+from typing import TYPE_CHECKING, Protocol
 
 import torch.nn as nn
 
-from ..base import STEPS, Registry, getattr_recur
+from ..base import STEPS, Registry, StatusMixin, getattr_recur
 
 __all__ = [
     'BaseHook',
     'HOOKS',
 ]
 
-T = TypeVar('T')
+if TYPE_CHECKING:
 
+    class _HookProto(Protocol):
+        _path: str
 
-class _HookProto(Protocol):
-    _path: str
+        def register_tensor(self, tensor) -> None:
+            pass
 
-    def register_tensor(self, tensor) -> None:
-        pass
+else:
+    _HookProto = object
 
 
 class Status(IntEnum):
@@ -36,48 +29,9 @@ class Status(IntEnum):
     REGISTERED = auto()
 
 
-class _StatusMixin(_HookProto):
-
-    def __init__(self) -> None:
-        self._status = Status.INITIALIZED
-
-    @property
-    def status(self) -> Status:
-        return self._status
-
-    @staticmethod
-    def transit(
-        source: Union[Status, Sequence[Status]],
-        target: Union[Status, Sequence[Status]],
-    ) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
-        if isinstance(source, Status):
-            assert isinstance(target, Status)
-            source = [source]
-            target = [target]
-        elif isinstance(target, Status):
-            target = [target] * len(source)
-        assert len(source) == len(target) == len(set(source)), (source, target)
-
-        @no_type_check
-        def wrapper(wrapped_func):
-
-            @functools.wraps(wrapped_func)
-            def wrapper_func(self: _StatusMixin, *args, **kwargs):
-                if self._status not in source:
-                    raise RuntimeError(
-                        f"Hook {self._path} is not in {source}."
-                    )
-                self._status = target[source.index(self._status)]
-                return wrapped_func(self, *args, **kwargs)
-
-            return wrapper_func
-
-        return wrapper
-
-
 class _HookMixin(_HookProto):
 
-    def _forward_hook(self, module: nn.Module, input_, output):
+    def _forward_hook(self, module: nn.Module, input_, output) -> None:
         self.register_tensor(output)
 
     def bind(self, model: nn.Module) -> None:
@@ -107,14 +61,14 @@ class _TrackingMixin(_HookProto):
         self.register_tensor(tensor)
 
 
-class BaseHook(_StatusMixin, _HookMixin, _TrackingMixin):
+class BaseHook(StatusMixin[Status], _HookMixin, _TrackingMixin):
 
     def __init__(
         self,
         path: str,
         tracking_mode: bool = False,
     ) -> None:
-        _StatusMixin.__init__(self)
+        StatusMixin.__init__(self, Status.INITIALIZED)
         _HookMixin.__init__(self)
         _TrackingMixin.__init__(self, tracking_mode)
         self._path = path
@@ -141,18 +95,21 @@ class BaseHook(_StatusMixin, _HookMixin, _TrackingMixin):
     def _tensor(self):
         pass
 
-    @_StatusMixin.transit(Status.REGISTERED, Status.BINDED)
+    @StatusMixin.transit(
+        (Status.BINDED, Status.REGISTERED),
+        Status.BINDED,
+    )
     def reset(self) -> None:
         self._reset()
 
-    @_StatusMixin.transit(Status.INITIALIZED, Status.BINDED)
+    @StatusMixin.transit(Status.INITIALIZED, Status.BINDED)
     def bind(self, model: nn.Module) -> None:
         if self._tracking_mode:
             _TrackingMixin.bind(self, model)
         else:
             _HookMixin.bind(self, model)
 
-    @_StatusMixin.transit(
+    @StatusMixin.transit(
         (Status.BINDED, Status.REGISTERED),
         Status.REGISTERED,
     )
