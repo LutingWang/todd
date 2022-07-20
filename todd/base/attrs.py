@@ -1,11 +1,24 @@
-from contextlib import ContextDecorator
-from typing import Any
+import contextlib
+from typing import Any, Generator
 
 __all__ = [
     'getattr_recur',
     'setattr_recur',
     'setattr_temp',
 ]
+
+
+def hasattr_recur(obj: Any, attr: str, allow_list: bool = False) -> bool:
+    if attr == '':
+        return True
+    for a in attr.split('.'):
+        if allow_list and a.isnumeric():
+            if int(a) not in obj:
+                return False
+        else:
+            if not hasattr(obj, a):
+                return False
+    return True
 
 
 def getattr_recur(obj: Any, attr: str, allow_list: bool = False) -> Any:
@@ -18,7 +31,12 @@ def getattr_recur(obj: Any, attr: str, allow_list: bool = False) -> Any:
     return obj
 
 
-def setattr_recur(obj: Any, attr: str, value: Any, allow_list: bool = False):
+def setattr_recur(
+    obj: Any,
+    attr: str,
+    value: Any,
+    allow_list: bool = False,
+) -> None:
     if '.' in attr:
         attr, tmp = attr.rsplit('.', 1)
         obj = getattr_recur(obj, attr, allow_list)
@@ -29,23 +47,30 @@ def setattr_recur(obj: Any, attr: str, value: Any, allow_list: bool = False):
         setattr(obj, attr, value)
 
 
-class setattr_temp(ContextDecorator):
+def delattr_recur(obj: Any, attr: str, allow_list: bool = False) -> None:
+    if '.' in attr:
+        attr, tmp = attr.rsplit('.', 1)
+        obj = getattr_recur(obj, attr, allow_list)
+        attr = tmp
+    if allow_list and attr.isnumeric:
+        del obj[int(attr)]
+    else:
+        delattr(obj, attr)
 
-    def __init__(
-        self,
-        obj: Any,
-        attr: str,
-        value: Any,
-        allow_list: bool = False,
-    ):
-        self._obj = obj
-        self._attr = attr
-        self._value = value
-        self._allow_list = allow_list
 
-    def __enter__(self):
-        self._prev = getattr_recur(self._obj, self._attr, self._allow_list)
-        setattr_recur(self._obj, self._attr, self._value, self._allow_list)
-
-    def __exit__(self, exc_type: Any, exc_value: Any, traceback: Any) -> None:
-        setattr_recur(self._obj, self._attr, self._prev, self._allow_list)
+@contextlib.contextmanager
+def setattr_temp(
+    obj: Any,
+    attr: str,
+    value: Any,
+    allow_list: bool = False,
+) -> Generator[None, None, None]:
+    if hasattr_recur(obj, attr, allow_list):
+        prev = getattr_recur(obj, attr, allow_list)
+        setattr_recur(obj, attr, value, allow_list)
+        yield
+        setattr_recur(obj, attr, prev, allow_list)
+    else:
+        setattr_recur(obj, attr, value, allow_list)
+        yield
+        delattr_recur(obj, attr, allow_list)
