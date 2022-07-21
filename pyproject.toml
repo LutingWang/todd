@@ -1,0 +1,201 @@
+[build-system]
+requires = ['setuptools>=61.0']
+build-backend = 'setuptools.build_meta'
+
+[project]
+name = 'todd_ai'
+version = '0.0.1'
+description = 'Toolkit for Object Detection Distillation'
+readme = 'README.md'
+requires-python = '>=3.6'
+classifiers = [
+    'Programming Language :: Python :: 3',
+    'License :: OSI Approved :: Apache Software License',
+    'Operating System :: OS Independent',
+]
+dependencies = [
+    'einops',
+    'lmdb',
+    # 'mmcv>=1.4.2',
+    'opencv-python',
+    'pandas',
+    'setuptools',
+    'timm',
+    'toml',
+    'tqdm',
+    'typing_extensions',
+]
+
+[project.license]
+file = 'LICENSE'
+
+[[project.authors]]
+name = 'Luting Wang'
+email = 'wangluting@buaa.edu.cn'
+
+[project.urls]
+Homepage = 'https://github.com/LutingWang/todd'
+
+[project.optional-dependencies]
+docs = [
+    'python-docs-theme',
+    'sphinx',
+    'sphinx_rtd_theme',
+]
+lint = [
+    'codespell',
+    'isort',
+    'mypy',
+    'pre-commit',
+    'pydocstyle',
+    'yapf',
+]
+optionals = [
+    'ipdb',
+    'tensorboard',
+    'torch-tb-profiler',
+]
+tests = [
+    'coverage',
+    'pytest',
+]
+
+[tool.setuptools]
+packages = [
+    'todd',
+]
+
+[tool.yapf]
+allow_split_before_dict_value = false
+coalesce_brackets = true
+dedent_closing_brackets = true
+split_all_top_level_comma_separated_values = true
+split_arguments_when_comma_terminated = true
+split_complex_comprehension = true
+
+[tool.isort]
+profile = 'hug'
+src_paths = [
+    'todd',
+    'tests',
+]
+line_length = 79
+multi_line_output = 3
+known_standard_library = [
+    'abc',
+    'argparse',
+    'base64',
+    'bisect',
+    'builtins',
+    'bz2',
+    'collections',
+    'contextlib',
+    'copy',
+    'csv',
+    'datetime',
+    'difflib',
+    'doctest',
+    'enum',
+    'functools',
+    'getpass',
+    'glob',
+    'hashlib',
+    'inspect',
+    'io',
+    'itertools',
+    'logging',
+    'math',
+    'numbers',
+    'operator',
+    'os',
+    'pathlib',
+    'pickle',
+    'queue',
+    'random',
+    're',
+    'reprlib',
+    'setuptools',
+    'socket',
+    'string',
+    'sys',
+    'tempfile',
+    'types',
+    'typing',
+    'webbrowser',
+    'zipfile',
+]
+known_third_party = [
+    'PIL',
+    'cv2',
+    'einops',
+    'matplotlib',
+    'mmcv',
+    'numpy',
+    'packaging',
+    'pytest',
+    'todd',
+    'torch',
+]
+known_first_party = 'todd'
+
+[tool.pydocstyle]
+convention = 'google'
+
+[tool.mypy]
+files = [
+    'todd',
+    'tests',
+    'setup.py',
+]
+
+[[tool.mypy.overrides]]
+module = [
+    'cv2.*',
+    'einops.*',
+    'lmdb.*',
+    'mmcv.*',
+    'pandas.*',
+    'pkg_resources.*',
+    'PIL.*',
+    'setuptools.*',
+    'timm.*',
+    'torchvision.*',
+]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = [
+    'todd.base._patches.*',
+]
+ignore_errors = true
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    'default',
+    'ignore:.*is deprecated and will be removed in Pillow 10 \(2023-07-01\)\..*:DeprecationWarning',
+]
+testpaths = 'tests todd'
+addopts = '--doctest-modules'
+
+[tool.coverage.run]
+branch = true
+command_line = '-m pytest'
+source = [
+    'todd/',
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    'pragma: no cover',
+
+    'def __repr__',
+
+    'raise AssertionError',
+    'raise NotImplementedError',
+
+    'if __name__ == .__main__.:',
+
+    'class .*\(.*\bProtocol\b.*\):',
+    '@(abc\.)?abstractmethod',
+    '@overload',
+]
