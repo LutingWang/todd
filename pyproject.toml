@@ -4,7 +4,7 @@ build-backend = 'setuptools.build_meta'
 
 [project]
 name = 'todd_ai'
-version = '0.0.2-1'
+version = '0.0.2-2'
 description = 'Toolkit for Object Detection Distillation'
 readme = 'README.md'
 requires-python = '>=3.6'
@@ -53,7 +53,7 @@ test = [
 
 [tool.setuptools.packages.find]
 include = [
-    "todd.*",
+    "todd*",
 ]
 
 [tool.yapf]
