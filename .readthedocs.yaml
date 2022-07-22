@@ -10,5 +10,6 @@ sphinx:
 
 python:
     install:
-    -   requirements: requirements/docs.txt
-    -   requirements: requirements/runtimes.txt
+    -   path: .
+        extra_requirements:
+        -   docs

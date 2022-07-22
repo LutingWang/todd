@@ -38,16 +38,10 @@ jobs:
         python-version: ${{ matrix.python }}
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
+        pip install --upgrade pip
         pip install torch==${{ matrix.torch }} torchvision==${{ matrix.torchvision }} -f https://download.pytorch.org/whl/torch_stable.html
-        pip install -r requirements/runtimes.txt
-        pip install -r requirements/tests.txt
-    - name: Run unittests
-      run: |
-        coverage run
-    - name: Generate coverage report
-      run: |
-        coverage xml
-        coverage report -m
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@master
+        pip install mmcv
+        pip install .[test]
+    - run: coverage run
+    - run: coverage xml && coverage report -m
+    - uses: codecov/codecov-action@master
