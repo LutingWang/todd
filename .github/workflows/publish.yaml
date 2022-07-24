@@ -9,7 +9,7 @@ jobs:
       matrix:
         python: ["3.10"]
     steps:
-    - uses: LutingWang/todd/.github/actions/checkout-todd@master
+    - uses: ${{ github.repository }}/.github/actions/checkout-todd@master
     - uses: actions/setup-python@master
       with:
         python-version: ${{ matrix.python }}
@@ -26,3 +26,4 @@ jobs:
       if: startsWith(github.ref, 'refs/tags')
       with:
         password: ${{ secrets.PYPI_API_TOKEN }}
+        skip_existing: true
