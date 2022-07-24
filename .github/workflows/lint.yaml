@@ -12,9 +12,8 @@ jobs:
       matrix:
         python-version: ["3.8"]
     steps:
-    - uses: actions/checkout@master
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@master
+    - uses: LutingWang/todd/.github/actions/checkout-todd@master
+    - uses: actions/setup-python@master
       with:
         python-version: ${{ matrix.python-version }}
     - name: Lint

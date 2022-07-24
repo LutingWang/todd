@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Protocol
 
 import torch.nn as nn
 
-from ..base import STEPS, Registry, StatusMixin, getattr_recur
+from ..base import STEPS, Registry, StatusMixin
 
 __all__ = [
     'BaseHook',
@@ -35,7 +35,7 @@ class _HookMixin(_HookProto):
         self.register_tensor(output)
 
     def bind(self, model: nn.Module) -> None:
-        module: nn.Module = getattr_recur(model, self._path)
+        module: nn.Module = getattr(model, self._path)
         module.register_forward_hook(self._forward_hook)
 
 
@@ -57,7 +57,7 @@ class _TrackingMixin(_HookProto):
     def track_tensor(self) -> None:
         if not self._tracking_mode:
             raise AttributeError(f"Hook {self._path} does not support track.")
-        tensor = getattr_recur(self._model, self._path)
+        tensor = getattr(self._model, self._path)
         self.register_tensor(tensor)
 
 

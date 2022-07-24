@@ -4,8 +4,6 @@ import mmcv
 from mmcv.runner import BaseModule, load_checkpoint
 from mmcv.utils import Registry
 
-from ..base import getattr_recur
-
 
 class ModelLoader:
 
@@ -38,6 +36,6 @@ class ModelLoader:
     @staticmethod
     def load_state_dicts(models, prefixes: Dict[str, str]):
         for target, source in prefixes.items():
-            target_module = getattr_recur(models, target, allow_list=True)
-            source_module = getattr_recur(models, source, allow_list=True)
+            target_module = getattr(models, target)
+            source_module = getattr(models, source)
             ModelLoader.load_state_dict(target_module, source_module)

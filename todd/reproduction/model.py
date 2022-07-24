@@ -6,8 +6,6 @@ import torch.nn as nn
 from timm.models.layers import DropPath
 from torch.nn.modules.batchnorm import _BatchNorm
 
-from ..base import getattr_recur
-
 
 class NoGradMode(Enum):
     ALL = auto()
@@ -19,7 +17,7 @@ class NoGradMode(Enum):
             return model.requires_grad_(False)
         elif self == NoGradMode.PARTIAL:
             for module_name in kwargs['modules']:
-                module: nn.Module = getattr_recur(model, module_name)
+                module: nn.Module = getattr(model, module_name)
                 module.requires_grad_(False)
             return model
         elif self == NoGradMode.NONE:
@@ -46,7 +44,7 @@ class EvalMode(Enum):
         # TODO: refactor
         modules = (
             model.modules() if self == EvalMode.DETERMINISTIC else
-            (getattr_recur(model, module) for module in kwargs['modules'])
+            (getattr(model, module) for module in kwargs['modules'])
         )
         if self != EvalMode.PARTIAL:
             sms = kwargs.get(

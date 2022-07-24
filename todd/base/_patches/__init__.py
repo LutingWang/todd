@@ -1,2 +1,1 @@
-from . import builtins, functools, torchvision, typing, zipfile
-from .torch import *
+from . import builtins, functools, torch, torchvision, typing, zipfile

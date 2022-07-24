@@ -5,7 +5,7 @@ on:
     branches: [ "master" ]
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -15,30 +15,18 @@ jobs:
             torch: "1.11.0"
             torchvision: "0.12.0"
     steps:
-    - uses: actions/checkout@master
-    - name: Create LFS file list
-      shell: bash
-      run: |
-        git lfs ls-files --long | cut -d ' ' -f1 | sort > .lfs-assets-id
-    - name: Restore LFS cache
-      uses: actions/cache@v3
-      id: lfs-cache
+    - uses: LutingWang/todd/.github/actions/checkout-todd@master
       with:
-        path: .git/lfs
-        key: lfs-${{ hashFiles('.lfs-assets-id') }}-v1
-    - name: Git LFS Pull
-      shell: bash
-      run: git lfs pull
-    - name: Set up Python ${{ matrix.python }}
-      uses: actions/setup-python@master
+        lfs: true
+    - uses: actions/setup-python@master
       with:
         python-version: ${{ matrix.python }}
-    - name: Install dependencies
+    - name: Test
       run: |
         pip install --upgrade pip
         pip install torch==${{ matrix.torch }} torchvision==${{ matrix.torchvision }} -f https://download.pytorch.org/whl/torch_stable.html
         pip install mmcv
         pip install .[test]
-    - run: coverage run
-    - run: coverage xml && coverage report -m
+        coverage run
+        coverage xml && coverage report -m
     - uses: codecov/codecov-action@master
