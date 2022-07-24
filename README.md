@@ -18,11 +18,14 @@ Prerequisites:
 - mmcv
 
 ```shell
-pip install -r requirements.txt
+pip install todd_ai
 ```
 
-## Docs
+# Developer
+
+## Publish
 
 ```shell
-sphinx-apidoc -f -o docs/source/apis todd
+git tag ${TAG}
+git push --atomic origin master ${TAG}
 ```

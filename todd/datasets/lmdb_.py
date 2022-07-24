@@ -5,8 +5,7 @@ from typing import Any, List, Literal, Optional
 import lmdb
 import torch
 
-from .base import BaseDataset
-from .builder import DATASETS
+from .base import DATASETS, BaseDataset
 
 # TODO: update
 

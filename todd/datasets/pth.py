@@ -3,8 +3,7 @@ from typing import Any, Iterator
 
 import torch
 
-from .base import BaseAccessLayer, BaseDataset, Codec
-from .builder import ACCESS_LAYERS, DATASETS
+from .base import ACCESS_LAYERS, DATASETS, BaseAccessLayer, BaseDataset, Codec
 
 
 @ACCESS_LAYERS.register_module()

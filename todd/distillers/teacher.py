@@ -1,3 +1,7 @@
+__all__ = [
+    'MultiTeacherDistiller',
+    'SingleTeacherDistiller',
+]
 from typing import Dict, List, Optional
 
 import torch.nn as nn
@@ -5,8 +9,7 @@ from mmcv.runner import ModuleList
 
 from ..base import WorkflowConfig
 from ..reproduction import freeze_model
-from .base import BaseDistiller, DecoratorMixin
-from .builder import DISTILLERS
+from .base import DISTILLERS, BaseDistiller, DecoratorMixin
 
 
 @DISTILLERS.register_module()

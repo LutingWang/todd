@@ -1,3 +1,9 @@
+__all__ = [
+    'BaseAccessLayer',
+    'ACCESS_LAYERS',
+    'BaseDataset',
+    'DATASETS',
+]
 import reprlib
 from abc import abstractmethod
 from collections.abc import MutableMapping
@@ -6,7 +12,7 @@ from typing import Any, Generic, Type, TypeVar, Union
 
 from torch.utils.data import Dataset
 
-from ..base import get_logger
+from ..base import Registry, get_logger
 
 T = TypeVar('T')
 
@@ -62,6 +68,12 @@ class BaseAccessLayer(MutableMapping, Generic[T]):
         pass
 
 
+ACCESS_LAYERS: Registry[BaseAccessLayer] = Registry(
+    'access layers',
+    base=BaseAccessLayer,
+)
+
+
 class BaseDataset(Dataset, Generic[T]):
     ACCESS_LAYER: Type = BaseAccessLayer[T]
 
@@ -88,3 +100,9 @@ class BaseDataset(Dataset, Generic[T]):
     def __getitem__(self, index: int) -> Any:
         key = self._keys[index]
         return self._access_layer[key]
+
+
+DATASETS: Registry[BaseDataset] = Registry(
+    'datasets',
+    base=BaseDataset,
+)

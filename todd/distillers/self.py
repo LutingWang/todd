@@ -1,10 +1,13 @@
+__all__ = [
+    'SelfDistiller',
+]
+
 from typing import Dict, Optional
 
 import torch.nn as nn
 
 from ..base import WorkflowConfig
-from .base import BaseDistiller, DecoratorMixin
-from .builder import DISTILLERS
+from .base import DISTILLERS, BaseDistiller, DecoratorMixin
 
 
 @DISTILLERS.register_module()

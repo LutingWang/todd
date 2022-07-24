@@ -1,3 +1,9 @@
+__all__ = [
+    'BaseDistiller',
+    'DISTILLERS',
+    'DecoratorMixin',
+]
+
 import functools
 from typing import (
     Callable,
@@ -18,7 +24,14 @@ import torch.nn as nn
 import warnings
 from mmcv.runner import BaseModule
 
-from ..base import Message, Workflow, WorkflowConfig, inc_iter, init_iter
+from ..base import (
+    Message,
+    Registry,
+    Workflow,
+    WorkflowConfig,
+    inc_iter,
+    init_iter,
+)
 from ..hooks import BaseHook
 from ..utils import ModelLoader
 
@@ -135,6 +148,12 @@ class BaseDistiller(BaseModule):
             tensors = {self.DEBUG_PREFIX + k: v for k, v in tensors.items()}
             return {**losses, **tensors}
         return losses
+
+
+DISTILLERS: Registry[BaseDistiller] = Registry(
+    'distillers',
+    base=BaseDistiller,
+)
 
 
 class DistillerProto(Protocol):
