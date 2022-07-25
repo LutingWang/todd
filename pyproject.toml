@@ -196,3 +196,6 @@ exclude_lines = [
 name = "cz_conventional_commits"
 version = "0.1.1"
 tag_format = "v$version"
+version_files = [
+    "pyproject.toml:^version",
+]
