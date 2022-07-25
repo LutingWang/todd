@@ -3,12 +3,12 @@ from typing import List
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from mmcv.runner import BaseModule, Sequential
 
+from ..base import Module, Sequential
 from .base import ADAPTS, BaseAdapt
 
 
-class Bottleneck(BaseModule):
+class Bottleneck(Module):
 
     def __init__(
         self,

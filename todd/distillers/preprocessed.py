@@ -4,14 +4,13 @@ __all__ = [
 
 from typing import Any, Union
 
-from mmcv.runner import BaseModule
-
+from ..base import Module
 from ..datasets import ACCESS_LAYERS, BaseAccessLayer
 from .base import DISTILLERS
 from .teacher import SingleTeacherDistiller
 
 
-class PreprocessedTeacher(BaseModule):
+class PreprocessedTeacher(Module):
 
     def __init__(self, *args, access_layer: BaseAccessLayer, **kwargs):
         super().__init__(*args, **kwargs)

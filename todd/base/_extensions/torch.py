@@ -1,9 +1,19 @@
 __all__ = [
+    'Module',
+    'ModuleList',
+    'ModuleDict',
+    'Sequential',
     'get_rank',
     'get_world_size',
 ]
 
 import torch.distributed as dist
+
+try:
+    from mmcv.runner import BaseModule as Module
+    from mmcv.runner import ModuleDict, ModuleList, Sequential
+except Exception:
+    from torch.nn import Module, ModuleDict, ModuleList, Sequential
 
 
 def get_rank(*args, **kwargs) -> int:

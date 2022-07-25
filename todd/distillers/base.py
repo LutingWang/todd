@@ -21,16 +21,22 @@ from typing import (
 
 import torch
 import torch.nn as nn
-from mmcv.runner import BaseModule
 
-from ..base import Message, Registry, Workflow, WorkflowConfig, init_iter
+from ..base import (
+    Message,
+    Module,
+    Registry,
+    Workflow,
+    WorkflowConfig,
+    init_iter,
+)
 from ..hooks import BaseHook
 from ..utils import ModelLoader
 
 T = TypeVar('T', bound='BaseDistiller')
 
 
-class BaseDistiller(BaseModule):
+class BaseDistiller(Module):
     DEBUG_PREFIX = '_debug_'
 
     @staticmethod
@@ -53,7 +59,7 @@ class BaseDistiller(BaseModule):
         iter_: int = 0,
         weight_transfer: Optional[Dict[str, str]] = None,
     ):
-        BaseModule.__init__(self)
+        Module.__init__(self)
         self._models = models
 
         self._hookflows: Dict[int, Workflow] = {  # yapf: disable
@@ -167,7 +173,7 @@ class DecoratorMixin:
         @no_type_check
         def wrapper(wrapped_cls):
 
-            class WrapperMeta(wrapped_cls.__class__):
+            class WrapMeta(wrapped_cls.__class__):
 
                 def __call__(
                     wrapper_cls,
@@ -180,7 +186,7 @@ class DecoratorMixin:
                     return obj
 
             @functools.wraps(wrapped_cls, updated=())
-            class WrapperClass(wrapped_cls, metaclass=WrapperMeta):
+            class WrapClass(wrapped_cls, metaclass=WrapMeta):
                 _distiller: DistillerType
 
                 @property
@@ -191,6 +197,6 @@ class DecoratorMixin:
                 def sync_apply(self) -> bool:
                     return False
 
-            return WrapperClass
+            return WrapClass
 
         return wrapper

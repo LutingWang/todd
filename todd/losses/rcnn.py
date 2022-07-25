@@ -8,7 +8,6 @@ import einops
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from mmcv.cnn import ConvModule
 
 from .base import LOSSES
 from .functional import MSELoss
@@ -25,6 +24,8 @@ class SGFILoss(MSELoss):
         out_channels: int = 64,
         **kwargs,
     ):
+        from mmcv.cnn import ConvModule
+
         super().__init__(*args, **kwargs)
         self._embed: Callable[..., torch.Tensor] = nn.Sequential(
             ConvModule(in_channels, hidden_channels, 3, stride=2),

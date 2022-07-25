@@ -1,8 +1,8 @@
 from typing import List
 
 import torch
-from mmcv.runner import ModuleList
 
+from ..base import ModuleList
 from .base import ADAPTS, BaseAdapt
 
 
@@ -10,11 +10,15 @@ from .base import ADAPTS, BaseAdapt
 class RoIAlign(BaseAdapt):
 
     def __init__(self, strides: List[int], *args, **kwargs):
-        from mmcv.ops import RoIAlign as RA
+        import mmcv.ops
+
         super().__init__(*args, **kwargs)
         self._layers = ModuleList([
-            RA(spatial_scale=1 / s, output_size=7, sampling_ratio=0)
-            for s in strides
+            mmcv.ops.RoIAlign(
+                spatial_scale=1 / s,
+                output_size=7,
+                sampling_ratio=0,
+            ) for s in strides
         ])
 
     def forward(

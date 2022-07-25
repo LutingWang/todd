@@ -1,14 +1,46 @@
 __all__ = [
+    'L12DLoss',
+    'MSE2DLoss',
     'FGDLoss',
     'FGFILoss',
 ]
+
+from typing import Optional
 
 import einops
 import torch
 import torch.nn.functional as F
 
 from .base import LOSSES
-from .functional import MSE2DLoss
+from .functional import FunctionalLoss, L1Loss, MSELoss
+
+
+class _2DMixin(FunctionalLoss):
+
+    def forward(
+        self,
+        pred: torch.Tensor,
+        target: torch.Tensor,
+        mask: Optional[torch.Tensor] = None,
+        *args,
+        **kwargs,
+    ) -> torch.Tensor:
+        _, _, h, w = pred.shape
+        if pred.shape != target.shape:
+            target = F.adaptive_avg_pool2d(target, (h, w))
+        if mask is not None and pred.shape != mask.shape:
+            mask = F.adaptive_avg_pool2d(mask, (h, w))
+        return super().forward(pred, target, mask, *args, **kwargs)
+
+
+@LOSSES.register_module()
+class L12DLoss(_2DMixin, L1Loss):
+    pass
+
+
+@LOSSES.register_module()
+class MSE2DLoss(_2DMixin, MSELoss):
+    pass
 
 
 @LOSSES.register_module()

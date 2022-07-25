@@ -25,7 +25,6 @@ jobs:
       run: |
         pip install --upgrade pip
         pip install torch==${{ matrix.torch }} torchvision==${{ matrix.torchvision }} -f https://download.pytorch.org/whl/torch_stable.html
-        pip install mmcv
         pip install .[test]
         coverage run
         coverage xml && coverage report -m

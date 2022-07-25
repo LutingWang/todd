@@ -8,21 +8,19 @@ from typing import Any, Literal, Optional, Union, cast
 
 import torch
 import torch.nn as nn
-from mmcv import ConfigDict
-from mmcv.runner import BaseModule
 
-from ..base import STEPS, Registry
+from ..base import STEPS, Config, Module, Registry
 from ..schedulers import SCHEDULERS
 
 Reduction = Literal['none', 'mean', 'sum', 'prod']
 
 
-class BaseLoss(BaseModule):
+class BaseLoss(Module):
 
     def __init__(
         self,
         reduction: Reduction = 'mean',
-        weight: Union[numbers.Real, ConfigDict] = 1.0,
+        weight: Union[numbers.Real, Config] = 1.0,  # type: ignore[assignment]
         bound: Optional[numbers.Real] = None,
         **kwargs,
     ):

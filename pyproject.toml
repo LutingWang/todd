@@ -48,6 +48,7 @@ full = [
 ]
 test = [
     'coverage',
+    'mmcv',
     'pytest',
 ]
 
@@ -136,7 +137,6 @@ convention = 'google'
 files = [
     'todd',
     'tests',
-    'setup.py',
 ]
 
 [[tool.mypy.overrides]]

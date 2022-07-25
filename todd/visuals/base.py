@@ -1,7 +1,6 @@
 import torch.nn as nn
-from mmcv.runner import BaseModule
 
-from ..base import STEPS, Registry
+from ..base import STEPS, Module, Registry
 
 __all__ = [
     'BaseVisual',
@@ -9,7 +8,7 @@ __all__ = [
 ]
 
 
-class BaseVisual(BaseModule):
+class BaseVisual(Module):
     pass
 
 

@@ -15,7 +15,7 @@ Toolkit for Object Detection Distillation.
 Prerequisites:
 - torch
 - torchvision
-- mmcv
+- mmcv/mmcv_full (optional)
 
 ```shell
 pip install todd_ai
@@ -45,7 +45,7 @@ cz bump -ch
 To specify a prerelease (alpha, beta, release candidate) version
 
 ```shell
-cz bump -ch -pr {alpha,beta,rc}
+cz bump -ch --increment {major,minor,patch} -pr {alpha,beta,rc}
 ```
 
 If for any reason, the created tag and changelog were to be undone, this is the snippet:

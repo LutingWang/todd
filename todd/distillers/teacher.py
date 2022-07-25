@@ -6,9 +6,8 @@ __all__ = [
 from typing import Dict, List, Optional
 
 import torch.nn as nn
-from mmcv.runner import ModuleList
 
-from ..base import WorkflowConfig
+from ..base import ModuleList, WorkflowConfig
 from ..reproduction import freeze_model
 from .base import DISTILLERS, BaseDistiller, DecoratorMixin
 
