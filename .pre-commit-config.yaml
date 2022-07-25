@@ -52,3 +52,7 @@ repos:
     hooks:
     -   id: codespell
         args: ["todd", "tests"]
+-   repo: https://github.com/commitizen-tools/commitizen
+    rev: v2.29.0
+    hooks:
+      - id: commitizen

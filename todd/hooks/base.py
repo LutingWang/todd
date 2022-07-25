@@ -1,3 +1,8 @@
+__all__ = [
+    'BaseHook',
+    'HOOKS',
+]
+
 from abc import abstractmethod
 from enum import IntEnum, auto
 from typing import TYPE_CHECKING, Protocol
@@ -5,11 +10,6 @@ from typing import TYPE_CHECKING, Protocol
 import torch.nn as nn
 
 from ..base import STEPS, Registry, StatusMixin
-
-__all__ = [
-    'BaseHook',
-    'HOOKS',
-]
 
 if TYPE_CHECKING:
 

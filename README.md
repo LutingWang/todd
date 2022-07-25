@@ -23,6 +23,13 @@ pip install todd_ai
 
 # Developer
 
+## Pre-commit
+
+```shell
+pre-commit install
+pre-commit install -t commit-msg
+```
+
 ## Publish
 
 ```shell

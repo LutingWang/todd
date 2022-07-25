@@ -1,3 +1,7 @@
+__all__ = [
+    'DuplicatedHook',
+]
+
 from typing import Any, List
 
 from .base import HOOKS

@@ -1,3 +1,7 @@
+__all__ = [
+    'StandardHook',
+]
+
 from .base import HOOKS, BaseHook
 
 
