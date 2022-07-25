@@ -1,8 +1,8 @@
-from typing import Iterable, Sized
-
 __all__ = [
     'strict_zip_len',
 ]
+
+from typing import Iterable, Sized
 
 
 def strict_zip_len(iterable: Iterable[Sized]) -> int:

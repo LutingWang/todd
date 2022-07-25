@@ -1,9 +1,9 @@
-import torch.distributed as dist
-
 __all__ = [
     'get_rank',
     'get_world_size',
 ]
+
+import torch.distributed as dist
 
 
 def get_rank(*args, **kwargs) -> int:

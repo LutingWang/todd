@@ -1,3 +1,8 @@
+__all__ = [
+    'NORM_LAYERS',
+    'Registry',
+]
+
 import logging
 from functools import partial
 from typing import (
@@ -15,11 +20,6 @@ from typing import (
 import torch.nn as nn
 
 from ._extensions import Config, get_logger
-
-__all__ = [
-    'NORM_LAYERS',
-    'Registry',
-]
 
 T = TypeVar('T')
 

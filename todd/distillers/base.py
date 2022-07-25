@@ -21,17 +21,9 @@ from typing import (
 
 import torch
 import torch.nn as nn
-import warnings
 from mmcv.runner import BaseModule
 
-from ..base import (
-    Message,
-    Registry,
-    Workflow,
-    WorkflowConfig,
-    inc_iter,
-    init_iter,
-)
+from ..base import Message, Registry, Workflow, WorkflowConfig, init_iter
 from ..hooks import BaseHook
 from ..utils import ModelLoader
 
@@ -128,21 +120,12 @@ class BaseDistiller(BaseModule):
         self,
         custom_tensors: Optional[Dict[str, torch.Tensor]] = None,
         debug: bool = False,
-        updated: bool = False,  # TODO: remove
     ) -> Dict[str, torch.Tensor]:
-        if not updated:
-            warnings.warn("needs to update")
-            self.track_tensors()
-
         tensors = self.tensors()
         if custom_tensors is not None:
             tensors.update(custom_tensors)
         self._adaptflow(tensors)
         losses = self._lossflow(tensors.copy())
-
-        if not updated:
-            inc_iter()
-            self.reset()
 
         if debug:
             tensors = {self.DEBUG_PREFIX + k: v for k, v in tensors.items()}

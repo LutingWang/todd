@@ -1,3 +1,8 @@
+__all__ = [
+    'BBoxesXYXY',
+    'BBoxesXYWH',
+]
+
 from abc import abstractmethod
 from typing import (
     List,
@@ -13,11 +18,6 @@ from typing import (
 import einops
 import numpy as np
 import torch
-
-__all__ = [
-    'BBoxesXYXY',
-    'BBoxesXYWH',
-]
 
 T = TypeVar('T', bound='BBoxes')
 

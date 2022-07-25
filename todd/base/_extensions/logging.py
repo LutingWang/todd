@@ -1,3 +1,8 @@
+__all__ = [
+    'SGR',
+    'get_logger',
+]
+
 import getpass
 import inspect
 import logging
@@ -7,11 +12,6 @@ from abc import abstractmethod
 from enum import IntEnum, auto
 from types import FrameType
 from typing import Iterable, cast
-
-__all__ = [
-    'SGR',
-    'get_logger',
-]
 
 
 class ANSI(IntEnum):  # fix bug in python<=3.7.1

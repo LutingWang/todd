@@ -4,11 +4,11 @@ __all__ = [
     'BaseDataset',
     'DATASETS',
 ]
+
 import reprlib
 from abc import abstractmethod
-from collections.abc import MutableMapping
 from enum import Enum
-from typing import Any, Generic, Type, TypeVar, Union
+from typing import Any, Generic, MutableMapping, Type, TypeVar, Union
 
 from torch.utils.data import Dataset
 
@@ -22,7 +22,7 @@ class Codec(Enum):
     PYTORCH = 'pytorch'
 
 
-class BaseAccessLayer(MutableMapping, Generic[T]):
+class BaseAccessLayer(MutableMapping[T, Any]):
 
     def __init__(
         self,
@@ -78,8 +78,6 @@ class BaseDataset(Dataset, Generic[T]):
     ACCESS_LAYER: Type = BaseAccessLayer[T]
 
     def __init__(self, *args, access_layer, **kwargs):
-        from .builder import ACCESS_LAYERS
-
         super().__init__(*args, **kwargs)
         self._access_layer = ACCESS_LAYERS.build(
             access_layer,

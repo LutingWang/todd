@@ -4,7 +4,7 @@ build-backend = 'setuptools.build_meta'
 
 [project]
 name = 'todd_ai'
-version = '0.1.1'
+version = '0.1.1-1'
 description = 'Toolkit for Object Detection Distillation'
 readme = 'README.md'
 requires-python = '>=3.6'
@@ -161,6 +161,7 @@ module = [
 ignore_errors = true
 
 [tool.pytest.ini_options]
+norecursedirs = 'tests/helpers'
 filterwarnings = [
     'default',
     'ignore:.*is deprecated and will be removed in Pillow 10 \(2023-07-01\)\..*:DeprecationWarning',

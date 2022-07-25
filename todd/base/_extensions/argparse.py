@@ -1,9 +1,9 @@
-import argparse
-from typing import Any, Dict, Optional, Sequence, Union
-
 __all__ = [
     'DictAction',
 ]
+
+import argparse
+from typing import Any, Dict, Optional, Sequence, Union
 
 
 class DictAction(argparse.Action):

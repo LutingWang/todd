@@ -1,9 +1,9 @@
-import contextlib
-from typing import Generator
-
 __all__ = [
     'setattr_temp',
 ]
+
+import contextlib
+from typing import Generator
 
 
 @contextlib.contextmanager

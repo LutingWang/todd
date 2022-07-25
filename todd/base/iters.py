@@ -1,11 +1,11 @@
-from ._extensions import get_logger
-
 __all__ = [
     'iter_initialized',
     'init_iter',
     'get_iter',
     'inc_iter',
 ]
+
+from ._extensions import get_logger
 
 _iter = None
 
