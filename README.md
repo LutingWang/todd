@@ -23,11 +23,23 @@ pip install todd_ai
 
 # Developer
 
-## Pre-commit
+## Commit
 
 ```shell
 pre-commit install
 pre-commit install -t commit-msg
+```
+
+Recommended to use [commitizen](https://github.com/commitizen-tools/commitizen) for commit message formatting.
+
+```shell
+cz c
+```
+
+## Docs
+
+```shell
+(cd docs && exec make html)
 ```
 
 ## Publish
