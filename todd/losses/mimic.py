@@ -1,3 +1,8 @@
+__all__ = [
+    'FGDLoss',
+    'FGFILoss',
+]
+
 import einops
 import torch
 import torch.nn.functional as F

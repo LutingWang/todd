@@ -1,3 +1,7 @@
+__all__ = [
+    'SGFILoss',
+]
+
 from typing import Callable, List
 
 import einops

@@ -1,3 +1,8 @@
+__all__ = [
+    'BaseLoss',
+    'LOSSES',
+]
+
 import numbers
 from typing import Any, Literal, Optional, Union, cast
 
@@ -8,11 +13,6 @@ from mmcv.runner import BaseModule
 
 from ..base import STEPS, Registry
 from ..schedulers import SCHEDULERS
-
-__all__ = [
-    'BaseLoss',
-    'LOSSES',
-]
 
 Reduction = Literal['none', 'mean', 'sum', 'prod']
 
