@@ -1,3 +1,13 @@
+## v0.1.3 (2022-07-26)
+
+### Fix
+
+- **base**: patch attrs
+
+### Feat
+
+- remove mmcv dependencies
+
 ## v0.1.3a0 (2022-07-25)
 
 ## v0.1.2 (2022-07-25)
