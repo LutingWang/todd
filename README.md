@@ -73,5 +73,5 @@ git push --delete origin ${TAG}
 ## Publish
 
 ```shell
-git push --atomic origin master ${TAG}
+pytest && git push --atomic origin master ${TAG}
 ```
