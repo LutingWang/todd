@@ -15,10 +15,10 @@ def patch(patched_func):
 
     def patcher(func):
 
-        @functools.wraps(patched_func)
+        @functools.wraps(func)
         def patch_func(obj, attr, *args, **kwargs):
             if '.' not in attr:
-                return patched_func(obj, attr, *args, **kwargs)
+                func = patched_func
             return func(obj, attr, *args, **kwargs)
 
         return patch_func
