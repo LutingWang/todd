@@ -17,9 +17,8 @@ def patch(patched_func):
 
         @functools.wraps(func)
         def patch_func(obj, attr, *args, **kwargs):
-            if '.' not in attr:
-                func = patched_func
-            return func(obj, attr, *args, **kwargs)
+            f = func if '.' in attr else patched_func
+            return f(obj, attr, *args, **kwargs)
 
         return patch_func
 
