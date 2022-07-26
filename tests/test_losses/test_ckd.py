@@ -38,7 +38,7 @@ class CustomAdapt(BaseAdapt):
 
 class TestCKD:
 
-    @pytest.fixture()
+    @pytest.fixture
     def adaptflow(self) -> Workflow:
         return Workflow.build(
             'adapts',
@@ -69,7 +69,7 @@ class TestCKD:
             }
         )
 
-    @pytest.fixture()
+    @pytest.fixture
     def ckdflow(self) -> Workflow:
         return Workflow.build(
             'losses',

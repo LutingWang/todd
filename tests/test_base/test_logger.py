@@ -37,7 +37,7 @@ class TestSGR:
 
 class TestGetLogger:
 
-    @pytest.fixture()
+    @pytest.fixture
     def teardown_logger(self):
         yield
         logger = logging.Logger.manager.loggerDict.pop(__name__)

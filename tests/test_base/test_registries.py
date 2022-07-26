@@ -9,7 +9,7 @@ class MyException(Exception):
     pass
 
 
-@pytest.fixture()
+@pytest.fixture
 def cats() -> Registry:
     return Registry('cats')
 
@@ -35,22 +35,22 @@ class Siamese:
     pass
 
 
-@pytest.fixture()
+@pytest.fixture
 def dogs() -> Registry:
     return Registry('dogs')
 
 
-@pytest.fixture()
+@pytest.fixture
 def hounds(dogs: Registry) -> Registry:
     return Registry('hounds', parent=dogs)
 
 
-@pytest.fixture()
+@pytest.fixture
 def little_hounds(hounds: Registry) -> Registry:
     return Registry('little hounds', parent=hounds)
 
 
-@pytest.fixture()
+@pytest.fixture
 def mid_hounds(hounds: Registry) -> Registry:
     return Registry('mid hounds', parent=hounds)
 

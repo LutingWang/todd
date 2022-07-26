@@ -10,7 +10,7 @@ from todd.utils import CollectionTensor
 
 class TestFGD:
 
-    @pytest.fixture()
+    @pytest.fixture
     def distiller(self):
         distiller = BaseDistiller(
             models=list(),

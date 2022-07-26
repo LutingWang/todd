@@ -1,5 +1,6 @@
 import os
 import sys
+from typing import Generator
 
 import pytest
 
@@ -9,20 +10,28 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'helpers'))
 
 
 @pytest.fixture
-def setup_iter(setup_value):
+def setup_iter(setup_value) -> None:
     init_iter(setup_value)
 
 
 @pytest.fixture
-def setup_teardown_iter(setup_value, teardown_value):
+def setup_teardown_iter(
+    setup_value,
+    teardown_value,
+) -> Generator[None, None, None]:
     if teardown_value is ...:
         teardown_value = get_iter() if iter_initialized() else None
-
     if setup_value is not ...:
         init_iter(setup_value)
-
     yield
     init_iter(teardown_value)
+
+
+@pytest.fixture
+def setup_teardown_iter_with_none() -> Generator[None, None, None]:
+    init_iter(None)
+    yield
+    init_iter(None)
 
 
 class CustomObject:
@@ -32,6 +41,6 @@ class CustomObject:
             setattr(self, k, v)
 
 
-@pytest.fixture()
+@pytest.fixture
 def obj() -> CustomObject:
     return CustomObject(one=1, obj=CustomObject())

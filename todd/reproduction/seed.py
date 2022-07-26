@@ -1,7 +1,7 @@
 import hashlib
 import random
-from contextlib import ContextDecorator
-from typing import Any, cast
+from contextlib import contextmanager
+from typing import Generator, Optional, cast
 
 import numpy as np
 import torch
@@ -19,26 +19,27 @@ from ..base import (
 
 def _randint(high: int = 2**30) -> int:
     seed = np.random.randint(high)
-    if get_world_size() > 1:
-        tensor = torch.IntTensor(seed if get_rank() == 0 else 0)
-        dist.broadcast(tensor, src=0)
-        seed = cast(int, tensor.item())
-    return seed
+    if get_world_size() <= 1:
+        return seed
+    tensor = torch.tensor(seed if get_rank() == 0 else 0, dtype=torch.int)
+    dist.broadcast(tensor, src=0)
+    return cast(int, tensor.item())
 
 
 def init_seed(
     seed=None,
-    deterministic: bool = ...,  # type: ignore[assignment]
-):
+    deterministic: Optional[bool] = None,
+) -> int:
     if seed is None:
         seed = _randint()
     elif isinstance(seed, int):
-        seed %= 2**30
+        pass
     else:
         if not isinstance(seed, bytes):
             seed = str(seed).encode()
         seed = hashlib.blake2b(seed, digest_size=4).hexdigest()
         seed = int(seed, 16)
+    seed %= 2**30
 
     if iter_initialized():
         seed += get_iter()
@@ -48,39 +49,35 @@ def init_seed(
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
 
-    if deterministic is not ...:
+    if deterministic is not None:
         cudnn.deterministic = deterministic
         cudnn.benchmark = not deterministic
 
+    return seed
 
-class set_seed_temp(ContextDecorator):
 
-    def __init__(
-        self,
-        seed=None,
-        deterministic: bool = ...,  # type: ignore[assignment]
-    ):
-        if torch.cuda.device_count() > 1:
-            get_logger().warn(
-                "Seeding is not recommended for multi-GPU training.",
-            )
-        self._seed = seed
-        self._deterministic = deterministic
+@contextmanager
+def set_seed_temp(
+    seed=None,
+    deterministic: Optional[bool] = None,
+) -> Generator[None, None, None]:
+    if torch.cuda.device_count() > 1:
+        get_logger().warn(
+            "Seeding is not recommended for multi-GPU training.",
+        )
+    random_state = random.getstate()
+    np_state = np.random.get_state()
+    torch_state = torch.get_rng_state()
+    cuda_state = torch.cuda.get_rng_state_all()
+    prev_detereministic = cudnn.deterministic
+    prev_benchmark = cudnn.benchmark
+    init_seed(seed, deterministic)
 
-    def __enter__(self):
-        self._random_state = random.getstate()
-        self._np_state = np.random.get_state()
-        self._torch_state = torch.get_rng_state()
-        self._cuda_state = torch.cuda.get_rng_state_all()
-        self._prev_detereministic = cudnn.deterministic
-        self._prev_benchmark = cudnn.benchmark
+    yield
 
-        init_seed(self._seed, self._deterministic)
-
-    def __exit__(self, exc_type: Any, exc_value: Any, traceback: Any) -> None:
-        random.setstate(self._random_state)
-        np.random.set_state(self._np_state)
-        torch.set_rng_state(self._torch_state)
-        torch.cuda.set_rng_state_all(self._cuda_state)
-        cudnn.deterministic = self._prev_detereministic
-        cudnn.benchmark = self._prev_benchmark
+    random.setstate(random_state)
+    np.random.set_state(np_state)
+    torch.set_rng_state(torch_state)
+    torch.cuda.set_rng_state_all(cuda_state)
+    cudnn.deterministic = prev_detereministic
+    cudnn.benchmark = prev_benchmark

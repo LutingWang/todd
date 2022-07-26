@@ -125,11 +125,11 @@ class TestBBoxes:
 
 class TestBBoxesXY:
 
-    @pytest.fixture()
+    @pytest.fixture
     def bboxes_xyxy(self) -> BBoxesXYXY:
         return BBoxesXYXY(torch.tensor([[10.0, 20.0, 40.0, 100.0]]))
 
-    @pytest.fixture()
+    @pytest.fixture
     def bboxes_xywh(self) -> BBoxesXYWH:
         return BBoxesXYWH(torch.tensor([[10.0, 20.0, 30.0, 80.0]]))
 
