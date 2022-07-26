@@ -2,6 +2,7 @@ import pytest
 import torch
 import torch.backends.cudnn as cudnn
 
+from todd.base import init_iter
 from todd.reproduction.seed import _randint, init_seed, set_seed_temp
 
 
@@ -71,6 +72,10 @@ class TestSeed:
         randint = torch.randint(0, 100, (10, ))
         assert randint.eq(seed198276314_tensor).all()
 
+        init_seed(b'seed')
+        randint = torch.randint(0, 100, (10, ))
+        assert randint.eq(seed198276314_tensor).all()
+
         init_seed(42, False)
         cudnn.deterministic = False
         cudnn.benchmark = True
@@ -78,6 +83,11 @@ class TestSeed:
         init_seed(42, True)
         cudnn.deterministic = True
         cudnn.benchmark = False
+
+        init_iter(40)
+        init_seed(2)
+        randint = torch.randint(0, 100, (10, ))
+        assert randint.eq(seed42_tensor1).all()
 
     @pytest.mark.usefixtures('setup_teardown_iter_with_none')
     def test_set_seed_temp(
