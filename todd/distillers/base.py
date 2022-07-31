@@ -25,6 +25,7 @@ import torch.nn as nn
 from ..base import (
     Message,
     Module,
+    ModuleList,
     Registry,
     Workflow,
     WorkflowConfig,
@@ -41,11 +42,11 @@ class BaseDistiller(Module):
 
     @staticmethod
     def workflow_to_module(workflow: Workflow) -> nn.Module:
-        module = nn.ModuleList()
+        module = ModuleList()
         for job in workflow:
             step = job.step
             if not isinstance(step, nn.Module):
-                step = nn.ModuleList(step)
+                step = ModuleList(step)
             module.append(step)
         return module
 
@@ -163,6 +164,7 @@ WrapperType = TypeVar('WrapperType', bound=WrapperProto)
 WrappedType = TypeVar('WrappedType')
 
 
+# TODO: delete unnecessary type hints
 class DecoratorMixin:
 
     @classmethod

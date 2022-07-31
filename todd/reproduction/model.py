@@ -1,12 +1,21 @@
 import itertools
 from enum import Enum, auto
-from typing import Optional
+from functools import partial
+from typing import Any, Iterable, Iterator, Optional, TypeVar
 
 import torch.nn as nn
-from timm.models.layers import DropPath
 from torch.nn.modules.batchnorm import _BatchNorm
 
 from ..base import getattr_recur
+
+DEFAULT_STOCHASTIC_MODULE_TYPES = [_BatchNorm, nn.Dropout]
+
+try:
+    from timm.models.layers import DropPath
+
+    DEFAULT_STOCHASTIC_MODULE_TYPES.append(DropPath)
+except Exception:
+    pass
 
 
 class NoGradMode(Enum):
@@ -17,17 +26,21 @@ class NoGradMode(Enum):
     def no_grad(self, model: nn.Module, **kwargs) -> nn.Module:
         if self == NoGradMode.ALL:
             return model.requires_grad_(False)
-        elif self == NoGradMode.PARTIAL:
-            for module_name in kwargs['modules']:
-                module: nn.Module = getattr_recur(model, module_name)
-                module.requires_grad_(False)
+        if self == NoGradMode.NONE:
             return model
-        elif self == NoGradMode.NONE:
-            return model
-        raise NotImplementedError(f"{self} is not implemented")
 
+        modules: Iterator[nn.Module]
+        if self == NoGradMode.PARTIAL:
+            modules = map(
+                partial(getattr_recur, model),
+                kwargs['module_names'],
+            )
+        else:
+            raise NotImplementedError(f"{self} is not implemented")
 
-DEFAULT_STOCHASTIC_MODULE_TYPES = [_BatchNorm, nn.Dropout, DropPath]
+        for module in modules:
+            module.requires_grad_(False)
+        return model
 
 
 class EvalMode(Enum):
@@ -38,49 +51,56 @@ class EvalMode(Enum):
     PARTIALLY_DETERMINISTIC = auto()
     NONE = auto()
 
-    def eval(self, model: nn.Module, **kwargs) -> nn.Module:
+    def eval(
+        self,
+        model: nn.Module,
+        **kwargs,
+    ) -> nn.Module:
         if self == EvalMode.ALL:
             return model.eval()
-        elif self == EvalMode.NONE:
+        if self == EvalMode.NONE:
             return model
-        # TODO: refactor
-        modules = (
-            model.modules() if self == EvalMode.DETERMINISTIC else
-            (getattr_recur(model, module) for module in kwargs['modules'])
+
+        stochastic_module_types: Iterable[Any] = kwargs.get(
+            'stochastic_module_types',
+            DEFAULT_STOCHASTIC_MODULE_TYPES,
         )
-        if self != EvalMode.PARTIAL:
-            sms = kwargs.get(
-                'stochastic_module_types',
-                DEFAULT_STOCHASTIC_MODULE_TYPES,
+
+        def stochastic(module: nn.Module) -> bool:
+            return any(
+                isinstance(module, smt) for smt in stochastic_module_types
             )
-            if self in [
-                EvalMode.DETERMINISTIC,
-                EvalMode.PARTIALLY_DETERMINISTIC,
-            ]:
-                modules = (
-                    module for module in modules
-                    if any(isinstance(module, sm) for sm in sms)
-                )
-            elif self == EvalMode.DETERMINISTIC_AND_PARTIAL:
-                modules = itertools.chain(
-                    modules,
-                    (
-                        module for module in model.modules()
-                        if any(isinstance(module, sm) for sm in sms)
-                    ),
-                )
-            else:
-                raise NotImplementedError(f'EvalMode {self} not implemented')
+
+        modules: Iterator[nn.Module]
+        if self == EvalMode.DETERMINISTIC:
+            modules = filter(stochastic, model.modules())
+        elif self == EvalMode.PARTIAL:
+            modules = map(
+                partial(getattr_recur, model),
+                kwargs['module_names'],
+            )
+        elif self == EvalMode.PARTIALLY_DETERMINISTIC:
+            modules = map(
+                partial(getattr_recur, model),
+                kwargs['module_names'],
+            )
+            modules = filter(stochastic, modules)
+        elif self == EvalMode.DETERMINISTIC_AND_PARTIAL:
+            named_modules = map(
+                partial(getattr_recur, model),
+                kwargs['module_names'],
+            )
+            stochastic_modules = filter(stochastic, model.modules())
+            modules = itertools.chain(named_modules, stochastic_modules)
+        else:
+            raise NotImplementedError(f'EvalMode {self} not implemented')
+
         for module in modules:
             module.eval()
         return model
 
 
-def freeze_model(
-    model: nn.Module,
-    no_grad: Optional[dict] = ...,  # type: ignore[assignment]
-    eval_: Optional[dict] = ...,  # type: ignore[assignment]
-) -> nn.Module:
+def freeze_model(model: nn.Module, no_grad=..., eval_=...) -> nn.Module:
     if no_grad is ...:
         no_grad = dict(mode='ALL')
     if no_grad is not None:
@@ -98,6 +118,9 @@ def freeze_model(
     return model
 
 
+T = TypeVar('T', bound='FrozenMixin')
+
+
 class FrozenMixin(nn.Module):
 
     def __init__(
@@ -105,15 +128,17 @@ class FrozenMixin(nn.Module):
         *args,
         freeze_cfg: Optional[dict] = None,
         **kwargs,
-    ):
+    ) -> None:
         super().__init__(*args, **kwargs)
-        if freeze_cfg is None:
-            return
-        freeze_model(self, **freeze_cfg)
-        self._eval_cfg = freeze_cfg.get('eval_')
+        self._freeze_cfg = freeze_cfg or dict()
+        freeze_model(self, **self._freeze_cfg)
 
-    def train(self, mode: bool = True):
+    def requires_grad_(self: T, requires_grad: bool = True) -> T:
+        result = super().requires_grad_(requires_grad)
+        freeze_model(self, **self._freeze_cfg)
+        return result
+
+    def train(self: T, mode: bool = True) -> T:
         result = super().train(mode)
-        if hasattr(self, '_eval_cfg'):
-            freeze_model(self, no_grad=None, eval_=self._eval_cfg)
+        freeze_model(self, **self._freeze_cfg)
         return result

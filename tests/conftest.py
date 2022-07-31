@@ -3,6 +3,7 @@ import sys
 from typing import Generator
 
 import pytest
+import torch.nn as nn
 
 from todd.base import get_iter, init_iter, iter_initialized
 
@@ -44,3 +45,12 @@ class CustomObject:
 @pytest.fixture
 def obj() -> CustomObject:
     return CustomObject(one=1, obj=CustomObject())
+
+
+@pytest.fixture
+def model() -> nn.Module:
+    module = nn.Module()
+    module.conv = nn.Conv2d(128, 256, 3)
+    module.module = nn.Module()
+    module.module.linear = nn.Linear(1024, 10)
+    return module
