@@ -1,3 +1,13 @@
+## v0.1.5 (2022-07-31)
+
+### Refactor
+
+- **reproduction**: model no grad or eval
+
+### Fix
+
+- **reproduction**: set seed with str may exceed 2**30
+
 ## v0.1.4 (2022-07-26)
 
 ### Fix
