@@ -28,3 +28,4 @@ autodoc_default_options = {
     'show-inheritance': True,
 }
 autodoc_class_signature = 'separated'
+autodoc_inherit_docstrings = False
