@@ -7,13 +7,16 @@ project = 'todd'
 copyright = '2022, Luting Wang'
 author = 'Luting Wang'
 
-release = '0.0.1'
+release = '0.1.5'
 
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
 ]
+
+html_static_path = ['_static']
+templates_path = ['_templates']
 
 if os.environ.get('READTHEDOCS') == 'True':
     html_theme = 'sphinx_rtd_theme'
