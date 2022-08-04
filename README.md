@@ -21,16 +21,22 @@ Prerequisites:
 pip install todd_ai
 ```
 
-# Developer
+# Developer Guides
+
+## Installation
+
+Recommended to use [commitizen](https://github.com/commitizen-tools/commitizen)
+
+```bash
+pip install -U pre-commit
+pre-commit install
+pre-commit install -t commit-msg
+brew install commitizen
+```
 
 ## Commit
 
-```shell
-pre-commit install
-pre-commit install -t commit-msg
-```
-
-Recommended to use [commitizen](https://github.com/commitizen-tools/commitizen). Instead of `git commit`, use
+Instead of `git commit`, use
 
 ```shell
 cz c

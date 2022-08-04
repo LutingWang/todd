@@ -111,8 +111,10 @@ known_standard_library = [
     'string',
     'sys',
     'tempfile',
+    'time',
     'types',
     'typing',
+    'warnings',
     'webbrowser',
     'zipfile',
 ]
@@ -125,7 +127,6 @@ known_third_party = [
     'numpy',
     'packaging',
     'pytest',
-    'todd',
     'torch',
 ]
 known_first_party = 'todd'

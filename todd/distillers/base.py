@@ -29,7 +29,6 @@ from ..base import (
     Registry,
     Workflow,
     WorkflowConfig,
-    init_iter,
 )
 from ..hooks import BaseHook
 from ..utils import ModelLoader
@@ -57,7 +56,6 @@ class BaseDistiller(Module):
         hooks: Dict[int, WorkflowConfig],
         adapts: WorkflowConfig,
         losses: WorkflowConfig,
-        iter_: int = 0,
         weight_transfer: Optional[Dict[str, str]] = None,
     ):
         Module.__init__(self)
@@ -70,7 +68,6 @@ class BaseDistiller(Module):
         self._adaptflow = Workflow.build('adapts', adapts)
         self._lossflow = Workflow.build('losses', losses)
 
-        init_iter(iter_)
         if weight_transfer is not None:
             ModelLoader.load_state_dicts(self, weight_transfer)
 
