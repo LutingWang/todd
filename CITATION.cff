@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+title: Toolkit for Object Detection Distillation
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Luting
+    family-names: Wang
+    email: wangluting@buaa.edu.cn
+    orcid: 'https://orcid.org/0000-0001-8317-226X'
+    affiliation: Beihang University
+repository-code: 'https://github.com/LutingWang/todd'
+license: Apache-2.0
+version: '0.1.6'
+date-released: '2021-12-31'

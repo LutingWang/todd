@@ -8,7 +8,7 @@
 [![PyPI](https://img.shields.io/pypi/v/todd_ai)](https://pypi.org/project/todd-ai/)
 [![wakatime](https://wakatime.com/badge/github/LutingWang/todd.svg)](https://wakatime.com/badge/github/LutingWang/todd)
 
-Toolkit for Object Detection Distillation.
+Toolkit for Object Detection Distillation
 
 ## Installation
 
@@ -81,3 +81,8 @@ git push --delete origin ${TAG}
 ```shell
 pytest && git push --atomic origin master ${TAG}
 ```
+
+## TODO
+
+1. Clean up registries
+2. Complete repr

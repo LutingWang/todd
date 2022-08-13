@@ -33,6 +33,7 @@ email = 'wangluting@buaa.edu.cn'
 
 [project.urls]
 Homepage = 'https://github.com/LutingWang/todd'
+Documentation = 'https://toddai.readthedocs.io/en/latest/'
 
 [project.optional-dependencies]
 doc = [
@@ -200,4 +201,5 @@ tag_format = 'v$version'
 version_files = [
     'pyproject.toml:^version',
     'docs/source/conf.py:^release',
+    'CITATION.cff:^version',
 ]
