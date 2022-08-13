@@ -7,7 +7,7 @@ project = 'todd'
 copyright = '2022, Luting Wang'
 author = 'Luting Wang'
 
-release = '0.1.6'
+release = '0.2.0'
 
 extensions = [
     'sphinx.ext.autodoc',

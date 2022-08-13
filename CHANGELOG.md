@@ -1,3 +1,11 @@
+## v0.2.0 (2022-08-14)
+
+### Feat
+
+- **schedulers**: chained scheduler with stand-along value
+- **base**: debug
+- **base**: debug options
+
 ## v0.1.6 (2022-07-31)
 
 ## v0.1.5 (2022-07-31)
