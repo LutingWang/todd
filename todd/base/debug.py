@@ -1,23 +1,29 @@
 __all__ = [
-    'DebugEnum',
+    'DebugMode',
 ]
 
-import enum
 import os
 
+from ._extensions import get_logger
 
-class DebugEnum(enum.Enum):
 
-    @classmethod
-    def is_active(cls) -> bool:
-        return any(e.is_on for e in cls)
+class DebugMode:
 
-    @property
-    def is_on(self) -> bool:
-        return any(map(os.getenv, ['DEBUG', self.name]))
+    def __init__(self) -> None:
+        self._logger = get_logger()
 
-    def turn_on(self) -> None:
-        os.environ[self.name] = '1'
+    def __set_name__(self, owner, name: str) -> None:
+        self._name = name
+        self._logger.debug(f"Debug mode {name} is {self.__get__(None)}")
 
-    def turn_off(self) -> None:
-        os.environ[self.name] = ''
+    def __get__(self, obj, objtype=None) -> bool:
+        return bool(os.getenv(self._name))
+
+    def __set__(self, obj, value: bool) -> None:
+        if value:
+            os.environ[self._name] = '1'
+        else:
+            os.environ.pop(self._name)
+        self._logger.debug(
+            f"Debug mode {self._name} is set to {self.__get__(None)}"
+        )
