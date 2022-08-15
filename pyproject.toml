@@ -96,6 +96,7 @@ known_standard_library = [
     'inspect',
     'io',
     'itertools',
+    'json',
     'logging',
     'math',
     'numbers',

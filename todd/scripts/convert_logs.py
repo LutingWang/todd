@@ -22,13 +22,12 @@ Example:
 
 import argparse
 import itertools
+import json
 import numbers
 import os
+import time
 from abc import ABC, abstractmethod
 from typing import Dict, Generator, Optional
-
-import json
-import time
 
 from todd.base import DictAction, Registry, get_logger
 
