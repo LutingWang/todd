@@ -10,8 +10,7 @@ import os
 import socket
 from abc import abstractmethod
 from enum import IntEnum, auto
-from types import FrameType
-from typing import Iterable, cast
+from typing import Iterable
 
 
 class ANSI(IntEnum):  # fix bug in python<=3.7.1
@@ -117,8 +116,10 @@ class Formatter(logging.Formatter):
 
 
 def get_logger(log_file=None) -> logging.Logger:
-    frame = cast(FrameType, inspect.currentframe())
-    frame = cast(FrameType, frame.f_back)
+    frame = inspect.currentframe()
+    assert frame is not None
+    frame = frame.f_back
+    assert frame is not None
     name = frame.f_globals.get('__name__')
     logger = logging.getLogger(name)
     if not getattr(logger, '_isinitialized', False):
