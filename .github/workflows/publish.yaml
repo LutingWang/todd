@@ -16,7 +16,7 @@ jobs:
     - name: Build
       run: |
         pip install build
-        build --sdist --wheel --outdir dist/ .
+        python -m build --sdist --wheel --outdir dist/ .
     - uses: pypa/gh-action-pypi-publish@master
       with:
         password: ${{ secrets.TEST_PYPI_API_TOKEN }}

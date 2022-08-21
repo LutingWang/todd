@@ -34,16 +34,18 @@ pre-commit install
 pre-commit install -t commit-msg
 ```
 
-Recommended to use [commitizen](https://github.com/commitizen-tools/commitizen)
-
-```bash
-brew install commitizen
-```
-
 ## Docs
 
 ```shell
 (cd docs && exec make html)
+```
+
+## Version Control
+
+Recommended to use [commitizen](https://github.com/commitizen-tools/commitizen).
+
+```bash
+pytest && git push origin master
 ```
 
 ## Publish
