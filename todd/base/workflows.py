@@ -13,12 +13,15 @@ from typing import (
     Generator,
     Iterable,
     Iterator,
+    Mapping,
+    MutableMapping,
     Optional,
     Tuple,
     Union,
 )
 
-from ._extensions import Config, get_logger
+from ._extensions import get_logger
+from .configs import Config
 from .registries import Registry
 
 Message = Dict[str, Any]
@@ -124,7 +127,7 @@ class Job:
 
     @staticmethod
     def build_step_manager(
-        config: Config,
+        config: Mapping,
         registry: Registry[Step],
         parallel,
     ) -> BaseStepManager:
@@ -157,10 +160,12 @@ class Job:
     @staticmethod
     def build(
         step_descendent_name: str,
-        config: Config,
+        config: Mapping,
         output_key: OutputKey,
     ) -> 'Job':
         registry = STEPS.descendent(step_descendent_name)
+        if not isinstance(config, MutableMapping):
+            config = Config(config)
         parallel = config.pop('parallel', False)
         fields = config.pop('fields', tuple())
         step_manager = Job.build_step_manager(config, registry, parallel)
@@ -195,7 +200,7 @@ class Job:
         return self._step_manager.step
 
 
-WorkflowConfig = Dict[OutputKey, Config]
+WorkflowConfig = Dict[OutputKey, Mapping]
 
 
 class Workflow:
@@ -204,7 +209,7 @@ class Workflow:
     def build(
         step_descendent_name: str,
         configs: Optional[WorkflowConfig] = None,
-        **kwargs: Config,
+        **kwargs: Mapping,
     ) -> 'Workflow':
         jobs = tuple(  # yapf: disable
             Job.build(step_descendent_name, config, output_key)
@@ -225,3 +230,6 @@ class Workflow:
             message.update(updates)
             updated.update(updates)
         return updated
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}(jobs={self._jobs})"

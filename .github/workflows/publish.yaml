@@ -15,8 +15,8 @@ jobs:
         python-version: ${{ matrix.python }}
     - name: Build
       run: |
-        python -m pip install build --user
-        python -m build --sdist --wheel --outdir dist/ .
+        pip install build
+        build --sdist --wheel --outdir dist/ .
     - uses: pypa/gh-action-pypi-publish@master
       with:
         password: ${{ secrets.TEST_PYPI_API_TOKEN }}

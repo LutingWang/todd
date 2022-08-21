@@ -48,14 +48,14 @@ class TestFGD:
                     ceil_mode=True,
                 ),
                 'global': dict(
-                    type='ContextBlock',
+                    type='mmcv_ContextBlock',
                     fields=['neck'],
                     parallel=5,
                     in_channels=4,
                     ratio=0.5,
                 ),
                 'teacher_global': dict(
-                    type='ContextBlock',
+                    type='mmcv_ContextBlock',
                     fields=['teacher_neck'],
                     parallel=5,
                     in_channels=4,

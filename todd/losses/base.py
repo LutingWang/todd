@@ -4,12 +4,12 @@ __all__ = [
 ]
 
 import numbers
-from typing import Any, Literal, Optional, Union, cast
+from typing import Any, Literal, Mapping, Optional, Union, cast
 
 import torch
 import torch.nn as nn
 
-from ..base import STEPS, Config, Module, Registry
+from ..base import STEPS, Module, Registry
 from ..schedulers import SCHEDULERS
 
 Reduction = Literal['none', 'mean', 'sum', 'prod']
@@ -20,7 +20,7 @@ class BaseLoss(Module):
     def __init__(
         self,
         reduction: Reduction = 'mean',
-        weight: Union[numbers.Real, Config] = 1.0,  # type: ignore[assignment]
+        weight: Union[numbers.Real, Mapping] = 1.0,  # type: ignore[assignment]
         bound: Optional[numbers.Real] = None,
         **kwargs,
     ):

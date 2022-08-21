@@ -14,9 +14,11 @@ from typing import (
     Callable,
     Dict,
     Iterable,
+    Mapping,
     Optional,
     Protocol,
     Type,
+    TypeGuard,
     TypeVar,
     Union,
     cast,
@@ -24,7 +26,8 @@ from typing import (
 
 import torch.nn as nn
 
-from ._extensions import Config, get_logger
+from ._extensions import get_logger
+from .configs import Config
 
 T = TypeVar('T')
 
@@ -101,7 +104,7 @@ class _ModulesMixin(_RegistryProto[T]):
         self._modules.update({name: cls for name in names})
         return cls
 
-    def register_module(
+    def register_module(  # TODO: merge with register, refer to pytest.fixture
         self,
         *,
         name: Optional[str] = None,
@@ -280,23 +283,29 @@ class Registry(
             return None
         return descendent.get(key)
 
-    def build(
-        self,
-        config: Union[Config, T],
-        default_args: Optional[Config] = None,
-    ) -> T:
+    def is_config(self, config: Union[Mapping, T]) -> TypeGuard[Mapping]:
+        if not self.has_base() and not isinstance(config, Mapping):
+            return False
         if self.has_base():
             if isinstance(config, self._base):
-                return config
-            if not isinstance(config, dict):
+                return False
+            if not isinstance(config, Mapping):
                 raise TypeError(
-                    f"{config.__class__.__name__} is neither dict nor "
-                    f"{self._base.__name__}"
+                    f"{config.__class__.__name__} is neither `Mapping` nor "
+                    f"`{self._base.__name__}`"
                 )
-        else:
-            if not isinstance(config, dict):
-                return config
-        default_args = dict() if default_args is None else default_args.copy()
+        return True
+
+    def build(
+        self,
+        config: Union[Mapping, T],
+        default_args: Optional[Mapping] = None,
+    ) -> T:
+        if not self.is_config(config):
+            return cast(T, config)
+        default_args = (
+            Config() if default_args is None else Config(default_args)
+        )
         default_args.update(config)
         if self.has_build_func():
             return self._build_func(self, default_args)

@@ -29,9 +29,9 @@ from ..base import (
     Registry,
     Workflow,
     WorkflowConfig,
+    transfer_weights,
 )
 from ..hooks import BaseHook
-from ..utils import ModelLoader
 
 T = TypeVar('T', bound='BaseDistiller')
 
@@ -69,7 +69,7 @@ class BaseDistiller(Module):
         self._lossflow = Workflow.build('losses', losses)
 
         if weight_transfer is not None:
-            ModelLoader.load_state_dicts(self, weight_transfer)
+            transfer_weights(self, weight_transfer)
 
         for i, workflow in self._hookflows.items():
             for job in workflow:

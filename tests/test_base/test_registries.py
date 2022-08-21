@@ -1,8 +1,10 @@
-from typing import Type
+from typing import Type, TypeVar
 
 import pytest
 
-from todd.base import Registry
+from todd.base import Config, Registry
+
+T = TypeVar('T')
 
 
 class MyException(Exception):
@@ -70,7 +72,7 @@ class BaseMLP:
     pass
 
 
-def build_func(registry: Registry, cfg: dict):
+def build_func(registry: Registry, cfg: Config):
     type_: Type = registry[cfg.pop('class_')]
     return type_(depth=50, stages=3)  # type: ignore[operator]
 

@@ -1,7 +1,7 @@
 import math
 import numbers
 from abc import abstractmethod
-from typing import Any, Optional, Union
+from typing import Optional, Union
 
 from ..base import Registry, get_iter
 
@@ -90,7 +90,7 @@ class BaseScheduler(numbers.Real):
         return self.value <= other
 
 
-SCHEDULERS: Registry[Any] = Registry(
+SCHEDULERS: Registry = Registry(
     'schedulers',
     base=BaseScheduler,
 )

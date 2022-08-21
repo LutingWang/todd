@@ -6,5 +6,8 @@
         "--doctest-modules"
     ],
     "python.testing.unittestEnabled": true,
-    "python.testing.pytestEnabled": true
+    "python.testing.pytestEnabled": true,
+    "python.analysis.extraPaths": [
+        "tests/helpers"
+    ]
 }

@@ -7,6 +7,8 @@ from typing import Any, Optional, Sequence
 
 from mmcv import Config
 
+# TODO: merge into config
+
 
 class DiffMode(Enum):
     TEXT = auto()

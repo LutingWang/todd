@@ -42,7 +42,8 @@ doc = [
     'sphinx',
     'sphinx_rtd_theme',
 ]
-full = [
+dev = [
+    'commitizen',
     'ipdb',
     'tensorboard',
     'torch-tb-profiler',
@@ -51,6 +52,15 @@ test = [
     'coverage',
     'mmcv',
     'pytest',
+]
+pre-commit = [
+    'pre-commit',
+    'mypy',
+    'flake8',
+    'isort',
+    'docformatter[tomli]',
+    'yapf',
+    'codespell',
 ]
 
 [tool.setuptools.packages.find]
@@ -166,8 +176,7 @@ ignore_errors = true
 [tool.pytest.ini_options]
 norecursedirs = 'tests/helpers'
 filterwarnings = [
-    'default',
-    'ignore:.*is deprecated and will be removed in Pillow 10 \(2023-07-01\)\..*:DeprecationWarning',
+    'ignore:lib2to3 package is deprecated and may not be able to parse Python 3.10+:PendingDeprecationWarning',
 ]
 testpaths = 'tests todd'
 addopts = '--doctest-modules'
