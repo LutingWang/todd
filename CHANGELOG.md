@@ -1,3 +1,9 @@
+## v0.2.2 (2022-08-23)
+
+### Fix
+
+- **base**: config cannot inherit UserDict
+
 ## v0.2.1 (2022-08-23)
 
 ### Feat
