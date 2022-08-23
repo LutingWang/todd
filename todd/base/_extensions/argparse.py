@@ -1,3 +1,8 @@
+# Modified from
+# https://github.com/open-mmlab/mmcv/blob/v1.6.1/mmcv/utils/config.py
+#
+# Copyright (c) OpenMMLab. All rights reserved.
+
 __all__ = [
     'DictAction',
 ]

@@ -56,7 +56,7 @@ To automatically bump the version based on the commits
 cz bump -ch [--increment {major,minor,patch}] [-pr {alpha,beta,rc}]
 ```
 
-If for any reason, the created tag and changelog were to be undone, this is the snippet:
+If the created tag and changelog were to be undone
 
 ```shell
 git tag --delete ${TAG}
@@ -65,7 +65,7 @@ git reset --hard HEAD
 ```
 
 ```shell
-pytest && git push --atomic origin master ${TAG}
+git push --atomic origin master ${TAG}
 ```
 
 ## TODO
