@@ -1,3 +1,11 @@
+## v0.2.1 (2022-08-23)
+
+### Feat
+
+- **base**: config dump
+- **base**: configs
+- **adapts**: register all adaptations
+
 ## v0.2.0 (2022-08-14)
 
 ### Feat
