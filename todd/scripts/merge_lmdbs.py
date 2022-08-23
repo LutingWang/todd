@@ -28,7 +28,8 @@ def merge_dbs(
         target_db = target_env.open_db(db.encode())
         source_db = source_env.open_db(db.encode())
         with target_env.begin(
-            target_db, write=True,
+            target_db,
+            write=True,
         ) as target_txn, source_env.begin(source_db) as source_txn:
             merge_txns(target_txn, source_txn)
 

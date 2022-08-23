@@ -10,7 +10,9 @@ __all__ = [
 import pathlib
 from collections import UserDict
 from functools import reduce
-from typing import Mapping
+from typing import Iterable, Mapping, Optional
+
+import yapf.yapflib.yapf_api as yapf
 
 BASE = '_base_'
 DELETE = '_delete_'
@@ -66,22 +68,62 @@ class Config(UserDict):
         return a
 
     @classmethod
-    def fromfile(cls, file) -> 'Config':
+    def loads(cls, s: str, globals: Optional[dict] = None) -> 'Config':
+        if globals is None:
+            globals = dict()
+        globals.setdefault('__name__', '__main__')
+
+        config = cls()
+        exec(s, globals, config)
+        return config
+
+    @classmethod
+    def load(cls, file) -> 'Config':
         file = pathlib.Path(file)
         file = file.resolve()
 
-        config = cls()
-        exec(
-            file.read_text(),
-            {
-                '__file__': file,
-                '__name__': '__main__',
-            },
-            config,
-        )
-
+        config = cls.loads(file.read_text())
         configs = [
-            cls.fromfile(file.parent / base) for base in config.pop(BASE, [])
+            cls.load(file.parent / base) for base in config.pop(BASE, [])
         ]
         configs.append(config)
         return reduce(cls.merge, configs)
+
+    def dumps(self) -> str:
+
+        def format(obj) -> str:
+            contents: Iterable[str]
+            if isinstance(obj, (dict, Config)):
+                if all(isinstance(k, str) and k.isidentifier() for k in obj):
+                    contents = [k + '=' + format(v) for k, v in obj.items()]
+                    delimiters = ('dict(', ')')
+                else:
+                    contents = [
+                        format(k) + ': ' + format(v) for k, v in obj.items()
+                    ]
+                    delimiters = ('{', '}')
+            elif isinstance(obj, list):
+                contents = map(format, obj)
+                delimiters = ('[', ']')
+            elif isinstance(obj, tuple):
+                contents = map(format, obj)
+                delimiters = ('(', ')')
+            elif isinstance(obj, set):
+                contents = map(format, obj)
+                delimiters = ('{', '}')
+            else:
+                return repr(obj)
+            contents = sorted(contents)
+            if len(obj) != 1:
+                contents.append('')
+            return delimiters[0] + ','.join(contents) + delimiters[1]
+
+        assert all(isinstance(k, str) for k in self)
+        code = '\n'.join(k + ' = ' + format(self[k]) for k in sorted(self))
+        code, _ = yapf.FormatCode(code, verify=True)
+        return code
+
+    def dump(self, file) -> None:
+        file = pathlib.Path(file)
+        file = file.resolve()
+        file.write_text(self.dumps())

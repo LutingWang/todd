@@ -37,6 +37,7 @@ class Decouple(BaseAdapt):
             num=self._num,
         )
         decoupled_feat = decoupled_feat[  # yapf: disable
-            torch.arange(id_.shape[0]), id_.long(),
+            torch.arange(id_.shape[0]),
+            id_.long(),
         ]  # n x dim
         return decoupled_feat

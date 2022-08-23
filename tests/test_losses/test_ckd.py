@@ -41,8 +41,7 @@ class TestCKD:
     @pytest.fixture
     def adaptflow(self) -> Workflow:
         return Workflow.build(
-            'adapts',
-            {
+            'adapts', {
                 'pred_reshaped': dict(
                     type='Rearrange',
                     fields=['preds'],

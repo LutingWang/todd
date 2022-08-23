@@ -72,7 +72,6 @@ include = [
 allow_split_before_dict_value = false
 coalesce_brackets = true
 dedent_closing_brackets = true
-split_all_top_level_comma_separated_values = true
 split_arguments_when_comma_terminated = true
 split_complex_comprehension = true
 

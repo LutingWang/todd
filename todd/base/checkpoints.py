@@ -41,7 +41,8 @@ def load_open_mmlab_models(
 def transfer_weight(target: Module, source: Module) -> None:
     state_dict = source.state_dict()
     missing_keys, unexpected_keys = target.load_state_dict(
-        state_dict, strict=False,
+        state_dict,
+        strict=False,
     )
     if missing_keys:
         get_logger().warning('missing_keys:', missing_keys)

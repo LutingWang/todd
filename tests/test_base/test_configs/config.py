@@ -2,4 +2,4 @@ _base_ = [
     'base.py',
 ]
 
-b = 2
+b = dict(c=3)
