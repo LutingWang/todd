@@ -1,4 +1,6 @@
+import copy
 import pathlib
+import pickle
 import tempfile
 
 import pytest
@@ -12,9 +14,17 @@ class TestConfigs:
     def config(self) -> Config:
         return Config(a=1)
 
-    def test_setitem(self, config: Config) -> None:
+    def test_len(self, config: Config) -> None:
+        assert len(config) == 1
+
+    def test_items(self, config: Config) -> None:
+        assert config['a'] == 1
+
         config['b'] = dict(c=3)
-        assert isinstance(config['b'], Config)
+        assert config['b'] == Config(c=3)
+
+        del config['b']
+        assert 'b' not in config
 
     def test_attrs(self, config: Config) -> None:
         assert config.a == 1
@@ -28,13 +38,21 @@ class TestConfigs:
         del config.b
         assert 'b' not in config
 
-        config.__dict__['_privilege'] = True
+    def test_copy(self, config: Config) -> None:
+        config.b = dict(c=3)
 
-        config.b = 2
-        assert 'b' in config.__dict__
+        cc = copy.copy(config)
+        cc.b.c = 'c'
+        assert config.b.c == 'c'  # type: ignore[attr-defined]
 
-        del config.b
-        assert 'b' not in config.__dict__
+        dcc = copy.deepcopy(config)
+        dcc.b.c = 3
+        assert config.b.c == 'c'  # type: ignore[attr-defined]
+
+    def test_pickle(self, config: Config) -> None:
+        tmp1 = pickle.dumps(config)
+        tmp2 = pickle.loads(tmp1)
+        assert tmp2 == config
 
     def test_merge(self, config: Config) -> None:
         assert Config.merge(1, 2) == 2
@@ -51,6 +69,9 @@ class TestConfigs:
             == Config(a=1, b=dict(c='c'))
 
     def test_load(self, data_dir: pathlib.Path) -> None:
+        assert Config.loads('a = 1\nb = dict(c=3)') == Config(a=1, b=dict(c=3))
+        assert Config.loads('a = 1\nb = dict(c=v)', globals=dict(v=3)) \
+            == Config(a=1, b=dict(c=3))
         assert Config.load(data_dir / 'config.py') == Config(a=1, b=dict(c=3))
 
     def test_dump(self) -> None:
