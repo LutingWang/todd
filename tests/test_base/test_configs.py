@@ -1,6 +1,4 @@
-import copy
 import pathlib
-import pickle
 import tempfile
 
 import pytest
@@ -13,46 +11,6 @@ class TestConfigs:
     @pytest.fixture
     def config(self) -> Config:
         return Config(a=1)
-
-    def test_len(self, config: Config) -> None:
-        assert len(config) == 1
-
-    def test_items(self, config: Config) -> None:
-        assert config['a'] == 1
-
-        config['b'] = dict(c=3)
-        assert config['b'] == Config(c=3)
-
-        del config['b']
-        assert 'b' not in config
-
-    def test_attrs(self, config: Config) -> None:
-        assert config.a == 1
-        with pytest.raises(AttributeError, match='b'):
-            config.b
-
-        config.b = dict(c=3)
-        assert config.b == Config(c=3)
-        assert config.b.c == 3  # type: ignore[attr-defined]
-
-        del config.b
-        assert 'b' not in config
-
-    def test_copy(self, config: Config) -> None:
-        config.b = dict(c=3)
-
-        cc = copy.copy(config)
-        cc.b.c = 'c'
-        assert config.b.c == 'c'  # type: ignore[attr-defined]
-
-        dcc = copy.deepcopy(config)
-        dcc.b.c = 3
-        assert config.b.c == 'c'  # type: ignore[attr-defined]
-
-    def test_pickle(self, config: Config) -> None:
-        tmp1 = pickle.dumps(config)
-        tmp2 = pickle.loads(tmp1)
-        assert tmp2 == config
 
     def test_merge(self, config: Config) -> None:
         assert Config.merge(1, 2) == 2

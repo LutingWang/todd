@@ -14,7 +14,6 @@ from typing import (
     Iterable,
     Iterator,
     Mapping,
-    MutableMapping,
     Optional,
     Tuple,
     Union,
@@ -164,8 +163,7 @@ class Job:
         output_key: OutputKey,
     ) -> 'Job':
         registry = STEPS.descendent(step_descendent_name)
-        if not isinstance(config, MutableMapping):
-            config = Config(config)
+        config = Config(config)
         parallel = config.pop('parallel', False)
         fields = config.pop('fields', tuple())
         step_manager = Job.build_step_manager(config, registry, parallel)
