@@ -28,6 +28,11 @@ class TestConfigs:
         assert Config.merge(Config(a=1, b=dict(c=3)), Config(b=dict(c='c'))) \
             == Config(a=1, b=dict(c='c'))
 
+        assert Config.merge(
+            Config(a=dict(b=dict(c=3))),
+            Config(a=dict(_delete_=True, b=dict(d='d'))),
+        ) == Config(a=dict(b=dict(d='d')))
+
     def test_load(self, data_dir: pathlib.Path) -> None:
         assert Config.loads('a = 1\nb = dict(c=3)') == Config(a=1, b=dict(c=3))
         assert Config.loads('a = 1\nb = dict(c=v)', globals=dict(v=3)) \

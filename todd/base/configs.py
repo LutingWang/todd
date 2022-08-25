@@ -38,9 +38,8 @@ class Config(addict.Dict):
             return b
 
         a = cls(a).copy()
-        for k in a.keys() & b.keys():
-            b[k] = cls.merge(a[k], b[k])
-        a.update(b)
+        for k in b:
+            a[k] = cls.merge(a[k], b[k]) if k in a else b[k]
         return a
 
     @classmethod
