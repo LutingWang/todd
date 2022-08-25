@@ -1,3 +1,9 @@
+## v0.2.3a3 (2022-08-25)
+
+### Feat
+
+- **base**: config merge with list indices
+
 ## v0.2.3a2 (2022-08-25)
 
 ### Fix
