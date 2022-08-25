@@ -25,6 +25,11 @@ class TestConfigs:
         assert Config.merge(1, 2) == 2
         assert Config.merge(config, 2) == 2
 
+        assert Config.merge([0, 1, 2], {1: 10}) == [0, 10, 2]
+        assert Config.merge([0, 1, 2], {3: 30, 4: 40}) == [0, 1, 2, 30, 40]
+        assert Config.merge([0, 1, 2], {-1: 20}) == [0, 1, 20]
+        assert Config.merge([dict(a=1)], {0: dict(b=2)}) == [dict(a=1, b=2)]
+
         assert Config.merge(1, Config(_delete_=True, b=2)) == Config(b=2)
         assert Config.merge(config, Config(_delete_=True, b=2)) \
             == Config(b=2)

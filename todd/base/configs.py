@@ -49,13 +49,24 @@ class Config(addict.Dict):
         if not isinstance(b, Mapping):
             return b
 
-        b = cls(b).copy()
+        b = cls(b)
+        if isinstance(a, list) and all(isinstance(x, int) for x in b):
+            a = list(a)
+            while len(a) in b:
+                a.append(b.pop(len(a)))
+            for i in sorted(b):
+                a[i] = (
+                    cls.merge(a[i], b[i])
+                    if isinstance(a[i], Mapping) else b[i]
+                )
+            return a
+
         if b.pop(DELETE, False):
             return b
         if not isinstance(a, Mapping):
             return b
 
-        a = cls(a).copy()
+        a = cls(a)
         for k in b:
             a[k] = cls.merge(a[k], b[k]) if k in a else b[k]
         return a
