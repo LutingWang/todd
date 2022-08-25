@@ -1,3 +1,10 @@
+## v0.2.3a0 (2022-08-25)
+
+### Feat
+
+- **base**: add diff to config
+- **base**: rewrite config to conform mmcv
+
 ## v0.2.2 (2022-08-23)
 
 ### Fix
