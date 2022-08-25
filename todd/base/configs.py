@@ -7,7 +7,11 @@ __all__ = [
     'Config',
 ]
 
+import argparse
+import difflib
 import pathlib
+import tempfile
+import webbrowser
 from functools import reduce
 from typing import Any, Dict, Iterable, Mapping, Optional, Type, TypeVar
 
@@ -61,6 +65,21 @@ class Config(addict.Dict):
         configs.append(config)
         return reduce(cls.merge, configs)
 
+    @classmethod
+    def diff(
+        cls: Type[T],
+        a: T,
+        b: T,
+        mode: str = 'text',
+    ) -> str:
+        a_ = a.dumps().split('\n')
+        b_ = b.dumps().split('\n')
+        if mode == 'text':
+            return '\n'.join(difflib.Differ().compare(a_, b_))
+        if mode == 'html':
+            return difflib.HtmlDiff().make_file(a_, b_)
+        raise ValueError(f"Invalid mode {mode}.")
+
     def dumps(self) -> str:
 
         def format(obj) -> str:
@@ -99,3 +118,39 @@ class Config(addict.Dict):
         file = pathlib.Path(file)
         file = file.resolve()
         file.write_text(self.dumps())
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description="Compare Configs")
+    parser.add_argument('a')
+    parser.add_argument('b')
+    parser.add_argument('--out')
+    args = parser.parse_args()
+
+    a = Config(args.a)
+    b = Config(args.b)
+
+    if args.out is None:
+        diff_mode = 'text'
+    elif args.out.endswith('.txt'):
+        diff_mode = 'text'
+    elif args.out.endswith('.html'):
+        diff_mode = 'html'
+    elif args.out == 'browser':
+        diff_mode = 'html'
+    else:
+        raise ValueError(f"Unknown output mode: {args.out}.")
+
+    diff = Config.diff(a, b, diff_mode)
+    if args.out is None:
+        print(diff)
+    elif args.out == 'browser':
+        with tempfile.NamedTemporaryFile(
+            suffix='.html',
+            delete=False,
+        ) as html_file:
+            html_file.write(diff.encode('utf-8'))
+            webbrowser.open('file://' + html_file.name)
+    else:
+        with open(args.out, 'w') as f:
+            f.write(diff)

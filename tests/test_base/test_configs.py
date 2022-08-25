@@ -1,8 +1,10 @@
+import difflib
 import pathlib
 import tempfile
 
 import pytest
 
+from todd.base._extensions import setattr_temp
 from todd.base.configs import Config
 
 
@@ -31,6 +33,18 @@ class TestConfigs:
         assert Config.loads('a = 1\nb = dict(c=v)', globals=dict(v=3)) \
             == Config(a=1, b=dict(c=3))
         assert Config.load(data_dir / 'config.py') == Config(a=1, b=dict(c=3))
+
+    def test_diff(self, data_dir: pathlib.Path) -> None:
+        a = Config.load(data_dir / 'base.py')
+        b = Config.load(data_dir / 'config.py')
+        html = data_dir / 'diff.html'
+        assert Config.diff(a, b) == ('  a = 1\n'
+                                     '+ b = dict(c=3)\n'
+                                     '  ')
+        with setattr_temp(difflib.HtmlDiff, '_default_prefix', 0):
+            assert Config.diff(a, b, 'html') == html.read_text()
+        with pytest.raises(ValueError, match='custom_mode'):
+            Config.diff(a, b, 'custom_mode')
 
     def test_dump(self) -> None:
         config = Config(
