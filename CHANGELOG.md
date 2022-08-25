@@ -1,3 +1,9 @@
+## v0.2.3a4 (2022-08-25)
+
+### Feat
+
+- **base**: checkpoints load open mmlab models signiture
+
 ## v0.2.3a3 (2022-08-25)
 
 ### Feat
