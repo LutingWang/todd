@@ -13,7 +13,16 @@ import pathlib
 import tempfile
 import webbrowser
 from functools import reduce
-from typing import Any, Dict, Iterable, Mapping, Optional, Type, TypeVar
+from typing import (
+    Any,
+    Dict,
+    Iterable,
+    Mapping,
+    NoReturn,
+    Optional,
+    Type,
+    TypeVar,
+)
 
 import addict
 import yapf.yapflib.yapf_api as yapf
@@ -25,6 +34,15 @@ DELETE = '_delete_'
 
 
 class Config(addict.Dict):
+
+    def __missing__(self, name) -> NoReturn:
+        raise KeyError(name)
+
+    def __getattr__(self, name: str):
+        try:
+            return super().__getattr__(name)
+        except KeyError as e:
+            raise AttributeError(e)
 
     @classmethod
     def merge(cls, a, b):

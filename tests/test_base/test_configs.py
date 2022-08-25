@@ -14,6 +14,13 @@ class TestConfigs:
     def config(self) -> Config:
         return Config(a=1)
 
+    def test_basics(self, config: Config) -> None:
+        with pytest.raises(KeyError, match='b'):
+            config['b']
+        with pytest.raises(AttributeError, match='b'):
+            config.b
+        assert not hasattr(config, 'b')
+
     def test_merge(self, config: Config) -> None:
         assert Config.merge(1, 2) == 2
         assert Config.merge(config, 2) == 2
