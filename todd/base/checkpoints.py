@@ -20,19 +20,16 @@ from .registries import Registry
 
 def load_open_mmlab_models(
     registry: Registry,
-    config: str,
+    config: Config,
     config_options: Optional[Config] = None,
     ckpt: Optional[str] = None,
 ) -> Module:
-    import mmcv
-    import mmcv.runner
-
-    config_dict = mmcv.Config.fromfile(config).model
     model = (
-        registry.build(config_dict) if config_options is None else
-        registry.build(config_options, default_args=config_dict)
+        registry.build(config) if config_options is None else
+        registry.build(config_options, default_args=config)
     )
     if ckpt is not None:
+        import mmcv.runner
         mmcv.runner.load_checkpoint(model, ckpt, map_location='cpu')
         model._is_init = True
     return model
