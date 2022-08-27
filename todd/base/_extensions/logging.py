@@ -12,8 +12,6 @@ from abc import abstractmethod
 from enum import IntEnum, auto
 from typing import Iterable
 
-from .torch import get_rank
-
 
 class ANSI(IntEnum):  # fix bug in python<=3.7.1
 
@@ -151,7 +149,7 @@ def get_logger() -> logging.Logger:
         setattr(logger, '_isinitialized', True)
         logger.setLevel(logging.DEBUG)
         logger.addHandler(logging.StreamHandler())
-        if get_rank() == 0 and log_file_initialized():
+        if log_file_initialized():
             logger.addHandler(logging.FileHandler(get_log_file()))
         formatter = Formatter()
         for handler in logger.handlers:
