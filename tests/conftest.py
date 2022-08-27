@@ -1,7 +1,8 @@
+import logging
 import os
 import pathlib
 import sys
-from typing import Generator
+from typing import Generator, cast
 
 import pytest
 import torch.nn as nn
@@ -40,6 +41,17 @@ def setup_teardown_iter_with_none() -> Generator[None, None, None]:
     init_iter(None)
     yield
     init_iter(None)
+
+
+@pytest.fixture
+def teardown_logger(logger_name: str) -> Generator[None, None, None]:
+    yield
+    logger = cast(
+        logging.Logger,
+        logging.Logger.manager.loggerDict.pop(logger_name),
+    )
+    for handler in logger.handlers:
+        handler.close()
 
 
 @pytest.fixture

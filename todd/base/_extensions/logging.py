@@ -12,6 +12,8 @@ from abc import abstractmethod
 from enum import IntEnum, auto
 from typing import Iterable
 
+from .torch import get_rank
+
 
 class ANSI(IntEnum):  # fix bug in python<=3.7.1
 
@@ -115,7 +117,30 @@ class Formatter(logging.Formatter):
         return formatter.format(record)
 
 
-def get_logger(log_file=None) -> logging.Logger:
+_log_file = None
+
+
+def log_file_initialized() -> bool:
+    global _log_file
+    return _log_file is not None
+
+
+def init_log_file(log_file) -> None:
+    global _log_file
+    if _log_file is not None and log_file is not None:
+        get_logger().warning(
+            f"log_file={_log_file} has been reset to {log_file}.",
+        )
+    _log_file = log_file
+
+
+def get_log_file() -> str:
+    global _log_file
+    assert _log_file is not None
+    return _log_file
+
+
+def get_logger() -> logging.Logger:
     frame = inspect.currentframe()
     assert frame is not None
     frame = frame.f_back
@@ -126,8 +151,8 @@ def get_logger(log_file=None) -> logging.Logger:
         setattr(logger, '_isinitialized', True)
         logger.setLevel(logging.DEBUG)
         logger.addHandler(logging.StreamHandler())
-        if log_file:
-            logger.addHandler(logging.FileHandler(log_file))
+        if get_rank() == 0 and log_file_initialized():
+            logger.addHandler(logging.FileHandler(get_log_file()))
         formatter = Formatter()
         for handler in logger.handlers:
             handler.setFormatter(formatter)
