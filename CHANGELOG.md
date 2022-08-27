@@ -1,3 +1,13 @@
+## v0.2.3a5 (2022-08-27)
+
+### Feat
+
+- **base**: log file can be manually specified
+
+### Fix
+
+- **base**: log file does not relate to get_rank()
+
 ## v0.2.3a4 (2022-08-25)
 
 ### Feat
