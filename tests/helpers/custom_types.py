@@ -23,6 +23,4 @@ class CustomModule(nn.Module):
     if TYPE_CHECKING:
 
         def __getattr__(self, name: str) -> nn.Module:
-            attr = super().__getattr__(name)
-            assert isinstance(attr, nn.Module)
-            return attr
+            ...

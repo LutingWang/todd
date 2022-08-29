@@ -1,5 +1,8 @@
 __all__ = [
     'SGR',
+    'log_file_initialized',
+    'init_log_file',
+    'get_log_file',
     'get_logger',
 ]
 

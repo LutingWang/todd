@@ -1,13 +1,30 @@
 import os
+import unittest.mock as mock
 
-from todd.base.debug import DebugMode
+import torch.cuda
+
+from todd.base.debug import BaseDebug, DebugMode
 
 
-class DebugEnum:
-    CPU = DebugMode()
+class Debug(BaseDebug):
+    CUDA = DebugMode()
+    ASYNC_BATCH_NORM = DebugMode()
+    DRY_RUN = DebugMode()
+
+    def init_cuda(self, **kwargs) -> None:
+        super().init_cuda(**kwargs)
+        self.CUDA = True
+
+    def init_cpu(self, **kwargs) -> None:
+        super().init_cpu(**kwargs)
+        self.ASYNC_BATCH_NORM = True
+
+    def init_custom(self, **kwargs) -> None:
+        super().init_custom(**kwargs)
+        self.DRY_RUN = True
 
 
-debug = DebugEnum()
+debug = Debug()
 
 
 class TestDebugMode:
@@ -23,3 +40,36 @@ class TestDebugMode:
         assert 'CPU' in os.environ
         debug.CPU = False
         assert 'CPU' not in os.environ
+
+
+class TestDebug:
+
+    def test_init(self) -> None:
+        assert not debug.CPU
+        assert not debug.CUDA
+        assert not debug.ASYNC_BATCH_NORM
+        assert not debug.DRY_RUN
+
+        debug.init()
+        assert debug.CPU
+        assert not debug.CUDA
+        assert debug.ASYNC_BATCH_NORM
+        assert debug.DRY_RUN
+
+        debug.CPU = False
+        debug.ASYNC_BATCH_NORM = False
+        debug.DRY_RUN = False
+
+        with mock.patch.object(
+            torch.cuda,
+            'is_available',
+            mock.Mock(return_value=True),
+        ):
+            debug.init()
+        assert not debug.CPU
+        assert debug.CUDA
+        assert not debug.ASYNC_BATCH_NORM
+        assert debug.DRY_RUN
+
+        debug.CUDA = False
+        debug.DRY_RUN = False
