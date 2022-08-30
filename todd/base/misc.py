@@ -1,8 +1,16 @@
 __all__ = [
     'strict_zip_len',
+    'which_git',
+    'git_status',
+    'git_commit_id',
 ]
 
-from typing import Iterable, Sized
+import os
+import shutil
+import subprocess
+from typing import Iterable, List, Sized
+
+from ._extensions import get_logger
 
 
 def strict_zip_len(iterable: Iterable[Sized]) -> int:
@@ -25,3 +33,32 @@ def strict_zip_len(iterable: Iterable[Sized]) -> int:
     if len(lens) > 1:
         raise ValueError(f'Lengths of iterables are not the same: {lens}')
     return lens.pop()
+
+
+def which_git() -> str:
+    git = shutil.which('git')
+    assert git is not None
+    return git
+
+
+def git_status() -> List[str]:
+    process = subprocess.run(
+        [which_git(), 'status', '--porcelain'],
+        capture_output=True,
+        text=True,
+    )
+    if process.returncode != 0:
+        get_logger().warning(process.stderr.strip())
+    return process.stdout.split('\n')[:-1]
+
+
+def git_commit_id() -> str:
+    process = subprocess.run(
+        [which_git(), 'rev-parse', '--short', 'HEAD'],
+        capture_output=True,
+        text=True,
+    )
+    if process.returncode == 0:
+        return process.stdout.strip()
+    get_logger().warning(process.stderr.strip())
+    return os.getenv('GIT_COMMIT_ID', '')

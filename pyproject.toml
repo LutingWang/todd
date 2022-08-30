@@ -64,6 +64,9 @@ pre-commit = [
     'codespell',
 ]
 
+[project.scripts]
+configs_diff = 'todd.base.configs:diff_cli'
+
 [tool.setuptools.packages.find]
 include = [
     'todd*',
@@ -147,6 +150,7 @@ exclude_lines = [
     'pragma: no cover',
 
     'def __repr__',
+    'def \w+_cli\(\)',
 
     'raise AssertionError',
     'raise NotImplementedError',

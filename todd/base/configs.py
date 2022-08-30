@@ -148,15 +148,15 @@ class Config(addict.Dict):
         file.write_text(self.dumps())
 
 
-if __name__ == '__main__':
+def diff_cli() -> None:
     parser = argparse.ArgumentParser(description="Compare Configs")
     parser.add_argument('a')
     parser.add_argument('b')
     parser.add_argument('--out')
     args = parser.parse_args()
 
-    a = Config(args.a)
-    b = Config(args.b)
+    a = Config.load(args.a)
+    b = Config.load(args.b)
 
     if args.out is None:
         diff_mode = 'text'

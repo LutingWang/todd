@@ -44,12 +44,7 @@ class TestDebugMode:
 
 class TestDebug:
 
-    def test_init(self) -> None:
-        assert not debug.CPU
-        assert not debug.CUDA
-        assert not debug.ASYNC_BATCH_NORM
-        assert not debug.DRY_RUN
-
+    def test_cpu(self) -> None:
         debug.init()
         assert debug.CPU
         assert not debug.CUDA
@@ -60,12 +55,10 @@ class TestDebug:
         debug.ASYNC_BATCH_NORM = False
         debug.DRY_RUN = False
 
-        with mock.patch.object(
-            torch.cuda,
-            'is_available',
-            mock.Mock(return_value=True),
-        ):
-            debug.init()
+    @mock.patch.object(torch.cuda, 'is_available', autospec=True)
+    def test_cuda(self, mock_is_available: mock.MagicMock) -> None:
+        mock_is_available.return_value = True
+        debug.init()
         assert not debug.CPU
         assert debug.CUDA
         assert not debug.ASYNC_BATCH_NORM
