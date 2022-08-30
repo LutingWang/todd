@@ -1,3 +1,13 @@
+## v0.2.3a7 (2022-08-30)
+
+### Feat
+
+- **base**: add git APIs
+
+### Fix
+
+- **base**: DictAction collide with required keyword
+
 ## v0.2.3a6 (2022-08-29)
 
 ### Feat
