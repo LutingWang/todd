@@ -27,25 +27,16 @@ class DictAction(argparse.Action):
         Args:
             nargs: The number of dictionary arguments that should be consumed.
         """
-        if nargs not in [
-            None,
-            argparse.OPTIONAL,
-            argparse.ZERO_OR_MORE,
-            argparse.ONE_OR_MORE,
-        ]:
+        if nargs not in [None, argparse.ZERO_OR_MORE]:
             raise ValueError(f"Invalid nargs={nargs}")
 
-        append = nargs in [argparse.ZERO_OR_MORE, argparse.ONE_OR_MORE]
-        required = nargs in [None, argparse.ONE_OR_MORE]
-        default = [] if append else None
         super().__init__(
             *args,
             nargs=argparse.ZERO_OR_MORE,
-            required=required,
-            default=default,
+            default=nargs and [],
             **kwargs,
         )
-        self._append = append
+        self._append = bool(nargs)
 
     def __call__(
         self,
