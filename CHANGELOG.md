@@ -1,3 +1,9 @@
+## v0.2.3a8 (2022-08-31)
+
+### Fix
+
+- **base**: config list items should not be sorted
+
 ## v0.2.3a7 (2022-08-30)
 
 ### Feat
