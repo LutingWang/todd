@@ -121,18 +121,21 @@ class Config(addict.Dict):
                         format(k) + ': ' + format(v) for k, v in obj.items()
                     ]
                     delimiters = ('{', '}')
+                contents = sorted(contents)
             elif isinstance(obj, list):
                 contents = map(format, obj)
+                contents = list(contents)
                 delimiters = ('[', ']')
             elif isinstance(obj, tuple):
                 contents = map(format, obj)
+                contents = list(contents)
                 delimiters = ('(', ')')
             elif isinstance(obj, set):
                 contents = map(format, obj)
+                contents = sorted(contents)
                 delimiters = ('{', '}')
             else:
                 return repr(obj)
-            contents = sorted(contents)
             if len(obj) != 1:
                 contents.append('')
             return delimiters[0] + ','.join(contents) + delimiters[1]

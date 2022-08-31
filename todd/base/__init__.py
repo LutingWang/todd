@@ -5,6 +5,7 @@ from .checkpoints import *
 from .configs import *
 from .debug import *
 from .iters import *
+from .misc import *
 from .registries import *
 from .status import *
 from .workflows import *

@@ -71,6 +71,7 @@ class TestConfigs:
                 5: 'e',
                 'f': ['g', ('h', {'i', 'j'})],
             },
+            k=[2, 1],
         )
         with tempfile.NamedTemporaryFile() as f:
             config.dump(f.name)
