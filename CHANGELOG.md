@@ -1,3 +1,9 @@
+## v0.2.3a10 (2022-09-01)
+
+### Fix
+
+- **base**: subprocess run in Python3.8 does not have text and capture_output options
+
 ## v0.2.3a9 (2022-09-01)
 
 ### Feat
