@@ -37,10 +37,7 @@ def test_git_status(
         stderr='',
     )
     assert git_status() == []
-    assert mock_run.call_args == (
-        (args, ),
-        dict(capture_output=True, text=True),
-    )
+    assert mock_run.call_args == ((args, ), mock.ANY)
 
     mock_run.return_value = subprocess.CompletedProcess(
         args,
@@ -79,10 +76,7 @@ def test_git_commit_id(
         stderr='',
     )
     assert git_commit_id() == 'dde5562'
-    assert mock_run.call_args == (
-        (args, ),
-        dict(capture_output=True, text=True),
-    )
+    assert mock_run.call_args == ((args, ), mock.ANY)
 
     mock_run.return_value = subprocess.CompletedProcess(
         args,

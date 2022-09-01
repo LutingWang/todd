@@ -44,8 +44,9 @@ def which_git() -> str:
 def git_status() -> List[str]:
     process = subprocess.run(
         [which_git(), 'status', '--porcelain'],
-        capture_output=True,
-        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        universal_newlines=True,
     )
     if process.returncode != 0:
         get_logger().warning(process.stderr.strip())
@@ -55,8 +56,9 @@ def git_status() -> List[str]:
 def git_commit_id() -> str:
     process = subprocess.run(
         [which_git(), 'rev-parse', '--short', 'HEAD'],
-        capture_output=True,
-        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        universal_newlines=True,
     )
     if process.returncode == 0:
         return process.stdout.strip()
