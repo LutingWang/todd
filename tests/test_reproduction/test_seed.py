@@ -3,7 +3,7 @@ import torch
 import torch.backends.cudnn as cudnn
 
 from todd.base import init_iter
-from todd.reproduction.seed import _randint, init_seed, set_seed_temp
+from todd.reproduction.seed import init_seed, randint, set_seed_temp
 
 
 class TestSeed:
@@ -46,8 +46,8 @@ class TestSeed:
     @pytest.mark.usefixtures('setup_teardown_iter_with_none')
     def test_randint(self) -> None:
         init_seed(42)
-        assert _randint() == 534895718
-        assert _randint() == 199900595
+        assert randint() == 534895718
+        assert randint() == 199900595
 
     @pytest.mark.usefixtures('setup_teardown_iter_with_none')
     def test_init_seed(

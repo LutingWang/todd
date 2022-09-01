@@ -1,3 +1,8 @@
+__all__ = [
+    'init_seed',
+    'set_seed_temp',
+]
+
 import hashlib
 import random
 from contextlib import contextmanager
@@ -17,7 +22,7 @@ from ..base import (
 )
 
 
-def _randint(high: int = 2**30) -> int:
+def randint(high: int = 2**30) -> int:
     seed = np.random.randint(high)
     if get_world_size() <= 1:
         return seed
@@ -31,7 +36,7 @@ def init_seed(
     deterministic: Optional[bool] = None,
 ) -> int:
     if seed is None:
-        seed = _randint()
+        seed = randint()
     elif isinstance(seed, int):
         pass
     else:

@@ -9,14 +9,31 @@ __all__ = [
 ]
 
 import os
+from typing import TYPE_CHECKING
 
 import torch.distributed as dist
 
-try:
-    from mmcv.runner import BaseModule as Module
-    from mmcv.runner import ModuleDict, ModuleList, Sequential
-except Exception:
-    from torch.nn import Module, ModuleDict, ModuleList, Sequential
+if TYPE_CHECKING:
+    import torch.nn
+
+    class Module(torch.nn.Module):
+        ...
+
+    class ModuleDict(torch.nn.ModuleDict):
+        ...
+
+    class ModuleList(torch.nn.ModuleList):
+        ...
+
+    class Sequential(torch.nn.Sequential):
+        ...
+
+else:
+    try:
+        from mmcv.runner import BaseModule as Module
+        from mmcv.runner import ModuleDict, ModuleList, Sequential
+    except Exception:
+        from torch.nn import Module, ModuleDict, ModuleList, Sequential
 
 
 def get_rank(*args, **kwargs) -> int:

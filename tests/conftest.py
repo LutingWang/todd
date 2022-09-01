@@ -63,5 +63,5 @@ def obj() -> CustomObject:
 def model() -> CustomModule:
     return CustomModule(
         conv=nn.Conv2d(128, 256, 3),
-        module=CustomModule(linear=nn.Linear(1024, 10), ),
+        module=CustomModule(linear=nn.Linear(1024, 10)),
     )
