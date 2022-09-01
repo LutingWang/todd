@@ -1,3 +1,9 @@
+## v0.2.3a9 (2022-09-01)
+
+### Feat
+
+- **reproduction**: simplify model freeze api
+
 ## v0.2.3a8 (2022-08-31)
 
 ### Fix
