@@ -5,6 +5,7 @@
 
 __all__ = [
     'Config',
+    'DictAction',
 ]
 
 import argparse
@@ -20,8 +21,10 @@ from typing import (
     Mapping,
     NoReturn,
     Optional,
+    Sequence,
     Type,
     TypeVar,
+    Union,
 )
 
 import addict
@@ -185,3 +188,53 @@ def diff_cli() -> None:
     else:
         with open(args.out, 'w') as f:
             f.write(diff)
+
+
+class DictAction(argparse.Action):
+    """``argparse`` action to parse arguments in the form of key-value pairs.
+
+    Examples:
+        >>> parser = argparse.ArgumentParser()
+        >>> parser.add_argument('--dict', action=DictAction)
+        DictAction(...)
+        >>> parser.parse_args('--dict key1:"value1" key2:"value2"'.split())
+        Namespace(dict={'key1': 'value1', 'key2': 'value2'})
+    """
+
+    def __init__(self, *args, nargs=None, **kwargs):
+        """
+        Args:
+            nargs: The number of dictionary arguments that should be consumed.
+        """
+        if nargs not in [None, argparse.ZERO_OR_MORE]:
+            raise ValueError(f"Invalid nargs={nargs}")
+
+        super().__init__(
+            *args,
+            nargs=argparse.ZERO_OR_MORE,
+            default=nargs and [],
+            **kwargs,
+        )
+        self._append = bool(nargs)
+
+    def __call__(
+        self,
+        parser: argparse.ArgumentParser,
+        namespace: argparse.Namespace,
+        values: Union[str, Sequence[Any], None],
+        option_string: Optional[str] = None,
+    ) -> None:
+        if not isinstance(values, Sequence):
+            raise ValueError(f'values must be a sequence, but got {values}')
+        if not all(isinstance(value, str) for value in values):
+            raise ValueError(f'values must be strings, but got {values}')
+        value_dict = Config()
+        for value in values:
+            k, v = value.split(':', 1)
+            value_dict[k.strip()] = eval(v)
+        if self._append:
+            value_dict_list = getattr(namespace, self.dest, [])
+            value_dict_list.append(value_dict)
+            setattr(namespace, self.dest, value_dict_list)
+        else:
+            setattr(namespace, self.dest, value_dict)
