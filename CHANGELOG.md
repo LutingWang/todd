@@ -1,3 +1,14 @@
+## v0.2.3a11 (2022-09-11)
+
+### Feat
+
+- **base**: change logging format
+- **base**: bboxes support for inputs neither tensor nor ndarray
+
+### Refactor
+
+- **base**: move dict action from _extensions to configs
+
 ## v0.2.3a10 (2022-09-01)
 
 ### Fix
