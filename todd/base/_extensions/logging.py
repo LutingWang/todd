@@ -9,7 +9,6 @@ __all__ = [
 import getpass
 import inspect
 import logging
-import os
 import socket
 from abc import abstractmethod
 from enum import IntEnum, auto
@@ -77,45 +76,29 @@ class SGR(ANSI):
 
 
 DEFAULT_FORMAT = (
-    "[%(asctime)s]"
-    "[Todd %(name)s]"
-    "[%(filename)s:%(funcName)s:%(lineno)d]"
+    "[%(asctime)s %(process)d:%(thread)d]"
+    "[%(filename)s:%(lineno)d %(name)s.%(funcName)s]"
     " %(levelname)s: %(message)s"
 )
 
 
 # pragma: no cover
 class Formatter(logging.Formatter):
-    FORMATTERS = dict(
-        zip(
-            (
-                logging.DEBUG,
-                logging.WARNING,
-                logging.ERROR,
-                logging.CRITICAL,
-            ),
-            map(
-                lambda sgr: logging.Formatter(
-                    SGR.format(DEFAULT_FORMAT, sgr),
-                ),
-                (
-                    (SGR.FAINT, ),
-                    (SGR.BOLD, SGR.FG_YELLOW),
-                    (SGR.BOLD, SGR.FG_RED),
-                    (SGR.BOLD, SGR.BLINK_SLOW, SGR.FG_RED),
-                ),
-            ),
-        ),
-    )
+    SGRS = {
+        logging.DEBUG: (SGR.FAINT, ),
+        logging.WARNING: (SGR.BOLD, SGR.FG_YELLOW),
+        logging.ERROR: (SGR.BOLD, SGR.FG_RED),
+        logging.CRITICAL: (SGR.BOLD, SGR.BLINK_SLOW, SGR.FG_RED),
+    }
 
     def __init__(self) -> None:
         super().__init__(DEFAULT_FORMAT)
 
     def format(self, record: logging.LogRecord) -> str:
-        formatter = self.FORMATTERS.get(record.levelno)
-        if formatter is None:
-            return super().format(record)
-        return formatter.format(record)
+        s = super().format(record)
+        if record.levelno in self.SGRS:
+            s = SGR.format(s, self.SGRS[record.levelno])
+        return s
 
 
 _log_file = None
@@ -159,10 +142,7 @@ def get_logger() -> logging.Logger:
             handler.setFormatter(formatter)
         logger.propagate = False
         logger.debug(
-            f"logger initialized by"
-            f" {getpass.getuser()}"
-            f"@{socket.gethostname()}"
-            f":{os.getpid()}"
+            f"logger initialized by {getpass.getuser()}@{socket.gethostname()}"
         )
     return logger
 
