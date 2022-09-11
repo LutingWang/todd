@@ -4,16 +4,7 @@ __all__ = [
 ]
 
 from abc import abstractmethod
-from typing import (
-    List,
-    NamedTuple,
-    Optional,
-    Sized,
-    Tuple,
-    Type,
-    TypeVar,
-    Union,
-)
+from typing import List, NamedTuple, Optional, Tuple, Type, TypeVar, Union
 
 import einops
 import numpy as np
@@ -22,16 +13,20 @@ import torch
 T = TypeVar('T', bound='BBoxes')
 
 
-class BBoxes(Sized):
+class BBoxes:
 
-    def __init__(self, bboxes: Union[np.ndarray, torch.Tensor]) -> None:
+    def __init__(self, bboxes) -> None:
         """
         Args:
             bboxes: \\* x 4
                 (x1, y1, x2, y2)
         """
-        if isinstance(bboxes, np.ndarray):
+        if isinstance(bboxes, torch.Tensor):
+            pass
+        elif isinstance(bboxes, np.ndarray):
             bboxes = torch.from_numpy(bboxes)
+        else:
+            bboxes = torch.tensor(bboxes)
         if bboxes.numel() == 0:
             raise ValueError('bboxes is empty')
         if bboxes.ndim < 2:
@@ -42,6 +37,11 @@ class BBoxes(Sized):
 
     def __len__(self) -> int:
         return self._bboxes.shape[0]
+
+    def __repr__(self) -> str:
+        return (
+            f'{self.__module__}.{self.__class__.__qualname__}({self._bboxes})'
+        )
 
     @property
     @abstractmethod
@@ -162,7 +162,7 @@ class BBoxes(Sized):
         return self.select(indices)
 
     @classmethod
-    def _intersections(cls: Type[T], a: T, b: T) -> torch.Tensor:
+    def _intersections(cls, a: 'BBoxes', b: 'BBoxes') -> torch.Tensor:
         """
         Args:
             a: *1 x 4
@@ -183,17 +183,17 @@ class BBoxes(Sized):
         wh = wh.clamp_min_(0)
         return wh[..., 0] * wh[..., 1]
 
-    def intersections(self: T, other: T) -> torch.Tensor:
+    def intersections(self, other: 'BBoxes') -> torch.Tensor:
         return self._intersections(self, other)
 
-    def __and__(self: T, other: T) -> torch.Tensor:
+    def __and__(self, other: 'BBoxes') -> torch.Tensor:
         return self.intersections(other)
 
     @classmethod
     def _unions(
-        cls: Type[T],
-        a: T,
-        b: T,
+        cls,
+        a: 'BBoxes',
+        b: 'BBoxes',
         intersections: Optional[torch.Tensor] = None,
     ) -> torch.Tensor:
         """
@@ -210,16 +210,16 @@ class BBoxes(Sized):
         return a.areas[:, None] + b.areas[None, :] - intersections
 
     def unions(
-        self: T,
-        other: T,
+        self,
+        other: 'BBoxes',
         intersections: Optional[torch.Tensor] = None,
     ) -> torch.Tensor:
         return self._unions(self, other, intersections)
 
-    def __or__(self: T, other: T) -> torch.Tensor:
+    def __or__(self, other: 'BBoxes') -> torch.Tensor:
         return self.unions(other)
 
-    def ious(self: T, other: T, eps: float = 1e-6) -> torch.Tensor:
+    def ious(self, other: 'BBoxes', eps: float = 1e-6) -> torch.Tensor:
         """
         Args:
             a: *1 x 4
