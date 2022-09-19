@@ -25,10 +25,10 @@ class BBoxes:
             pass
         elif isinstance(bboxes, np.ndarray):
             bboxes = torch.from_numpy(bboxes)
+        elif not bboxes:
+            bboxes = torch.empty(0, 4)
         else:
             bboxes = torch.tensor(bboxes)
-        if bboxes.numel() == 0:
-            raise ValueError('bboxes is empty')
         if bboxes.ndim < 2:
             raise ValueError('bboxes must be at least 2-dim')
         if bboxes.shape[-1] != 4:

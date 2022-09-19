@@ -17,8 +17,11 @@ class TestBBoxes:
         bboxes = BBoxesXYXY(bboxes_torch)
         assert bboxes.to_tensor().eq(bboxes_torch).all()
 
-        with pytest.raises(ValueError):
-            BBoxesXYXY(np.array([]))
+        bboxes = BBoxesXYXY([])
+        assert bboxes.to_tensor().shape == (0, 4)
+
+        bboxes = BBoxesXYXY(bboxes_torch.tolist())
+        assert bboxes.to_tensor().eq(bboxes_torch).all()
 
         with pytest.raises(ValueError):
             BBoxesXYXY(bboxes_np[0])
