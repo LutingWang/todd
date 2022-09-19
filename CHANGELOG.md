@@ -1,3 +1,9 @@
+## v0.2.3a12 (2022-09-19)
+
+### Feat
+
+- **base**: bboxes support for empty
+
 ## v0.2.3a11 (2022-09-11)
 
 ### Feat
