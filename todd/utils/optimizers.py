@@ -1,4 +1,5 @@
 __all__ = [
+    'LR_SCHEDULERS',
     'OPTIMIZERS',
     'build_param_group',
     'build_param_groups',
@@ -12,6 +13,7 @@ from typing import Any, Dict, List, Optional, Sequence
 
 import torch.nn as nn
 import torch.optim as optim
+import torch.optim.lr_scheduler as lr_scheduler
 
 from ..base import Config, Registry, default_build
 
@@ -56,3 +58,11 @@ OPTIMIZERS = Registry(
 for _, class_ in inspect.getmembers(optim, inspect.isclass):
     assert issubclass(class_, optim.Optimizer)
     OPTIMIZERS.register(class_)
+
+LR_SCHEDULERS: Registry[lr_scheduler._LRScheduler] = Registry(
+    'lr_schedulers',
+    base=lr_scheduler._LRScheduler,
+)
+for _, class_ in inspect.getmembers(optim.lr_scheduler, inspect.isclass):
+    if issubclass(class_, lr_scheduler._LRScheduler):
+        LR_SCHEDULERS.register(class_)
