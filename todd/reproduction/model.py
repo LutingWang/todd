@@ -26,21 +26,19 @@ except Exception:
 def get_modules(
     model: nn.Module,
     names: Sequence[str] = tuple(),
-    types: Sequence[nn.Module] = tuple(),
+    types: Sequence[type] = tuple(),
 ) -> List[nn.Module]:
     if not names and not types:
         return [model]
-    if not names:
-        return [
-            module for module in model.modules()
-            if isinstance(module, tuple(types))
-        ]
     if not types:
         return [getattr_recur(model, name) for name in names]
+    types = tuple(types)
+    if not names:
+        return [
+            module for module in model.modules() if isinstance(module, types)
+        ]
     modules = [getattr_recur(model, name) for name in names]
-    modules = [
-        module for module in modules if isinstance(module, tuple(types))
-    ]
+    modules = [module for module in modules if isinstance(module, types)]
     return modules
 
 

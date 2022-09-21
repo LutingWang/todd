@@ -34,7 +34,9 @@ class BaseLoss(Module):
         self._weight = weight
         self._threshold = None if bound is None else bound / weight
 
-        self.register_forward_hook(self._forward_hook)
+        self.register_forward_hook(
+            self._forward_hook,  # type: ignore[arg-type]
+        )
 
     @property
     def reduction(self) -> Reduction:

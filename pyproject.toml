@@ -111,6 +111,7 @@ files = [
 
 [[tool.mypy.overrides]]
 module = [
+    'addict.*',
     'cv2.*',
     'einops.*',
     'lmdb.*',
@@ -121,6 +122,7 @@ module = [
     'setuptools.*',
     'timm.*',
     'torchvision.*',
+    'yapf.*',
 ]
 ignore_missing_imports = true
 

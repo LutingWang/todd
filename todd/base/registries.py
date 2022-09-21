@@ -6,9 +6,9 @@
 __all__ = [
     'NORM_LAYERS',
     'Registry',
+    'default_build',
 ]
 
-import logging
 from functools import partial
 from typing import (
     Callable,
@@ -32,9 +32,22 @@ from .configs import Config
 T = TypeVar('T')
 
 
+def default_build(registry: 'Registry[T]', config: Config) -> T:
+    config = config.copy()
+    type_ = config.pop('type')
+    if isinstance(type_, str):
+        type_ = registry[type_]
+    try:
+        return type_(**config)
+    except Exception as e:
+        get_logger().error(
+            f'Failed to build {type_.__name__} with config {config}',
+        )
+        raise e
+
+
 class _RegistryProto(Protocol[T]):  # TODO: inherit from MutatbleMapping
     _name: str
-    _logger: logging.Logger
     _modules: Dict[str, Type[T]]
     _children: Dict[str, 'Registry']
     _parent: 'Registry'
@@ -121,19 +134,6 @@ class _ModulesMixin(_RegistryProto[T]):
     def get(self, key: str) -> Optional[Type[T]]:
         return self._modules.get(key)
 
-    def build(self, config: Config) -> T:
-        config = config.copy()
-        type_ = config.pop('type')
-        if isinstance(type_, str):
-            type_ = self[type_]
-        try:
-            return type_(**config)
-        except Exception as e:
-            self._logger.error(
-                f'Failed to build {type_.__name__} with config {config}',
-            )
-            raise e
-
 
 class _ParentMixin(_RegistryProto[T]):
 
@@ -202,28 +202,10 @@ class _BaseMixin(_RegistryProto[T]):
         return hasattr(self, '_base')
 
 
-class _BuildFuncMixin(_RegistryProto[T]):
-
-    def __init__(
-        self,
-        build_func: Optional[Callable[['Registry', Config], T]] = None,
-    ) -> None:
-        if build_func is not None:
-            self._build_func = build_func
-
-    @property
-    def build_func(self) -> Callable[['Registry', Config], T]:
-        return self._build_func
-
-    def has_build_func(self) -> bool:
-        return hasattr(self, '_build_func')
-
-
 class Registry(
     _ModulesMixin[T],
     _ParentMixin[T],
     _BaseMixin[T],
-    _BuildFuncMixin[T],
 ):
 
     def __init__(
@@ -253,16 +235,20 @@ class Registry(
             base = self._parent._base
         _BaseMixin.__init__(self, base, register_base)
 
-        if (
-            build_func is None and self.has_parent()
-            and self._parent.has_build_func()
-        ):
-            build_func = self._parent._build_func
-        _BuildFuncMixin.__init__(self, build_func)
+        if build_func is not None:
+            self._build_func = build_func
+        elif self.has_parent():
+            self._build_func = self._parent._build_func
+        else:
+            self._build_func = default_build
 
     @property
     def name(self) -> str:
         return self._name
+
+    @property
+    def build_func(self) -> Callable[['Registry[T]', Config], T]:
+        return self._build_func
 
     def register(
         self,
@@ -307,9 +293,7 @@ class Registry(
             Config() if default_args is None else Config(default_args)
         )
         default_args.update(config)
-        if self.has_build_func():
-            return self._build_func(self, default_args)
-        return _ModulesMixin.build(self, default_args)
+        return self._build_func(self, default_args)
 
 
 NORM_LAYERS: Registry[nn.Module] = Registry('norm layers', base=nn.Module)

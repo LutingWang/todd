@@ -45,7 +45,7 @@ def transfer_weight(target: Module, source: Module) -> None:
         get_logger().warning('missing_keys:', missing_keys)
     if unexpected_keys:
         get_logger().warning('unexpected_keys:', unexpected_keys)
-    target._is_init = True
+    target._is_init = True  # type: ignore[assignment]
 
 
 def transfer_weights(models, weight_prefixes: Dict[str, str]) -> None:

@@ -261,14 +261,6 @@ class TestBaseMixin:
         assert backbones.modules == dict(BaseBackbone=BaseBackbone)
 
 
-class TestBuildFuncMixin:
-
-    def test_backbones(self):
-        backbones = Registry('backbones', build_func=build_func)
-        assert backbones.has_build_func()
-        assert backbones.build_func is build_func
-
-
 class TestRegistry:
 
     def test_name(self, cats: Registry):
@@ -290,7 +282,6 @@ class TestRegistry:
     def test_parent_build_func(self):
         backbones = Registry('backbone', build_func=build_func)
         conv_backbones = Registry('conv backbone', parent=backbones)
-        assert conv_backbones.has_build_func()
         assert conv_backbones.build_func is build_func
 
     def test_register(self):
