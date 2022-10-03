@@ -27,4 +27,4 @@ jobs:
         pip install .[test]
         coverage run
         coverage xml && coverage report -m
-    - uses: codecov/codecov-action@master
+    - uses: codecov/codecov-action@main
