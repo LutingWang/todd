@@ -1,3 +1,9 @@
+## v0.2.3a15 (2022-10-04)
+
+### Feat
+
+- **distillers**: refactor meta class build
+
 ## v0.2.3a14 (2022-09-21)
 
 ### Feat
