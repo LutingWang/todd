@@ -117,7 +117,7 @@ class _ModulesMixin(_RegistryProto[T]):
         self._modules.update({name: cls for name in names})
         return cls
 
-    def register_module(  # TODO: merge with register, refer to pytest.fixture
+    def register_module(
         self,
         *,
         name: Optional[str] = None,

@@ -66,23 +66,29 @@ def set_seed_temp(
     seed=None,
     deterministic: Optional[bool] = None,
 ) -> Generator[None, None, None]:
+    cuda_isavailable = torch.cuda.is_available()
     if torch.cuda.device_count() > 1:
         get_logger().warn(
             "Seeding is not recommended for multi-GPU training.",
         )
+
     random_state = random.getstate()
     np_state = np.random.get_state()
     torch_state = torch.get_rng_state()
-    cuda_state = torch.cuda.get_rng_state_all()
-    prev_detereministic = cudnn.deterministic
-    prev_benchmark = cudnn.benchmark
-    init_seed(seed, deterministic)
 
+    if cuda_isavailable:
+        cuda_state = torch.cuda.get_rng_state()
+        prev_detereministic = cudnn.deterministic
+        prev_benchmark = cudnn.benchmark
+
+    init_seed(seed, deterministic)
     yield
 
     random.setstate(random_state)
     np.random.set_state(np_state)
     torch.set_rng_state(torch_state)
-    torch.cuda.set_rng_state_all(cuda_state)
-    cudnn.deterministic = prev_detereministic
-    cudnn.benchmark = prev_benchmark
+
+    if cuda_isavailable:
+        torch.cuda.set_rng_state(cuda_state)
+        cudnn.deterministic = prev_detereministic
+        cudnn.benchmark = prev_benchmark

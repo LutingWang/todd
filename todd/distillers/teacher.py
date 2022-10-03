@@ -9,11 +9,11 @@ import torch.nn as nn
 
 from ..base import ModuleList, WorkflowConfig
 from ..reproduction import freeze
-from .base import DISTILLERS, BaseDistiller, DecoratorMixin
+from .base import DISTILLERS, BaseDistiller
 
 
 @DISTILLERS.register_module()
-class MultiTeacherDistiller(DecoratorMixin, BaseDistiller):
+class MultiTeacherDistiller(BaseDistiller):
 
     def __init__(
         self,

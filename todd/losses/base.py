@@ -78,8 +78,8 @@ class BaseLoss(Module):
         return output
 
 
-LOSSES: Registry[nn.Module] = Registry(
+LOSSES: Registry[BaseLoss] = Registry(
     'losses',
     parent=STEPS,
-    base=nn.Module,
+    base=BaseLoss,
 )

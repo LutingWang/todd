@@ -7,11 +7,11 @@ from typing import Dict, Optional
 import torch.nn as nn
 
 from ..base import WorkflowConfig
-from .base import DISTILLERS, BaseDistiller, DecoratorMixin
+from .base import DISTILLERS, BaseDistiller
 
 
 @DISTILLERS.register_module()
-class SelfDistiller(DecoratorMixin, BaseDistiller):
+class SelfDistiller(BaseDistiller):
 
     def __init__(
         self,

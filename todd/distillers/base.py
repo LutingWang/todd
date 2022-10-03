@@ -1,11 +1,12 @@
 __all__ = [
-    'BaseDistiller',
     'DISTILLERS',
-    'DecoratorMixin',
+    'BaseDistiller',
+    'DistillableProto',
+    'build_metaclass',
 ]
 
-import functools
 from typing import (
+    Any,
     Callable,
     Dict,
     Generator,
@@ -13,10 +14,10 @@ from typing import (
     List,
     Optional,
     Protocol,
+    Tuple,
     Type,
     TypeVar,
     cast,
-    no_type_check,
 )
 
 import torch
@@ -132,8 +133,10 @@ class BaseDistiller(Module):
         losses = self._lossflow(tensors.copy())
 
         if debug:
-            tensors = {self.DEBUG_PREFIX + k: v for k, v in tensors.items()}
-            return {**losses, **tensors}
+            losses.update({
+                self.DEBUG_PREFIX + k: v
+                for k, v in tensors.items()
+            })
         return losses
 
 
@@ -143,59 +146,57 @@ DISTILLERS: Registry[BaseDistiller] = Registry(
 )
 
 
-class DistillerProto(Protocol):
+class DistillableProto(Protocol):
+    _distiller: BaseDistiller
 
-    def __init__(self, student: nn.Module, *args, **kwargs) -> None:
-        pass
+    @property
+    def distiller(self) -> BaseDistiller:
+        ...
 
-
-DistillerType = TypeVar('DistillerType', bound=DistillerProto)
-
-
-class WrapperProto(Protocol[DistillerType]):
-    _distiller: DistillerType
-
-
-WrapperType = TypeVar('WrapperType', bound=WrapperProto)
-
-WrappedType = TypeVar('WrappedType')
+    @property
+    def sync_apply(self) -> bool:
+        ...
 
 
-# TODO: delete unnecessary type hints
-class DecoratorMixin:
+def build_metaclass(distiller_cls: Type[BaseDistiller]) -> type:
 
-    @classmethod
-    def wrap(
-        cls: Type[DistillerType],
-    ) -> Callable[[Type[WrappedType]], Type[WrappedType]]:
+    class MetaClass(type):
+        NAMESPACE = dict(
+            distiller=property(
+                lambda x: cast(DistillableProto, x)._distiller,
+            ),
+            sync_apply=property(lambda _: False),
+        )
 
-        @no_type_check
-        def wrapper(wrapped_cls):
+        def __new__(
+            meta_cls,
+            cls: str,
+            bases: Tuple[type, ...],
+            namespace: Dict[str, Any],
+            **kwargs: Any,
+        ) -> 'MetaClass':
+            assert len(namespace.keys() & meta_cls.NAMESPACE.keys()) == 0
+            namespace.update(meta_cls.NAMESPACE)
+            return super().__new__(
+                meta_cls,
+                cls,
+                bases,
+                namespace,
+                **kwargs,
+            )
 
-            class WrapMeta(wrapped_cls.__class__):
+        def __call__(
+            cls,
+            *args,
+            **kwargs,
+        ) -> DistillableProto:
+            distiller: Dict[str, Any] = kwargs.pop('distiller')
+            obj = super().__call__(*args, **kwargs)
+            obj = cast(DistillableProto, obj)
+            obj._distiller = distiller_cls(  # type: ignore[call-arg]
+                student=obj,
+                **distiller,
+            )
+            return obj
 
-                def __call__(
-                    wrapper_cls,
-                    *args,
-                    distiller,
-                    **kwargs,
-                ) -> WrapperType:
-                    obj: WrapperType = super().__call__(*args, **kwargs)
-                    obj._distiller = cls(obj, **distiller)
-                    return obj
-
-            @functools.wraps(wrapped_cls, updated=())
-            class WrapClass(wrapped_cls, metaclass=WrapMeta):
-                _distiller: DistillerType
-
-                @property
-                def distiller(self):
-                    return self._distiller
-
-                @property
-                def sync_apply(self) -> bool:
-                    return False
-
-            return WrapClass
-
-        return wrapper
+    return MetaClass
