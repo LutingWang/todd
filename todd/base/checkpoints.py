@@ -66,14 +66,18 @@ def save_checkpoint(
 ) -> None:
     # TODO: state dict to cpu
     checkpoint: Dict[str, Any] = dict()
-    checkpoint['model'] = model.state_dict()
+    checkpoint['model'] = model.state_dict(**kwargs.get('model', dict()))
     if optimizer is not None:
-        checkpoint['optimizer'] = optimizer.state_dict()
+        checkpoint['optimizer'] = optimizer.state_dict(
+            **kwargs.get('optimizer', dict()),
+        )
     if scheduler is not None:
-        checkpoint['scheduler'] = scheduler.state_dict()
+        checkpoint['scheduler'] = scheduler.state_dict(
+            **kwargs.get('scheduler', dict()),
+        )
     if meta is not None:
         checkpoint['meta'] = meta
-    torch.save(checkpoint, f, **kwargs)
+    torch.save(checkpoint, f, **kwargs.get('save', dict()))
 
 
 def load_checkpoint(
@@ -84,10 +88,19 @@ def load_checkpoint(
     scheduler: Optional[lr_scheduler._LRScheduler] = None,
     **kwargs,
 ) -> Optional[Config]:
-    checkpoint: Dict[str, Any] = torch.load(f, **kwargs)
-    model.load_state_dict(checkpoint['model'])
+    checkpoint: Dict[str, Any] = torch.load(f, **kwargs.get('load', dict()))
+    model.load_state_dict(
+        checkpoint['model'],
+        **kwargs.get('model', dict()),
+    )
     if optimizer is not None:
-        optimizer.load_state_dict(checkpoint['optimizer'])
+        optimizer.load_state_dict(
+            checkpoint['optimizer'],
+            **kwargs.get('optimizer', dict()),
+        )
     if scheduler is not None:
-        scheduler.load_state_dict(checkpoint['lr_scheduler'])
+        scheduler.load_state_dict(
+            checkpoint['scheduler'],
+            **kwargs.get('scheduler', dict()),
+        )
     return checkpoint.get('meta')

@@ -158,9 +158,12 @@ class DistillableProto(Protocol):
         ...
 
 
-def build_metaclass(distiller_cls: Type[BaseDistiller]) -> type:
+def build_metaclass(
+    distiller_cls: Type[BaseDistiller],
+    supermetaclass: Type[type] = type,
+) -> type:
 
-    class MetaClass(type):
+    class MetaClass(supermetaclass):  # type: ignore[valid-type, misc]
         NAMESPACE = dict(
             distiller=property(
                 lambda x: cast(DistillableProto, x)._distiller,
@@ -190,6 +193,8 @@ def build_metaclass(distiller_cls: Type[BaseDistiller]) -> type:
             *args,
             **kwargs,
         ) -> DistillableProto:
+            if 'distiller' not in kwargs:
+                raise RuntimeError('`distiller` is required')
             distiller: Dict[str, Any] = kwargs.pop('distiller')
             obj = super().__call__(*args, **kwargs)
             obj = cast(DistillableProto, obj)

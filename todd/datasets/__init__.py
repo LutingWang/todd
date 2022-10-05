@@ -1,10 +1,10 @@
 from .base import *
-from .pth import PthAccessLayer, PthDataset
+from .lmdb_ import LmdbDataset
+from .pth import *
 from .zip import ZipAccessLayer, ZipDataset
 
 __all__ = [
-    'PthAccessLayer',
-    'PthDataset',
+    'LmdbDataset',
     'ZipAccessLayer',
     'ZipDataset',
 ]

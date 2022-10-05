@@ -1,8 +1,8 @@
 __all__ = [
-    'BaseAccessLayer',
     'ACCESS_LAYERS',
-    'BaseDataset',
     'DATASETS',
+    'BaseAccessLayer',
+    'BaseDataset',
 ]
 
 import reprlib
