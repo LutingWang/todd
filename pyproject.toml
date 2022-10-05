@@ -4,7 +4,7 @@ build-backend = 'setuptools.build_meta'
 
 [project]
 name = 'todd_ai'
-version = '0.2.3a15'
+version = '0.2.3'
 description = 'Toolkit for Object Detection Distillation'
 readme = 'README.md'
 requires-python = '>=3.6'
@@ -166,7 +166,7 @@ exclude_lines = [
 
 [tool.commitizen]
 name = 'cz_conventional_commits'
-version = "0.2.3a15"
+version = "0.2.3"
 tag_format = 'v$version'
 version_files = [
     'pyproject.toml:^version',
