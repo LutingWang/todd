@@ -1,3 +1,9 @@
+## v0.2.4a0 (2022-10-06)
+
+### Feat
+
+- workflow specs and checkpoint
+
 ## v0.2.3 (2022-10-05)
 
 ### Feat
