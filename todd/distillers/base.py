@@ -5,6 +5,7 @@ __all__ = [
     'build_metaclass',
 ]
 
+import warnings
 from typing import (
     Any,
     Callable,
@@ -14,6 +15,7 @@ from typing import (
     List,
     Optional,
     Protocol,
+    Set,
     Tuple,
     Type,
     TypeVar,
@@ -32,6 +34,7 @@ from ..base import (
     WorkflowConfig,
     transfer_weights,
 )
+from ..base.workflows import WorkflowSpec
 from ..hooks import BaseHook
 
 T = TypeVar('T', bound='BaseDistiller')
@@ -42,13 +45,21 @@ class BaseDistiller(Module):
 
     @staticmethod
     def workflow_to_module(workflow: Workflow) -> nn.Module:
-        module = ModuleList()
+        modules = ModuleList()
         for job in workflow:
-            step = job.step
-            if not isinstance(step, nn.Module):
-                step = ModuleList(step)
-            module.append(step)
-        return module
+            step_manager = job.step_manager
+            if hasattr(step_manager, 'step'):
+                module = step_manager.step  # type: ignore[attr-defined]
+            elif hasattr(step_manager, 'steps'):
+                module = ModuleList(
+                    step_manager.steps,  # type: ignore[attr-defined]
+                )
+            else:
+                raise TypeError(
+                    f'{step_manager} has no attribute `step` or `steps`.'
+                )
+            modules.append(module)
+        return modules
 
     def __init__(
         self,
@@ -121,11 +132,39 @@ class BaseDistiller(Module):
         for hook in self.hooks():
             hook.reset()
 
+    def spec(self) -> WorkflowSpec:
+        inputs: Set[str] = set()
+        outputs: Set[str] = set()
+        for i, hookflow in self._hookflows.items():
+            hookflow_spec = hookflow.spec()
+            assert len(hookflow_spec.inputs) == 0
+            assert outputs.isdisjoint(hookflow_spec.outputs)
+            outputs |= hookflow_spec.outputs
+        adaptflow_spec = self._adaptflow.spec()
+        inputs |= adaptflow_spec.inputs - outputs
+        outputs |= adaptflow_spec.outputs
+        lossflow_spec = self._lossflow.spec()
+        inputs |= lossflow_spec.inputs - outputs
+        outputs |= lossflow_spec.outputs
+        return WorkflowSpec(inputs, outputs)
+
     def distill(
         self,
         custom_tensors: Optional[Dict[str, torch.Tensor]] = None,
         debug: bool = False,
     ) -> Dict[str, torch.Tensor]:
+        if debug:
+            expected_inputs = self.spec().inputs
+            custom_inputs = (
+                set()
+                if custom_tensors is None else set(custom_tensors.keys())
+            )
+            if len(expected_inputs ^ custom_inputs):
+                warnings.warn(
+                    f"Missing inputs {expected_inputs - custom_inputs}\n"
+                    f"Unexpected inputs {custom_inputs - expected_inputs}\n"
+                )
+
         tensors = self.tensors()
         if custom_tensors is not None:
             tensors.update(custom_tensors)

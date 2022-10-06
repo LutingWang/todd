@@ -1,15 +1,18 @@
 __all__ = [
-    'BaseHook',
     'HOOKS',
+    'BaseHook',
+    'HookStatus',
+    'hook',
 ]
 
+import contextlib
 from abc import abstractmethod
 from enum import IntEnum, auto
-from typing import TYPE_CHECKING, Protocol
+from typing import TYPE_CHECKING, Any, Generator, Protocol
 
 import torch.nn as nn
 
-from ..base import STEPS, Registry, StatusMixin, getattr_recur
+from ..base import STEPS, Config, Registry, StatusMixin, getattr_recur
 
 if TYPE_CHECKING:
 
@@ -36,7 +39,10 @@ class _HookMixin(_HookProto):
 
     def bind(self, model: nn.Module) -> None:
         module: nn.Module = getattr_recur(model, self._path)
-        module.register_forward_hook(self._forward_hook)
+        self._handle = module.register_forward_hook(self._forward_hook)
+
+    def unbind(self) -> None:
+        self._handle.remove()
 
 
 class _TrackingMixin(_HookProto):
@@ -53,6 +59,9 @@ class _TrackingMixin(_HookProto):
 
     def bind(self, model: nn.Module) -> None:
         self._model = model
+
+    def unbind(self) -> None:
+        delattr(self, '_model')
 
     def track_tensor(self) -> None:
         if not self._tracking_mode:
@@ -95,19 +104,19 @@ class BaseHook(StatusMixin[Status], _HookMixin, _TrackingMixin):
     def _tensor(self):
         pass
 
-    @StatusMixin.transit(
-        (Status.BINDED, Status.REGISTERED),
-        Status.BINDED,
-    )
-    def reset(self) -> None:
-        self._reset()
-
     @StatusMixin.transit(Status.INITIALIZED, Status.BINDED)
     def bind(self, model: nn.Module) -> None:
         if self._tracking_mode:
             _TrackingMixin.bind(self, model)
         else:
             _HookMixin.bind(self, model)
+
+    @StatusMixin.transit(Status.BINDED, Status.INITIALIZED)
+    def unbind(self) -> None:
+        if self._tracking_mode:
+            _TrackingMixin.unbind(self)
+        else:
+            _HookMixin.unbind(self)
 
     @StatusMixin.transit(
         (Status.BINDED, Status.REGISTERED),
@@ -116,9 +125,40 @@ class BaseHook(StatusMixin[Status], _HookMixin, _TrackingMixin):
     def register_tensor(self, tensor) -> None:
         self._register_tensor(tensor)
 
+    @StatusMixin.transit(
+        (Status.BINDED, Status.REGISTERED),
+        Status.BINDED,
+    )
+    def reset(self) -> None:
+        self._reset()
+
 
 HOOKS: Registry[BaseHook] = Registry(
     'hooks',
     parent=STEPS,
     base=BaseHook,
 )
+
+
+class HookStatus:
+    _value: Any
+
+    @property
+    def value(self):
+        return self._value
+
+
+@contextlib.contextmanager
+def hook(
+    config: Config,
+    model: nn.Module,
+) -> Generator[HookStatus, None, None]:
+    hook_ = HOOKS.build(config)
+    hook_.bind(model)
+
+    status = HookStatus()
+    yield status
+    status._value = hook_()
+
+    hook_.reset()
+    hook_.unbind()

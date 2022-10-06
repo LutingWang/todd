@@ -14,7 +14,9 @@ from typing import (
     Iterable,
     Iterator,
     Mapping,
+    NamedTuple,
     Optional,
+    Set,
     Tuple,
     Union,
 )
@@ -37,11 +39,6 @@ class BaseStepManager:
 
     @abstractmethod
     def __call__(self, args: Tuple[Any, ...], kwargs: Dict[str, Any]):
-        pass
-
-    @property
-    @abstractmethod
-    def step(self):
         pass
 
 
@@ -83,7 +80,7 @@ class ParallelMultiStepManager(BaseStepManager):
         )
 
     @property
-    def step(self) -> Tuple[Step, ...]:
+    def steps(self) -> Tuple[Step, ...]:
         return self._steps
 
 
@@ -102,6 +99,10 @@ class SingleOutputDict(BaseOutputDict):
     def __call__(self, data) -> Dict[str, Any]:
         return {self._key: data}
 
+    @property
+    def key(self) -> str:
+        return self._key
+
 
 class MultiOutputDict(BaseOutputDict):
 
@@ -110,6 +111,10 @@ class MultiOutputDict(BaseOutputDict):
 
     def __call__(self, output) -> Dict[str, Any]:
         return dict(zip(self._keys, output))
+
+    @property
+    def keys(self) -> Set[str]:
+        return set(self._keys)
 
 
 class ParallelMultiOutputDict(MultiOutputDict):
@@ -194,11 +199,24 @@ class Job:
         return self._output_dict(output)
 
     @property
-    def step(self):
-        return self._step_manager.step
+    def step_manager(self) -> BaseStepManager:
+        return self._step_manager
+
+    @property
+    def output_dict(self) -> BaseOutputDict:
+        return self._output_dict
+
+    @property
+    def fields(self) -> Tuple[str, ...]:
+        return self._fields
 
 
 WorkflowConfig = Dict[OutputKey, Mapping]
+
+
+class WorkflowSpec(NamedTuple):
+    inputs: Set[str]
+    outputs: Set[str]
 
 
 class Workflow:
@@ -231,3 +249,19 @@ class Workflow:
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(jobs={self._jobs})"
+
+    def spec(self) -> WorkflowSpec:
+        inputs: Set[str] = set()
+        outputs: Set[str] = set()
+        for job in self._jobs:
+            inputs |= set(job.fields) - outputs
+            output_dict = job.output_dict
+            if hasattr(output_dict, 'key'):
+                outputs.add(output_dict.key)  # type: ignore[attr-defined]
+            elif hasattr(output_dict, 'keys'):
+                outputs |= output_dict.keys  # type: ignore[attr-defined]
+            else:
+                raise TypeError(
+                    f"{output_dict} does not have `key` or `keys`.",
+                )
+        return WorkflowSpec(inputs, outputs)
