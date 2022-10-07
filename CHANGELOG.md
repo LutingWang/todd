@@ -1,3 +1,9 @@
+## v0.2.4a1 (2022-10-08)
+
+### Feat
+
+- **base**: rename iters to base
+
 ## v0.2.4a0 (2022-10-06)
 
 ### Feat
