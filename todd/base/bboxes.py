@@ -1,19 +1,32 @@
 __all__ = [
+    'BBoxTuple',
     'BBoxesXYXY',
     'BBoxesXYWH',
 ]
 
-from abc import abstractmethod
-from typing import List, NamedTuple, Optional, Tuple, Type, TypeVar, Union
+import numbers
+from abc import ABC, abstractmethod
+from typing import (
+    Generator,
+    NamedTuple,
+    Optional,
+    Sequence,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+    overload,
+)
 
 import einops
 import numpy as np
 import torch
 
+BBoxTuple = Tuple[numbers.Real, numbers.Real, numbers.Real, numbers.Real]
 T = TypeVar('T', bound='BBoxes')
 
 
-class BBoxes:
+class BBoxes(ABC):
 
     def __init__(self, bboxes) -> None:
         """
@@ -133,12 +146,26 @@ class BBoxes:
     def __add__(self: T, other: T) -> T:
         return self.cat(other)
 
+    @overload
+    @classmethod
+    def _select(  # type: ignore[misc]
+        cls: Type[T],
+        bboxes: T,
+        indices: Union[slice, torch.Tensor, Sequence[int]],
+    ) -> T:
+        ...
+
+    @overload
     @classmethod
     def _select(
         cls: Type[T],
         bboxes: T,
-        indices: Union[int, slice, torch.Tensor, List[int], Tuple[int, ...]],
-    ) -> T:
+        indices: int,
+    ) -> BBoxTuple:
+        ...
+
+    @classmethod
+    def _select(cls: Type[T], bboxes: T, indices):
         """
         Args:
             bboxes: n x 4
@@ -147,19 +174,42 @@ class BBoxes:
         Returns:
             bboxes: m x 4
         """
-        return cls(bboxes.to_tensor()[indices])
+        tensor = bboxes.to_tensor()[indices]
+        if tensor.ndim == 1:
+            return tuple(tensor.tolist())
+        return cls(tensor)
 
-    def select(
+    @overload
+    def select(  # type: ignore[misc]
         self: T,
-        indices: Union[int, slice, torch.Tensor, List[int], Tuple[int, ...]],
+        indices: Union[slice, torch.Tensor, Sequence[int]],
     ) -> T:
+        ...
+
+    @overload
+    def select(self: T, indices: int) -> BBoxTuple:
+        ...
+
+    def select(self, indices):
         return self._select(self, indices)
 
-    def __getitem__(
+    @overload
+    def __getitem__(  # type: ignore[misc]
         self: T,
-        indices: Union[int, slice, torch.Tensor, List[int], Tuple[int, ...]],
+        indices: Union[slice, torch.Tensor, Sequence[int]],
     ) -> T:
+        ...
+
+    @overload
+    def __getitem__(self: T, indices: int) -> BBoxTuple:
+        ...
+
+    def __getitem__(self, indices):
         return self.select(indices)
+
+    def __iter__(self) -> Generator[BBoxTuple, None, None]:
+        for i in range(len(self)):
+            yield self[i]  # type: ignore[misc]
 
     @classmethod
     def _intersections(cls, a: 'BBoxes', b: 'BBoxes') -> torch.Tensor:

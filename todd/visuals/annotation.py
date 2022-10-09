@@ -1,13 +1,47 @@
-from typing import List, Optional, Tuple
+__all__ = [
+    'AnnotationVisual',
+    'draw_annotation',
+    'draw_annotations',
+]
+
+from typing import List, Optional, Sequence, Tuple
 
 import cv2
 import numpy as np
 
+from ..base import BBoxesXYXY, BBoxTuple
 from .base import VISUALS, BaseVisual
 
-__all__ = [
-    'AnnotationVisual',
-]
+Color = Tuple[int, int, int]
+
+
+def draw_annotation(
+    image: np.ndarray,
+    bbox: BBoxTuple,
+    color: Color,
+    text: str,
+) -> None:
+    lt = (int(bbox[0]), int(bbox[1]))
+    rb = (int(bbox[2]), int(bbox[3]))
+    cv2.rectangle(image, lt, rb, color, thickness=1)
+    cv2.putText(
+        image,
+        text=text,
+        org=lt,
+        fontFace=cv2.FONT_HERSHEY_COMPLEX,
+        fontScale=0.5,
+        color=color,
+    )
+
+
+def draw_annotations(
+    image: np.ndarray,
+    bboxes: BBoxesXYXY,
+    colors: Sequence[Color],
+    texts: Sequence[str],
+) -> None:
+    for bbox, color, text in zip(bboxes, colors, texts):
+        draw_annotation(image, bbox, color, text)
 
 
 @VISUALS.register_module()
@@ -43,41 +77,38 @@ class AnnotationVisual(BaseVisual):
     #     (128,  76, 255), (201,  57,   1), (246,   0, 122), (191, 162, 208),
     # ]
 
-    def get_palette(self, index: int) -> Tuple[int, int, int]:
+    def get_color(self, index: int) -> Color:
         index %= len(self.PALETTE)
         return self.PALETTE[index]
 
     def forward(
         self,
-        images: List[np.ndarray],
-        bboxes: List[np.ndarray],
-        classes: List[np.ndarray],
-        class_names: Optional[List[str]] = None,
+        image_list: Sequence[np.ndarray],
+        bboxes_list: Sequence[np.ndarray],
+        classes_list: Sequence[np.ndarray],
+        class_names: Optional[Sequence[str]] = None,
     ) -> List[np.ndarray]:
         """Annotation visualizer.
 
         Args:
-            images: :math:`(N, H, W, 3)`
+            image_list: :math:`(N, H, W, 3)`
         """
-        results = []
-        for image, bbox, class_ in zip(images, bboxes, classes):
-            image = np.ascontiguousarray(image)
-            bbox = bbox.astype(np.int32)
-            class_ = class_.astype(np.int32)
-            for (l, t, r, b), c in zip(bbox.tolist(), class_.tolist()):
-                color = self.get_palette(c)
-                cv2.rectangle(image, (l, t), (r, b), color, thickness=1)
-                class_name = (
-                    str(c) if class_names is None else class_names[c]
-                )
-                cv2.putText(
-                    image,
-                    text=class_name,
-                    org=(l, t),
-                    fontFace=cv2.FONT_HERSHEY_COMPLEX,
-                    fontScale=0.5,
-                    color=color,
-                )
-            results.append(image)
-
-        return results
+        image_list = [image.copy() for image in image_list]
+        for image, bboxes, classes in zip(
+            image_list,
+            bboxes_list,
+            classes_list,
+        ):
+            class_list: List[int] = classes.tolist()
+            colors = map(self.get_color, class_list)
+            texts = map(  # type: ignore[call-overload]
+                str if class_names is None else class_names.__getitem__,
+                class_list,
+            ),
+            draw_annotations(
+                image,
+                BBoxesXYXY(bboxes),
+                list(colors),
+                list(texts),
+            )
+        return image_list
