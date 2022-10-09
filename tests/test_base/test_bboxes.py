@@ -158,8 +158,8 @@ class TestBBoxesXY:
         assert torch.tensor([40.0, 100.0]).eq(bboxes_.rb).all()
         assert torch.tensor([30.0, 80.0]).eq(bboxes_.wh).all()
         assert torch.tensor([25.0, 60.0]).eq(bboxes_.center).all()
-        assert torch.tensor([30.0, 80.0]).eq(bboxes_.shapes).all()
-        assert torch.tensor([2400.0]).eq(bboxes_.areas).all()
+        assert torch.tensor([30.0, 80.0]).eq(bboxes_.shape).all()
+        assert torch.tensor([2400.0]).eq(bboxes_.area).all()
 
 
 class TestBBoxesXYXY:

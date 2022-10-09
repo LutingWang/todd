@@ -28,7 +28,10 @@ T = TypeVar('T', bound='BBoxes')
 
 class BBoxes(ABC):
 
-    def __init__(self, bboxes) -> None:
+    def __init__(
+        self,
+        bboxes,
+    ) -> None:
         """
         Args:
             bboxes: \\* x 4
@@ -50,7 +53,7 @@ class BBoxes(ABC):
         if bboxes.shape[-1] != 4:
             raise ValueError('bboxes must have 4 columns')
         self._bboxes = bboxes
-        assert self.wh.gt(0).all()
+        assert self.wh.ge(0).all()
 
     def __len__(self) -> int:
         return self._bboxes.shape[0]
@@ -129,11 +132,11 @@ class BBoxes(ABC):
         return self._bboxes
 
     @property
-    def shapes(self) -> torch.Tensor:
+    def shape(self) -> torch.Tensor:
         return self.wh
 
     @property
-    def areas(self) -> torch.Tensor:
+    def area(self) -> torch.Tensor:
         return self.width * self.height
 
     @classmethod
@@ -266,7 +269,7 @@ class BBoxes(ABC):
         """
         if intersections is None:
             intersections = cls.intersections(a, b)
-        return a.areas[:, None] + b.areas[None, :] - intersections
+        return a.area[:, None] + b.area[None, :] - intersections
 
     def unions(
         self,
@@ -323,6 +326,27 @@ class BBoxes(ABC):
         image_shape: Optional[Tuple[int, int]] = None,
     ) -> T:
         return self._expand(self, ratio, image_shape)
+
+    @classmethod
+    def _filter(
+        cls: Type[T],
+        bboxes: T,
+        min_size: Union[int, Tuple[int, int]],
+    ) -> Tuple[T, torch.Tensor]:
+        if isinstance(min_size, int):
+            inds = bboxes.area.ge(min_size)
+        elif isinstance(min_size, tuple):
+            h, w = min_size
+            inds = bboxes.height.ge(h) & bboxes.width.ge(w)
+        else:
+            raise TypeError(f"Unexpected min_size {min_size}")
+        return cls(bboxes.to_tensor()[inds]), inds
+
+    def filter(
+        self: T,
+        min_size: Union[int, Tuple[int, int]],
+    ) -> Tuple[T, torch.Tensor]:
+        return self._filter(self, min_size)
 
 
 T_XY = TypeVar('T_XY', bound='BBoxesXY')
