@@ -53,7 +53,6 @@ class BBoxes(ABC):
         if bboxes.shape[-1] != 4:
             raise ValueError('bboxes must have 4 columns')
         self._bboxes = bboxes
-        assert self.wh.ge(0).all()
 
     def __len__(self) -> int:
         return self._bboxes.shape[0]
@@ -327,26 +326,16 @@ class BBoxes(ABC):
     ) -> T:
         return self._expand(self, ratio, image_shape)
 
-    @classmethod
-    def _filter(
-        cls: Type[T],
-        bboxes: T,
-        min_size: Union[int, Tuple[int, int]],
-    ) -> Tuple[T, torch.Tensor]:
-        if isinstance(min_size, int):
-            inds = bboxes.area.ge(min_size)
-        elif isinstance(min_size, tuple):
-            h, w = min_size
-            inds = bboxes.height.ge(h) & bboxes.width.ge(w)
-        else:
-            raise TypeError(f"Unexpected min_size {min_size}")
-        return cls(bboxes.to_tensor()[inds]), inds
-
     def filter(
         self: T,
         min_size: Union[int, Tuple[int, int]],
-    ) -> Tuple[T, torch.Tensor]:
-        return self._filter(self, min_size)
+    ) -> torch.Tensor:
+        if isinstance(min_size, int):
+            return self.area.ge(min_size)
+        if isinstance(min_size, tuple):
+            h, w = min_size
+            return self.height.ge(h) & self.width.ge(w)
+        raise TypeError(f"Unexpected min_size {min_size}")
 
 
 T_XY = TypeVar('T_XY', bound='BBoxesXY')
