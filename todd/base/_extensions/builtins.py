@@ -12,6 +12,11 @@ from typing import Any, Generator
 
 
 def patch(patched_func):
+    """Patch the built-in attr-related functions.
+
+    Args:
+        patched_func: function to be patched.
+    """
 
     def patcher(func):
 

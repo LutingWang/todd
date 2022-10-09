@@ -19,7 +19,7 @@ def ckd_loss(
     ignore: Optional[Tuple[torch.Tensor, torch.Tensor]] = None,
     gamma: float = 0.07,
 ) -> torch.Tensor:
-    """Warpper of CKD loss.
+    """Wrapper of CKD loss.
 
     Refer to http://arxiv.org/abs/2108.07482.
 
