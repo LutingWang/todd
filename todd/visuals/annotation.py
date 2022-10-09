@@ -21,6 +21,7 @@ def draw_annotation(
     color: Color,
     text: str,
 ) -> None:
+    assert image.flags.contiguous
     lt = (int(bbox[0]), int(bbox[1]))
     rb = (int(bbox[2]), int(bbox[3]))
     cv2.rectangle(image, lt, rb, color, thickness=1)

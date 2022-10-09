@@ -34,7 +34,9 @@ class BBoxes(ABC):
             bboxes: \\* x 4
                 (x1, y1, x2, y2)
         """
-        if isinstance(bboxes, torch.Tensor):
+        if isinstance(bboxes, BBoxes):
+            bboxes = self._convert(bboxes)
+        elif isinstance(bboxes, torch.Tensor):
             pass
         elif isinstance(bboxes, np.ndarray):
             bboxes = torch.from_numpy(bboxes)
@@ -42,11 +44,13 @@ class BBoxes(ABC):
             bboxes = torch.empty(0, 4)
         else:
             bboxes = torch.tensor(bboxes)
+
         if bboxes.ndim < 2:
             raise ValueError('bboxes must be at least 2-dim')
         if bboxes.shape[-1] != 4:
             raise ValueError('bboxes must have 4 columns')
         self._bboxes = bboxes
+        assert self.wh.gt(0).all()
 
     def __len__(self) -> int:
         return self._bboxes.shape[0]
@@ -55,6 +59,11 @@ class BBoxes(ABC):
         return (
             f'{self.__module__}.{self.__class__.__qualname__}({self._bboxes})'
         )
+
+    @staticmethod
+    @abstractmethod
+    def _convert(bboxes: 'BBoxes') -> torch.Tensor:
+        pass
 
     @property
     @abstractmethod
@@ -362,9 +371,9 @@ class BBoxesXY(BBoxes):
 
 class BBoxesXYXY(BBoxesXY):
 
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        assert self.wh.gt(0).all()
+    @staticmethod
+    def _convert(bboxes: BBoxes) -> torch.Tensor:
+        return torch.cat([bboxes.lt, bboxes.rb], dim=-1)
 
     @property
     def right(self) -> torch.Tensor:
@@ -421,6 +430,10 @@ class BBoxesXYXY(BBoxesXY):
 
 
 class BBoxesXYWH(BBoxesXY):
+
+    @staticmethod
+    def _convert(bboxes: BBoxes) -> torch.Tensor:
+        return torch.cat([bboxes.lt, bboxes.wh], dim=-1)
 
     @property
     def width(self) -> torch.Tensor:
