@@ -326,16 +326,19 @@ class BBoxes(ABC):
     ) -> T:
         return self._expand(self, ratio, image_shape)
 
-    def filter(
+    def indices(
         self: T,
-        min_size: Union[int, Tuple[int, int]],
+        *,
+        min_area: Optional[numbers.Real] = None,
+        min_wh: Optional[Tuple[int, int]] = None,
     ) -> torch.Tensor:
-        if isinstance(min_size, int):
-            return self.area.ge(min_size)
-        if isinstance(min_size, tuple):
-            h, w = min_size
-            return self.height.ge(h) & self.width.ge(w)
-        raise TypeError(f"Unexpected min_size {min_size}")
+        inds = self.to_tensor().new_ones(len(self), dtype=torch.bool)
+        if min_area is not None:
+            inds &= self.area.ge(min_area)
+        if min_wh is not None:
+            inds &= self.width.ge(min_wh[0])
+            inds &= self.height.ge(min_wh[1])
+        return inds
 
 
 T_XY = TypeVar('T_XY', bound='BBoxesXY')
