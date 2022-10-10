@@ -78,6 +78,7 @@ coalesce_brackets = true
 dedent_closing_brackets = true
 split_arguments_when_comma_terminated = true
 split_complex_comprehension = true
+split_before_arithmetic_operator = true
 
 [tool.isort]
 profile = 'hug'

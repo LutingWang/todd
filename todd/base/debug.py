@@ -17,18 +17,28 @@ class DebugMode:
 
     def __set_name__(self, owner, name: str) -> None:
         self._name = name
-        self._logger.debug(f"Debug mode {name} is {self.__get__(None)}")
+        self._forced = name in os.environ
+        self._logger.debug(
+            f"Debug mode {name} is {self.__get__(None)}"
+            + (" (forced)" if self._forced else "")
+        )
 
     def __get__(self, obj, objtype=None) -> bool:
         return bool(os.getenv(self._name))
 
     def __set__(self, obj, value: bool) -> None:
+        if self._forced:
+            self._logger.debug(
+                f"Trying to set debug mode {self._name}, "
+                f"which is forced to {self.__get__(None)}."
+            )
+            return
         if value:
             os.environ[self._name] = '1'
         else:
             os.environ.pop(self._name)
         self._logger.debug(
-            f"Debug mode {self._name} is set to {self.__get__(None)}"
+            f"Debug mode {self._name} is set to {self.__get__(None)}.",
         )
 
 
