@@ -131,10 +131,6 @@ class BBoxes(ABC):
         return self._bboxes
 
     @property
-    def shape(self) -> torch.Tensor:
-        return self.wh
-
-    @property
     def area(self) -> torch.Tensor:
         return self.width * self.height
 
@@ -308,7 +304,7 @@ class BBoxes(ABC):
         cls: Type[T],
         bboxes: T,
         ratio: float,
-        image_shape: Optional[Tuple[int, int]] = None,
+        image_wh: Optional[Tuple[int, int]] = None,
     ) -> T:
         """
         Args:
@@ -322,9 +318,9 @@ class BBoxes(ABC):
     def expand(
         self: T,
         ratio: float,
-        image_shape: Optional[Tuple[int, int]] = None,
+        image_wh: Optional[Tuple[int, int]] = None,
     ) -> T:
-        return self._expand(self, ratio, image_shape)
+        return self._expand(self, ratio, image_wh)
 
     def indices(
         self: T,
@@ -370,17 +366,16 @@ class BBoxesXY(BBoxes):
     def _expand_lt_rb(
         self,
         ratio: float,
-        image_shape: Optional[Tuple[int, int]] = None,
+        image_wh: Optional[Tuple[int, int]] = None,
     ) -> 'BBoxesXY._BBoxType':
         offsets = self.wh * (ratio - 1) / 2
         lt = self.lt - offsets
         rb = self.rb + offsets
 
         lt.clamp_min_(0)
-        if image_shape is not None:
-            h, w = image_shape
-            rb[:, 0].clamp_max_(w)
-            rb[:, 1].clamp_max_(h)
+        if image_wh is not None:
+            rb[:, 0].clamp_max_(image_wh[0])
+            rb[:, 1].clamp_max_(image_wh[1])
 
         return self._BBoxType(lt, rb)
 
@@ -438,9 +433,9 @@ class BBoxesXYXY(BBoxesXY):
         cls: Type[T_XY],
         bboxes: T_XY,
         ratio: float,
-        image_shape: Optional[Tuple[int, int]] = None,
+        image_wh: Optional[Tuple[int, int]] = None,
     ) -> T_XY:
-        lt, rb = bboxes._expand_lt_rb(ratio, image_shape)
+        lt, rb = bboxes._expand_lt_rb(ratio, image_wh)
         expanded_bboxes = torch.cat([lt, rb], dim=-1)
         return cls(expanded_bboxes)
 
@@ -498,8 +493,8 @@ class BBoxesXYWH(BBoxesXY):
         cls: Type[T_XY],
         bboxes: T_XY,
         ratio: float,
-        image_shape: Optional[Tuple[int, int]] = None,
+        image_wh: Optional[Tuple[int, int]] = None,
     ) -> T_XY:
-        lt, rb = bboxes._expand_lt_rb(ratio, image_shape)
+        lt, rb = bboxes._expand_lt_rb(ratio, image_wh)
         expanded_bboxes = torch.cat([lt, rb - lt], dim=-1)
         return cls(expanded_bboxes)

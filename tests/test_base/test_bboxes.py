@@ -158,7 +158,6 @@ class TestBBoxesXY:
         assert torch.tensor([40.0, 100.0]).eq(bboxes_.rb).all()
         assert torch.tensor([30.0, 80.0]).eq(bboxes_.wh).all()
         assert torch.tensor([25.0, 60.0]).eq(bboxes_.center).all()
-        assert torch.tensor([30.0, 80.0]).eq(bboxes_.shape).all()
         assert torch.tensor([2400.0]).eq(bboxes_.area).all()
 
 
@@ -181,7 +180,7 @@ class TestBBoxesXYXY:
         bboxes = BBoxesXYXY(torch.tensor([[40.0, 70.0, 60.0, 130.0]]))
         rounded = torch.tensor([35.0, 55.0, 65.0, 140.0])
         assert (
-            bboxes.expand(1.5, image_shape=(140, 70))  # yapf: disable
+            bboxes.expand(1.5, image_wh=(70, 140))  # yapf: disable
             .to_tensor().eq(rounded).all()
         )
 
@@ -205,6 +204,6 @@ class TestBBoxesXYWH:
         bboxes = BBoxesXYWH(torch.tensor([[40.0, 70.0, 20.0, 60.0]]))
         rounded = torch.tensor([35.0, 55.0, 30.0, 85.0])
         assert (
-            bboxes.expand(1.5, image_shape=(140, 70))  # yapf: disable
+            bboxes.expand(1.5, image_wh=(70, 140))  # yapf: disable
             .to_tensor().eq(rounded).all()
         )
