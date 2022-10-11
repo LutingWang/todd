@@ -1,3 +1,15 @@
+## v0.2.4a2 (2022-10-12)
+
+### Feat
+
+- **base**: debug mode can be forced in command line
+- **base**: bbox expand image_shape renamed to image_wh to avoid ambiguity
+- **base**: bboxes get indices
+- **base**: bboxes filter should be done by user
+- **base**: bboxes filter
+- **base**: bbox now support convert
+- **visuals**: draw annotations
+
 ## v0.2.4a1 (2022-10-08)
 
 ### Feat
