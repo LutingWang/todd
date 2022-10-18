@@ -8,7 +8,6 @@ import numbers
 from abc import ABC, abstractmethod
 from typing import (
     Generator,
-    NamedTuple,
     Optional,
     Sequence,
     Tuple,
@@ -302,9 +301,8 @@ class BBoxes(ABC):
     @abstractmethod
     def _expand(
         cls: Type[T],
-        bboxes: T,
-        ratio: float,
-        image_wh: Optional[Tuple[int, int]] = None,
+        bboxes: 'BBoxes',
+        ratio_wh: Tuple[float, float],
     ) -> T:
         """
         Args:
@@ -315,15 +313,27 @@ class BBoxes(ABC):
         """
         pass
 
+    @overload
     def expand(
         self: T,
-        ratio: float,
-        image_wh: Optional[Tuple[int, int]] = None,
+        ratio_wh: float,
     ) -> T:
-        return self._expand(self, ratio, image_wh)
+        ...
+
+    @overload
+    def expand(
+        self: T,
+        ratio_wh: Tuple[float, float],
+    ) -> T:
+        ...
+
+    def expand(self, ratio_wh):
+        if not isinstance(ratio_wh, tuple):
+            ratio_wh = (ratio_wh, ratio_wh)
+        return self._expand(self, ratio_wh)
 
     def indices(
-        self: T,
+        self,
         *,
         min_area: Optional[numbers.Real] = None,
         min_wh: Optional[Tuple[int, int]] = None,
@@ -336,15 +346,58 @@ class BBoxes(ABC):
             inds &= self.height.ge(min_wh[1])
         return inds
 
+    @classmethod
+    @abstractmethod
+    def _clamp(
+        cls: Type[T],
+        bboxes: 'BBoxes',
+        image_wh: Tuple[int, int],
+    ) -> T:
+        pass
 
-T_XY = TypeVar('T_XY', bound='BBoxesXY')
+    def clamp(
+        self: T,
+        image_wh: Tuple[int, int],
+    ) -> T:
+        return self._clamp(self, image_wh)
+
+    @classmethod
+    @abstractmethod
+    def _scale(
+        cls: Type[T],
+        bboxes: 'BBoxes',
+        ratio_wh: Tuple[float, float],
+    ) -> T:
+        """
+        Args:
+            bboxes: n x 4
+
+        Returns:
+            scaled_bboxes: n x 4
+        """
+        pass
+
+    @overload
+    def scale(
+        self: T,
+        ratio_wh: float,
+    ) -> T:
+        ...
+
+    @overload
+    def scale(
+        self: T,
+        ratio_wh: Tuple[float, float],
+    ) -> T:
+        ...
+
+    def scale(self, ratio_wh):
+        if not isinstance(ratio_wh, tuple):
+            ratio_wh = (ratio_wh, ratio_wh)
+        return self._scale(self, ratio_wh)
 
 
 class BBoxesXY(BBoxes):
-    _BBoxType = NamedTuple(
-        '_BBoxType',
-        [('lt', torch.Tensor), ('rb', torch.Tensor)],
-    )
 
     @property
     def left(self) -> torch.Tensor:
@@ -357,27 +410,6 @@ class BBoxesXY(BBoxes):
     @property
     def lt(self) -> torch.Tensor:
         return self._bboxes[:, :2]
-
-    def _round_lt_rb(self) -> 'BBoxesXY._BBoxType':
-        lt = self.lt.floor()
-        rb = self.rb.ceil()
-        return self._BBoxType(lt, rb)
-
-    def _expand_lt_rb(
-        self,
-        ratio: float,
-        image_wh: Optional[Tuple[int, int]] = None,
-    ) -> 'BBoxesXY._BBoxType':
-        offsets = self.wh * (ratio - 1) / 2
-        lt = self.lt - offsets
-        rb = self.rb + offsets
-
-        lt.clamp_min_(0)
-        if image_wh is not None:
-            rb[:, 0].clamp_max_(image_wh[0])
-            rb[:, 1].clamp_max_(image_wh[1])
-
-        return self._BBoxType(lt, rb)
 
 
 class BBoxesXYXY(BBoxesXY):
@@ -423,21 +455,55 @@ class BBoxesXYXY(BBoxesXY):
         return (self.lt + self.rb) / 2
 
     @classmethod
-    def _round(cls: Type[T_XY], bboxes: T_XY) -> T_XY:
-        lt, rb = bboxes._round_lt_rb()
+    def _round(cls: Type[T], bboxes: BBoxes) -> T:
+        lt = bboxes.lt.floor()
+        rb = bboxes.rb.ceil()
         rounded_bboxes = torch.cat([lt, rb], dim=-1)
         return cls(rounded_bboxes)
 
     @classmethod
     def _expand(
-        cls: Type[T_XY],
-        bboxes: T_XY,
-        ratio: float,
-        image_wh: Optional[Tuple[int, int]] = None,
-    ) -> T_XY:
-        lt, rb = bboxes._expand_lt_rb(ratio, image_wh)
-        expanded_bboxes = torch.cat([lt, rb], dim=-1)
+        cls: Type[T],
+        bboxes: BBoxes,
+        ratio_wh: Tuple[float, float],
+    ) -> T:
+        horizontal_offsets = bboxes.width * (ratio_wh[0] - 1) / 2
+        vertical_offsets = bboxes.height * (ratio_wh[1] - 1) / 2
+        left = bboxes.left - horizontal_offsets
+        top = bboxes.top - vertical_offsets
+        right = bboxes.right + horizontal_offsets
+        bottom = bboxes.bottom + vertical_offsets
+
+        expanded_bboxes = torch.stack([left, top, right, bottom], dim=-1)
         return cls(expanded_bboxes)
+
+    @classmethod
+    def _clamp(
+        cls: Type[T],
+        bboxes: BBoxes,
+        image_wh: Tuple[int, int],
+    ) -> T:
+        left = bboxes.left.clamp_min(0)
+        top = bboxes.top.clamp_min(0)
+        if image_wh is not None:
+            right = bboxes.right.clamp_max(image_wh[0])
+            bottom = bboxes.bottom.clamp_max(image_wh[1])
+        clamped_bboxes = torch.stack([left, top, right, bottom], dim=-1)
+        return cls(clamped_bboxes)
+
+    @classmethod
+    def _scale(
+        cls: Type[T],
+        bboxes: BBoxes,
+        ratio_wh: Tuple[float, float],
+    ) -> T:
+        left = bboxes.left * ratio_wh[0]
+        top = bboxes.top * ratio_wh[1]
+        right = bboxes.right * ratio_wh[0]
+        bottom = bboxes.bottom * ratio_wh[1]
+
+        scaled_bboxes = torch.stack([left, top, right, bottom], dim=-1)
+        return cls(scaled_bboxes)
 
 
 class BBoxesXYWH(BBoxesXY):
@@ -483,18 +549,31 @@ class BBoxesXYWH(BBoxesXY):
         return self.lt + self.wh / 2
 
     @classmethod
-    def _round(cls: Type[T_XY], bboxes: T_XY) -> T_XY:
-        lt, rb = bboxes._round_lt_rb()
-        rounded_bboxes = torch.cat([lt, rb - lt], dim=-1)
-        return cls(rounded_bboxes)
+    def _round(cls: Type[T], bboxes: T) -> T:
+        return cls(BBoxesXYXY._round(bboxes))
 
     @classmethod
     def _expand(
-        cls: Type[T_XY],
-        bboxes: T_XY,
-        ratio: float,
-        image_wh: Optional[Tuple[int, int]] = None,
-    ) -> T_XY:
-        lt, rb = bboxes._expand_lt_rb(ratio, image_wh)
-        expanded_bboxes = torch.cat([lt, rb - lt], dim=-1)
-        return cls(expanded_bboxes)
+        cls: Type[T],
+        bboxes: BBoxes,
+        ratio_wh: Tuple[float, float],
+    ) -> T:
+        return cls(BBoxesXYXY._expand(bboxes, ratio_wh))
+
+    @classmethod
+    def _clamp(cls: Type[T], bboxes: BBoxes, image_wh: Tuple[int, int]) -> T:
+        return cls(BBoxesXYXY._clamp(bboxes, image_wh))
+
+    @classmethod
+    def _scale(
+        cls: Type[T],
+        bboxes: BBoxes,
+        ratio_wh: Tuple[float, float],
+    ) -> T:
+        left = bboxes.left * ratio_wh[0]
+        top = bboxes.top * ratio_wh[1]
+        width = bboxes.width * ratio_wh[0]
+        height = bboxes.height * ratio_wh[1]
+
+        scaled_bboxes = torch.stack([left, top, width, height], dim=-1)
+        return cls(scaled_bboxes)

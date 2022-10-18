@@ -53,7 +53,7 @@ def ckd_loss(
 
 class MemoryPool:
 
-    def __init__(self, size: int = 10):
+    def __init__(self, size: int = 10) -> None:
         self._memory: List[torch.Tensor] = []
         self._size = size
         self._rank = get_rank()
@@ -83,7 +83,7 @@ class MemoryPool:
 @LOSSES.register_module()
 class CKDLoss(BaseLoss):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._memory_pool = MemoryPool()
 

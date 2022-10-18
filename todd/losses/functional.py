@@ -1,6 +1,9 @@
 __all__ = [
     'L1Loss',
     'MSELoss',
+    'BCELoss',
+    'BCEWithLogitsLoss',
+    'CrossEntropyLoss',
 ]
 
 from abc import abstractmethod

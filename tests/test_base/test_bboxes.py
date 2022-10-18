@@ -7,7 +7,7 @@ from todd.base.bboxes import BBoxesXY, BBoxesXYWH, BBoxesXYXY
 
 class TestBBoxes:
 
-    def test_init(self):
+    def test_init(self) -> None:
         bboxes_np = np.array([[10.0, 20.0, 40.0, 100.0]])
         bboxes_torch = torch.tensor([[10.0, 20.0, 40.0, 100.0]])
 
@@ -29,7 +29,7 @@ class TestBBoxes:
         with pytest.raises(ValueError):
             BBoxesXYXY(bboxes_np[:, :3])
 
-    def test_operators(self):
+    def test_operators(self) -> None:
         # yapf: disable
         a = torch.tensor(
             [[ 10.0,  20.0,  40.0, 100.0]],
@@ -163,26 +163,33 @@ class TestBBoxesXY:
 
 class TestBBoxesXYXY:
 
-    def test_round(self):
+    def test_round(self) -> None:
         bboxes = BBoxesXYXY(torch.tensor([[10.9, 20.3, 39.2, 99.8]]))
         rounded = torch.tensor([10.0, 20.0, 40.0, 100.0])
         assert bboxes.round().to_tensor().eq(rounded).all()
 
-    def test_expand(self):
+    def test_expand(self) -> None:
         bboxes = BBoxesXYXY(torch.tensor([[40.0, 70.0, 60.0, 130.0]]))
-        rounded = torch.tensor([35.0, 55.0, 65.0, 145.0])
-        assert bboxes.expand(1.5).to_tensor().eq(rounded).all()
+        expanded = torch.tensor([35.0, 55.0, 65.0, 145.0])
+        assert bboxes.expand(1.5).to_tensor().eq(expanded).all()
 
         bboxes = BBoxesXYXY(torch.tensor([[2.0, 10.0, 22.0, 70.0]]))
-        rounded = torch.tensor([0.0, 0.0, 27.0, 85.0])
-        assert bboxes.expand(1.5).to_tensor().eq(rounded).all()
+        expanded = torch.tensor([-3.0, -5.0, 27.0, 85.0])
+        assert bboxes.expand(1.5).to_tensor().eq(expanded).all()
 
-        bboxes = BBoxesXYXY(torch.tensor([[40.0, 70.0, 60.0, 130.0]]))
-        rounded = torch.tensor([35.0, 55.0, 65.0, 140.0])
-        assert (
-            bboxes.expand(1.5, image_wh=(70, 140))  # yapf: disable
-            .to_tensor().eq(rounded).all()
-        )
+    def test_clamp(self) -> None:
+        bboxes = BBoxesXYXY(torch.tensor([[35.0, 55.0, 65.0, 145.0]]))
+        clamped = torch.tensor([35.0, 55.0, 65.0, 140.0])
+        assert bboxes.clamp((70, 140)).to_tensor().eq(clamped).all()
+
+    def test_scale(self) -> None:
+        bboxes = BBoxesXYXY(torch.tensor([[35.0, 55.0, 65.0, 145.0]]))
+        scaled = torch.tensor([70.0, 110.0, 130.0, 290.0])
+        assert bboxes.scale(2).to_tensor().eq(scaled).all()
+
+        bboxes = BBoxesXYXY(torch.tensor([[2.0, 10.0, 22.0, 70.0]]))
+        scaled = torch.tensor([1.0, 20.0, 11.0, 140.0])
+        assert bboxes.scale((0.5, 2.0)).to_tensor().eq(scaled).all()
 
 
 class TestBBoxesXYWH:
@@ -198,12 +205,19 @@ class TestBBoxesXYWH:
         assert bboxes.expand(1.5).to_tensor().eq(rounded).all()
 
         bboxes = BBoxesXYWH(torch.tensor([[2.0, 10.0, 20.0, 60.0]]))
-        rounded = torch.tensor([0.0, 0.0, 27.0, 85.0])
+        rounded = torch.tensor([-3.0, -5.0, 30.0, 90.0])
         assert bboxes.expand(1.5).to_tensor().eq(rounded).all()
 
-        bboxes = BBoxesXYWH(torch.tensor([[40.0, 70.0, 20.0, 60.0]]))
+    def test_clamp(self) -> None:
+        bboxes = BBoxesXYWH(torch.tensor([[35.0, 55.0, 30.0, 90.0]]))
         rounded = torch.tensor([35.0, 55.0, 30.0, 85.0])
-        assert (
-            bboxes.expand(1.5, image_wh=(70, 140))  # yapf: disable
-            .to_tensor().eq(rounded).all()
-        )
+        assert bboxes.clamp((70, 140)).to_tensor().eq(rounded).all()
+
+    def test_scale(self) -> None:
+        bboxes = BBoxesXYWH(torch.tensor([[35.0, 55.0, 30.0, 90.0]]))
+        scaled = torch.tensor([70.0, 110.0, 60.0, 180.0])
+        assert bboxes.scale(2).to_tensor().eq(scaled).all()
+
+        bboxes = BBoxesXYWH(torch.tensor([[2.0, 10.0, 20.0, 60.0]]))
+        scaled = torch.tensor([1.0, 20.0, 10.0, 120.0])
+        assert bboxes.scale((0.5, 2.0)).to_tensor().eq(scaled).all()
