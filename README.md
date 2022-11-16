@@ -1,12 +1,12 @@
-```
+# Toolkit for Object Detection Distillation
+
+```text
 _/_/_/_/_/                _/        _/
    _/      _/_/      _/_/_/    _/_/_/
   _/    _/    _/  _/    _/  _/    _/
  _/    _/    _/  _/    _/  _/    _/
 _/      _/_/      _/_/_/    _/_/_/
 ```
-
-Toolkit for Object Detection Distillation
 
 [![docs](https://readthedocs.org/projects/toddai/badge/?version=latest)](https://toddai.readthedocs.io/en/latest/?badge=latest)
 [![lint](https://github.com/LutingWang/todd/actions/workflows/lint.yaml/badge.svg)](https://github.com/LutingWang/todd/actions/workflows/lint.yaml)
@@ -21,6 +21,7 @@ Toolkit for Object Detection Distillation
 ## Installation
 
 Prerequisites:
+
 - torch
 - torchvision
 - mmcv/mmcv_full (optional)
@@ -29,12 +30,12 @@ Prerequisites:
 pip install todd_ai
 ```
 
-# Developer Guides
+## Developer Guides
 
-## Installation
+### Setup
 
 ```bash
-pip install .\[doc,dev,test,pre-commit\]
+pip install .\[dev,doc,pre-commit,test\]
 ```
 
 ```bash
@@ -42,13 +43,13 @@ pre-commit install
 pre-commit install -t commit-msg
 ```
 
-## Docs
+### Docs
 
 ```shell
 (cd docs && exec make html)
 ```
 
-## Version Control
+### Version Control
 
 Recommended to use [commitizen](https://github.com/commitizen-tools/commitizen).
 
@@ -56,7 +57,7 @@ Recommended to use [commitizen](https://github.com/commitizen-tools/commitizen).
 pytest && git push origin master
 ```
 
-## Publish
+### Publish
 
 To automatically bump the version based on the commits
 
@@ -76,7 +77,7 @@ git reset --hard HEAD
 git push --atomic origin master ${TAG}
 ```
 
-## TODO
+### TODO
 
 1. Clean up registries
 2. Complete repr

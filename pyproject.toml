@@ -38,30 +38,30 @@ Homepage = 'https://github.com/LutingWang/todd'
 Documentation = 'https://toddai.readthedocs.io/en/latest/'
 
 [project.optional-dependencies]
-doc = [
-    'mmcv',
-    'python-docs-theme',
-    'sphinx',
-    'sphinx_rtd_theme',
-]
 dev = [
     'commitizen',
     'ipdb',
     'tensorboard',
     'torch-tb-profiler',
 ]
+doc = [
+    'mmcv',
+    'python-docs-theme',
+    'sphinx',
+    'sphinx_rtd_theme',
+]
+pre-commit = [
+    'codespell',
+    'docformatter[tomli]',
+    'flake8',
+    'isort',
+    'mypy',
+    'pre-commit',
+]
 test = [
     'coverage',
     'mmcv',
     'pytest',
-]
-pre-commit = [
-    'pre-commit',
-    'mypy',
-    'flake8',
-    'isort',
-    'docformatter[tomli]',
-    'codespell',
 ]
 
 [project.scripts]
@@ -83,35 +83,24 @@ split_before_arithmetic_operator = true
 [tool.isort]
 profile = 'hug'
 src_paths = [
-    'todd',
     'tests',
+    'todd',
 ]
 line_length = 79
 multi_line_output = 3
-known_third_party = [
-    'PIL',
-    'cv2',
-    'einops',
-    'matplotlib',
-    'mmcv',
-    'numpy',
-    'packaging',
-    'pytest',
-    'torch',
-]
-known_first_party = 'todd'
 
 [tool.pydocstyle]
 convention = 'google'
 
 [tool.mypy]
 files = [
-    'todd',
     'tests',
+    'todd',
 ]
 
 [[tool.mypy.overrides]]
 module = [
+    'PIL.*',
     'addict.*',
     'cv2.*',
     'einops.*',
@@ -119,9 +108,9 @@ module = [
     'mmcv.*',
     'pandas.*',
     'pkg_resources.*',
-    'PIL.*',
     'setuptools.*',
     'timm.*',
+    'toml.*',
     'torchvision.*',
     'yapf.*',
 ]
@@ -145,7 +134,7 @@ addopts = '--doctest-modules'
 branch = true
 command_line = '-m pytest'
 source = [
-    'todd/',
+    'todd',
 ]
 
 [tool.coverage.report]
