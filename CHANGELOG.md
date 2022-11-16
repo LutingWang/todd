@@ -1,3 +1,9 @@
+## v0.2.4a5 (2022-11-17)
+
+### Feat
+
+- **base**: DictAction take :: (double colon) as sign for string
+
 ## v0.2.4a4 (2022-11-16)
 
 ### Feat
