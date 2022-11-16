@@ -1,3 +1,15 @@
+## v0.2.4a4 (2022-11-16)
+
+### Feat
+
+- **visuals**: refact activation
+- **base**: more debug options
+- odpsrun script
+
+### Refactor
+
+- chore files
+
 ## v0.2.4a3 (2022-10-19)
 
 ### Feat
