@@ -44,12 +44,21 @@ class DebugMode:
 
 class BaseDebug:
     CPU = DebugMode()
+    ODPS = DebugMode()
+
+    DRY_RUN = DebugMode()
+    TRAIN_WITH_VAL_DATASET = DebugMode()
+
+    DUMP = DebugMode()
+    VISUAL = DebugMode()
 
     def init_cuda(self, **kwargs) -> None:
         assert not self.CPU
 
     def init_cpu(self, **kwargs) -> None:
         self.CPU = True
+        self.DRY_RUN = True
+        self.TRAIN_WITH_VAL_DATASET = True
 
     def init_custom(self, **kwargs) -> None:
         pass
