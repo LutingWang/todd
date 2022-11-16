@@ -231,7 +231,9 @@ class DictAction(argparse.Action):
         value_dict = Config()
         for value in values:
             k, v = value.split(':', 1)
-            value_dict[k.strip()] = eval(v)
+            k = k.strip()
+            v = v[1:] if v.startswith(':') else eval(v)
+            value_dict[k] = v
         if self._append:
             value_dict_list = getattr(namespace, self.dest, [])
             value_dict_list.append(value_dict)
