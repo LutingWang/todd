@@ -32,52 +32,11 @@ pip install todd_ai
 
 ## Developer Guides
 
-### Setup
-
 ```bash
-pip install .\[dev,doc,pre-commit,test\]
+pip install .\[dev,doc,test\]
 ```
 
-```bash
-pre-commit install
-pre-commit install -t commit-msg
-```
-
-### Docs
-
-```shell
-(cd docs && exec make html)
-```
-
-### Version Control
-
-Recommended to use [commitizen](https://github.com/commitizen-tools/commitizen).
-
-```bash
-pytest && git push origin master
-```
-
-### Publish
-
-To automatically bump the version based on the commits
-
-```shell
-cz bump -ch [--increment {major,minor,patch}] [-pr {alpha,beta,rc}]
-```
-
-If the created tag and changelog were to be undone
-
-```shell
-git tag --delete ${TAG}
-git reset HEAD~
-git reset --hard HEAD
-```
-
-```shell
-git push --atomic origin master ${TAG}
-```
-
-### TODO
+TODO
 
 1. Clean up registries
 2. Complete repr

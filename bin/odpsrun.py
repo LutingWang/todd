@@ -34,7 +34,7 @@ def script(config: Dict[str, Any]) -> str:
 def pai(config: Dict[str, Any]) -> str:
     parameters = [
         '--odps',
-        rf'GIT_HEAD:\'{args.git_head}\'',
+        rf'GIT_HEAD::{args.git_head}',
     ]
     parameters.extend(args.debug)
     parameters = config['user_defined_parameters'] + parameters
@@ -56,7 +56,7 @@ def odps(config: Dict[str, Any]) -> str:
 
 parser = argparse.ArgumentParser('odpsrun')
 parser.add_argument('git_head', help='git head id')
-parser.add_argument('debug', nargs='+', default=[], help='debug options')
+parser.add_argument('debug', nargs='*', help='debug options')
 args = parser.parse_args()
 
 config = toml.load('pyproject.toml')['odps']

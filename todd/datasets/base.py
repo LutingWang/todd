@@ -8,7 +8,7 @@ __all__ = [
 import reprlib
 from abc import abstractmethod
 from enum import Enum
-from typing import Any, Generic, MutableMapping, Type, TypeVar, Union
+from typing import Any, Generic, MutableMapping, TypeVar, Union
 
 from torch.utils.data import Dataset
 
@@ -75,7 +75,7 @@ ACCESS_LAYERS: Registry[BaseAccessLayer] = Registry(
 
 
 class BaseDataset(Dataset, Generic[T]):
-    ACCESS_LAYER: Type = BaseAccessLayer[T]
+    ACCESS_LAYER: type = BaseAccessLayer[T]
 
     def __init__(self, *args, access_layer, **kwargs):
         super().__init__(*args, **kwargs)

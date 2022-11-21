@@ -41,27 +41,28 @@ Documentation = 'https://toddai.readthedocs.io/en/latest/'
 dev = [
     'commitizen',
     'ipdb',
+    'ipykernel',
+    'jupyter',
+    'matplotlib',
+    'pre-commit',
     'tensorboard',
     'torch-tb-profiler',
 ]
 doc = [
     'mmcv',
     'python-docs-theme',
+    'python-pptx',
     'sphinx',
     'sphinx_rtd_theme',
-]
-pre-commit = [
-    'codespell',
-    'docformatter[tomli]',
-    'flake8',
-    'isort',
-    'mypy',
-    'pre-commit',
 ]
 test = [
     'coverage',
     'mmcv',
     'pytest',
+    'python-pptx',
+]
+optional = [
+    'python-pptx',
 ]
 
 [project.scripts]

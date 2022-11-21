@@ -28,12 +28,12 @@ def ckd_loss(
             Normalized predictions.
 
         target: m x dim
-            Normalized targets. First `n` targets correspond to `pred`.
+            Normalized targets. First ``n`` targets correspond to ``pred``.
 
         ignore: (n, n)
 
     Returns:
-        loss: 1
+        loss
     """
     if ignore is None:
         inds = torch.arange(

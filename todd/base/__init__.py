@@ -3,7 +3,6 @@ from ._patches import *
 from .bboxes import *
 from .checkpoints import *
 from .configs import *
-from .debug import *
 from .globals_ import *
 from .misc import *
 from .registries import *

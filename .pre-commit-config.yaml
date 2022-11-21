@@ -58,6 +58,7 @@ repos:
   rev: v2.2.1
   hooks:
   - id: codespell
+    exclude: tutorials
     args:
     - tests
     - todd

@@ -46,13 +46,13 @@ class SGFILoss(MSELoss):
 
         Args:
             pred: l x r x c x h x w
-                Each of the `l` levels generate `r` RoIs.
+                Each of the ``l`` levels generate ``r`` RoIs.
                 Typical shape is 4 x 1024 x 256 x 7 x 7.
 
             target: r x c x h x w
 
         Returns:
-            loss: 1
+            loss
         """
         fused_preds = torch.stack(preds)
         embed_pred = einops.rearrange(fused_preds, 'l r c h w -> (l r) c h w')
