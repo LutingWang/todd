@@ -2,10 +2,11 @@ __all__ = [
     'CV2Visual',
 ]
 
-from typing import Optional
+from typing import Optional, cast
 
 import cv2
 import numpy as np
+import numpy.typing as npt
 
 from .base import VISUALS, BaseVisual, Color, XAnchor, YAnchor
 
@@ -29,21 +30,21 @@ class CV2Visual(BaseVisual):
 
     def image(
         self,
-        image: np.ndarray,
+        image: npt.NDArray[np.uint8],
         left: int = 0,
         top: int = 0,
         width: Optional[int] = None,
         height: Optional[int] = None,
         opacity: float = 1.0,
-    ) -> np.ndarray:
+    ) -> npt.NDArray[np.uint8]:
         h, w, c = image.shape
         assert c == 3
 
         if width is not None or height is not None:
             if width is None:
-                width = round(w / h * height)
+                width = round(w / h * cast(int, height))
             if height is None:
-                height = round(h / w * width)
+                height = round(h / w * cast(int, width))
             image = cv2.resize(image, (width, height))
             h, w, _ = image.shape
 
@@ -51,7 +52,7 @@ class CV2Visual(BaseVisual):
         self._image[top:top + h, left:left + w] *= 1 - opacity
         self._image[top:top + h, left:left + w] += image * opacity
 
-        return self._image
+        return self._image.astype(np.uint8)
 
     def rectangle(
         self,
@@ -60,7 +61,7 @@ class CV2Visual(BaseVisual):
         width: int,
         height: int,
         color: Color = (0, 0, 0),
-    ) -> np.ndarray:
+    ) -> npt.NDArray[np.uint8]:
         cv2.rectangle(
             self._image,
             (left, top),
@@ -68,7 +69,7 @@ class CV2Visual(BaseVisual):
             color,
             thickness=1,
         )
-        return self._image
+        return self._image.astype(np.uint8)
 
     def text(
         self,
@@ -78,7 +79,7 @@ class CV2Visual(BaseVisual):
         x_anchor: XAnchor = XAnchor.LEFT,
         y_anchor: YAnchor = YAnchor.BOTTOM,
         color: Color = (0, 0, 0),
-    ) -> np.ndarray:
+    ) -> npt.NDArray[np.uint8]:
         assert x_anchor is XAnchor.LEFT
         assert y_anchor is YAnchor.BOTTOM
         cv2.putText(
@@ -89,4 +90,4 @@ class CV2Visual(BaseVisual):
             fontScale=1.0,
             color=color,
         )
-        return self._image
+        return self._image.astype(np.uint8)

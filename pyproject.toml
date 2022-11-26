@@ -98,6 +98,10 @@ files = [
     'tests',
     'todd',
 ]
+plugins = 'numpy.typing.mypy_plugin'
+
+[tool.codespell]
+write-changes = true
 
 [[tool.mypy.overrides]]
 module = [

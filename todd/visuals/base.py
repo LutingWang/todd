@@ -11,6 +11,7 @@ from typing import Any, Optional, Tuple
 
 import cv2
 import numpy as np
+import numpy.typing as npt
 import torch
 
 from ..base import Registry
@@ -62,7 +63,7 @@ class BaseVisual(ABC):
     @abstractmethod
     def image(
         self,
-        image: np.ndarray,
+        image: npt.NDArray[np.uint8],
         left: int = 0,
         top: int = 0,
         width: Optional[int] = None,
@@ -79,7 +80,7 @@ class BaseVisual(ABC):
         width: Optional[int] = None,
         height: Optional[int] = None,
         inverse: bool = False,
-        transparency: float = 0.5,
+        opacity: float = 0.5,
     ):
         """Draw the activation map.
 
@@ -115,7 +116,7 @@ class BaseVisual(ABC):
             width: width of the activation map
             height: height of the activation map
             inverse: invert the activation map or not
-            transparency: transparency of the activation map
+            opacity: opacity of the activation map
         """
         activation = activation.detach()
         activation -= activation.min()
@@ -123,10 +124,10 @@ class BaseVisual(ABC):
         if inverse:
             activation = 1 - activation
         activation *= 255
-        image: np.ndarray = activation.cpu().numpy()
-        image = image.astype(np.uint8)
+        array: npt.NDArray = activation.cpu().numpy()
+        image: npt.NDArray[np.uint8] = array.astype(np.uint8)
         image = cv2.applyColorMap(image, cv2.COLORMAP_JET)
-        return self.image(image, left, top, width, height, transparency)
+        return self.image(image, left, top, width, height, opacity)
 
     @abstractmethod
     def rectangle(

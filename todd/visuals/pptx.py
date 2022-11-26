@@ -7,6 +7,7 @@ from typing import Optional
 
 import cv2
 import numpy as np
+import numpy.typing as npt
 import pptx
 import pptx.dml.color
 import pptx.enum.shapes
@@ -99,7 +100,7 @@ class PPTXVisual(BaseVisual):
 
     def image(
         self,
-        image: np.ndarray,
+        image: npt.NDArray[np.uint8],
         left: int = 0,
         top: int = 0,
         width: Optional[int] = None,
