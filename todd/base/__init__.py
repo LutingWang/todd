@@ -3,8 +3,9 @@ from ._patches import *
 from .bboxes import *
 from .checkpoints import *
 from .configs import *
-from .globals_ import *
+from .loggers import *
 from .misc import *
 from .registries import *
 from .status import *
+from .stores import *
 from .workflows import *

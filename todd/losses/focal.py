@@ -5,7 +5,7 @@ __all__ = [
 
 import torch
 
-from .base import LOSSES
+from .base import LossRegistry
 from .functional import BCELoss, BCEWithLogitsLoss, FunctionalLoss
 
 
@@ -40,11 +40,11 @@ class FocalMixin(FunctionalLoss):
         )
 
 
-@LOSSES.register_module()
+@LossRegistry.register()
 class FocalLoss(FocalMixin, BCELoss):
     pass
 
 
-@LOSSES.register_module()
+@LossRegistry.register()
 class FocalWithLogitsLoss(FocalMixin, BCEWithLogitsLoss):
     pass

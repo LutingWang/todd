@@ -1,16 +1,15 @@
 import os
-from typing import Dict, List, Tuple
+import pathlib
 
-import pytest
 import torch
 
-from todd.adapts import ADAPTS, BaseAdapt
-from todd.base import Workflow
-from todd.distillers import BaseDistiller
+from todd.adapts import AdaptRegistry, BaseAdapt
+from todd.base import Config
+from todd.distillers import BaseDistiller, DistillerStore
 from todd.utils import CollectionTensor
 
 
-@ADAPTS.register_module()
+@AdaptRegistry.register()
 class CustomAdapt(BaseAdapt):
 
     def __init__(self, stride: int = 1, **kwargs):
@@ -22,7 +21,7 @@ class CustomAdapt(BaseAdapt):
         feat: torch.Tensor,
         bboxes: torch.Tensor,
         pos: torch.Tensor,
-    ) -> Tuple[torch.Tensor, List[torch.Tensor], torch.Tensor, torch.Tensor]:
+    ) -> tuple[torch.Tensor, list[torch.Tensor], torch.Tensor, torch.Tensor]:
         valid_idx = pos[:, 1] >= 0
         feat = feat[valid_idx]
         bboxes = bboxes[valid_idx]
@@ -38,51 +37,51 @@ class CustomAdapt(BaseAdapt):
 
 class TestCKD:
 
-    @pytest.fixture
-    def adaptflow(self) -> Workflow:
-        return Workflow.build(
-            'adapts', {
-                'pred_reshaped': dict(
-                    type='Rearrange',
-                    fields=['preds'],
-                    parallel=True,
-                    pattern='bs dim h w -> bs h w dim',
-                ),
-                ('targets', 'bboxes', 'bbox_poses', 'anchor_ids'): dict(
-                    type='CustomAdapt',
-                    fields=['targets', 'bboxes', 'bbox_ids'],
-                    stride=1,
-                ),
-                'pred_indexed': dict(
-                    type='Index',
-                    fields=['pred_reshaped', 'bbox_poses'],
-                ),
-                'preds': dict(
-                    type='Decouple',
-                    fields=['pred_indexed', 'anchor_ids'],
-                    num=9,
-                    in_features=4,
-                    out_features=16,
-                    bias=False,
-                ),
-            }
-        )
+    # @pytest.fixture
+    # def adaptflow(self) -> Workflow:
+    #     return Workflow.build(
+    #         'AdaptRegistry', {
+    #             'pred_reshaped': dict(
+    #                 type='Rearrange',
+    #                 fields=['preds'],
+    #                 parallel=True,
+    #                 pattern='bs dim h w -> bs h w dim',
+    #             ),
+    #             ('targets', 'bboxes', 'bbox_poses', 'anchor_ids'): dict(
+    #                 type='CustomAdapt',
+    #                 fields=['targets', 'bboxes', 'bbox_ids'],
+    #                 stride=1,
+    #             ),
+    #             'pred_indexed': dict(
+    #                 type='Index',
+    #                 fields=['pred_reshaped', 'bbox_poses'],
+    #             ),
+    #             'preds': dict(
+    #                 type='Decouple',
+    #                 fields=['pred_indexed', 'anchor_ids'],
+    #                 num=9,
+    #                 in_features=4,
+    #                 out_features=16,
+    #                 bias=False,
+    #             ),
+    #         }
+    #     )
 
-    @pytest.fixture
-    def ckdflow(self) -> Workflow:
-        return Workflow.build(
-            'losses',
-            loss_ckd=dict(
-                type='CKDLoss',
-                fields=['preds', 'targets', 'bboxes'],
-                weight=0.5,
-            ),
-        )
+    # @pytest.fixture
+    # def ckdflow(self) -> Workflow:
+    #     return Workflow.build(
+    #         'LossRegistry',
+    #         loss_ckd=dict(
+    #             type='CKDLoss',
+    #             fields=['preds', 'targets', 'bboxes'],
+    #             weight=0.5,
+    #         ),
+    #     )
 
-    @pytest.fixture(scope='class')
-    def result(self) -> Dict[str, dict]:
-        filename = os.path.join(os.path.dirname(__file__), 'ckd.pth')
-        return torch.load(filename, map_location='cpu')
+    # @pytest.fixture(scope='class')
+    # def result(self) -> dict[str, dict]:
+    #     filename = os.path.join(os.path.dirname(__file__), 'ckd.pth')
+    #     return torch.load(filename, map_location='cpu')
 
     @torch.no_grad()
     def generate_result(self):
@@ -114,20 +113,24 @@ class TestCKD:
             )
         torch.save(result, filename)
 
-    def test_ckd(
-        self,
-        adaptflow: Workflow,
-        ckdflow: Workflow,
-        result: Dict[str, dict],
-    ):
+    def test_ckd(self, data_dir: pathlib.Path) -> None:
+        config = Config.load(data_dir / 'ckd.py')
+        result = torch.load(data_dir / 'ckd.pth', map_location='cpu')
+
+        distiller = BaseDistiller.build(config)
+
         for rank in range(4):
             rank_result = result[f'rank{rank}']
-            BaseDistiller.workflow_to_module(adaptflow).load_state_dict(
-                rank_result['state_dict'],
-            )
-            tensors = adaptflow(rank_result['inputs'])
+            distiller.load_state_dict(rank_result['state_dict'])
+
+            assert not DistillerStore.INTERMEDIATE_OUTPUTS
+            DistillerStore.INTERMEDIATE_OUTPUTS = '_debug_'
+            losses = distiller(rank_result['inputs'])
+            DistillerStore.INTERMEDIATE_OUTPUTS = ''
+            tensors = losses.pop('_debug_')
+            tensors.pop('bbox_ids')
+
             assert CollectionTensor.allclose(rank_result['tensors'], tensors)
-            losses = ckdflow(tensors)
             assert CollectionTensor.allclose(rank_result['losses'], losses)
 
 

@@ -1,5 +1,5 @@
 __all__ = [
-    'HOOKS',
+    'HookRegistry',
     'BaseHook',
     'HookStatus',
     'hook',
@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, Any, Generator, Protocol
 
 import torch.nn as nn
 
-from ..base import STEPS, Config, Registry, StatusMixin, getattr_recur
+from ..base import Config, Registry, StatusMixin, getattr_recur
 
 if TYPE_CHECKING:
 
@@ -133,11 +133,8 @@ class BaseHook(StatusMixin[Status], _HookMixin, _TrackingMixin):
         self._reset()
 
 
-HOOKS: Registry[BaseHook] = Registry(
-    'hooks',
-    parent=STEPS,
-    base=BaseHook,
-)
+class HookRegistry(Registry):
+    pass
 
 
 class HookStatus:
@@ -153,7 +150,7 @@ def hook(
     config: Config,
     model: nn.Module,
 ) -> Generator[HookStatus, None, None]:
-    hook_ = HOOKS.build(config)
+    hook_ = HookRegistry.build(config)
     hook_.bind(model)
 
     status = HookStatus()

@@ -1,11 +1,9 @@
-from typing import List
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
 from ..base import Module, Sequential
-from .base import ADAPTS, BaseAdapt
+from .base import AdaptRegistry, BaseAdapt
 
 
 class Bottleneck(Module):
@@ -92,7 +90,7 @@ class ResBlock(Sequential):
         super().__init__(layer1, layer2, **kwargs)
 
 
-@ADAPTS.register_module()
+@AdaptRegistry.register()
 class LabelEncAdapt(BaseAdapt):
 
     def __init__(
@@ -136,7 +134,7 @@ class LabelEncAdapt(BaseAdapt):
             downsample=True,
         )
 
-    def forward(self, x: torch.Tensor) -> List[torch.Tensor]:
+    def forward(self, x: torch.Tensor) -> list[torch.Tensor]:
         x1 = self._stage1(x)
         x2 = self._stage2(x1)
         x3 = self._stage3(x2)

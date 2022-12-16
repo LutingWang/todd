@@ -1,16 +1,16 @@
 __all__ = [
     'BaseLoss',
-    'LOSSES',
+    'LossRegistry',
 ]
 
 import numbers
-from typing import Any, Literal, Mapping, Optional, Union, cast
+from typing import Any, Literal, Mapping, cast
 
 import torch
 import torch.nn as nn
 
-from ..base import STEPS, Module, Registry
-from ..schedulers import SCHEDULERS
+from ..base import Config, Module, Registry
+from ..schedulers import SchedulerRegistry
 
 Reduction = Literal['none', 'mean', 'sum', 'prod']
 
@@ -20,12 +20,15 @@ class BaseLoss(Module):
     def __init__(
         self,
         reduction: Reduction = 'mean',
-        weight: Union[numbers.Real, Mapping] = 1.0,  # type: ignore[assignment]
-        bound: Optional[numbers.Real] = None,
+        weight: numbers.Real | Mapping = 1.0,  # type: ignore[assignment]
+        bound: numbers.Real | None = None,
         **kwargs,
     ):
         if not isinstance(weight, numbers.Real):
-            weight = cast(numbers.Real, SCHEDULERS.build(weight))
+            weight = cast(
+                numbers.Real,
+                SchedulerRegistry.build(Config(weight)),
+            )
         if bound is not None and bound <= 1e-4:
             raise ValueError('bound must be greater than 1e-4')
         super().__init__(**kwargs)
@@ -45,7 +48,7 @@ class BaseLoss(Module):
     def reduce(
         self,
         loss: torch.Tensor,
-        mask: Optional[torch.Tensor] = None,
+        mask: torch.Tensor | None = None,
     ) -> torch.Tensor:
         if mask is not None:
             loss = loss * mask
@@ -78,8 +81,5 @@ class BaseLoss(Module):
         return output
 
 
-LOSSES: Registry[BaseLoss] = Registry(
-    'losses',
-    parent=STEPS,
-    base=BaseLoss,
-)
+class LossRegistry(Registry):
+    pass

@@ -2,25 +2,25 @@
 import argparse
 import re
 import tarfile
-from typing import Any, Dict, Optional
+from typing import Any
 from urllib.parse import SplitResult, urlencode
 
 import toml
 
 
-def query(config: Dict[str, str]) -> str:
+def query(config: dict[str, str]) -> str:
     return urlencode(config, safe='/:')
 
 
-def buckets(config: Dict[str, Any]) -> str:
+def buckets(config: dict[str, Any]) -> str:
     config['query'] = query(config['query'])
     return SplitResult(**config).geturl()
 
 
-def script(config: Dict[str, Any]) -> str:
+def script(config: dict[str, Any]) -> str:
     result = f'/tmp/{config["name"]}.tar.gz'
 
-    def filter_(info: tarfile.TarInfo) -> Optional[tarfile.TarInfo]:
+    def filter_(info: tarfile.TarInfo) -> tarfile.TarInfo | None:
         if any(re.match(f, info.name) for f in config['filters']):
             return None
         return info
@@ -31,7 +31,7 @@ def script(config: Dict[str, Any]) -> str:
     return 'file://' + result
 
 
-def pai(config: Dict[str, Any]) -> str:
+def pai(config: dict[str, Any]) -> str:
     parameters = [
         '--odps',
         rf'GIT_HEAD::{args.git_head}',
@@ -50,7 +50,7 @@ pai -name {config["name"]}
 '''
 
 
-def odps(config: Dict[str, Any]) -> str:
+def odps(config: dict[str, Any]) -> str:
     return f'use {config["workbench"]};' + pai(config['pai'])
 
 

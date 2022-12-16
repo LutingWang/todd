@@ -6,12 +6,18 @@ from typing import Any, Iterator
 
 import torch
 
-from .base import ACCESS_LAYERS, DATASETS, BaseAccessLayer, BaseDataset, Codec
+from .base import (
+    AccessLayerRegistry,
+    BaseAccessLayer,
+    BaseDataset,
+    Codec,
+    DatasetRegistry,
+)
 
 # TODO: update
 
 
-@ACCESS_LAYERS.register_module()
+@AccessLayerRegistry.register()
 class ZipAccessLayer(BaseAccessLayer[str]):
 
     def _init(self):
@@ -62,6 +68,6 @@ class ZipAccessLayer(BaseAccessLayer[str]):
         raise NotImplementedError
 
 
-@DATASETS.register_module()
+@DatasetRegistry.register()
 class ZipDataset(BaseDataset[str]):
     ACCESS_LAYER = ZipAccessLayer

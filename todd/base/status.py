@@ -4,15 +4,7 @@ __all__ = [
 
 import enum
 import functools
-from typing import (
-    Any,
-    Callable,
-    Generic,
-    Sequence,
-    TypeVar,
-    Union,
-    no_type_check,
-)
+from typing import Any, Callable, Generic, Sequence, TypeVar, no_type_check
 
 T = TypeVar('T', bound=enum.Enum)
 
@@ -28,8 +20,8 @@ class StatusMixin(Generic[T]):
 
     @staticmethod
     def transit(
-        source: Union[T, Sequence[T]],
-        target: Union[T, Sequence[T]],
+        source: T | Sequence[T],
+        target: T | Sequence[T],
     ) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
         if not isinstance(source, Sequence):
             assert not isinstance(target, Sequence)

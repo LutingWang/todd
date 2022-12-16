@@ -2,10 +2,10 @@ import einops
 import torch
 import torch.nn as nn
 
-from .base import ADAPTS, BaseAdapt
+from .base import AdaptRegistry, BaseAdapt
 
 
-@ADAPTS.register_module()
+@AdaptRegistry.register()
 class Decouple(BaseAdapt):
 
     def __init__(

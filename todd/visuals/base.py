@@ -2,12 +2,12 @@ __all__ = [
     'XAnchor',
     'YAnchor',
     'BaseVisual',
-    'VISUALS',
+    'VisualRegistry',
 ]
 
 import enum
 from abc import ABC, abstractmethod
-from typing import Any, Optional, Tuple
+from typing import Any
 
 import cv2
 import numpy as np
@@ -16,7 +16,7 @@ import torch
 
 from ..base import Registry
 
-Color = Tuple[int, int, int]
+Color = tuple[int, int, int]
 
 
 class XAnchor(enum.Enum):
@@ -66,8 +66,8 @@ class BaseVisual(ABC):
         image: npt.NDArray[np.uint8],
         left: int = 0,
         top: int = 0,
-        width: Optional[int] = None,
-        height: Optional[int] = None,
+        width: int | None = None,
+        height: int | None = None,
         opacity: float = 1.0,
     ):
         pass
@@ -77,8 +77,8 @@ class BaseVisual(ABC):
         activation: torch.Tensor,
         left: int = 0,
         top: int = 0,
-        width: Optional[int] = None,
-        height: Optional[int] = None,
+        width: int | None = None,
+        height: int | None = None,
         inverse: bool = False,
         opacity: float = 0.5,
     ):
@@ -160,7 +160,7 @@ class BaseVisual(ABC):
         width: int,
         height: int,
         color: Color = (0, 0, 0),
-    ) -> Tuple[Any, Any]:
+    ) -> tuple[Any, Any]:
         """Draw an annotation bbox.
 
         Each annotation comprises a bbox and a textual label.
@@ -213,4 +213,5 @@ class BaseVisual(ABC):
         return (rectangle, text_)
 
 
-VISUALS = Registry('visuals', base=BaseVisual)
+class VisualRegistry(Registry):
+    pass

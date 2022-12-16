@@ -5,13 +5,11 @@ __all__ = [
     'FGFILoss',
 ]
 
-from typing import Optional
-
 import einops
 import torch
 import torch.nn.functional as F
 
-from .base import LOSSES
+from .base import LossRegistry
 from .functional import FunctionalLoss, L1Loss, MSELoss
 
 
@@ -21,7 +19,7 @@ class _2DMixin(FunctionalLoss):
         self,
         pred: torch.Tensor,
         target: torch.Tensor,
-        mask: Optional[torch.Tensor] = None,
+        mask: torch.Tensor | None = None,
         *args,
         **kwargs,
     ) -> torch.Tensor:
@@ -33,17 +31,17 @@ class _2DMixin(FunctionalLoss):
         return super().forward(pred, target, mask, *args, **kwargs)
 
 
-@LOSSES.register_module()
+@LossRegistry.register()
 class L12DLoss(_2DMixin, L1Loss):
     pass
 
 
-@LOSSES.register_module()
+@LossRegistry.register()
 class MSE2DLoss(_2DMixin, MSELoss):
     pass
 
 
-@LOSSES.register_module()
+@LossRegistry.register()
 class FGFILoss(MSE2DLoss):
 
     def forward(  # type: ignore[override]
@@ -71,7 +69,7 @@ class FGFILoss(MSE2DLoss):
         )
 
 
-@LOSSES.register_module()
+@LossRegistry.register()
 class FGDLoss(MSE2DLoss):
 
     def forward(  # type: ignore[override]
@@ -97,7 +95,7 @@ class FGDLoss(MSE2DLoss):
         )
 
 
-# @LOSSES.register_module()
+# @LOSSES.register()
 # class LabelEncLoss(MSE2DLoss):
 
 #     def __init__(
@@ -136,11 +134,11 @@ class FGDLoss(MSE2DLoss):
 
 #     def forward(  # type: ignore[override]
 #         self,
-#         preds: List[torch.Tensor],
-#         targets: List[torch.Tensor],
+#         preds: list[torch.Tensor],
+#         targets: list[torch.Tensor],
 #         *args,
 #         **kwargs,
-#     ) -> List[torch.Tensor]:
+#     ) -> list[torch.Tensor]:
 #         losses = []
 #         for pred, target in zip(preds, targets):
 #             pred = self._adapt(pred)
@@ -149,7 +147,7 @@ class FGDLoss(MSE2DLoss):
 #             losses.append(loss)
 #         return losses
 
-# @LOSSES.register_module()
+# @LOSSES.register()
 # class DevLoss(MSE2DLoss):
 #     def __init__(self, pos_share: float = 1, *args, **kwargs):
 #         assert 0 <= pos_share <= 1

@@ -1,5 +1,3 @@
-from typing import List
-
 import pytest
 import torch
 
@@ -13,7 +11,7 @@ def tensor_feat() -> torch.Tensor:
 
 # yapf: disable
 @pytest.fixture(scope='module')
-def list_feat() -> List[List[List[torch.Tensor]]]:
+def list_feat() -> list[list[list[torch.Tensor]]]:
     return [
         [[torch.arange(6).reshape(3, 2) + a * 120 + b * 24 + c * 6
           for c in range(4)]

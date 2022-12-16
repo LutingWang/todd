@@ -2,18 +2,18 @@ __all__ = [
     'SGFILoss',
 ]
 
-from typing import Callable, List
+from typing import Callable
 
 import einops
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from .base import LOSSES
+from .base import LossRegistry
 from .functional import MSELoss
 
 
-@LOSSES.register_module()
+@LossRegistry.register()
 class SGFILoss(MSELoss):
 
     def __init__(
@@ -35,7 +35,7 @@ class SGFILoss(MSELoss):
 
     def forward(  # type: ignore[override]
         self,
-        preds: List[torch.Tensor],
+        preds: list[torch.Tensor],
         targets: torch.Tensor,
         *args,
         **kwargs,
@@ -83,7 +83,7 @@ class SGFILoss(MSELoss):
         return super().forward(fused_pred, targets, *args, **kwargs)
 
 
-# @LOSSES.register_module()
+# @LOSSES.register()
 # class DevRCNNLoss(MSELoss):
 #     def __init__(
 #         self,
@@ -101,7 +101,7 @@ class SGFILoss(MSELoss):
 #         self._tau = nn.Parameter(torch.FloatTensor(data=[1]))
 
 #     def forward(
-#         self, preds: List[torch.Tensor], targets: torch.Tensor,
+#         self, preds: list[torch.Tensor], targets: torch.Tensor,
 #         poses: torch.Tensor,
 #         *args, **kwargs,
 #     ):

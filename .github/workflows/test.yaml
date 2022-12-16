@@ -11,20 +11,20 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - python: "3.8"
+          - python: "3.10"
             torch: "1.11.0"
             torchvision: "0.12.0"
     steps:
-    - uses: LutingWang/todd/.github/actions/checkout-todd@master
-      with:
-        lfs: true
-    - uses: actions/setup-python@master
-      with:
-        python-version: ${{ matrix.python }}
-    - name: Test
-      run: |
-        pip install torch==${{ matrix.torch }} torchvision==${{ matrix.torchvision }} -f https://download.pytorch.org/whl/torch_stable.html
-        pip install .[test]
-        coverage run
-        coverage xml && coverage report -m
-    - uses: codecov/codecov-action@main
+      - uses: LutingWang/todd/.github/actions/checkout-todd@master
+        with:
+          lfs: true
+      - uses: actions/setup-python@master
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Test
+        run: |
+          pip install torch==${{ matrix.torch }} torchvision==${{ matrix.torchvision }} -f https://download.pytorch.org/whl/torch_stable.html
+          pip install .[test]
+          coverage run
+          coverage xml && coverage report -m
+      - uses: codecov/codecov-action@main

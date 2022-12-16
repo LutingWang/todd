@@ -1,15 +1,13 @@
-from typing import List
-
 import torch
 
 from ..base import ModuleList
-from .base import ADAPTS, BaseAdapt
+from .base import AdaptRegistry, BaseAdapt
 
 
-@ADAPTS.register_module()
+@AdaptRegistry.register()
 class RoIAlign(BaseAdapt):
 
-    def __init__(self, strides: List[int], *args, **kwargs):
+    def __init__(self, strides: list[int], *args, **kwargs):
         import mmcv.ops
 
         super().__init__(*args, **kwargs)
@@ -23,9 +21,9 @@ class RoIAlign(BaseAdapt):
 
     def forward(
         self,
-        feats: List[torch.Tensor],
-        bboxes: List[torch.Tensor],
-    ) -> List[torch.Tensor]:
+        feats: list[torch.Tensor],
+        bboxes: list[torch.Tensor],
+    ) -> list[torch.Tensor]:
         """
         Args:
             feats: l x n x c x h x w

@@ -2,16 +2,16 @@ __all__ = [
     'CV2Visual',
 ]
 
-from typing import Optional, cast
+from typing import cast
 
 import cv2
 import numpy as np
 import numpy.typing as npt
 
-from .base import VISUALS, BaseVisual, Color, XAnchor, YAnchor
+from .base import BaseVisual, Color, VisualRegistry, XAnchor, YAnchor
 
 
-@VISUALS.register_module()
+@VisualRegistry.register()
 class CV2Visual(BaseVisual):
 
     def __init__(self, width: int, height: int) -> None:
@@ -33,8 +33,8 @@ class CV2Visual(BaseVisual):
         image: npt.NDArray[np.uint8],
         left: int = 0,
         top: int = 0,
-        width: Optional[int] = None,
-        height: Optional[int] = None,
+        width: int | None = None,
+        height: int | None = None,
         opacity: float = 1.0,
     ) -> npt.NDArray[np.uint8]:
         h, w, c = image.shape

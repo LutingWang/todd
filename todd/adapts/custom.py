@@ -1,9 +1,9 @@
 import string
 
-from .base import ADAPTS, BaseAdapt
+from .base import AdaptRegistry, BaseAdapt
 
 
-@ADAPTS.register_module()
+@AdaptRegistry.register()
 class Custom(BaseAdapt):
     """Custom adaptation described using patterns.
 

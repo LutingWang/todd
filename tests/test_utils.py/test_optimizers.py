@@ -6,8 +6,7 @@ from custom_types import CustomModule
 
 from todd.base import Config
 from todd.utils.optimizers import (
-    OPTIMIZERS,
-    build_optimizer,
+    OptimizerRegistry,
     build_param_group,
     build_param_groups,
 )
@@ -36,8 +35,7 @@ def test_build_param_groups(model: CustomModule) -> None:
 
 
 def test_build_optimizer(model: CustomModule) -> None:
-    optimizer = build_optimizer(
-        OPTIMIZERS,
+    optimizer = OptimizerRegistry._build(
         Config(
             type='Adam',
             model=model,

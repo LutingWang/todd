@@ -1,110 +1,23 @@
 import os
-from typing import Dict
+import pathlib
 
-import pytest
 import torch
 
-from todd.distillers.base import BaseDistiller
+from todd import Config
+from todd.distillers import BaseDistiller, DistillerStore
 from todd.utils import CollectionTensor
 
 
 class TestFGD:
 
-    @pytest.fixture
-    def distiller(self):
-        distiller = BaseDistiller(
-            models=list(),
-            hooks=dict(),
-            adapts={
-                'attn_spatial': dict(
-                    type='AbsMeanSpatialAttention',
-                    fields=['neck'],
-                    parallel=True,
-                    temperature=0.5,
-                ),
-                'teacher_attn_spatial': dict(
-                    type='AbsMeanSpatialAttention',
-                    fields=['teacher_neck'],
-                    parallel=True,
-                    temperature=0.5,
-                ),
-                'attn_channel': dict(
-                    type='AbsMeanChannelAttention',
-                    fields=['neck'],
-                    parallel=True,
-                    temperature=0.5,
-                ),
-                'teacher_attn_channel': dict(
-                    type='AbsMeanChannelAttention',
-                    fields=['teacher_neck'],
-                    parallel=True,
-                    temperature=0.5,
-                ),
-                'masks': dict(
-                    type='FGDMask',
-                    fields=['img_shape', 'gt_bboxes'],
-                    neg_gain=0.5,
-                    strides=[8, 16, 32, 64, 128],
-                    ceil_mode=True,
-                ),
-                'global': dict(
-                    type='mmcv_ContextBlock',
-                    fields=['neck'],
-                    parallel=5,
-                    in_channels=4,
-                    ratio=0.5,
-                ),
-                'teacher_global': dict(
-                    type='mmcv_ContextBlock',
-                    fields=['teacher_neck'],
-                    parallel=5,
-                    in_channels=4,
-                    ratio=0.5,
-                ),
-            },
-            losses={
-                'loss_feat': dict(
-                    type='FGDLoss',
-                    fields=[
-                        'neck',
-                        'teacher_neck',
-                        'teacher_attn_spatial',
-                        'teacher_attn_channel',
-                        'masks',
-                    ],
-                    parallel=True,
-                    weight=5e-4,
-                    reduction='sum',
-                ),
-                'loss_attn_spatial': dict(
-                    type='L1Loss',
-                    fields=['attn_spatial', 'teacher_attn_spatial'],
-                    parallel=True,
-                    weight=2.5e-4,
-                    reduction='sum',
-                ),
-                'loss_attn_channel': dict(
-                    type='L1Loss',
-                    fields=['attn_channel', 'teacher_attn_channel'],
-                    parallel=True,
-                    weight=2.5e-4,
-                    reduction='sum',
-                ),
-                'loss_global': dict(
-                    type='MSELoss',
-                    fields=['global', 'teacher_global'],
-                    parallel=True,
-                    weight=2.5e-6,
-                    reduction='sum',
-                ),
-            },
-        )
-        return distiller
+    # @pytest.fixture
+    # def distiller(self, data_dir: pathlib.Path) -> BaseDistiller:
+    #     config = Config.load(data_dir / 'config.py')
+    #     return BaseDistiller.build(config)
 
-    @pytest.fixture(scope='class')
-    def result(self) -> Dict[str, dict]:
-        filename = os.path.join(os.path.dirname(__file__), 'fgd.pth')
-        return torch.load(filename, map_location='cpu')
+    # @pytest.fixture()
+    # def result(self, data_dir: pathlib.Path):
+    #     return torch.load(data_dir / 'fgd.pth', map_location='cpu')
 
     def tensors(self):
         tensors = {
@@ -147,18 +60,19 @@ class TestFGD:
         filename = os.path.join(os.path.dirname(__file__), 'fgd1.pth')
         torch.save(result, filename)
 
-    def test_fgd(self, distiller: BaseDistiller, result: Dict[str, dict]):
+    def test_fgd(self, data_dir: pathlib.Path) -> None:
+        config = Config.load(data_dir / 'fgd.py')
+        result = torch.load(data_dir / 'fgd.pth', map_location='cpu')
+
+        distiller = BaseDistiller.build(config)
         distiller.load_state_dict(result['state_dict'])
-        distiller.track_tensors()
-        losses = distiller.distill(result['inputs'], debug=True)
-        distiller.reset()
-        tensors = {  # yapf: disable
-            k[len(distiller.DEBUG_PREFIX):]: v
-            for k, v in losses.items()
-            if k.startswith(distiller.DEBUG_PREFIX)
-        }
-        for k in tensors:
-            losses.pop(distiller.DEBUG_PREFIX + k)
+
+        assert not DistillerStore.INTERMEDIATE_OUTPUTS
+        DistillerStore.INTERMEDIATE_OUTPUTS = '_debug_'
+        losses = distiller(result['inputs'])
+        DistillerStore.INTERMEDIATE_OUTPUTS = ''
+        tensors = losses.pop('_debug_')
+
         assert CollectionTensor.allclose(result['tensors'], tensors)
         assert CollectionTensor.allclose(result['losses'], losses)
 

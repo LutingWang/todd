@@ -1,16 +1,14 @@
+__all__ = [
+    'BaseScheduler',
+    'SchedulerRegistry',
+    'IntervalScheduler',
+]
+
 import math
 import numbers
 from abc import abstractmethod
-from typing import Optional, Union
 
-from ..base import Registry, get_iter
-
-__all__ = [
-    'BaseScheduler',
-    'SCHEDULERS',
-    'SchedulerConfig',
-    'IntervalScheduler',
-]
+from ..base import Registry, Store
 
 
 class BaseScheduler(numbers.Real):
@@ -90,11 +88,8 @@ class BaseScheduler(numbers.Real):
         return self.value <= other
 
 
-SCHEDULERS: Registry = Registry(
-    'schedulers',
-    base=BaseScheduler,
-)
-SchedulerConfig = Union[dict, BaseScheduler]
+class SchedulerRegistry(Registry):
+    pass
 
 
 class IntervalScheduler(BaseScheduler):
@@ -105,7 +100,7 @@ class IntervalScheduler(BaseScheduler):
         start_value: float,
         end_value: float,
         start_iter: int = 0,
-        end_iter: Optional[int] = None,
+        end_iter: int | None = None,
     ) -> None:
         super().__init__()
         self._start_value = start_value
@@ -123,12 +118,12 @@ class IntervalScheduler(BaseScheduler):
 
     @property
     def value(self) -> float:
-        if get_iter() <= self._start_iter:
+        if Store.ITER <= self._start_iter:
             return self._start_value
-        if get_iter() >= self._end_iter:
+        if Store.ITER >= self._end_iter:
             return self._end_value
         weight = self._weight(
-            get_iter() - self._start_iter,
+            Store.ITER - self._start_iter,
             self._end_iter - self._start_iter,
         )
         return (

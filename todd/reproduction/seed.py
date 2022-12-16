@@ -6,20 +6,14 @@ __all__ = [
 import hashlib
 import random
 from contextlib import contextmanager
-from typing import Generator, Optional, cast
+from typing import Generator, cast
 
 import numpy as np
 import torch
 import torch.backends.cudnn as cudnn
 import torch.distributed as dist
 
-from ..base import (
-    get_iter,
-    get_logger,
-    get_rank,
-    get_world_size,
-    iter_initialized,
-)
+from ..base import get_logger, get_rank, get_world_size
 
 
 def randint(high: int = 2**30) -> int:
@@ -33,7 +27,7 @@ def randint(high: int = 2**30) -> int:
 
 def init_seed(
     seed=None,
-    deterministic: Optional[bool] = None,
+    deterministic: bool | None = None,
 ) -> int:
     if seed is None:
         seed = randint()
@@ -45,9 +39,6 @@ def init_seed(
         seed = hashlib.blake2b(seed, digest_size=4).hexdigest()
         seed = int(seed, 16)
     seed %= 2**30
-
-    if iter_initialized():
-        seed += get_iter()
 
     random.seed(seed)
     np.random.seed(seed)
@@ -64,7 +55,7 @@ def init_seed(
 @contextmanager
 def set_seed_temp(
     seed=None,
-    deterministic: Optional[bool] = None,
+    deterministic: bool | None = None,
 ) -> Generator[None, None, None]:
     cuda_is_available = torch.cuda.is_available()
     if torch.cuda.device_count() > 1:

@@ -3,20 +3,18 @@ __all__ = [
     'CKDLoss',
 ]
 
-from typing import List, Optional, Tuple
-
 import torch
 import torch.distributed as dist
 import torch.nn.functional as F
 
 from ..base import BBoxesXYXY, get_rank, get_world_size
-from .base import LOSSES, BaseLoss
+from .base import BaseLoss, LossRegistry
 
 
 def ckd_loss(
     pred: torch.Tensor,
     target: torch.Tensor,
-    ignore: Optional[Tuple[torch.Tensor, torch.Tensor]] = None,
+    ignore: tuple[torch.Tensor, torch.Tensor] | None = None,
     gamma: float = 0.07,
 ) -> torch.Tensor:
     """Wrapper of CKD loss.
@@ -54,7 +52,7 @@ def ckd_loss(
 class MemoryPool:
 
     def __init__(self, size: int = 10) -> None:
-        self._memory: List[torch.Tensor] = []
+        self._memory: list[torch.Tensor] = []
         self._size = size
         self._rank = get_rank()
         self._world_size = get_world_size()
@@ -80,7 +78,7 @@ class MemoryPool:
         return torch.cat(self._memory)
 
 
-@LOSSES.register_module()
+@LossRegistry.register()
 class CKDLoss(BaseLoss):
 
     def __init__(self, *args, **kwargs) -> None:
@@ -91,7 +89,7 @@ class CKDLoss(BaseLoss):
         self,
         preds: torch.Tensor,
         targets: torch.Tensor,
-        bboxes: Optional[List[torch.Tensor]] = None,
+        bboxes: list[torch.Tensor] | None = None,
     ) -> torch.Tensor:
         """Compute CKD loss.
 

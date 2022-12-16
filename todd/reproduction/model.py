@@ -6,14 +6,14 @@ __all__ = [
     'FrozenMixin',
 ]
 
-from typing import Any, List, Optional, Sequence, Tuple, TypeVar
+from typing import Any, Sequence, TypeVar
 
 import torch.nn as nn
 from torch.nn.modules.batchnorm import _BatchNorm
 
 from ..base import getattr_recur
 
-DEFAULT_STOCHASTIC_MODULE_TYPES: Tuple[Any, ...] = (_BatchNorm, nn.Dropout)
+DEFAULT_STOCHASTIC_MODULE_TYPES: tuple[Any, ...] = (_BatchNorm, nn.Dropout)
 
 try:
     from timm.models.layers import DropPath
@@ -27,7 +27,7 @@ def get_modules(
     model: nn.Module,
     names: Sequence[str] = tuple(),
     types: Sequence[type] = tuple(),
-) -> List[nn.Module]:
+) -> list[nn.Module]:
     if not names and not types:
         return [model]
     if not types:
@@ -64,8 +64,8 @@ class FrozenMixin(nn.Module):
 
     def __init__(
         self,
-        no_grad_config: Optional[dict] = None,
-        eval_config: Optional[dict] = None,
+        no_grad_config: dict | None = None,
+        eval_config: dict | None = None,
     ) -> None:
         self._no_grad = no_grad_config
         self._eval = eval_config

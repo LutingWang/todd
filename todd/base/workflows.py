@@ -1,267 +1,360 @@
 __all__ = [
     'Message',
-    'STEPS',
-    'WorkflowConfig',
+    'Spec',
+    'Task',
+    'Step',
+    'SingleStep',
+    'ParallelStep',
+    'ParallelSingleStep',
+    'Job',
     'Workflow',
 ]
 
-from abc import abstractmethod
+from abc import ABC, abstractmethod
+from collections import UserDict, UserList
+from functools import partial
+from itertools import repeat
+from symtable import symtable
 from typing import (
     Any,
     Callable,
-    Dict,
-    Generator,
     Iterable,
     Iterator,
-    Mapping,
     NamedTuple,
-    Optional,
-    Set,
-    Tuple,
-    Union,
+    TypeVar,
+    cast,
+    final,
 )
 
-from ._extensions import get_logger
+import pandas as pd
+
 from .configs import Config
-from .registries import Registry
+from .loggers import get_logger
+from .registries import RegistryMeta
 
-Message = Dict[str, Any]
+Message = dict[str, Any]
 
-Step = Callable[..., Any]
-STEPS: Registry[Step] = Registry('steps')
+TaskType = TypeVar('TaskType', bound='Task')
+JobType = TypeVar('JobType', bound='Job')
 
 
-class BaseStepManager:
+class Spec(NamedTuple):
+    inputs: set[str]
+    outputs: set[str]
 
+
+class Task(ABC):
+    """Base class for `Step`, `Job`, and `Workflow`."""
+
+    @classmethod
     @abstractmethod
-    def __iter__(self) -> Generator[Any, None, None]:
+    def build(cls: type[TaskType], config: Config) -> TaskType:
+        """Builds a task.
+
+        Args:
+            config: task configuration.
+
+        Returns:
+            The built task.
+        """
         pass
 
     @abstractmethod
-    def __call__(self, args: Tuple[Any, ...], kwargs: Dict[str, Any]):
+    def __call__(self, message: Message) -> Message:
+        """Executes the task.
+
+        Args:
+            message: inputs.
+
+        Returns:
+            Outputs.
+        """
         pass
 
-
-class SingleStepManager(BaseStepManager):
-
-    def __init__(self, step: Step) -> None:
-        self._step = step
-
-    def __iter__(self) -> Generator[Any, None, None]:
-        yield self._step
-
-    def __call__(self, args: Tuple[Any, ...], kwargs: Dict[str, Any]):
-        return self._step(*args, **kwargs)
-
     @property
-    def step(self) -> Step:
-        return self._step
-
-
-class ParallelSingleStepManager(SingleStepManager):
-
-    def __call__(self, args: Tuple[Any, ...], kwargs: Dict[str, Any]):
-        super_call = super().__call__
-        return tuple(super_call(p_args, kwargs) for p_args in zip(*args))
-
-
-class ParallelMultiStepManager(BaseStepManager):
-
-    def __init__(self, steps: Iterable[Step]) -> None:
-        self._steps = tuple(steps)
-
-    def __iter__(self) -> Generator[Any, None, None]:
-        yield from self._steps
-
-    def __call__(self, args: Tuple[Any, ...], kwargs: Dict[str, Any]):
-        return tuple(  # yapf: disable
-            step(*p_args, **kwargs)
-            for step, *p_args in zip(self._steps, *args)
-        )
-
-    @property
-    def steps(self) -> Tuple[Step, ...]:
-        return self._steps
-
-
-class BaseOutputDict:
-
     @abstractmethod
-    def __call__(self, output) -> Dict[str, Any]:
+    def actions(self) -> tuple[Callable, ...]:
+        """User-defined actions used by the task."""
+        pass
+
+    @property
+    @abstractmethod
+    def spec(self) -> Spec:
+        """Specifications of the task."""
         pass
 
 
-class SingleOutputDict(BaseOutputDict):
+class Step(Task):
+    """Executor of actions."""
 
-    def __init__(self, key: str) -> None:
-        self._key = key
+    @classmethod
+    @final
+    def build(cls, config: Config) -> 'Step':
+        """Builds a step.
 
-    def __call__(self, data) -> Dict[str, Any]:
-        return {self._key: data}
+        Args:
+            config: metadata of the step and specifications of the
+                user-defined action.
 
-    @property
-    def key(self) -> str:
-        return self._key
+        Returns:
+            The built step.
 
+        The user-defined action must be `typing.Callable`:
 
-class MultiOutputDict(BaseOutputDict):
+            >>> from todd import RegistryMeta
+            >>> class Model(metaclass=RegistryMeta): pass
+            >>> @Model.register()
+            ... class ResNet:
+            ...     def __init__(
+            ...         self,
+            ...         layers: int,
+            ...         num_classes: int = 1024,
+            ...     ) -> None:
+            ...         self._layers = layers
+            ...         self._num_classes = num_classes
+            ...     def __call__(self, *args, **kwargs): ...
+            ...     def __repr__(self) -> str:
+            ...         return (
+            ...             f"{type(self).__name__}("
+            ...             f"layers={self._layers}, "
+            ...             f"num_classes={self._num_classes})"
+            ...         )
 
-    def __init__(self, keys: Iterable[str]) -> None:
-        self._keys = tuple(keys)
+        To build a step of ``ResNet``, the ``config`` must specify the
+        ``inputs`` and ``outputs`` of the step:
 
-    def __call__(self, output) -> Dict[str, Any]:
-        return dict(zip(self._keys, output))
+            >>> config = Config(
+            ...     inputs=('x',),
+            ...     outputs='y',
+            ...     registry=Model,
+            ...     action=dict(type='ResNet', layers=50),
+            ... )
+            >>> Step.build(config)
+            SingleStep(inputs=('x',), outputs='y', action=ResNet(layers=50, \
+num_classes=1024))
 
-    @property
-    def keys(self) -> Set[str]:
-        return set(self._keys)
+        By default, the built step is an instance of :py:class:`SingleStep`.
+        When the ``config`` provides a ``parallel`` parameter, instances of
+        :py:class:`ParallelStep` or :py:class:`ParallelSingleStep` will be
+        built.
 
+            >>> config.parallel = True
+            >>> Step.build(config)
+            ParallelSingleStep(inputs=('x',), outputs='y', action=ResNet(\
+layers=50, num_classes=1024))
+            >>> config.parallel = [dict(num_classes=10), dict(num_classes=100)]
+            >>> Step.build(config)
+            ParallelStep(inputs=('x',), outputs='y', actions=(ResNet(layers=50\
+, num_classes=10), ResNet(layers=50, num_classes=100)))
+        """
+        config = config.copy()
+        registry: RegistryMeta = config.pop('registry')
+        action: Config = config.pop('action')
+        build = partial(registry.build, action)
 
-class ParallelMultiOutputDict(MultiOutputDict):
-
-    def __call__(self, output) -> Dict[str, Tuple[Any, ...]]:
-        output = zip(*output)
-        return dict(zip(self._keys, output))
-
-
-OutputKey = Union[str, Tuple[str, ...]]
-
-
-class Job:
-
-    @staticmethod
-    def build_step_manager(
-        config: Mapping,
-        registry: Registry[Step],
-        parallel,
-    ) -> BaseStepManager:
-        if isinstance(parallel, bool):
-            step = registry.build(config)
-            if parallel:
-                return ParallelSingleStepManager(step)
-            return SingleStepManager(step)
-        if isinstance(parallel, int):
-            steps = tuple(registry.build(config) for _ in range(parallel))
-            return ParallelMultiStepManager(steps)
-        if isinstance(parallel, Iterable):
-            steps = tuple(
-                registry.build(p_config, config) for p_config in parallel
-            )
-            return ParallelMultiStepManager(steps)
-        raise TypeError(
-            "`parallel` must be a bool, int, or Iterable, "
-            f"but got {type(parallel)}"
-        )
-
-    @staticmethod
-    def build_output_dict(key: OutputKey, parallel) -> BaseOutputDict:
-        if isinstance(key, str):
-            return SingleOutputDict(key)
-        if parallel:
-            return ParallelMultiOutputDict(key)
-        return MultiOutputDict(key)
-
-    @staticmethod
-    def build(
-        step_descendent_name: str,
-        config: Mapping,
-        output_key: OutputKey,
-    ) -> 'Job':
-        registry = STEPS.descendent(step_descendent_name)
-        config = Config(config)
         parallel = config.pop('parallel', False)
-        fields = config.pop('fields', tuple())
-        step_manager = Job.build_step_manager(config, registry, parallel)
-        output_dict = Job.build_output_dict(output_key, parallel)
-        return Job(step_manager, output_dict, fields)
+        if isinstance(parallel, Iterable):
+            return ParallelStep(tuple(map(build, parallel)), **config)
+        if isinstance(parallel, int) and not isinstance(parallel, bool):
+            return ParallelStep(
+                tuple(build() for _ in range(parallel)),
+                **config,
+            )
+        if parallel:
+            return ParallelSingleStep(build(), **config)
+        return SingleStep(build(), **config)
 
     def __init__(
         self,
-        step_manager: BaseStepManager,
-        output_dict: BaseOutputDict,
-        fields: Iterable[str] = tuple(),
+        inputs: Iterable[str],
+        outputs: str,
     ) -> None:
-        self._step_manager = step_manager
-        self._output_dict = output_dict
-        self._fields = tuple(fields)
-        self._logger = get_logger()
+        """Initialize.
 
-    def __iter__(self) -> Iterator[Any]:
-        return iter(self._step_manager)
+        Args:
+            inputs: names of the input fields.
+            outputs: expression of the outputs.
 
-    def __call__(self, message: Message, **kwargs) -> Message:
-        inputs = tuple(message[field] for field in self._fields)
-        try:
-            output = self._step_manager(inputs, kwargs)
-        except Exception:
-            self._logger.error(f"Failed to forward {self}")
-            raise
-        return self._output_dict(output)
+        For convenience, ``outputs`` is designed to be an expression.
+        Suppose ``outputs`` is ``a, b``, the behavior of the step is similar
+        to the following code:
 
-    @property
-    def step_manager(self) -> BaseStepManager:
-        return self._step_manager
+        .. code-block:: python
+
+           a, b = action(...)
+           return dict(a=a, b=b)
+        """
+        self._inputs = tuple(inputs)
+        self._outputs = outputs
 
     @property
-    def output_dict(self) -> BaseOutputDict:
-        return self._output_dict
+    def name(self) -> str:
+        """Name of the step."""
+        return self._outputs
 
     @property
-    def fields(self) -> Tuple[str, ...]:
-        return self._fields
-
-
-WorkflowConfig = Dict[OutputKey, Mapping]
-
-
-class WorkflowSpec(NamedTuple):
-    inputs: Set[str]
-    outputs: Set[str]
-
-
-class Workflow:
-
-    @staticmethod
-    def build(
-        step_descendent_name: str,
-        configs: Optional[WorkflowConfig] = None,
-        **kwargs: Mapping,
-    ) -> 'Workflow':
-        jobs = tuple(  # yapf: disable
-            Job.build(step_descendent_name, config, output_key)
-            for output_key, config in (configs or kwargs).items()
+    def spec(self) -> Spec:
+        """Specification of the step."""
+        return Spec(
+            set(self._inputs),
+            set(symtable(self._outputs, '<string>', 'eval').get_identifiers()),
         )
-        return Workflow(jobs)
 
-    def __init__(self, jobs: Iterable[Job]) -> None:
-        self._jobs = tuple(jobs)
+    def _input(self, message: Message) -> tuple:
+        """Parse the inputs.
 
-    def __iter__(self) -> Iterator[Job]:
-        return iter(self._jobs)
+        Args:
+            message: the original message.
+
+        Returns:
+            The parsed inputs.
+
+        Convert ``self._inputs`` to the corresponding ``message`` fields:
+
+            >>> step = Config(_inputs=('a', 'b'))
+            >>> Step._input(step, dict(a=1, b=2, d=4))
+            (1, 2)
+        """
+        return tuple(message[input_] for input_ in self._inputs)
+
+    def _output(self, outputs) -> Message:
+        """Parse the outputs.
+
+        Args:
+            outputs: outputs of the action.
+
+        Returns:
+            The parsed outputs.
+
+        Parse according to `self._outputs`, which is arbitrary expression:
+
+            >>> step = Config(_outputs='a, b')
+            >>> Step._output(step, (1, 2))
+            {'a': 1, 'b': 2}
+        """
+        message: Message = dict()
+        exec(f'{self._outputs} = outputs', dict(outputs=outputs), message)
+        return message
+
+
+class SingleStep(Step):
+
+    def __init__(self, action: Callable, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self._action = action
 
     def __call__(self, message: Message) -> Message:
-        updated: Message = dict()
-        for job in self._jobs:
-            updates = job(message)
-            message.update(updates)
-            updated.update(updates)
-        return updated
+        inputs = self._input(message)
+        _ = self._action(*inputs)
+        outputs = self._output(_)
+        return outputs
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(jobs={self._jobs})"
+        return (
+            f"{type(self).__name__}("
+            f"inputs={self._inputs}, "
+            f"outputs={repr(self._outputs)}, "
+            f"action={repr(self._action)})"
+        )
 
-    def spec(self) -> WorkflowSpec:
-        inputs: Set[str] = set()
-        outputs: Set[str] = set()
-        for job in self._jobs:
-            inputs |= set(job.fields) - outputs
-            output_dict = job.output_dict
-            if hasattr(output_dict, 'key'):
-                outputs.add(output_dict.key)  # type: ignore[attr-defined]
-            elif hasattr(output_dict, 'keys'):
-                outputs |= output_dict.keys  # type: ignore[attr-defined]
-            else:
-                raise TypeError(
-                    f"{output_dict} does not have `key` or `keys`.",
-                )
-        return WorkflowSpec(inputs, outputs)
+    @property
+    def actions(self) -> tuple[Callable]:
+        return self._action,
+
+
+class ParallelStep(Step):
+
+    def __init__(self, actions: Iterable[Callable], *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self._actions = actions
+
+    def __call__(self, message: Message) -> Message:
+        inputs = self._input(message)
+        outputs = []
+        for action, *_ in zip(self._actions, *inputs):
+            _ = action(*_)
+            outputs.append(self._output(_))
+        return pd.DataFrame(outputs).to_dict(orient="list")
+
+    def __repr__(self) -> str:
+        return (
+            f"{type(self).__name__}("
+            f"inputs={self._inputs}, "
+            f"outputs={repr(self._outputs)}, "
+            f"actions={repr(self._actions)})"
+        )
+
+    @property
+    def actions(self) -> tuple[Callable, ...]:
+        return tuple(self._actions)
+
+
+class ParallelSingleStep(ParallelStep):
+
+    def __init__(self, action: Callable, *args, **kwargs) -> None:
+        super().__init__(repeat(action), *args, **kwargs)
+
+    def __repr__(self) -> str:
+        return (
+            f"{type(self).__name__}("
+            f"inputs={self._inputs}, "
+            f"outputs={repr(self._outputs)}, "
+            f"action={repr(self.actions[0])})"
+        )
+
+    @property
+    def actions(self) -> tuple[Callable]:
+        actions = cast(Iterator[Callable], self._actions)
+        return next(actions),
+
+
+class Job(UserList[Step], Task):
+
+    @classmethod
+    def build(cls: type[JobType], config: Config) -> JobType:
+        config = config.copy()
+        steps: Config = config.pop('steps')
+        return cls([
+            Step.build(Config(**v, **config, outputs=k))
+            for k, v in steps.items()
+        ])
+
+    def __init__(self, steps: Iterable[Step]) -> None:
+        super().__init__(steps)
+        self._logger = get_logger()
+
+    def __call__(self, message: Message) -> Message:
+        updates: Message = dict()
+        for step in self:
+            try:
+                outputs = step(message)
+            except Exception:
+                self._logger.error(f"Failed to forward {step}")
+                raise
+            message.update(outputs)
+            updates.update(outputs)
+        return updates
+
+    def __repr__(self) -> str:
+        return (f"{type(self).__name__}({super().__repr__()})")
+
+    @property
+    def actions(self) -> tuple[Callable, ...]:
+        return sum((step.actions for step in self), tuple())
+
+    @property
+    def spec(self) -> Spec:
+        inputs: set[str] = set()
+        outputs: set[str] = set()
+        for step in self:
+            spec = step.spec
+            inputs |= spec.inputs - outputs
+            outputs |= spec.outputs
+        return Spec(inputs, outputs)
+
+
+class Workflow(UserDict[str, Job], Task):
+
+    @property
+    def actions(self) -> tuple[Callable, ...]:
+        return sum((job.actions for job in self.values()), tuple())

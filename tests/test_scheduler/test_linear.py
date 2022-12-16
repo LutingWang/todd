@@ -1,6 +1,7 @@
 import pytest
 
-from todd.schedulers import SCHEDULERS, BaseScheduler
+from todd import Config, Store
+from todd.schedulers import BaseScheduler, SchedulerRegistry
 
 
 class TestLinearScheduler:
@@ -15,8 +16,8 @@ class TestWarmupScheduler:
 
     @pytest.fixture(scope='class')
     def scheduler(self) -> BaseScheduler:
-        scheduler = SCHEDULERS.build(
-            dict(
+        scheduler = SchedulerRegistry.build(
+            Config(
                 type='WarmupScheduler',
                 value=1,
                 iter_=10,
@@ -25,23 +26,10 @@ class TestWarmupScheduler:
         return scheduler
 
     @pytest.mark.usefixtures('setup_teardown_iter')
-    @pytest.mark.parametrize(
-        'setup_value,teardown_value',
-        [(i, None) for i in range(11)],
-    )
-    def test_warmup(
-        self,
-        setup_value: int,
-        scheduler: BaseScheduler,
-    ) -> None:
-        assert scheduler.value == setup_value / 10
-
-    @pytest.mark.usefixtures('setup_teardown_iter')
-    @pytest.mark.parametrize(
-        'setup_value,teardown_value',
-        [(11, None)],
-    )
-    def test_after(self, setup_value: int, scheduler: BaseScheduler) -> None:
+    def test_value(self, scheduler: BaseScheduler) -> None:
+        Store.ITER = 1
+        assert scheduler.value == 0.1
+        Store.ITER = 11
         assert scheduler.value == 1
 
 

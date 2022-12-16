@@ -30,14 +30,14 @@ autodoc_typehints = 'description'
 autodoc_default_options = {
     'imported-members': True,
     'members': True,
-    'undoc-members': True,
     'show-inheritance': True,
+    'undoc-members': True,
 }
 autodoc_class_signature = 'separated'
 autodoc_inherit_docstrings = False
 
 intersphinx_mapping = {
-    'python': ('https://docs.python.org/3.6', None),
+    'python': ('https://docs.python.org/3.10', None),
     'numpy': ('https://numpy.org/doc/stable/', None),
     'torch': ('https://pytorch.org/docs/master/', None),
     'python-pptx': ('https://python-pptx.readthedocs.io/en/latest/', None),

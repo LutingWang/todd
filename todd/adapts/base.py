@@ -1,6 +1,6 @@
 __all__ = [
     'BaseAdapt',
-    'ADAPTS',
+    'AdaptRegistry',
 ]
 
 import inspect
@@ -9,20 +9,23 @@ import itertools
 import einops.layers.torch
 import torch.nn as nn
 
-from ..base import STEPS, Module, Registry
+from ..base import Module, Registry
 
 
 class BaseAdapt(Module):
     pass
 
 
-ADAPTS: Registry[nn.Module] = Registry('adapts', parent=STEPS, base=nn.Module)
+class AdaptRegistry(Registry):
+    pass
+
+
 for _, class_ in itertools.chain(
     inspect.getmembers(nn, inspect.isclass),
     inspect.getmembers(einops.layers.torch, inspect.isclass),
 ):
     if issubclass(class_, nn.Module):
-        ADAPTS.register(class_)
+        AdaptRegistry.register()(class_)
 
 try:
     import mmcv.cnn
@@ -31,6 +34,6 @@ try:
         mmcv.cnn.CONV_LAYERS.module_dict.items(),
         mmcv.cnn.PLUGIN_LAYERS.module_dict.items(),
     ):
-        ADAPTS.register(v, name=f'mmcv_{k}')
+        AdaptRegistry.register(keys=(f'mmcv_{k}', ))(v)
 except Exception:
     pass

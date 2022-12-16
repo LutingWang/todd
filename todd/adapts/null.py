@@ -1,7 +1,7 @@
-from .base import ADAPTS, BaseAdapt
+from .base import AdaptRegistry, BaseAdapt
 
 
-@ADAPTS.register_module()
+@AdaptRegistry.register()
 class Null(BaseAdapt):
 
     def __init__(self, *args, **kwargs):

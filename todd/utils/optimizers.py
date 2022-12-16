@@ -1,27 +1,26 @@
 __all__ = [
-    'LR_SCHEDULERS',
-    'OPTIMIZERS',
+    'LrSchedulerRegistry',
+    'OptimizerRegistry',
     'build_param_group',
     'build_param_groups',
-    'build_optimizer',
 ]
 
 import inspect
 import re
 from functools import partial
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any, Sequence
 
 import torch.nn as nn
 import torch.optim as optim
 import torch.optim.lr_scheduler as lr_scheduler
 
-from ..base import Config, Registry, default_build
+from ..base import Config, Registry, RegistryMeta
 
 
 def build_param_group(
     model: nn.Module,
-    params: Dict[str, Any],
-) -> Dict[str, Any]:
+    params: dict[str, Any],
+) -> dict[str, Any]:
     params = dict(params)
     regex = re.compile(params['params'])
     params['params'] = []
@@ -33,36 +32,32 @@ def build_param_group(
 
 def build_param_groups(
     model: nn.Module,
-    params: Optional[Sequence[Dict[str, Any]]] = None,
-) -> List[Dict[str, Any]]:
+    params: Sequence[dict[str, Any]] | None = None,
+) -> list[dict[str, Any]]:
     if params is None:
         return [dict(params=model.parameters())]
     builder = partial(build_param_group, model)
     return list(map(builder, params))
 
 
-def build_optimizer(
-    registry: Registry[optim.Optimizer],
-    config: Config,
-) -> optim.Optimizer:
-    model = config.pop('model')
-    config.params = build_param_groups(model, config.get('params', None))
-    return default_build(registry, config)
+class OptimizerRegistry(Registry):
+
+    @classmethod
+    def _build(cls, config: Config) -> optim.Optimizer:
+        model = config.pop('model')
+        config.params = build_param_groups(model, config.get('params', None))
+        return RegistryMeta._build(cls, config)
 
 
-OPTIMIZERS = Registry(
-    'optimizers',
-    base=optim.Optimizer,
-    build_func=build_optimizer,
-)
 for _, class_ in inspect.getmembers(optim, inspect.isclass):
     assert issubclass(class_, optim.Optimizer)
-    OPTIMIZERS.register(class_)
+    OptimizerRegistry.register()(class_)
 
-LR_SCHEDULERS: Registry[lr_scheduler._LRScheduler] = Registry(
-    'lr_schedulers',
-    base=lr_scheduler._LRScheduler,
-)
+
+class LrSchedulerRegistry(Registry):
+    pass
+
+
 for _, class_ in inspect.getmembers(optim.lr_scheduler, inspect.isclass):
     if issubclass(class_, lr_scheduler._LRScheduler):
-        LR_SCHEDULERS.register(class_)
+        LrSchedulerRegistry.register()(class_)

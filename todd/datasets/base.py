@@ -1,6 +1,6 @@
 __all__ = [
-    'ACCESS_LAYERS',
-    'DATASETS',
+    'AccessLayerRegistry',
+    'DatasetRegistry',
     'BaseAccessLayer',
     'BaseDataset',
 ]
@@ -8,7 +8,7 @@ __all__ = [
 import reprlib
 from abc import abstractmethod
 from enum import Enum
-from typing import Any, Generic, MutableMapping, TypeVar, Union
+from typing import Any, Generic, MutableMapping, TypeVar
 
 from torch.utils.data import Dataset
 
@@ -29,7 +29,7 @@ class BaseAccessLayer(MutableMapping[T, Any]):
         *args,
         data_root: str,
         task_name: str = '',
-        codec: Union[str, Codec] = 'pytorch',
+        codec: str | Codec = 'pytorch',
         readonly: bool = True,
         exist_ok: bool = False,
         **kwargs,
@@ -68,10 +68,8 @@ class BaseAccessLayer(MutableMapping[T, Any]):
         pass
 
 
-ACCESS_LAYERS: Registry[BaseAccessLayer] = Registry(
-    'access layers',
-    base=BaseAccessLayer,
-)
+class AccessLayerRegistry(Registry):
+    pass
 
 
 class BaseDataset(Dataset, Generic[T]):
@@ -79,9 +77,9 @@ class BaseDataset(Dataset, Generic[T]):
 
     def __init__(self, *args, access_layer, **kwargs):
         super().__init__(*args, **kwargs)
-        self._access_layer = ACCESS_LAYERS.build(
+        self._access_layer = AccessLayerRegistry.build(
             access_layer,
-            default_args=dict(type=self.ACCESS_LAYER),
+            default_config=dict(type=self.ACCESS_LAYER),
         )
         self._logger = get_logger()
 
@@ -100,7 +98,5 @@ class BaseDataset(Dataset, Generic[T]):
         return self._access_layer[key]
 
 
-DATASETS: Registry[BaseDataset] = Registry(
-    'datasets',
-    base=BaseDataset,
-)
+class DatasetRegistry(Registry):
+    pass

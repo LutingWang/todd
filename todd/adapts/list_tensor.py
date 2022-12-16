@@ -1,7 +1,7 @@
 import torch
 
 from ..utils import ListTensor
-from .base import ADAPTS, BaseAdapt
+from .base import AdaptRegistry, BaseAdapt
 
 
 class ListTensorAdapt(BaseAdapt):
@@ -11,11 +11,11 @@ class ListTensorAdapt(BaseAdapt):
         return self.func(*args, **kwargs)
 
 
-@ADAPTS.register_module()
+@AdaptRegistry.register()
 class Stack(ListTensorAdapt):
     func = staticmethod(ListTensor.stack)
 
 
-@ADAPTS.register_module()
+@AdaptRegistry.register()
 class Index(ListTensorAdapt):
     func = staticmethod(ListTensor.index)

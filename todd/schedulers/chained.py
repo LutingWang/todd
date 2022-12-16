@@ -5,18 +5,19 @@ __all__ = [
 import math
 from typing import Iterable
 
-from .base import SCHEDULERS, BaseScheduler, SchedulerConfig
+from ..base import Config
+from .base import BaseScheduler, SchedulerRegistry
 
 
-@SCHEDULERS.register_module()
+@SchedulerRegistry.register()
 class ChainedScheduler(BaseScheduler):
 
     def __init__(
         self,
-        schedulers: Iterable[SchedulerConfig],
+        schedulers: Iterable[Config],
         value: float = 1.0,
     ) -> None:
-        self._schedulers = tuple(map(SCHEDULERS.build, schedulers))
+        self._schedulers = tuple(map(SchedulerRegistry.build, schedulers))
         self._value = value
 
     @property

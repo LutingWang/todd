@@ -2,10 +2,10 @@ __all__ = [
     'StandardHook',
 ]
 
-from .base import HOOKS, BaseHook
+from .base import BaseHook, HookRegistry
 
 
-@HOOKS.register_module()
+@HookRegistry.register()
 class StandardHook(BaseHook):
 
     def _reset(self):

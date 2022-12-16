@@ -27,7 +27,7 @@ import numbers
 import os
 import time
 from abc import ABC, abstractmethod
-from typing import Dict, Generator, Optional
+from typing import Generator
 
 from todd.base import DictAction, Registry, get_logger
 
@@ -60,17 +60,18 @@ class BaseReader(ABC):
                 break
 
 
-READERS: Registry[BaseReader] = Registry('readers', base=BaseReader)
+class ReaderRegistry(Registry):
+    pass
 
 
-@READERS.register_module()
+@ReaderRegistry.register()
 class TxtReader(BaseReader):
 
     def read(self) -> dict:
         raise NotImplementedError
 
 
-@READERS.register_module()
+@ReaderRegistry.register()
 class JSONReader(BaseReader):
 
     def read(self) -> dict:
@@ -91,17 +92,18 @@ class BaseSelector(ABC):
         return self.filter(log)
 
 
-SELECTORS: Registry[BaseSelector] = Registry('selectors', base=BaseSelector)
+class SelectorRegistry(Registry):
+    pass
 
 
-@SELECTORS.register_module()
+@SelectorRegistry.register()
 class ContainsSelector(BaseSelector):
 
     def filter(self, log: dict) -> bool:
         return self._cond in log
 
 
-@SELECTORS.register_module()
+@SelectorRegistry.register()
 class CustomSelector(BaseSelector):
 
     def filter(self, log: dict) -> bool:
@@ -127,19 +129,20 @@ class BaseWriter(ABC):
         self.write(log)
 
 
-WRITERS: Registry[BaseWriter] = Registry('writers', base=BaseWriter)
+class WriterRegistry(Registry):
+    pass
 
 
-@WRITERS.register_module()
+@WriterRegistry.register()
 class TensorBoardWriter(BaseWriter):
 
     def __init__(
         self,
         *args,
-        main_tag: Optional[str] = None,
-        tag_value_dict: Dict[str, str],
-        global_step: Optional[str] = None,
-        walltime: Optional[str] = None,
+        main_tag: str | None = None,
+        tag_value_dict: dict[str, str],
+        global_step: str | None = None,
+        walltime: str | None = None,
         **kwargs,
     ) -> None:
         from torch.utils.tensorboard import SummaryWriter
@@ -205,9 +208,11 @@ def parse_args() -> argparse.Namespace:
 def main():
     args = parse_args()
 
-    readers = [READERS.build(reader) for reader in args.reader]
-    selectors = [SELECTORS.build(selector) for selector in args.selector]
-    writers = [WRITERS.build(writer) for writer in args.writer]
+    readers = [ReaderRegistry.build(reader) for reader in args.reader]
+    selectors = [
+        SelectorRegistry.build(selector) for selector in args.selector
+    ]
+    writers = [WriterRegistry.build(writer) for writer in args.writer]
 
     for log in itertools.chain(*readers):
         if all(selector(log) for selector in selectors):

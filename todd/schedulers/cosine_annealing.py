@@ -1,14 +1,13 @@
-import math
-from typing import Optional
-
-from .base import SCHEDULERS, BaseScheduler
-
 __all__ = [
     'CosineAnnealingScheduler',
 ]
 
+import math
 
-@SCHEDULERS.register_module()
+from .base import BaseScheduler, SchedulerRegistry
+
+
+@SchedulerRegistry.register()
 class CosineAnnealingScheduler(BaseScheduler):
 
     def __init__(
@@ -16,7 +15,7 @@ class CosineAnnealingScheduler(BaseScheduler):
         *args,
         T: int,
         T_mult: int = 1,
-        T_max: Optional[int] = None,
+        T_max: int | None = None,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)

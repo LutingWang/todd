@@ -4,41 +4,16 @@ import re
 
 import pytest
 
-from todd.base._extensions.logging import (
-    ANSI,
-    SGR,
-    get_log_file,
-    get_logger,
-    init_log_file,
-    log_file_initialized,
-)
-
-
-class TestANSI:
-
-    def test_to_str(self) -> None:
-        assert ANSI.to_str(False) == '0'
-        assert ANSI.to_str(True) == '1'
-        assert ANSI.to_str(2) == '2'
-        assert ANSI.to_str(3.0) == '3'
+from todd import Store
+from todd.base.loggers import SGR, get_logger
 
 
 class TestSGR:
 
-    def test_to_str(self) -> None:
-        assert SGR.to_str('NORMAL') == '0'
-        assert SGR.to_str('bold') == '1'
-        assert SGR.to_str('Faint') == '2'
-        assert SGR.to_str(SGR.FG_BLACK) == '30'
-
     def test_format(self) -> None:
-        assert SGR.format('hello') == '\033[mhello\033[m'
-        assert SGR.format('hello', (0, )) == '\033[0mhello\033[m'
         assert SGR.format(
-            'hello', ('ITALIC', 'FG_RED', 'BG_RED')
-        ) == '\033[3;31;41mhello\033[m'
-        assert SGR.format(
-            'hello', (SGR.UNDERLINE, SGR.FG_GREEN, SGR.BG_GREEN)
+            'hello',
+            (SGR.UNDERLINE, SGR.FG_GREEN, SGR.BG_GREEN),
         ) == '\033[4;32;42mhello\033[m'
 
 
@@ -62,9 +37,7 @@ class TestGetLogger:
     @pytest.mark.parametrize('logger_name', [__name__])
     def test_log_file(self, tmp_path: pathlib.Path) -> None:
         log_file = tmp_path / 'log.txt'
-        init_log_file(log_file)
-        assert log_file_initialized()
-        assert get_log_file() == log_file
+        Store.LOG_FILE = str(log_file)
 
         logger = get_logger()
         logger.info('hello')
@@ -73,5 +46,4 @@ class TestGetLogger:
         with log_file.open() as f:
             assert any(re.search('INFO.*hello', line) for line in f)
 
-        init_log_file(None)
-        assert not log_file_initialized()
+        Store.LOG_FILE = ''

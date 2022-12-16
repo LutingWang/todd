@@ -1,5 +1,3 @@
-from .base import SCHEDULERS, IntervalScheduler
-
 __all__ = [
     'LinearScheduler',
     'ConstantScheduler',
@@ -8,15 +6,17 @@ __all__ = [
     'DecayScheduler',
 ]
 
+from .base import IntervalScheduler, SchedulerRegistry
 
-@SCHEDULERS.register_module()
+
+@SchedulerRegistry.register()
 class LinearScheduler(IntervalScheduler):
 
     def _weight(self, cur_iter: int, total_iter: float) -> float:
         return cur_iter / total_iter
 
 
-@SCHEDULERS.register_module()
+@SchedulerRegistry.register()
 class ConstantScheduler(LinearScheduler):
 
     def __init__(self, *, value: float = 1.0) -> None:
@@ -28,7 +28,7 @@ class ConstantScheduler(LinearScheduler):
         )
 
 
-@SCHEDULERS.register_module()
+@SchedulerRegistry.register()
 class WarmupScheduler(LinearScheduler):
 
     def __init__(self, *, value: float = 1.0, iter_: int) -> None:
@@ -40,7 +40,7 @@ class WarmupScheduler(LinearScheduler):
         )
 
 
-@SCHEDULERS.register_module()
+@SchedulerRegistry.register()
 class EarlyStopScheduler(LinearScheduler):
 
     def __init__(self, *, value: float = 1.0, iter_: int) -> None:
@@ -52,7 +52,7 @@ class EarlyStopScheduler(LinearScheduler):
         )
 
 
-@SCHEDULERS.register_module()
+@SchedulerRegistry.register()
 class DecayScheduler(LinearScheduler):
 
     def __init__(self, *, value: float = 1.0, iter_: int) -> None:

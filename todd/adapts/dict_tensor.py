@@ -1,21 +1,12 @@
 import itertools
 import operator
 from functools import reduce
-from typing import (
-    Iterable,
-    Iterator,
-    List,
-    Mapping,
-    Sequence,
-    Tuple,
-    Union,
-    overload,
-)
+from typing import Iterable, Iterator, Mapping, Sequence, overload
 
 import einops
 import torch
 
-from .base import ADAPTS, BaseAdapt
+from .base import AdaptRegistry, BaseAdapt
 
 __all__ = [
     'DictTensor',
@@ -23,14 +14,14 @@ __all__ = [
     'Intersect',
 ]
 
-KeyType = Tuple[int, ...]
+KeyType = tuple[int, ...]
 
 
 class DictTensor(Mapping):
 
     def __init__(
         self,
-        keys: Union[KeyType, List[KeyType]],
+        keys: KeyType | list[KeyType],
         values: torch.Tensor,
     ) -> None:
         if not isinstance(keys, list):
@@ -43,7 +34,7 @@ class DictTensor(Mapping):
         ...
 
     @overload
-    def __getitem__(self, keys: List[KeyType]) -> torch.Tensor:
+    def __getitem__(self, keys: list[KeyType]) -> torch.Tensor:
         ...
 
     def __getitem__(self, keys):
@@ -75,7 +66,7 @@ class DictTensor(Mapping):
     @staticmethod
     def union(
         dict_tensors: Sequence['DictTensor'],
-    ) -> Tuple[List['DictTensor'], 'DictTensor']:
+    ) -> tuple[list['DictTensor'], 'DictTensor']:
         keys = list(set(itertools.chain(*dict_tensors)))
         n = len(keys)
         s = len(dict_tensors)
@@ -97,8 +88,8 @@ class DictTensor(Mapping):
         return union_dict_tensors, mask
 
     @staticmethod
-    def intersect(dict_tensors: Iterable['DictTensor']) -> List['DictTensor']:
-        keys: List[KeyType] = list(
+    def intersect(dict_tensors: Iterable['DictTensor']) -> list['DictTensor']:
+        keys: list[KeyType] = list(
             reduce(operator.and_, map(set, dict_tensors)),
         )
         dict_tensors = [
@@ -107,14 +98,14 @@ class DictTensor(Mapping):
         return dict_tensors
 
 
-@ADAPTS.register_module(name='Union')
+@AdaptRegistry.register(keys=('Union', ))
 class Union_(BaseAdapt):
 
     def forward(
         self,
-        feats: List[torch.Tensor],
-        ids: List[torch.Tensor],
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        feats: list[torch.Tensor],
+        ids: list[torch.Tensor],
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """Match `feats` according to their `poses`.
 
         Align the `feats` coming from different sources to have same
@@ -148,14 +139,14 @@ class Union_(BaseAdapt):
         return union_feats, union_ids, union_mask
 
 
-@ADAPTS.register_module()
+@AdaptRegistry.register()
 class Intersect(BaseAdapt):
 
     def forward(
         self,
-        feats: List[torch.Tensor],
-        ids: List[torch.Tensor],
-    ) -> List[torch.Tensor]:
+        feats: list[torch.Tensor],
+        ids: list[torch.Tensor],
+    ) -> list[torch.Tensor]:
         """Match positions that show up both in `pred_poses` and
         `target_poses`.
 

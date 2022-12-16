@@ -1,30 +1,30 @@
 import io
 from functools import cached_property
-from typing import Any, List, Literal, Optional
+from typing import Any, Literal
 
 import lmdb
 import torch
 
-from .base import DATASETS, BaseDataset
+from .base import BaseDataset, DatasetRegistry
 
 # TODO: update
 
 
-@DATASETS.register_module()
+@DatasetRegistry.register()
 class LmdbDataset(BaseDataset[bytes]):
 
     def __init__(
         self,
         *args,
         filepath: str,
-        db: Optional[str] = None,
-        decoder: Optional[Literal['None', 'pytorch']] = 'pytorch',
+        db: str | None = None,
+        decoder: Literal['None', 'pytorch'] | None = 'pytorch',
         **kwargs,
     ):
         self._env: lmdb.Environment = lmdb.open(
             filepath, readonly=True, max_dbs=1
         )
-        self._db: Optional[lmdb._Database] = (  # yapf: disable
+        self._db: lmdb._Database | None = (  # yapf: disable
             None if db is None else self._env.open_db(db.encode())
         )
         self._decoder = decoder
@@ -34,7 +34,7 @@ class LmdbDataset(BaseDataset[bytes]):
     def load_from(cls, source: BaseDataset, *args, **kwargs):
         pass
 
-    def _map_indices(self) -> List[bytes]:
+    def _map_indices(self) -> list[bytes]:
         with self.begin() as txn, txn.cursor() as cur:
             return list(cur.iternext(keys=True, values=False))
 

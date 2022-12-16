@@ -10,15 +10,15 @@ inputs:
 runs:
   using: composite
   steps:
-  - uses: actions/checkout@master
-  - run: git lfs ls-files --long | cut -d ' ' -f1 | sort > .lfs-assets-id
-    if: inputs.lfs
-    shell: bash
-  - uses: actions/cache@v3
-    if: inputs.lfs
-    with:
-      path: .git/lfs
-      key: lfs-${{ hashFiles('.lfs-assets-id') }}-v1
-  - run: git lfs pull
-    if: inputs.lfs
-    shell: bash
+    - uses: actions/checkout@master
+    - run: git lfs ls-files --long | cut -d ' ' -f1 | sort > .lfs-assets-id
+      if: inputs.lfs
+      shell: bash
+    - uses: actions/cache@v3
+      if: inputs.lfs
+      with:
+        path: .git/lfs
+        key: lfs-${{ hashFiles('.lfs-assets-id') }}-v1
+    - run: git lfs pull
+      if: inputs.lfs
+      shell: bash

@@ -8,10 +8,16 @@ from typing import Any, Iterator
 
 import torch
 
-from .base import ACCESS_LAYERS, DATASETS, BaseAccessLayer, BaseDataset, Codec
+from .base import (
+    AccessLayerRegistry,
+    BaseAccessLayer,
+    BaseDataset,
+    Codec,
+    DatasetRegistry,
+)
 
 
-@ACCESS_LAYERS.register_module()
+@AccessLayerRegistry.register()
 class PthAccessLayer(BaseAccessLayer[str]):
 
     def _init(self):
@@ -44,6 +50,6 @@ class PthAccessLayer(BaseAccessLayer[str]):
         data_file.unlink()
 
 
-@DATASETS.register_module()
+@DatasetRegistry.register()
 class PthDataset(BaseDataset[str]):
     ACCESS_LAYER = PthAccessLayer

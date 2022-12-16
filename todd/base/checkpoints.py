@@ -6,27 +6,28 @@ __all__ = [
     'load_checkpoint',
 ]
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.optim.lr_scheduler as lr_scheduler
 
-from ._extensions import Module, get_logger, getattr_recur
+from ._extensions import Module, getattr_recur
 from .configs import Config
-from .registries import Registry
+from .loggers import get_logger
+from .registries import RegistryMeta
 
 
 def load_open_mmlab_models(
-    registry: Registry,
+    registry: RegistryMeta,
     config: Config,
-    config_options: Optional[Config] = None,
-    ckpt: Optional[str] = None,
+    config_options: Config | None = None,  # TODO: rename overload
+    ckpt: str | None = None,
 ) -> Module:
     model = (
-        registry.build(config) if config_options is None else
-        registry.build(config_options, default_args=config)
+        registry.build(config)
+        if config_options is None else registry.build(config_options, config)
     )
     if ckpt is not None:
         import mmcv.runner
@@ -48,7 +49,7 @@ def transfer_weight(target: Module, source: Module) -> None:
     target._is_init = True  # type: ignore[assignment]
 
 
-def transfer_weights(models, weight_prefixes: Dict[str, str]) -> None:
+def transfer_weights(models, weight_prefixes: dict[str, str]) -> None:
     for target_prefix, source_prefix in weight_prefixes.items():
         target = getattr_recur(models, target_prefix)
         source = getattr_recur(models, source_prefix)
@@ -59,12 +60,12 @@ def save_checkpoint(
     model: nn.Module,
     f: str,
     *,
-    optimizer: Optional[optim.Optimizer] = None,
-    scheduler: Optional[lr_scheduler._LRScheduler] = None,
-    meta: Optional[Config] = None,
+    optimizer: optim.Optimizer | None = None,
+    scheduler: lr_scheduler._LRScheduler | None = None,
+    meta: Config | None = None,
     **kwargs,
 ) -> None:
-    checkpoint: Dict[str, Any] = dict()
+    checkpoint: dict[str, Any] = dict()
     checkpoint['model'] = model.state_dict(
         **kwargs.get('model_config', dict()),
     )
@@ -85,11 +86,11 @@ def load_checkpoint(
     model: nn.Module,
     f: str,
     *,
-    optimizer: Optional[optim.Optimizer] = None,
-    scheduler: Optional[lr_scheduler._LRScheduler] = None,
+    optimizer: optim.Optimizer | None = None,
+    scheduler: lr_scheduler._LRScheduler | None = None,
     **kwargs,
-) -> Optional[Config]:
-    checkpoint: Dict[str, Any] = torch.load(
+) -> Config | None:
+    checkpoint: dict[str, Any] = torch.load(
         f,
         **kwargs.get('load_config', dict()),
     )

@@ -1,6 +1,6 @@
 import torch
 
-from .._extensions import get_logger
+from ..loggers import get_logger
 
 if torch.__version__ < '1.7.0':
     get_logger().warning(

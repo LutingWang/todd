@@ -1,3 +1,2 @@
 from .base import *
-from .self import *
-from .teacher import *
+from .single_student import *

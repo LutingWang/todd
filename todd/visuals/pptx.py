@@ -3,7 +3,6 @@ __all__ = [
 ]
 
 import io
-from typing import Optional
 
 import cv2
 import numpy as np
@@ -20,10 +19,10 @@ import pptx.shapes.shapetree
 import pptx.slide
 import pptx.util
 
-from .base import VISUALS, BaseVisual, Color, XAnchor, YAnchor
+from .base import BaseVisual, Color, VisualRegistry, XAnchor, YAnchor
 
 
-@VISUALS.register_module()
+@VisualRegistry.register()
 class PPTXVisual(BaseVisual):
     """Visualize data in the format of PowerPoint.
 
@@ -103,8 +102,8 @@ class PPTXVisual(BaseVisual):
         image: npt.NDArray[np.uint8],
         left: int = 0,
         top: int = 0,
-        width: Optional[int] = None,
-        height: Optional[int] = None,
+        width: int | None = None,
+        height: int | None = None,
         opacity: float = 1.0,
     ) -> pptx.shapes.picture.Picture:
         """Add an image to the PowerPoint.

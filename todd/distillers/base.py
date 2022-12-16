@@ -1,104 +1,132 @@
 __all__ = [
-    'DISTILLERS',
+    'DistillerRegistry',
     'BaseDistiller',
-    'DistillableProto',
-    'build_metaclass',
+    'DistillerStore',
 ]
 
 import warnings
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    Generator,
-    Iterator,
-    List,
-    Optional,
-    Protocol,
-    Set,
-    Tuple,
-    Type,
-    TypeVar,
-    cast,
-)
+from typing import Callable, Iterable, Mapping, TypeVar, cast
 
-import torch
 import torch.nn as nn
 
+from ..adapts import AdaptRegistry
 from ..base import (
+    Config,
+    Job,
     Message,
     Module,
     ModuleList,
     Registry,
+    Spec,
+    StoreMeta,
     Workflow,
-    WorkflowConfig,
     transfer_weights,
 )
-from ..base.workflows import WorkflowSpec
-from ..hooks import BaseHook
+from ..hooks import BaseHook, HookRegistry
+from ..losses import LossRegistry
 
 T = TypeVar('T', bound='BaseDistiller')
 
 
-class BaseDistiller(Module):
-    DEBUG_PREFIX = '_debug_'
+class DistillerStore(metaclass=StoreMeta):
+    CHECK_INPUTS: bool
+    INTERMEDIATE_OUTPUTS: str
 
-    @staticmethod
-    def workflow_to_module(workflow: Workflow) -> nn.Module:
-        modules = ModuleList()
-        for job in workflow:
-            step_manager = job.step_manager
-            if hasattr(step_manager, 'step'):
-                module = step_manager.step  # type: ignore[attr-defined]
-            elif hasattr(step_manager, 'steps'):
-                module = ModuleList(
-                    step_manager.steps,  # type: ignore[attr-defined]
-                )
-            else:
-                raise TypeError(
-                    f'{step_manager} has no attribute `step` or `steps`.'
-                )
-            modules.append(module)
-        return modules
+
+class BaseDistiller(Module, Workflow):
+
+    @classmethod
+    def build(cls: type[T], config: Config) -> T:
+        config = config.copy()
+
+        models = tuple(config.pop('models'))
+
+        hooks: Config = config.pop('hooks')
+        adapts: Config = config.pop('adapts')
+        losses: Config = config.pop('losses')
+
+        weight_transfer = config.pop('weight_transfer', None)
+
+        hook_job = Job([])
+        for k, v in hooks.items():
+            hook = Job.build(Config(registry=HookRegistry, steps=v))
+            for action in hook.actions:
+                cast(BaseHook, action).bind(models[k])
+            hook_job += hook
+
+        adapt_job = Job.build(Config(registry=AdaptRegistry, steps=adapts))
+        loss_job = Job.build(Config(registry=LossRegistry, steps=losses))
+
+        jobs = dict(hooks=hook_job, adapts=adapt_job, losses=loss_job)
+        distiller = cls(models, jobs, **config)
+
+        distiller.add_module(
+            '_adapts',
+            ModuleList(ModuleList(step.actions) for step in adapt_job),
+        )
+        distiller.add_module(
+            '_losses',
+            ModuleList(ModuleList(step.actions) for step in loss_job),
+        )
+
+        if weight_transfer is not None:
+            transfer_weights(distiller, weight_transfer)
+
+        return distiller
 
     def __init__(
         self,
-        models: List[nn.Module],
-        *,
-        hooks: Dict[int, WorkflowConfig],
-        adapts: WorkflowConfig,
-        losses: WorkflowConfig,
-        weight_transfer: Optional[Dict[str, str]] = None,
-    ):
+        models: Iterable[nn.Module],
+        jobs: Mapping[str, Job],
+    ) -> None:
         Module.__init__(self)
-        self._models = models
+        Workflow.__init__(self, jobs)  # type: ignore[arg-type]
+        self._models = tuple(models)
 
-        self._hookflows: Dict[int, Workflow] = {  # yapf: disable
-            i: Workflow.build('hooks', hooks_config)
-            for i, hooks_config in hooks.items()
-        }
-        self._adaptflow = Workflow.build('adapts', adapts)
-        self._lossflow = Workflow.build('losses', losses)
+        outputs: set[str] = set()
+        for hook in self['hooks']:
+            spec = hook.spec
+            assert len(spec.inputs) == 0
+            assert outputs.isdisjoint(spec.outputs)
+            outputs |= spec.outputs
 
-        if weight_transfer is not None:
-            transfer_weights(self, weight_transfer)
+    def __call__(self, message: Message | None = None) -> Message:
+        if message is None:
+            message = dict()
 
-        for i, workflow in self._hookflows.items():
-            for job in workflow:
-                for step in job:
-                    cast(BaseHook, step).bind(self._models[i])
+        if DistillerStore.CHECK_INPUTS:
+            spec = self.spec
+            inputs = message.keys()
+            if len(spec.inputs ^ inputs):
+                warnings.warn(
+                    f"Missing inputs {spec.inputs - inputs}\n"
+                    f"Unexpected inputs {inputs - spec.inputs}\n"
+                )
 
-        self.add_module(
-            '_adapts',
-            self.workflow_to_module(self._adaptflow),
-        )
-        self.add_module(
-            '_losses',
-            self.workflow_to_module(self._lossflow),
+        tensors = self.tensors()
+        if message is not None:
+            tensors.update(message)
+        self['adapts'](tensors)
+        losses = self['losses'](tensors.copy())
+
+        if DistillerStore.INTERMEDIATE_OUTPUTS is not None:
+            losses[DistillerStore.INTERMEDIATE_OUTPUTS] = tensors
+
+        return losses
+
+    @property
+    def spec(self) -> Spec:
+        hook_spec = self['hooks'].spec
+        adapt_spec = self['adapts'].spec
+        loss_spec = self['losses'].spec
+        return Spec(
+            (loss_spec.inputs - adapt_spec.outputs)
+            | adapt_spec.inputs - hook_spec.outputs,
+            loss_spec.outputs,
         )
 
     @property
-    def models(self) -> List[nn.Module]:
+    def models(self) -> tuple[nn.Module, ...]:
         return self._models
 
     def _apply(self: T, fn: Callable[..., None]) -> T:
@@ -107,140 +135,25 @@ class BaseDistiller(Module):
                 model._apply(fn)
         return super()._apply(fn)
 
-    def hookflows(self) -> Iterator[Workflow]:
-        return iter(self._hookflows.values())
-
-    def hooks(self) -> Generator[BaseHook, None, None]:
-        for workflow in self.hookflows():
-            for job in workflow:
-                yield from job
-
     def track_tensors(self) -> None:
-        for hook in filter(
-            lambda hook: hook.tracking_mode,
-            self.hooks(),
-        ):
+        hooks = cast(tuple[BaseHook, ...], self['hooks'].actions)
+        for hook in filter(lambda hook: hook.tracking_mode, hooks):
             hook.track_tensor()
 
     def tensors(self) -> Message:
         tensors: Message = dict()
-        for job in self.hookflows():
-            job(tensors)
+        self['hooks'](tensors)
         return tensors
 
     def reset(self) -> None:
-        for hook in self.hooks():
+        hooks = cast(tuple[BaseHook, ...], self['hooks'].actions)
+        for hook in hooks:
             hook.reset()
 
-    def spec(self) -> WorkflowSpec:
-        inputs: Set[str] = set()
-        outputs: Set[str] = set()
-        for i, hookflow in self._hookflows.items():
-            hookflow_spec = hookflow.spec()
-            assert len(hookflow_spec.inputs) == 0
-            assert outputs.isdisjoint(hookflow_spec.outputs)
-            outputs |= hookflow_spec.outputs
-        adaptflow_spec = self._adaptflow.spec()
-        inputs |= adaptflow_spec.inputs - outputs
-        outputs |= adaptflow_spec.outputs
-        lossflow_spec = self._lossflow.spec()
-        inputs |= lossflow_spec.inputs - outputs
-        outputs |= lossflow_spec.outputs
-        return WorkflowSpec(inputs, outputs)
 
-    def distill(
-        self,
-        custom_tensors: Optional[Dict[str, torch.Tensor]] = None,
-        debug: bool = False,
-    ) -> Dict[str, torch.Tensor]:
-        if debug:
-            expected_inputs = self.spec().inputs
-            custom_inputs = (
-                set()
-                if custom_tensors is None else set(custom_tensors.keys())
-            )
-            if len(expected_inputs ^ custom_inputs):
-                warnings.warn(
-                    f"Missing inputs {expected_inputs - custom_inputs}\n"
-                    f"Unexpected inputs {custom_inputs - expected_inputs}\n"
-                )
+class DistillerRegistry(Registry):
 
-        tensors = self.tensors()
-        if custom_tensors is not None:
-            tensors.update(custom_tensors)
-        self._adaptflow(tensors)
-        losses = self._lossflow(tensors.copy())
-
-        if debug:
-            losses.update({
-                self.DEBUG_PREFIX + k: v
-                for k, v in tensors.items()
-            })
-        return losses
-
-
-DISTILLERS: Registry[BaseDistiller] = Registry(
-    'distillers',
-    base=BaseDistiller,
-)
-
-
-class DistillableProto(Protocol):
-    _distiller: BaseDistiller
-
-    @property
-    def distiller(self) -> BaseDistiller:
-        ...
-
-    @property
-    def sync_apply(self) -> bool:
-        ...
-
-
-def build_metaclass(
-    distiller_cls: Type[BaseDistiller],
-    supermetaclass: Type[type] = type,
-) -> type:
-
-    class MetaClass(supermetaclass):  # type: ignore[valid-type, misc]
-        NAMESPACE = dict(
-            distiller=property(
-                lambda x: cast(DistillableProto, x)._distiller,
-            ),
-            sync_apply=property(lambda _: False),
-        )
-
-        def __new__(
-            meta_cls,
-            cls: str,
-            bases: Tuple[type, ...],
-            namespace: Dict[str, Any],
-            **kwargs: Any,
-        ) -> 'MetaClass':
-            assert len(namespace.keys() & meta_cls.NAMESPACE.keys()) == 0
-            namespace.update(meta_cls.NAMESPACE)
-            return super().__new__(
-                meta_cls,
-                cls,
-                bases,
-                namespace,
-                **kwargs,
-            )
-
-        def __call__(
-            cls,
-            *args,
-            **kwargs,
-        ) -> DistillableProto:
-            if 'distiller' not in kwargs:
-                raise RuntimeError('`distiller` is required')
-            distiller: Dict[str, Any] = kwargs.pop('distiller')
-            obj = super().__call__(*args, **kwargs)
-            obj = cast(DistillableProto, obj)
-            obj._distiller = distiller_cls(  # type: ignore[call-arg]
-                student=obj,
-                **distiller,
-            )
-            return obj
-
-    return MetaClass
+    @classmethod
+    def _build(cls, config: Config) -> BaseDistiller:
+        distiller: type[BaseDistiller] = cls[config.pop('type')]
+        return distiller.build(config)

@@ -14,18 +14,7 @@ import pathlib
 import tempfile
 import webbrowser
 from functools import reduce
-from typing import (
-    Any,
-    Dict,
-    Iterable,
-    Mapping,
-    NoReturn,
-    Optional,
-    Sequence,
-    Type,
-    TypeVar,
-    Union,
-)
+from typing import Any, Iterable, Mapping, NoReturn, Sequence, TypeVar
 
 import addict
 import yapf.yapflib.yapf_api as yapf
@@ -75,17 +64,17 @@ class Config(addict.Dict):
         return a
 
     @classmethod
-    def loads(cls: Type[T], s: str, globals: Optional[dict] = None) -> T:
+    def loads(cls: type[T], s: str, globals: dict | None = None) -> T:
         if globals is None:
             globals = dict()
         globals.setdefault('__name__', '__main__')
 
-        config: Dict[str, Any] = dict()
+        config: dict[str, Any] = dict()
         exec(s, globals, config)
         return cls(config)
 
     @classmethod
-    def load(cls: Type[T], file) -> T:
+    def load(cls: type[T], file) -> T:
         file = pathlib.Path(file)
         file = file.resolve()
 
@@ -98,7 +87,7 @@ class Config(addict.Dict):
 
     @classmethod
     def diff(
-        cls: Type[T],
+        cls: type[T],
         a: T,
         b: T,
         mode: str = 'text',
@@ -221,8 +210,8 @@ class DictAction(argparse.Action):
         self,
         parser: argparse.ArgumentParser,
         namespace: argparse.Namespace,
-        values: Union[str, Sequence[Any], None],
-        option_string: Optional[str] = None,
+        values: str | Sequence[Any] | None,
+        option_string: str | None = None,
     ) -> None:
         if not isinstance(values, Sequence):
             raise ValueError(f'values must be a sequence, but got {values}')

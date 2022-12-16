@@ -7,7 +7,7 @@ name = 'todd_ai'
 version = '0.2.4a5'
 description = 'Toolkit for Object Detection Distillation'
 readme = 'README.md'
-requires-python = '>=3.6'
+requires-python = '>=3.10'
 classifiers = [
     'Programming Language :: Python :: 3',
     'License :: OSI Approved :: Apache Software License',
@@ -102,24 +102,6 @@ plugins = 'numpy.typing.mypy_plugin'
 
 [tool.codespell]
 write-changes = true
-
-[[tool.mypy.overrides]]
-module = [
-    'PIL.*',
-    'addict.*',
-    'cv2.*',
-    'einops.*',
-    'lmdb.*',
-    'mmcv.*',
-    'pandas.*',
-    'pkg_resources.*',
-    'setuptools.*',
-    'timm.*',
-    'toml.*',
-    'torchvision.*',
-    'yapf.*',
-]
-ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = [
