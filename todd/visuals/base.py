@@ -7,7 +7,7 @@ __all__ = [
 
 import enum
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, NamedTuple
 
 import cv2
 import numpy as np
@@ -16,7 +16,11 @@ import torch
 
 from ..base import Registry
 
-Color = tuple[int, int, int]
+
+class Color(NamedTuple):
+    red: float
+    green: float
+    blue: float
 
 
 class XAnchor(enum.Enum):
@@ -30,12 +34,27 @@ class YAnchor(enum.Enum):
 
 
 class BaseVisual(ABC):
-    PALETTE = [  # yapf: disable
-        (106,   0, 228), (119,  11,  32), (165,  42,  42), (  0,   0, 192),
-        (197, 226, 255), (  0,  60, 100), (  0,   0, 142), (255,  77, 255),
-        (153,  69,   1), (120, 166, 157), (  0, 182, 199), (  0, 226, 252),
-        (182, 182, 255), (  0,   0, 230), (220,  20,  60), (163, 255,   0),
-        (  0,  82,   0), (  3,  95, 161), (  0,  80, 100), (183, 130,  88),
+    PALETTE = [
+        Color(106, 0, 228),
+        Color(119, 11, 32),
+        Color(165, 42, 42),
+        Color(0, 0, 192),
+        Color(197, 226, 255),
+        Color(0, 60, 100),
+        Color(0, 0, 142),
+        Color(255, 77, 255),
+        Color(153, 69, 1),
+        Color(120, 166, 157),
+        Color(0, 182, 199),
+        Color(0, 226, 252),
+        Color(182, 182, 255),
+        Color(0, 0, 230),
+        Color(220, 20, 60),
+        Color(163, 255, 0),
+        Color(0, 82, 0),
+        Color(3, 95, 161),
+        Color(0, 80, 100),
+        Color(183, 130, 88),
     ]
 
     @abstractmethod
@@ -136,7 +155,7 @@ class BaseVisual(ABC):
         top: int,
         width: int,
         height: int,
-        color: Color = (0, 0, 0),
+        color: Color = Color(0, 0, 0),
     ):
         pass
 
@@ -148,7 +167,7 @@ class BaseVisual(ABC):
         y: int,
         x_anchor: XAnchor = XAnchor.LEFT,
         y_anchor: YAnchor = YAnchor.BOTTOM,
-        color: Color = (0, 0, 0),
+        color: Color = Color(0, 0, 0),
     ):
         pass
 
@@ -159,7 +178,7 @@ class BaseVisual(ABC):
         top: int,
         width: int,
         height: int,
-        color: Color = (0, 0, 0),
+        color: Color = Color(0, 0, 0),
     ) -> tuple[Any, Any]:
         """Draw an annotation bbox.
 

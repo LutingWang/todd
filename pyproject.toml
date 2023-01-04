@@ -14,11 +14,11 @@ classifiers = [
     'Operating System :: OS Independent',
 ]
 dependencies = [
-    'addict',
     'einops',
     'lmdb',
     'opencv-python',
     'pandas',
+    'python-pptx',
     'timm',
     'toml',
     'tqdm',
@@ -51,7 +51,6 @@ dev = [
 doc = [
     'mmcv',
     'python-docs-theme',
-    'python-pptx',
     'sphinx',
     'sphinx_rtd_theme',
 ]
@@ -59,10 +58,6 @@ test = [
     'coverage',
     'mmcv',
     'pytest',
-    'python-pptx',
-]
-optional = [
-    'python-pptx',
 ]
 
 [project.scripts]

@@ -6,7 +6,7 @@ __all__ = [
 from datetime import datetime
 from pathlib import Path
 
-import torch.cuda
+import torch
 
 from ..base import Store, StoreMeta
 
@@ -15,8 +15,7 @@ def init_trial(
     root: str = 'work_dirs',
     trial_name: str = 'debug',
 ) -> Path:
-    trial_root = Path(root).resolve(strict=True)
-    trial_root /= trial_name
+    trial_root = Path(root).resolve(strict=True) / trial_name
     trial_root.mkdir(exist_ok=True)
     log_file = datetime.now().strftime("%Y%m%dT%H%M%S%f") + '.log'
     Store.LOG_FILE = str(trial_root / log_file)
@@ -30,14 +29,24 @@ class TrialStore(metaclass=StoreMeta):
     DRY_RUN: bool
     TRAIN_WITH_VAL_DATASET: bool
 
-    def __init__(self) -> None:
-        if self.CPU or self.CUDA:
-            assert self.CPU + self.CUDA == 1
-        elif torch.cuda.is_available():
-            self.CUDA = True
-        else:
-            self.CPU = True
 
-        if self.CPU:
-            self.DRY_RUN = True
-            self.TRAIN_WITH_VAL_DATASET = True
+if not TrialStore.CPU and not TrialStore.CUDA:
+    if torch.cuda.is_available():
+        TrialStore.CUDA = True
+    else:
+        TrialStore.CPU = True
+assert TrialStore.CPU + TrialStore.CUDA == 1
+
+if TrialStore.CPU:
+    TrialStore.DRY_RUN = True
+    TrialStore.TRAIN_WITH_VAL_DATASET = True
+
+    try:
+        import mmcv.cnn
+        mmcv.cnn.NORM_LAYERS.register_module(
+            name='SyncBN',
+            force=True,
+            module=torch.nn.BatchNorm2d,
+        )
+    except Exception:
+        pass

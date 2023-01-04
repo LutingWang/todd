@@ -12,17 +12,17 @@ from todd.reproduction.model import (
 
 def test_get_modules(model: CustomModule) -> None:
     assert get_modules(model) == [model]
-    assert get_modules(model, names=['conv']) == [model.conv]
+    assert get_modules(model, names=['.conv']) == [model.conv]
     assert get_modules(model, types=[nn.Conv2d]) == [model.conv]
     assert get_modules(
         model,
-        names=['conv', 'module'],
+        names=['.conv', '.module'],
         types=[CustomModule],
     ) == [model.module]
 
 
 def test_no_grad(model: CustomModule) -> None:
-    no_grad(model, names=['module'])
+    no_grad(model, names=['.module'])
     for param in model.conv.parameters():
         assert param.requires_grad
     for param in model.module.parameters():
@@ -30,14 +30,14 @@ def test_no_grad(model: CustomModule) -> None:
 
 
 def test_eval(model: CustomModule) -> None:
-    eval_(model, names=['module'])
+    eval_(model, names=['.module'])
     assert model.conv.training
     for module in model.module.modules():
         assert not module.training
 
 
 def test_freeze(model: CustomModule) -> None:
-    freeze(model, names=['module'])
+    freeze(model, names=['.module'])
     for param in model.conv.parameters():
         assert param.requires_grad
     for param in model.module.parameters():
@@ -60,7 +60,7 @@ class TestFrozenMixin:
 
     def test_frozen(self) -> None:
         model = FrozenModule(
-            no_grad_config=dict(names=['_no_grad_module']),
+            no_grad_config=dict(names=['._no_grad_module']),
             eval_config=dict(types=[nn.Linear]),
         )
 

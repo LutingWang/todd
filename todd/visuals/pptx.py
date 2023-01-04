@@ -173,7 +173,7 @@ class PPTXVisual(BaseVisual):
         top: int,
         width: int,
         height: int,
-        color: Color = (0, 0, 0),
+        color: Color = Color(0, 0, 0),
     ) -> pptx.shapes.autoshape.Shape:
         rectangle: pptx.shapes.autoshape.Shape = self._shapes.add_shape(
             pptx.enum.shapes.MSO_AUTO_SHAPE_TYPE.RECTANGLE,
@@ -201,7 +201,7 @@ class PPTXVisual(BaseVisual):
         y: int,
         x_anchor: XAnchor = XAnchor.LEFT,
         y_anchor: YAnchor = YAnchor.BOTTOM,
-        color: Color = (0, 0, 0),
+        color: Color = Color(0, 0, 0),
     ) -> pptx.shapes.autoshape.Shape:
         width = pptx.util.Pt(9 * len(text))
         height = pptx.util.Pt(15)

@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, Any, Generator, Protocol
 
 import torch.nn as nn
 
-from ..base import Config, Registry, StatusMixin, getattr_recur
+from ..base import Config, Registry, StatusMixin, get_
 
 if TYPE_CHECKING:
 
@@ -38,7 +38,7 @@ class _HookMixin(_HookProto):
         self.register_tensor(output)
 
     def bind(self, model: nn.Module) -> None:
-        module: nn.Module = getattr_recur(model, self._path)
+        module: nn.Module = get_(model, self._path)
         self._handle = module.register_forward_hook(self._forward_hook)
 
     def unbind(self) -> None:
@@ -66,7 +66,7 @@ class _TrackingMixin(_HookProto):
     def track_tensor(self) -> None:
         if not self._tracking_mode:
             raise AttributeError(f"Hook {self._path} does not support track.")
-        tensor = getattr_recur(self._model, self._path)
+        tensor = get_(self._model, self._path)
         self.register_tensor(tensor)
 
 

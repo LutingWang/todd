@@ -11,7 +11,7 @@ from typing import Any, Sequence, TypeVar
 import torch.nn as nn
 from torch.nn.modules.batchnorm import _BatchNorm
 
-from ..base import getattr_recur
+from ..base import get_
 
 DEFAULT_STOCHASTIC_MODULE_TYPES: tuple[Any, ...] = (_BatchNorm, nn.Dropout)
 
@@ -31,13 +31,13 @@ def get_modules(
     if not names and not types:
         return [model]
     if not types:
-        return [getattr_recur(model, name) for name in names]
+        return [get_(model, name) for name in names]
     types = tuple(types)
     if not names:
         return [
             module for module in model.modules() if isinstance(module, types)
         ]
-    modules = [getattr_recur(model, name) for name in names]
+    modules = [get_(model, name) for name in names]
     modules = [module for module in modules if isinstance(module, types)]
     return modules
 

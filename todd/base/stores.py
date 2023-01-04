@@ -4,12 +4,9 @@ __all__ = [
 ]
 
 import os
-from typing import Any, TypeVar
 
 from .loggers import get_logger
 from .misc import NonInstantiableMeta
-
-StoreMetaType = TypeVar('StoreMetaType', bound='StoreMeta')
 
 
 class StoreMeta(NonInstantiableMeta):
@@ -26,32 +23,29 @@ class StoreMeta(NonInstantiableMeta):
         ...     VARIABLE: int
         Traceback (most recent call last):
         ...
-        AssertionError
+        TypeError: Duplicated keys={'VARIABLE'}
     """
     _read_only: dict[str, bool] = dict()
 
-    def __new__(
-        cls: type[StoreMetaType],
-        name: str,
-        bases: tuple[type, ...],
-        namespace: dict[str, Any],
-        **kwargs,
-    ) -> StoreMetaType:
-        annotations: dict[str, type] = namespace['__annotations__']
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
 
-        assert len(annotations.keys() & cls._read_only) == 0
-        for k, v in annotations.items():
+        if keys := self.__annotations__.keys() & self._read_only:
+            raise TypeError(f"Duplicated {keys=}")
+
+        for k, v in self.__annotations__.items():
             variable = os.environ.get(k, '')
             if read_only := variable != '':
-                namespace[k] = variable if v is str else eval(variable)
-            else:
-                namespace.setdefault(k, v())
-            cls._read_only[k] = read_only
+                super().__setattr__(k, v(variable))
+            self._read_only[k] = read_only
 
-        return super().__new__(cls, name, bases, namespace, **kwargs)
+    def __getattr__(self, name: str) -> None:
+        if name in self.__annotations__:
+            return self.__annotations__[name]()
+        raise AttributeError(name)
 
     def __setattr__(self, name: str, value) -> None:
-        if self._read_only.get(name, False):
+        if name in self.__annotations__ and self._read_only.get(name, False):
             get_logger().debug(f"Cannot set {name} to {value}.")
             return
         super().__setattr__(name, value)

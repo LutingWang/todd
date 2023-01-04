@@ -233,7 +233,7 @@ layers=50, num_classes=1024))
             {'a': 1, 'b': 2}
         """
         message: Message = dict()
-        exec(f'{self._outputs} = outputs', dict(outputs=outputs), message)
+        exec(f'{self._outputs} = __o', dict(__o=outputs), message)
         return message
 
 

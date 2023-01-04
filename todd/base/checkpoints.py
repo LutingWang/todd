@@ -13,9 +13,9 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.optim.lr_scheduler as lr_scheduler
 
-from ._extensions import Module, getattr_recur
 from .configs import Config
 from .loggers import get_logger
+from .patches import Module, get_
 from .registries import RegistryMeta
 
 
@@ -51,8 +51,8 @@ def transfer_weight(target: Module, source: Module) -> None:
 
 def transfer_weights(models, weight_prefixes: dict[str, str]) -> None:
     for target_prefix, source_prefix in weight_prefixes.items():
-        target = getattr_recur(models, target_prefix)
-        source = getattr_recur(models, source_prefix)
+        target = get_(models, target_prefix)
+        source = get_(models, source_prefix)
         transfer_weight(target, source)
 
 

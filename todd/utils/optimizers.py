@@ -14,7 +14,7 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.optim.lr_scheduler as lr_scheduler
 
-from ..base import Config, Registry, RegistryMeta
+from ..base import Config, Registry
 
 
 def build_param_group(
@@ -44,9 +44,10 @@ class OptimizerRegistry(Registry):
 
     @classmethod
     def _build(cls, config: Config) -> optim.Optimizer:
+        type_ = cls[config.pop('type')]
         model = config.pop('model')
-        config.params = build_param_groups(model, config.get('params', None))
-        return RegistryMeta._build(cls, config)
+        params = build_param_groups(model, config.pop('params', None))
+        return type_(params, **config)
 
 
 for _, class_ in inspect.getmembers(optim, inspect.isclass):
