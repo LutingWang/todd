@@ -1,4 +1,0 @@
-Schedulers
-==========
-
-.. automodule:: todd.schedulers

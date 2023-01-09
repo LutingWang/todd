@@ -38,5 +38,4 @@ pip install .\[dev,doc,test\]
 
 TODO
 
-1. Clean up registries
-2. Complete repr
+1. Complete repr

@@ -18,6 +18,7 @@ __all__ = [
 import builtins
 import contextlib
 import enum
+import importlib.util
 import os
 from typing import TYPE_CHECKING, Any, Callable, Generator
 
@@ -106,17 +107,11 @@ def set_temp(obj, name: str, value) -> Generator[None, None, None]:
         del_(obj, name)
 
 
-if TYPE_CHECKING:
-    Module = torch.Module
-    ModuleDict = torch.ModuleDict
-    ModuleList = torch.nn.ModuleList
-    Sequential = torch.nn.Sequential
+if importlib.util.find_spec('mmcv.runner') and not TYPE_CHECKING:
+    from mmcv.runner import BaseModule as Module
+    from mmcv.runner import ModuleDict, ModuleList, Sequential
 else:
-    try:
-        from mmcv.runner import BaseModule as Module
-        from mmcv.runner import ModuleDict, ModuleList, Sequential
-    except ImportError:
-        from torch.nn import Module, ModuleDict, ModuleList, Sequential
+    from torch.nn import Module, ModuleDict, ModuleList, Sequential
 
 
 def get_rank(*args, **kwargs) -> int:

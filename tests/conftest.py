@@ -7,8 +7,6 @@ from typing import Generator, cast
 import pytest
 import torch.nn as nn
 
-from todd import Store
-
 sys.path.append(os.path.join(os.path.dirname(__file__), 'helpers'))
 from custom_types import CustomModule, CustomObject  # noqa: E402
 
@@ -16,16 +14,6 @@ from custom_types import CustomModule, CustomObject  # noqa: E402
 @pytest.fixture
 def data_dir(request: pytest.FixtureRequest) -> pathlib.Path:
     return request.path.resolve().with_suffix('')
-
-
-@pytest.fixture
-def setup_teardown_iter(
-    setup_value: int = 0,
-    teardown_value: int = 0,
-) -> Generator[None, None, None]:
-    Store.ITER = setup_value
-    yield
-    Store.ITER = teardown_value
 
 
 @pytest.fixture

@@ -24,6 +24,7 @@ from ..base import (
 )
 from ..hooks import BaseHook, HookRegistry
 from ..losses import LossRegistry
+from ..losses.base import BaseLoss
 
 T = TypeVar('T', bound='BaseDistiller')
 
@@ -149,6 +150,10 @@ class BaseDistiller(Module, Workflow):
         hooks = cast(tuple[BaseHook, ...], self['hooks'].actions)
         for hook in hooks:
             hook.reset()
+
+    def step(self) -> None:
+        for loss in self['losses'].actions:
+            cast(BaseLoss, loss)._weight.step()
 
 
 class DistillerRegistry(Registry):

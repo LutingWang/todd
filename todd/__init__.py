@@ -6,7 +6,6 @@ from . import (
     hooks,
     losses,
     reproduction,
-    schedulers,
     utils,
     visuals,
 )
@@ -19,7 +18,6 @@ __all__ = [
     'hooks',
     'losses',
     'reproduction',
-    'schedulers',
     'utils',
     'visuals',
 ]

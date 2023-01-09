@@ -2,16 +2,7 @@ __all__ = [
     'load_open_mmlab_models',
     'transfer_weight',
     'transfer_weights',
-    'save_checkpoint',
-    'load_checkpoint',
 ]
-
-from typing import Any
-
-import torch
-import torch.nn as nn
-import torch.optim as optim
-import torch.optim.lr_scheduler as lr_scheduler
 
 from .configs import Config
 from .loggers import get_logger
@@ -54,58 +45,3 @@ def transfer_weights(models, weight_prefixes: dict[str, str]) -> None:
         target = get_(models, target_prefix)
         source = get_(models, source_prefix)
         transfer_weight(target, source)
-
-
-def save_checkpoint(
-    model: nn.Module,
-    f: str,
-    *,
-    optimizer: optim.Optimizer | None = None,
-    scheduler: lr_scheduler._LRScheduler | None = None,
-    meta: Config | None = None,
-    **kwargs,
-) -> None:
-    checkpoint: dict[str, Any] = dict()
-    checkpoint['model'] = model.state_dict(
-        **kwargs.get('model_config', dict()),
-    )
-    if optimizer is not None:
-        checkpoint['optimizer'] = optimizer.state_dict(
-            **kwargs.get('optimizer_config', dict()),
-        )
-    if scheduler is not None:
-        checkpoint['scheduler'] = scheduler.state_dict(
-            **kwargs.get('scheduler_config', dict()),
-        )
-    if meta is not None:
-        checkpoint['meta'] = meta
-    torch.save(checkpoint, f, **kwargs.get('save_config', dict()))
-
-
-def load_checkpoint(
-    model: nn.Module,
-    f: str,
-    *,
-    optimizer: optim.Optimizer | None = None,
-    scheduler: lr_scheduler._LRScheduler | None = None,
-    **kwargs,
-) -> Config | None:
-    checkpoint: dict[str, Any] = torch.load(
-        f,
-        **kwargs.get('load_config', dict()),
-    )
-    model.load_state_dict(
-        checkpoint['model'],
-        **kwargs.get('model_config', dict()),
-    )
-    if optimizer is not None:
-        optimizer.load_state_dict(
-            checkpoint['optimizer'],
-            **kwargs.get('optimizer_config', dict()),
-        )
-    if scheduler is not None:
-        scheduler.load_state_dict(
-            checkpoint['scheduler'],
-            **kwargs.get('scheduler_config', dict()),
-        )
-    return checkpoint.get('meta')

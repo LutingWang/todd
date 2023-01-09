@@ -4,7 +4,6 @@ import re
 
 import pytest
 
-from todd import Store
 from todd.base.loggers import SGR, get_logger
 
 
@@ -37,13 +36,10 @@ class TestGetLogger:
     @pytest.mark.parametrize('logger_name', [__name__])
     def test_log_file(self, tmp_path: pathlib.Path) -> None:
         log_file = tmp_path / 'log.txt'
-        Store.LOG_FILE = str(log_file)
 
-        logger = get_logger()
+        logger = get_logger(file=log_file)
         logger.info('hello')
 
         assert log_file.exists()
         with log_file.open() as f:
             assert any(re.search('INFO.*hello', line) for line in f)
-
-        Store.LOG_FILE = ''

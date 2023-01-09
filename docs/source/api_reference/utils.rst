@@ -1,4 +1,0 @@
-Utils
-=====
-
-.. automodule:: todd.utils

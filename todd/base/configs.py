@@ -10,11 +10,11 @@ import pathlib
 import tempfile
 import webbrowser
 from collections import UserDict
-from typing import Any, Mapping, Sequence, TypeVar, cast
+from typing import Any, Mapping, MutableMapping, Sequence, TypeVar, cast
 
 import yapf.yapflib.yapf_api as yapf
 
-from .patches import exec_
+from .patches import exec_, set_
 
 AttrDictType = TypeVar('AttrDictType', bound='AttrDict')
 ConfigType = TypeVar('ConfigType', bound='Config')
@@ -40,6 +40,8 @@ class AttrDict(UserDict):
         self[name] = value
 
     def __getattr__(self, name: str):
+        if name == 'data':  # triggered in `copy.deepcopy`
+            raise AttributeError(name)
         try:
             return self[name]
         except KeyError as e:
@@ -52,7 +54,7 @@ class AttrDict(UserDict):
             raise AttributeError(e)
 
 
-class Config(AttrDict):
+class Config(AttrDict, dict):  # type: ignore[misc]
 
     def __setitem__(self, name: str, value) -> None:
         """Set item.
@@ -188,6 +190,22 @@ class Config(AttrDict):
             return difflib.HtmlDiff().make_file(a, b)
         return '\n'.join(difflib.Differ().compare(a, b))
 
+    def override(self, other: Mapping[str, Any]) -> None:
+        for k, v in other.items():
+            set_(self, k, v)
+
+    def update(self, *args, **kwargs) -> None:
+        for m in args + (kwargs, ):
+            for k, v in dict(m).items():
+                old_v = self.get(k)
+                if (
+                    isinstance(old_v, MutableMapping)
+                    and isinstance(v, Mapping)
+                ):
+                    old_v.update(v)
+                else:
+                    self[k] = v
+
 
 def diff_cli() -> None:
     parser = argparse.ArgumentParser(description="Compare Configs")
@@ -222,7 +240,7 @@ class DictAction(argparse.Action):
         >>> parser = argparse.ArgumentParser()
         >>> parser.add_argument('--dict', action=DictAction)
         DictAction(...)
-        >>> parser.parse_args('--dict key1:"value1" key2:"value2"'.split())
+        >>> parser.parse_args('--dict key1::value1 key2::value2'.split())
         Namespace(dict={'key1': 'value1', 'key2': 'value2'})
     """
 

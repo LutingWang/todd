@@ -1,12 +1,19 @@
 __all__ = [
-    'NormRegistry',
     'RegistryMeta',
     'Registry',
+    'NormRegistry',
+    'LrSchedulerRegistry',
+    'OptimizerRegistry',
+    'build_param_group',
+    'build_param_groups',
 ]
 
+import inspect
+import re
 from collections import UserDict
-from typing import Callable, Iterable, NoReturn, TypeVar
+from typing import Callable, Iterable, NoReturn, Sequence, TypeVar
 
+import torch
 import torch.nn as nn
 
 from .configs import Config
@@ -65,10 +72,8 @@ class RegistryMeta(UserDict, NonInstantiableMeta):  # type: ignore[misc]
         raise KeyError(key)
 
     def __repr__(self) -> str:
-        return (
-            f"<{self.__name__} "
-            f"{' '.join(f'{k}={v}' for k, v in self.items())}>"
-        )
+        items = ' '.join(f'{k}={v}' for k, v in self.items())
+        return f"<{self.__name__} {items}>"
 
     def __setitem__(self, key: str, item, forced: bool = False) -> None:
         """Register ``item`` with name ``key``.
@@ -162,7 +167,7 @@ class RegistryMeta(UserDict, NonInstantiableMeta):  # type: ignore[misc]
 
     def register(
         self,
-        keys: Iterable[str] = ...,  # type: ignore[assignment]
+        keys: Iterable[str] | None = None,
         **kwargs,
     ) -> Callable[[T], T]:
         """Register decorator.
@@ -215,7 +220,7 @@ class RegistryMeta(UserDict, NonInstantiableMeta):  # type: ignore[misc]
         """
 
         def wrapper_func(obj: T) -> T:
-            if keys is ...:
+            if keys is None:
                 self.__setitem__(obj.__name__, obj, **kwargs)
             else:
                 for key in keys:
@@ -244,7 +249,7 @@ class RegistryMeta(UserDict, NonInstantiableMeta):  # type: ignore[misc]
             ...         return obj.__class__.__name__.upper()
             >>> @Cat.register()
             ... class Munchkin: pass
-            >>> Cat.build(dict(type='Munchkin'))
+            >>> Cat.build(Config(type='Munchkin'))
             'MUNCHKIN'
         """
         type_ = self[config.pop('type')]
@@ -319,6 +324,38 @@ class NormRegistry(Registry):
     pass
 
 
+def build_param_group(model: nn.Module, param_group: Config) -> Config:
+    params = [
+        p for n, p in model.named_parameters()
+        if re.match(param_group['params'], n)
+    ]
+    param_group = param_group.copy()
+    param_group.params = params
+    return param_group
+
+
+def build_param_groups(
+    model: nn.Module,
+    param_groups: Sequence[Config] | None = None,
+) -> list[Config]:
+    if param_groups is None:
+        return [Config(params=model.parameters())]
+    return [build_param_group(model, param) for param in param_groups]
+
+
+class OptimizerRegistry(Registry):
+
+    @classmethod
+    def _build(cls, config: Config) -> torch.optim.Optimizer:
+        model = config.pop('model')
+        config.params = build_param_groups(model, config.get('params', None))
+        return RegistryMeta._build(cls, config)
+
+
+class LrSchedulerRegistry(Registry):
+    pass
+
+
 NormRegistry['BN1d'] = nn.BatchNorm1d
 NormRegistry['BN2d'] = NormRegistry['BN'] = nn.BatchNorm2d
 NormRegistry['BN3d'] = nn.BatchNorm3d
@@ -328,3 +365,11 @@ NormRegistry['LN'] = nn.LayerNorm
 NormRegistry['IN1d'] = nn.InstanceNorm1d
 NormRegistry['IN2d'] = NormRegistry['IN'] = nn.InstanceNorm2d
 NormRegistry['IN3d'] = nn.InstanceNorm3d
+
+for _, class_ in inspect.getmembers(torch.optim, inspect.isclass):
+    assert issubclass(class_, torch.optim.Optimizer)
+    OptimizerRegistry.register()(class_)
+
+for _, class_ in inspect.getmembers(torch.optim.lr_scheduler, inspect.isclass):
+    if issubclass(class_, torch.optim.lr_scheduler._LRScheduler):
+        LrSchedulerRegistry.register()(class_)

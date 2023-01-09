@@ -10,6 +10,15 @@ import socket
 from enum import IntEnum, auto
 from typing import Iterable, TypeVar
 
+# fix logging format
+try:
+    import lvis  # noqa: F401
+    logger = logging.getLogger()
+    for handler in logger.handlers:
+        logger.removeHandler(handler)
+except ImportError:
+    pass
+
 T = TypeVar('T', bound=IntEnum)
 
 
@@ -78,21 +87,21 @@ class Formatter(logging.Formatter):
         return SGR.format(s, sgrs)
 
 
-def get_logger() -> logging.Logger:
-    frame = inspect.currentframe()
-    assert frame is not None
-    frame = frame.f_back
-    assert frame is not None
-    name = frame.f_globals.get('__name__')
+def get_logger(
+    id_: int | None = None,
+    file=None,
+) -> logging.Logger:
+    name = inspect.stack()[1].frame.f_globals.get('__name__')
+    if id_ is not None:
+        name = f'{name}.{id_}'
     logger = logging.getLogger(name)
     if not getattr(logger, '_initialized', False):
         setattr(logger, '_initialized', True)
         logger.setLevel(logging.DEBUG)
         logger.addHandler(logging.StreamHandler())
 
-        from .stores import Store
-        if Store.LOG_FILE:
-            logger.addHandler(logging.FileHandler(Store.LOG_FILE))
+        if file is not None:
+            logger.addHandler(logging.FileHandler(file))
 
         formatter = Formatter()
         for handler in logger.handlers:

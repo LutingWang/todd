@@ -1,6 +1,5 @@
 __all__ = [
     'StoreMeta',
-    'Store',
 ]
 
 import os
@@ -36,7 +35,10 @@ class StoreMeta(NonInstantiableMeta):
         for k, v in self.__annotations__.items():
             variable = os.environ.get(k, '')
             if read_only := variable != '':
-                super().__setattr__(k, v(variable))
+                if v is not str:
+                    variable = eval(variable)
+                    assert isinstance(variable, v)
+                super().__setattr__(k, variable)
             self._read_only[k] = read_only
 
     def __getattr__(self, name: str) -> None:
@@ -50,7 +52,8 @@ class StoreMeta(NonInstantiableMeta):
             return
         super().__setattr__(name, value)
 
-
-class Store(metaclass=StoreMeta):
-    LOG_FILE: str
-    ITER: int
+    def __repr__(self) -> str:
+        variables = ' '.join(
+            f'{k}={getattr(self, k)}' for k in self.__annotations__
+        )
+        return f"<{self.__name__} {variables}>"
