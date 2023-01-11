@@ -1,3 +1,15 @@
+## v0.2.4 (2023-01-11)
+
+### Feat
+
+- runners, remove ITER and LOG_FILE
+- **base**: configs
+- new registry, workflow, store, and distiller API
+
+### Fix
+
+- **visuals**: numpy typing checks
+
 ## v0.2.4a5 (2022-11-17)
 
 ### Feat
