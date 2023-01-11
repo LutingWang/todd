@@ -16,13 +16,12 @@ from functools import partial
 from itertools import repeat
 from symtable import symtable
 from typing import (
+    TYPE_CHECKING,
     Any,
     Callable,
     Iterable,
-    Iterator,
     NamedTuple,
     TypeVar,
-    cast,
     final,
 )
 
@@ -189,12 +188,29 @@ layers=50, num_classes=1024))
 
     @property
     def name(self) -> str:
-        """Name of the step."""
+        """Name of the step.
+
+        By default, this is the output of the step:
+
+            >>> step = SingleStep(lambda: None, ['a', 'b'], 'c, d')
+            >>> step.name
+            'c, d'
+        """
         return self._outputs
 
     @property
     def spec(self) -> Spec:
-        """Specification of the step."""
+        """Specification of the step.
+
+        A specification is a tuple of the input and output names:
+
+            >>> step = SingleStep(lambda: None, ['a', 'b'], 'c, d')
+            >>> spec = step.spec
+            >>> sorted(spec.inputs)
+            ['a', 'b']
+            >>> sorted(spec.outputs)
+            ['c', 'd']
+        """
         return Spec(
             set(self._inputs),
             set(symtable(self._outputs, '<string>', 'eval').get_identifiers()),
@@ -290,6 +306,8 @@ class ParallelStep(Step):
 
 
 class ParallelSingleStep(ParallelStep):
+    if TYPE_CHECKING:
+        _actions: repeat[Callable]
 
     def __init__(self, action: Callable, *args, **kwargs) -> None:
         super().__init__(repeat(action), *args, **kwargs)
@@ -304,8 +322,7 @@ class ParallelSingleStep(ParallelStep):
 
     @property
     def actions(self) -> tuple[Callable]:
-        actions = cast(Iterator[Callable], self._actions)
-        return next(actions),
+        return next(self._actions),
 
 
 class Job(UserList[Step], Task):
@@ -340,6 +357,25 @@ class Job(UserList[Step], Task):
 
     @property
     def actions(self) -> tuple[Callable, ...]:
+        """Actions of all steps.
+
+        A flat list of actions in sequence:
+
+            >>> class Action:
+            ...     def __init__(self, name: str) -> None:
+            ...         self._name = name
+            ...     def __call__(self) -> None:
+            ...         pass
+            ...     def __repr__(self) -> str:
+            ...         return f"Action({repr(self._name)})"
+            >>> job = Job([
+            ...     SingleStep(Action('a'), [], ''),
+            ...     ParallelStep([Action('b'), Action('c')], [], ''),
+            ...     ParallelSingleStep(Action('d'), [], ''),
+            ... ])
+            >>> job.actions
+            (Action('a'), Action('b'), Action('c'), Action('d'))
+        """
         return sum((step.actions for step in self), tuple())
 
     @property

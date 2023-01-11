@@ -136,16 +136,18 @@ class Config(AttrDict, dict):  # type: ignore[misc]
             ...         'f': ['g', ('h', 'i', 'j')],
             ...     },
             ...     k=[2, 1],
+            ...     l='mn',
             ... )
             >>> print(config.dumps())
             a = 1
             b = {'c': 3}
             d = {5: 'e', 'f': ['g', ('h', 'i', 'j')]}
             k = [2, 1]
+            l = 'mn'
             <BLANKLINE>
         """
         code, _ = yapf.FormatCode(
-            '\n'.join(f'{k}={self[k]}' for k in sorted(self)),
+            '\n'.join(f'{k}={repr(self[k])}' for k in sorted(self)),
             verify=True,
         )
         return code

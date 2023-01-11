@@ -190,7 +190,7 @@ class BaseRunner(ABC):
 
     def read_state_dict(self, f: pathlib.Path) -> None:
         self._logger.info(f"Reading state dict from {f}")
-        self.load_state_dict(torch.load(f))
+        self.load_state_dict(torch.load(f, 'cpu'))
 
 
 class Validator(BaseRunner):
@@ -313,6 +313,7 @@ class IterBasedTrainer(Trainer):
     def _after_run_iter(self, i: int, batch, memo: Memo) -> None:
         super()._after_run_iter(i, batch, memo)
         if self._iter % self._state_dict.interval == 0:
+            self.validate()
             self.write_state_dict(self._work_dir / f'iter_{self._iter}.pth')
         if self._lr_scheduler is not None:
             self._lr_scheduler.step()
