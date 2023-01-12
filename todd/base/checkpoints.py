@@ -5,8 +5,7 @@ __all__ = [
 ]
 
 from .configs import Config
-from .loggers import get_logger
-from .patches import Module, get_
+from .patches import Module, get_, logger
 from .registries import RegistryMeta
 
 
@@ -34,9 +33,9 @@ def transfer_weight(target: Module, source: Module) -> None:
         strict=False,
     )
     if missing_keys:
-        get_logger().warning('missing_keys:', missing_keys)
+        logger.warning('missing_keys:', missing_keys)
     if unexpected_keys:
-        get_logger().warning('unexpected_keys:', unexpected_keys)
+        logger.warning('unexpected_keys:', unexpected_keys)
     target._is_init = True  # type: ignore[assignment]
 
 

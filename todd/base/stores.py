@@ -4,8 +4,8 @@ __all__ = [
 
 import os
 
-from .loggers import get_logger
 from .misc import NonInstantiableMeta
+from .patches import logger
 
 
 class StoreMeta(NonInstantiableMeta):
@@ -48,7 +48,7 @@ class StoreMeta(NonInstantiableMeta):
 
     def __setattr__(self, name: str, value) -> None:
         if name in self.__annotations__ and self._read_only.get(name, False):
-            get_logger().debug(f"Cannot set {name} to {value}.")
+            logger.debug(f"Cannot set {name} to {value}.")
             return
         super().__setattr__(name, value)
 

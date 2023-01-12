@@ -29,7 +29,7 @@ import time
 from abc import ABC, abstractmethod
 from typing import Generator
 
-from todd.base import DictAction, Registry, get_logger
+from todd.base import DictAction, Registry
 
 
 class BaseReader(ABC):
@@ -37,7 +37,6 @@ class BaseReader(ABC):
     def __init__(self, filepath: str) -> None:
         super().__init__()
         self._file = open(filepath)
-        self._logger = get_logger()
 
     def __del__(self) -> None:
         self._file.close()

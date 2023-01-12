@@ -13,7 +13,7 @@ import torch
 import torch.backends.cudnn as cudnn
 import torch.distributed as dist
 
-from ..base import get_logger, get_rank, get_world_size
+from ..base import get_rank, get_world_size, logger
 
 
 def randint(high: int = 2**30) -> int:
@@ -59,9 +59,7 @@ def set_seed_temp(
 ) -> Generator[None, None, None]:
     cuda_is_available = torch.cuda.is_available()
     if torch.cuda.device_count() > 1:
-        get_logger().warn(
-            "Seeding is not recommended for multi-GPU training.",
-        )
+        logger.warn("Seeding is not recommended for multi-GPU training.")
 
     random_state = random.getstate()
     np_state = np.random.get_state()

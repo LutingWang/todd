@@ -8,9 +8,13 @@ __all__ = [
     'Memo',
 ]
 
+import getpass
+import itertools
+import logging
 import pathlib
-import time
+import socket
 from abc import ABC, abstractmethod
+from datetime import datetime
 from typing import Any, Mapping, Protocol, runtime_checkable
 
 import torch
@@ -19,13 +23,11 @@ import torch.utils.data
 
 from ..base import (
     Config,
+    Formatter,
     LrSchedulerRegistry,
     OptimizerRegistry,
     Registry,
     StoreMeta,
-    get_logger,
-    get_rank,
-    get_world_size,
 )
 
 Memo = dict[str, Any]
@@ -78,19 +80,41 @@ class BaseRunner(ABC):
         load_state_dict: Config,
         state_dict: Config,
     ) -> None:
-        work_dir = pathlib.Path('work_dirs') / name
-        work_dir.mkdir(parents=True, exist_ok=True)
-        self._work_dir = work_dir
-
-        log_file = time.strftime('%Y%m%dT%H%M%S%f') + '.log'
-        self._logger = get_logger(id(self), work_dir / log_file)
-
+        self._work_dir = self._build_work_dir(name)
         self._model = model
+        self._logger = self._build_logger()
 
         self._dataloader = self._build_dataloader(dataloader)
         self._log = log
         self._load_state_dict = load_state_dict
         self._state_dict = state_dict
+
+        self._iter = 1
+        self._logger.debug(
+            f"Runner initialized by {getpass.getuser()}@{socket.gethostname()}"
+        )
+
+    @property
+    def iters(self) -> int:
+        return len(self._dataloader)
+
+    def _build_logger(self) -> logging.Logger:
+        file = self._work_dir / (
+            datetime.now().strftime('%Y%m%dT%H%M%S%f') + '.log'
+        )
+        handler = logging.FileHandler(file)
+        handler.setFormatter(Formatter())
+
+        from ..base import logger
+        name = f'{logger.name}.{self.__class__.__name__}'
+        logger = logging.getLogger(name)
+        logger.addHandler(handler)
+        return logger
+
+    def _build_work_dir(self, name: str) -> pathlib.Path:
+        work_dir = pathlib.Path('work_dirs') / name
+        work_dir.mkdir(parents=True, exist_ok=True)
+        return work_dir
 
     @property
     def model(self) -> torch.nn.Module:
@@ -109,7 +133,7 @@ class BaseRunner(ABC):
         """
         pass
 
-    def _stop_run_iter(self, i: int, batch, memo: Memo) -> bool:
+    def _stop_run_iter(self, batch, memo: Memo) -> bool:
         """Whether the current iteration should execute or not.
 
         Args:
@@ -121,49 +145,50 @@ class BaseRunner(ABC):
         By default, this method supports `DRY_RUN` by returning `True` after
         the first log message.
         """
-        return self.Store.DRY_RUN and i > self._log.interval
+        return self.Store.DRY_RUN and self._iter > self._log.interval
 
-    def _before_run_iter(self, i: int, batch, memo: Memo) -> None:
+    def _before_run_iter(self, batch, memo: Memo) -> None:
         pass
 
-    def _before_run_iter_log(self, i: int, batch, memo: Memo) -> str | None:
+    def _before_run_iter_log(self, batch, memo: Memo) -> str | None:
         pass
 
     @abstractmethod
-    def _run_iter(self, i: int, batch, memo: Memo) -> torch.Tensor:
+    def _run_iter(self, batch, memo: Memo) -> torch.Tensor:
         pass
 
-    def _after_run_iter(self, i: int, batch, memo: Memo) -> None:
-        pass
+    def _after_run_iter_log(self, batch, memo: Memo) -> str | None:
+        loss: torch.Tensor = memo['loss']
+        return f"Iter [{self._iter}/{self.iters}] Loss {loss.item():.3f}"
 
-    def _after_run_iter_log(self, i: int, batch, memo: Memo) -> str | None:
-        pass
+    def _after_run_iter(self, batch, memo: Memo) -> None:
+        self._iter += 1
 
     def _before_run(self) -> Memo:
-        return dict()
+        return dict(dataloader=self._dataloader)
 
     def _run(self, memo: Memo) -> None:
-        for i, batch in enumerate(self._dataloader, 1):
-            if self._stop_run_iter(i, batch, memo):
+        dataloader = memo['dataloader']
+        for batch in dataloader:
+            if self._stop_run_iter(batch, memo):
                 return
-            log = i % self._log.interval == 0
-            self._before_run_iter(i, batch, memo)
-            if log:
-                info = self._before_run_iter_log(i, batch, memo)
+            self._before_run_iter(batch, memo)
+            if log := self._iter % self._log.interval == 0:
+                info = self._before_run_iter_log(batch, memo)
                 if info is not None:
                     self._logger.info(info)
             try:
-                memo['loss'] = self._run_iter(i, batch, memo)
+                memo['loss'] = self._run_iter(batch, memo)
             except Exception:
                 self._logger.exception(
-                    f"Unable to run iter {i}\n{batch=}\n{memo=}"
+                    f"Unable to run iter {self._iter}\n{batch=}\n{memo=}"
                 )
                 raise
-            self._after_run_iter(i, batch, memo)
             if log:
-                info = self._after_run_iter_log(i, batch, memo)
+                info = self._after_run_iter_log(batch, memo)
                 if info is not None:
                     self._logger.info(info)
+            self._after_run_iter(batch, memo)
 
     def _after_run(self, memo: Memo) -> None:
         pass
@@ -179,10 +204,11 @@ class BaseRunner(ABC):
             state_dict['model'],
             **self._load_state_dict.model,
         )
+        self._iter = state_dict['iter_']
 
     def state_dict(self) -> dict[str, Any]:
         model = self.model.state_dict(**self._state_dict.model)
-        return dict(model=model)
+        return dict(model=model, iter_=self._iter)
 
     def write_state_dict(self, f: pathlib.Path) -> None:
         self._logger.info(f"Writing state dict to {f}")
@@ -194,12 +220,6 @@ class BaseRunner(ABC):
 
 
 class Validator(BaseRunner):
-
-    def _after_run_iter_log(self, i: int, batch, memo: Memo) -> str | None:
-        info = f"Iter [{i}/{len(self._dataloader)}]"
-        loss: torch.Tensor = memo['loss']
-        info += f" Loss {loss.item():.3f}"
-        return info
 
     def _before_run(self) -> Memo:
         self._model.eval()
@@ -239,23 +259,20 @@ class Trainer(BaseRunner):
     ) -> torch.optim.lr_scheduler._LRScheduler:
         return LrSchedulerRegistry.build(config)
 
-    def _after_run_iter(self, i: int, batch, memo: Memo) -> None:
+    def _after_run_iter(self, batch, memo: Memo) -> None:
+        super()._after_run_iter(batch, memo)
         loss: torch.Tensor = memo['loss']
         loss.backward()
         self._optimizer.step()
         self._model.zero_grad()
 
-    def _after_run_iter_log(self, i: int, batch, memo: Memo) -> str | None:
+    def _after_run_iter_log(self, batch, memo: Memo) -> str | None:
+        info = super()._after_run_iter_log(batch, memo)
         if self._lr_scheduler is None:
-            info = ""
-        else:
-            info = "LR "
-            info += str([
-                f'{lr:.3e}' for lr in self._lr_scheduler.get_last_lr()
-            ])
-            info += " "
-        loss: torch.Tensor = memo['loss']
-        info += f"Loss {loss.item():.3f}"
+            return info
+        last_lr = [f'{lr:.3e}' for lr in self._lr_scheduler.get_last_lr()]
+        info = "" if info is None else f"{info} "
+        info += f"LR {last_lr}"
         return info
 
     def _before_run(self) -> Memo:
@@ -263,14 +280,16 @@ class Trainer(BaseRunner):
         return super()._before_run()
 
     def _after_run(self, memo: Memo) -> None:
+        super()._after_run(memo)
         self.validate()
 
     def validate(self) -> None:
         if self._validator is None:
-            self._logger.info("Skipping validation")
+            self._logger.info(
+                "Skipping validation since validator is undefined"
+            )
             return
-        if get_world_size() > 1:
-            torch.distributed.barrier()
+        torch.distributed.barrier()
         self._validator.run()
         self._model.train()
 
@@ -302,45 +321,31 @@ class IterBasedTrainer(Trainer):
 
     def __init__(self, *args, iters: int, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self._iter = 1
         self._iters = iters
 
-    def _stop_run_iter(self, i: int, batch, memo: Memo) -> bool:
-        return (
-            self._iter > self._iters or super()._stop_run_iter(i, batch, memo)
-        )
+    @property
+    def iters(self) -> int:
+        return self._iters
 
-    def _after_run_iter(self, i: int, batch, memo: Memo) -> None:
-        super()._after_run_iter(i, batch, memo)
+    def _after_run_iter(self, batch, memo: Memo) -> None:
         if self._iter % self._state_dict.interval == 0:
             self.validate()
             self.write_state_dict(self._work_dir / f'iter_{self._iter}.pth')
+        super()._after_run_iter(batch, memo)
         if self._lr_scheduler is not None:
             self._lr_scheduler.step()
-        self._iter += 1
 
-    def _after_run_iter_log(self, i: int, batch, memo: Memo) -> str | None:
-        info = super()._after_run_iter_log(i, batch, memo)
-        info = "" if info is None else " " + info
-        info = f"Iter [{self._iter}/{self._iters}]" + info
-        return info
-
-    def _run(self, memo: Memo) -> None:
-        while self._iter <= self._iters:
-            super()._run(memo)
+    def _before_run(self) -> Memo:
+        memo = super()._before_run()
+        memo['dataloader'] = itertools.islice(
+            itertools.cycle(memo['dataloader']),
+            self._iters,
+        )
+        return memo
 
     def _after_run(self, memo: Memo):
         self.write_state_dict(self._work_dir / 'latest.pth')
         return super()._after_run(memo)
-
-    def load_state_dict(self, state_dict: Mapping[str, Any]) -> None:
-        super().load_state_dict(state_dict)
-        self._iter = state_dict['iter_']
-
-    def state_dict(self) -> dict[str, Any]:
-        state_dict = super().state_dict()
-        state_dict['iter_'] = self._iter
-        return state_dict
 
 
 class EpochBasedTrainer(Trainer):
@@ -354,19 +359,13 @@ class EpochBasedTrainer(Trainer):
         self,
         config: Config,
     ) -> torch.optim.lr_scheduler._LRScheduler:
-        self._lr_scheduler_by_epoch = config.pop('by_epoch', True)
+        self._lr_scheduler_by_epoch = config.pop('by_epoch')
         return super()._build_lr_scheduler(config)
 
-    def _after_run_iter(self, i: int, batch, memo: Memo) -> None:
-        super()._after_run_iter(i, batch, memo)
+    def _after_run_iter(self, batch, memo: Memo) -> None:
+        super()._after_run_iter(batch, memo)
         if self._lr_scheduler is not None and not self._lr_scheduler_by_epoch:
             self._lr_scheduler.step()
-
-    def _after_run_iter_log(self, i: int, batch, memo: Memo) -> str | None:
-        info = super()._after_run_iter_log(i, batch, memo)
-        info = "" if info is None else " " + info
-        info = f"Iter [{i}/{len(self._dataloader)}]" + info
-        return info
 
     def _stop_run_epoch(self, memo: Memo) -> bool:
         return False
@@ -389,6 +388,13 @@ class EpochBasedTrainer(Trainer):
     def _run_epoch(self, epoch_memo: Memo, memo: Memo) -> None:
         super()._run(epoch_memo)
 
+    def _after_run_epoch_log(
+        self,
+        epoch_memo: Memo,
+        memo: Memo,
+    ) -> str | None:
+        return f"Epoch [{self._epoch}/{self._epochs}] ended"
+
     def _after_run_epoch(
         self,
         epoch_memo: Memo,
@@ -398,14 +404,8 @@ class EpochBasedTrainer(Trainer):
         self.write_state_dict(self._work_dir / f'epoch_{self._epoch}.pth')
         if self._lr_scheduler is not None and self._lr_scheduler_by_epoch:
             self._lr_scheduler.step()
+        self._iter = 1
         self._epoch += 1
-
-    def _after_run_epoch_log(
-        self,
-        epoch_memo: Memo,
-        memo: Memo,
-    ) -> str | None:
-        return f"Epoch [{self._epoch}/{self._epochs}] ended"
 
     def _before_run(self) -> Memo:
         memo: Memo = dict(epoch_memos=dict())
@@ -415,12 +415,10 @@ class EpochBasedTrainer(Trainer):
         while self._epoch <= self._epochs:
             if self._stop_run_epoch(memo):
                 return
-            log = get_rank() == 0
             epoch_memo = self._before_run_epoch(memo)
-            if log:
-                info = self._before_run_epoch_log(epoch_memo, memo)
-                if info is not None:
-                    self._logger.info(info)
+            info = self._before_run_epoch_log(epoch_memo, memo)
+            if info is not None:
+                self._logger.info(info)
             try:
                 self._run_epoch(epoch_memo, memo)
             except Exception:
@@ -429,11 +427,10 @@ class EpochBasedTrainer(Trainer):
                     f"{memo=}"
                 )
                 raise
+            info = self._after_run_epoch_log(epoch_memo, memo)
+            if info is not None:
+                self._logger.info(info)
             self._after_run_epoch(epoch_memo, memo)
-            if get_rank() == 0:
-                info = self._after_run_epoch_log(epoch_memo, memo)
-                if info is not None:
-                    self._logger.info(info)
 
     def _after_run(self, memo: Memo):
         pass

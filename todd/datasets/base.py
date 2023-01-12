@@ -12,7 +12,7 @@ from typing import Any, Generic, MutableMapping, TypeVar
 
 from torch.utils.data import Dataset
 
-from ..base import Registry, get_logger
+from ..base import Registry, logger
 
 T = TypeVar('T')
 
@@ -39,7 +39,6 @@ class BaseAccessLayer(MutableMapping[T, Any]):
         self._codec = Codec(codec)
         self._readonly = readonly
         self._exist_ok = exist_ok
-        self._logger = get_logger()
 
         self._init(*args, **kwargs)
 
@@ -81,11 +80,10 @@ class BaseDataset(Dataset, Generic[T]):
             access_layer,
             default_config=dict(type=self.ACCESS_LAYER),
         )
-        self._logger = get_logger()
 
-        self._logger.debug("Initializing keys.")
+        logger.debug("Initializing keys.")
         self._keys = list(self._access_layer.keys())
-        self._logger.debug(
+        logger.debug(
             f"Keys {reprlib.repr(self._keys)} initialized "
             f"with length {len(self)}."
         )

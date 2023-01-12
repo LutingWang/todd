@@ -28,7 +28,7 @@ from typing import (
 import pandas as pd
 
 from .configs import Config
-from .loggers import get_logger
+from .patches import logger
 from .registries import RegistryMeta
 
 Message = dict[str, Any]
@@ -336,17 +336,13 @@ class Job(UserList[Step], Task):
             for k, v in steps.items()
         ])
 
-    def __init__(self, steps: Iterable[Step]) -> None:
-        super().__init__(steps)
-        self._logger = get_logger()
-
     def __call__(self, message: Message) -> Message:
         updates: Message = dict()
         for step in self:
             try:
                 outputs = step(message)
             except Exception:
-                self._logger.error(f"Failed to forward {step}")
+                logger.error(f"Failed to forward {step}")
                 raise
             message.update(outputs)
             updates.update(outputs)

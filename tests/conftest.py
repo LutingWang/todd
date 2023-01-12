@@ -1,8 +1,6 @@
-import logging
 import os
 import pathlib
 import sys
-from typing import Generator, cast
 
 import pytest
 import torch.nn as nn
@@ -14,17 +12,6 @@ from custom_types import CustomModule, CustomObject  # noqa: E402
 @pytest.fixture
 def data_dir(request: pytest.FixtureRequest) -> pathlib.Path:
     return request.path.resolve().with_suffix('')
-
-
-@pytest.fixture
-def teardown_logger(logger_name: str) -> Generator[None, None, None]:
-    yield
-    logger = cast(
-        logging.Logger,
-        logging.Logger.manager.loggerDict.pop(logger_name),
-    )
-    for handler in logger.handlers:
-        handler.close()
 
 
 @pytest.fixture

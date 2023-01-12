@@ -17,8 +17,8 @@ import torch
 import torch.nn as nn
 
 from .configs import Config
-from .loggers import get_logger
 from .misc import NonInstantiableMeta
+from .patches import logger
 
 T = TypeVar('T', bound=Callable)
 
@@ -49,7 +49,6 @@ class RegistryMeta(UserDict, NonInstantiableMeta):  # type: ignore[misc]
         """Initialize."""
         UserDict.__init__(self)
         NonInstantiableMeta.__init__(self, *args, **kwargs)
-        self._logger = get_logger()
 
     def __call__(self, *args, **kwargs) -> NoReturn:
         """Prevent `Registry` classes from being initialized.
@@ -68,7 +67,7 @@ class RegistryMeta(UserDict, NonInstantiableMeta):  # type: ignore[misc]
         Raises:
             KeyError: always.
         """
-        self._logger.error(f"{key} does not exist in {self.__name__}")
+        logger.error(f"{key} does not exist in {self.__name__}")
         raise KeyError(key)
 
     def __repr__(self) -> str:
@@ -110,7 +109,7 @@ class RegistryMeta(UserDict, NonInstantiableMeta):  # type: ignore[misc]
             'BritishShorthair'
         """
         if not forced and key in self:
-            self._logger.error(f"{key} already exist in {self.__name__}")
+            logger.error(f"{key} already exist in {self.__name__}")
             raise KeyError(key)
         return super().__setitem__(key, item)
 
@@ -307,7 +306,7 @@ class RegistryMeta(UserDict, NonInstantiableMeta):  # type: ignore[misc]
             return registry._build(config)
         except Exception as e:
             # config may be altered
-            self._logger.error(f'Failed to build {default_config}')
+            logger.error(f'Failed to build {default_config}')
             raise e
 
 
