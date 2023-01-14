@@ -1,18 +1,11 @@
 __all__ = [
-    'NonInstantiableMeta',
     'SGR',
 ]
 
 import enum
-from typing import Iterable, NoReturn, TypeVar, final
+from typing import Iterable, TypeVar, final
 
 SGRType = TypeVar('SGRType', bound='SGR')
-
-
-class NonInstantiableMeta(type):
-
-    def __call__(self, *args, **kwargs) -> NoReturn:
-        raise NotImplementedError
 
 
 @final
@@ -57,7 +50,7 @@ class SGR(enum.IntEnum):
 
     @classmethod
     def format(cls: type[SGRType], text: str, *args: SGRType) -> str:
-        return cls.CSI(args) + text + cls.CSI(())
+        return cls.CSI(args) + text + cls.CSI(tuple())
 
 
 if __name__ == '__main__':

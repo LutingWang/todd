@@ -1,6 +1,6 @@
-Registries
+Types
 ==========
 
-.. automodule:: todd.base.registries
+.. automodule:: todd.base.types
    :special-members:
    :private-members:
