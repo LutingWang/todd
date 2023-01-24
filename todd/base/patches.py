@@ -102,9 +102,9 @@ if version.parse(torchvision.__version__) < version.parse('0.9.0'):
     transforms.InterpolationMode = InterpolationMode
 
 
-def get_(obj, name: str, default=...):
+def get_(obj, attr: str, default=...):
     try:
-        return eval('__o' + name, dict(__o=obj))
+        return eval('__o' + attr, dict(__o=obj))
     except Exception:
         if default is not ...:
             return default
@@ -117,7 +117,10 @@ def has_(obj, name: str) -> bool:
 
 
 def set_(obj, attr: str, value) -> None:
-    exec(f'__o{attr} = __v', dict(__o=obj, __v=value))
+    locals_: dict[str, Any] = dict()
+    exec(f'__o{attr} = __v', dict(__o=obj, __v=value), locals_)
+    if len(locals_) != 0:
+        raise ValueError(f"{attr} is invalid. Consider prepending a dot.")
 
 
 def del_(obj, attr: str) -> None:

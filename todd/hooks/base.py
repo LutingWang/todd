@@ -1,18 +1,15 @@
 __all__ = [
     'HookRegistry',
     'BaseHook',
-    'HookStatus',
-    'hook',
 ]
 
-import contextlib
 from abc import abstractmethod
 from enum import IntEnum, auto
-from typing import TYPE_CHECKING, Any, Generator, Protocol
+from typing import TYPE_CHECKING, Protocol
 
 import torch.nn as nn
 
-from ..base import Config, Registry, StatusMixin, get_
+from ..base import Registry, StatusMixin, get_
 
 if TYPE_CHECKING:
 
@@ -135,27 +132,3 @@ class BaseHook(StatusMixin[Status], _HookMixin, _TrackingMixin):
 
 class HookRegistry(Registry):
     pass
-
-
-class HookStatus:
-    _value: Any
-
-    @property
-    def value(self):
-        return self._value
-
-
-@contextlib.contextmanager
-def hook(
-    config: Config,
-    model: nn.Module,
-) -> Generator[HookStatus, None, None]:
-    hook_ = HookRegistry.build(config)
-    hook_.bind(model)
-
-    status = HookStatus()
-    yield status
-    status._value = hook_()
-
-    hook_.reset()
-    hook_.unbind()

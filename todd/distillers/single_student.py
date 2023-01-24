@@ -3,6 +3,7 @@ __all__ = [
     'MultiTeacherDistiller',
     'SingleTeacherDistiller',
     'SelfDistiller',
+    'Student',
 ]
 
 from typing import Generic, TypeVar, final

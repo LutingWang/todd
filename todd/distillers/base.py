@@ -91,6 +91,11 @@ class BaseDistiller(Module, Workflow):
             assert outputs.isdisjoint(spec.outputs)
             outputs |= spec.outputs
 
+    def __hash__(self) -> int:
+        # self inherits from UserDict, which defines `__eq__`, so `__hash__`
+        # is disabled by default
+        return id(self)
+
     def __call__(self, message: Message | None = None) -> Message:
         if message is None:
             message = dict()
@@ -110,7 +115,7 @@ class BaseDistiller(Module, Workflow):
         self['adapts'](tensors)
         losses = self['losses'](tensors.copy())
 
-        if DistillerStore.INTERMEDIATE_OUTPUTS is not None:
+        if DistillerStore.INTERMEDIATE_OUTPUTS:
             losses[DistillerStore.INTERMEDIATE_OUTPUTS] = tensors
 
         return losses

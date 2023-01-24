@@ -1,4 +1,5 @@
 __all__ = [
+    'Control',
     'BaseRunner',
     'Validator',
     'Trainer',
@@ -8,6 +9,7 @@ __all__ = [
     'Memo',
 ]
 
+import enum
 import getpass
 import itertools
 import logging
@@ -27,7 +29,7 @@ from ..base import (
     LrSchedulerRegistry,
     OptimizerRegistry,
     Registry,
-    StoreMeta,
+    Store,
 )
 
 Memo = dict[str, Any]
@@ -40,36 +42,12 @@ class DistributedSamplerProto(Protocol):
         ...
 
 
+class Control(enum.Enum):
+    BREAK = enum.auto()
+    CONTINUE = enum.auto()
+
+
 class BaseRunner(ABC):
-
-    class Store(metaclass=StoreMeta):
-        CPU: bool
-        CUDA: bool
-
-        DRY_RUN: bool
-        TRAIN_WITH_VAL_DATASET: bool
-
-    if not Store.CPU and not Store.CUDA:
-        if torch.cuda.is_available():
-            Store.CUDA = True
-        else:
-            Store.CPU = True
-    assert Store.CPU + Store.CUDA == 1
-
-    if Store.CPU:
-        Store.DRY_RUN = True
-        Store.TRAIN_WITH_VAL_DATASET = True
-
-        try:
-            from mmcv.cnn import NORM_LAYERS
-            NORM_LAYERS.register_module(
-                name='SyncBN',
-                force=True,
-                module=torch.nn.BatchNorm2d,
-            )
-            del NORM_LAYERS
-        except Exception:
-            pass
 
     def __init__(
         self,
@@ -89,7 +67,7 @@ class BaseRunner(ABC):
         self._load_state_dict = load_state_dict
         self._state_dict = state_dict
 
-        self._iter = 1
+        self._iter = 0
         self._logger.debug(
             f"Runner initialized by {getpass.getuser()}@{socket.gethostname()}"
         )
@@ -99,9 +77,8 @@ class BaseRunner(ABC):
         return len(self._dataloader)
 
     def _build_logger(self) -> logging.Logger:
-        file = self._work_dir / (
-            datetime.now().strftime('%Y%m%dT%H%M%S%f') + '.log'
-        )
+        file = self._work_dir / '_.log'
+        file = file.with_stem(datetime.now().astimezone().isoformat())
         handler = logging.FileHandler(file)
         handler.setFormatter(Formatter())
 
@@ -133,7 +110,7 @@ class BaseRunner(ABC):
         """
         pass
 
-    def _stop_run_iter(self, batch, memo: Memo) -> bool:
+    def _control_run_iter(self, batch, memo: Memo) -> Control | None:
         """Whether the current iteration should execute or not.
 
         Args:
@@ -141,11 +118,16 @@ class BaseRunner(ABC):
             batch: inputs.
             memo: runtime memory.
 
+        Returns:
+            The control action or `None` for no control.
+
         Override this method for early stopping, error detection, etc.
-        By default, this method supports `DRY_RUN` by returning `True` after
-        the first log message.
+        By default, this method supports `DRY_RUN` by returning
+        `Control.BREAK` after the first log message.
         """
-        return self.Store.DRY_RUN and self._iter > self._log.interval
+        if Store.DRY_RUN and self._iter > self._log.interval:
+            return Control.BREAK
+        return None
 
     def _before_run_iter(self, batch, memo: Memo) -> None:
         pass
@@ -162,7 +144,7 @@ class BaseRunner(ABC):
         return f"Iter [{self._iter}/{self.iters}] Loss {loss.item():.3f}"
 
     def _after_run_iter(self, batch, memo: Memo) -> None:
-        self._iter += 1
+        pass
 
     def _before_run(self) -> Memo:
         return dict(dataloader=self._dataloader)
@@ -170,8 +152,13 @@ class BaseRunner(ABC):
     def _run(self, memo: Memo) -> None:
         dataloader = memo['dataloader']
         for batch in dataloader:
-            if self._stop_run_iter(batch, memo):
-                return
+            self._iter += 1
+            control = self._control_run_iter(batch, memo)
+            if control is Control.BREAK:
+                break
+            if control is Control.CONTINUE:
+                continue
+            assert control is None, control
             self._before_run_iter(batch, memo)
             if log := self._iter % self._log.interval == 0:
                 info = self._before_run_iter_log(batch, memo)
@@ -328,10 +315,10 @@ class IterBasedTrainer(Trainer):
         return self._iters
 
     def _after_run_iter(self, batch, memo: Memo) -> None:
+        super()._after_run_iter(batch, memo)
         if self._iter % self._state_dict.interval == 0:
             self.validate()
             self.write_state_dict(self._work_dir / f'iter_{self._iter}.pth')
-        super()._after_run_iter(batch, memo)
         if self._lr_scheduler is not None:
             self._lr_scheduler.step()
 
@@ -343,32 +330,20 @@ class IterBasedTrainer(Trainer):
         )
         return memo
 
-    def _after_run(self, memo: Memo):
+    def _after_run(self, memo: Memo) -> None:
         self.write_state_dict(self._work_dir / 'latest.pth')
-        return super()._after_run(memo)
+        super()._after_run(memo)
 
 
 class EpochBasedTrainer(Trainer):
 
     def __init__(self, *args, epochs: int, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self._epoch = 1
+        self._epoch = 0
         self._epochs = epochs
 
-    def _build_lr_scheduler(
-        self,
-        config: Config,
-    ) -> torch.optim.lr_scheduler._LRScheduler:
-        self._lr_scheduler_by_epoch = config.pop('by_epoch')
-        return super()._build_lr_scheduler(config)
-
-    def _after_run_iter(self, batch, memo: Memo) -> None:
-        super()._after_run_iter(batch, memo)
-        if self._lr_scheduler is not None and not self._lr_scheduler_by_epoch:
-            self._lr_scheduler.step()
-
-    def _stop_run_epoch(self, memo: Memo) -> bool:
-        return False
+    def _control_run_epoch(self, memo: Memo) -> Control | None:
+        return None
 
     def _before_run_epoch(self, memo: Memo) -> Memo:
         sampler = self._dataloader.batch_sampler
@@ -400,21 +375,27 @@ class EpochBasedTrainer(Trainer):
         epoch_memo: Memo,
         memo: Memo,
     ) -> None:
+        super()._after_run(epoch_memo)
         memo['epoch_memos'][self._epoch] = epoch_memo
         self.write_state_dict(self._work_dir / f'epoch_{self._epoch}.pth')
-        if self._lr_scheduler is not None and self._lr_scheduler_by_epoch:
+        if self._lr_scheduler is not None:
             self._lr_scheduler.step()
-        self._iter = 1
-        self._epoch += 1
 
     def _before_run(self) -> Memo:
         memo: Memo = dict(epoch_memos=dict())
         return memo
 
     def _run(self, memo: Memo) -> None:
-        while self._epoch <= self._epochs:
-            if self._stop_run_epoch(memo):
-                return
+        while self._epoch < self._epochs:
+            self._epoch += 1
+            self._iter = 0
+
+            control = self._control_run_epoch(memo)
+            if control is Control.BREAK:
+                break
+            if control is Control.CONTINUE:
+                continue
+            assert control is None, control
             epoch_memo = self._before_run_epoch(memo)
             info = self._before_run_epoch_log(epoch_memo, memo)
             if info is not None:
@@ -432,7 +413,7 @@ class EpochBasedTrainer(Trainer):
                 self._logger.info(info)
             self._after_run_epoch(epoch_memo, memo)
 
-    def _after_run(self, memo: Memo):
+    def _after_run(self, memo: Memo) -> None:
         pass
 
 

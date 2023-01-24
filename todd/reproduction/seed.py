@@ -6,29 +6,40 @@ __all__ = [
 import hashlib
 import random
 from contextlib import contextmanager
-from typing import Generator, cast
+from typing import Generator
 
 import numpy as np
 import torch
 import torch.backends.cudnn as cudnn
 import torch.distributed as dist
 
-from ..base import get_rank, get_world_size, logger
+from ..base import Store, get_world_size, logger
 
 
 def randint(high: int = 2**30) -> int:
     seed = np.random.randint(high)
     if get_world_size() <= 1:
         return seed
-    tensor = torch.tensor(seed if get_rank() == 0 else 0, dtype=torch.int)
+    tensor = torch.tensor(seed, dtype=torch.int)
     dist.broadcast(tensor, src=0)
-    return cast(int, tensor.item())
+    return tensor.item()
 
 
-def init_seed(
+def init_seed(seed: int) -> None:
+    seed %= 2**30
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if Store.CUDA:
+        torch.cuda.manual_seed_all(seed)
+
+
+@contextmanager
+def set_seed_temp(
     seed=None,
-    deterministic: bool | None = None,
-) -> int:
+    deterministic: bool = False,
+    benchmark: bool = True,
+) -> Generator[None, None, None]:
     if seed is None:
         seed = randint()
     elif isinstance(seed, int):
@@ -38,46 +49,28 @@ def init_seed(
             seed = str(seed).encode()
         seed = hashlib.blake2b(seed, digest_size=4).hexdigest()
         seed = int(seed, 16)
-    seed %= 2**30
 
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
-
-    if deterministic is not None:
-        cudnn.deterministic = deterministic
-        cudnn.benchmark = not deterministic
-
-    return seed
-
-
-@contextmanager
-def set_seed_temp(
-    seed=None,
-    deterministic: bool | None = None,
-) -> Generator[None, None, None]:
-    cuda_is_available = torch.cuda.is_available()
-    if torch.cuda.device_count() > 1:
-        logger.warn("Seeding is not recommended for multi-GPU training.")
+    logger.info(f"Setting seed to {seed}.")
 
     random_state = random.getstate()
     np_state = np.random.get_state()
     torch_state = torch.get_rng_state()
 
-    if cuda_is_available:
+    if Store.CUDA:
         cuda_state = torch.cuda.get_rng_state()
         prev_deterministic = cudnn.deterministic
         prev_benchmark = cudnn.benchmark
+        cudnn.deterministic = deterministic
+        cudnn.benchmark = benchmark
 
-    init_seed(seed, deterministic)
+    init_seed(seed)
     yield
 
     random.setstate(random_state)
     np.random.set_state(np_state)
     torch.set_rng_state(torch_state)
 
-    if cuda_is_available:
+    if Store.CUDA:
         torch.cuda.set_rng_state(cuda_state)
         cudnn.deterministic = prev_deterministic
         cudnn.benchmark = prev_benchmark
