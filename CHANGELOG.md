@@ -1,3 +1,11 @@
+## v0.3.0 (2023-01-25)
+
+### Feat
+
+- bboxes
+- **base**: merge into types
+- **base**: refine logger
+
 ## v0.2.4 (2023-01-11)
 
 ### Feat
