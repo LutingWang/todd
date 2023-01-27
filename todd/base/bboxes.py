@@ -59,7 +59,7 @@ class BBoxes(ABC):
         return self._bboxes.shape[0]
 
     def __repr__(self) -> str:
-        return f'{self.__class__.__name__}({self._bboxes})'
+        return f'{type(self).__name__}({self._bboxes})'
 
     def __add__(self: T, other: T) -> T:
         """Concatenate bboxes.

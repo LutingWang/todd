@@ -280,7 +280,10 @@ class RegistryMeta(UserDict, NonInstantiableMeta):  # type: ignore[misc]
         return self
 
     def _parse(self, key: str) -> tuple['RegistryMeta', str]:
-        """Parse the child name from the ``key``.
+        """Parse the child registry from the ``key``.
+
+        Args:
+            key: registered object name to be parsed.
 
         Returns:
             The child registry and the name to be registered.
