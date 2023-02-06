@@ -1,21 +1,22 @@
 __all__ = [
     'AccessLayerRegistry',
-    'DatasetRegistry',
     'BaseAccessLayer',
-    'BaseDataset',
+    'Dataset',
 ]
 
 import reprlib
-from typing import Any, Generic, MutableMapping, TypeVar
+from typing import Generic, MutableMapping, TypeVar
 
-from torch.utils.data import Dataset
+import torch.utils.data
 
-from ..base import Config, Registry, RegistryMeta, logger
+from ..base import Config, Registry, logger
 
-T = TypeVar('T')
+KT = TypeVar('KT')
+VT = TypeVar('VT')
+DatasetType = TypeVar('DatasetType')
 
 
-class BaseAccessLayer(MutableMapping[T, Any]):
+class BaseAccessLayer(MutableMapping[KT, VT]):
 
     def __init__(
         self,
@@ -40,12 +41,17 @@ class AccessLayerRegistry(Registry):
     pass
 
 
-class BaseDataset(Dataset, Generic[T]):
+class Dataset(torch.utils.data.Dataset, Generic[KT, VT]):
+
+    @classmethod
+    def build(cls: type[DatasetType], config: Config) -> DatasetType:
+        config.access_layer = AccessLayerRegistry.build(config.access_layer)
+        return cls(**config)
 
     def __init__(
         self,
         *args,
-        access_layer: BaseAccessLayer[T],
+        access_layer: BaseAccessLayer[KT, VT],
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
@@ -61,19 +67,6 @@ class BaseDataset(Dataset, Generic[T]):
     def __len__(self) -> int:
         return len(self._keys)
 
-    def __getitem__(self, index: int) -> Any:
+    def __getitem__(self, index: int):
         key = self._keys[index]
         return self._access_layer[key]
-
-
-class DatasetRegistry(Registry):
-
-    @classmethod
-    def _build(cls, config: Config) -> BaseDataset:
-        dataset_type: str = config.type
-        access_layer_type = dataset_type.replace('Dataset', 'AccessLayer')
-        config.access_layer = AccessLayerRegistry.build(
-            config.access_layer,
-            Config(type=access_layer_type),
-        )
-        return RegistryMeta._build(cls, config)

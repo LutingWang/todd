@@ -9,7 +9,7 @@ description = 'Toolkit for Object Detection Distillation'
 readme = 'README.md'
 requires-python = '>=3.10'
 classifiers = [
-    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.10',
     'License :: OSI Approved :: Apache Software License',
     'Operating System :: OS Independent',
 ]
@@ -19,7 +19,6 @@ dependencies = [
     'opencv-python',
     'pandas',
     'python-pptx',
-    'timm',
     'toml',
     'tqdm',
     'typing_extensions',
@@ -66,6 +65,11 @@ configs_diff = 'todd.base.configs:diff_cli'
 [tool.setuptools.packages.find]
 include = [
     'todd*',
+]
+
+[tool.setuptools.package-data]
+todd = [
+    'py.typed',
 ]
 
 [tool.yapf]
@@ -138,10 +142,11 @@ exclude_lines = [
 
 [tool.commitizen]
 name = 'cz_conventional_commits'
-version = "0.3.0"
+version = '0.3.0'
 tag_format = 'v$version'
 version_files = [
     'pyproject.toml:^version',
     'docs/source/conf.py:^release',
     'CITATION.cff:^version',
+    'todd/__init__.py:^version',
 ]

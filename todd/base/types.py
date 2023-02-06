@@ -7,8 +7,6 @@ __all__ = [
     'NormRegistry',
     'LrSchedulerRegistry',
     'OptimizerRegistry',
-    'build_param_group',
-    'build_param_groups',
 ]
 
 import inspect
@@ -452,38 +450,6 @@ class NormRegistry(Registry):
     pass
 
 
-def build_param_group(model: nn.Module, param_group: Config) -> Config:
-    params = [
-        p for n, p in model.named_parameters()
-        if re.match(param_group['params'], n)
-    ]
-    param_group = param_group.copy()
-    param_group.params = params
-    return param_group
-
-
-def build_param_groups(
-    model: nn.Module,
-    param_groups: Sequence[Config] | None = None,
-) -> list[Config]:
-    if param_groups is None:
-        return [Config(params=model.parameters())]
-    return [build_param_group(model, param) for param in param_groups]
-
-
-class OptimizerRegistry(Registry):
-
-    @classmethod
-    def _build(cls, config: Config) -> torch.optim.Optimizer:
-        model = config.pop('model')
-        config.params = build_param_groups(model, config.get('params', None))
-        return RegistryMeta._build(cls, config)
-
-
-class LrSchedulerRegistry(Registry):
-    pass
-
-
 NormRegistry['BN1d'] = nn.BatchNorm1d
 NormRegistry['BN2d'] = NormRegistry['BN'] = nn.BatchNorm2d
 NormRegistry['BN3d'] = nn.BatchNorm3d
@@ -494,9 +460,48 @@ NormRegistry['IN1d'] = nn.InstanceNorm1d
 NormRegistry['IN2d'] = NormRegistry['IN'] = nn.InstanceNorm2d
 NormRegistry['IN3d'] = nn.InstanceNorm3d
 
+
+class OptimizerRegistry(Registry):
+
+    @classmethod
+    def build_param_group(
+        cls,
+        model: nn.Module,
+        param_group: Config,
+    ) -> Config:
+        params = [
+            p for n, p in model.named_parameters()
+            if re.match(param_group['params'], n)
+        ]
+        param_group = param_group.copy()
+        param_group.params = params
+        return param_group
+
+    @classmethod
+    def build_param_groups(
+        cls,
+        model: nn.Module,
+        param_groups: Sequence[Config] | None = None,
+    ) -> list[Config]:
+        if param_groups is None:
+            return [Config(params=model.parameters())]
+        return [cls.build_param_group(model, param) for param in param_groups]
+
+    @classmethod
+    def _build(cls, config: Config) -> torch.optim.Optimizer:
+        model = config.pop('model')
+        config.params = cls.build_param_groups(model, config.get('params'))
+        return RegistryMeta._build(cls, config)
+
+
 for _, class_ in inspect.getmembers(torch.optim, inspect.isclass):
     assert issubclass(class_, torch.optim.Optimizer)
     OptimizerRegistry.register()(class_)
+
+
+class LrSchedulerRegistry(Registry):
+    pass
+
 
 for _, class_ in inspect.getmembers(torch.optim.lr_scheduler, inspect.isclass):
     if issubclass(class_, torch.optim.lr_scheduler._LRScheduler):

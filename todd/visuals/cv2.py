@@ -26,7 +26,7 @@ class CV2Visual(BaseVisual):
         return self._image.shape[0]
 
     def save(self, path) -> None:
-        cv2.imwrite(path, self._image)
+        assert cv2.imwrite(path, self._image)
 
     def image(
         self,

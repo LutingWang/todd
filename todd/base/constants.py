@@ -1,9 +1,11 @@
 __all__ = [
     'SGR',
+    'Color',
+    'Colors',
 ]
 
 import enum
-from typing import Iterable, TypeVar, final
+from typing import Iterable, NamedTuple, TypeVar, final
 
 SGRType = TypeVar('SGRType', bound='SGR')
 
@@ -51,6 +53,41 @@ class SGR(enum.IntEnum):
     @classmethod
     def format(cls: type[SGRType], text: str, *args: SGRType) -> str:
         return cls.CSI(args) + text + cls.CSI(tuple())
+
+
+class Color(NamedTuple):
+    red: float
+    green: float
+    blue: float
+
+
+class Colors:
+    palette = [
+        Color(106, 0, 228),
+        Color(119, 11, 32),
+        Color(165, 42, 42),
+        Color(0, 0, 192),
+        Color(197, 226, 255),
+        Color(0, 60, 100),
+        Color(0, 0, 142),
+        Color(255, 77, 255),
+        Color(153, 69, 1),
+        Color(120, 166, 157),
+        Color(0, 182, 199),
+        Color(0, 226, 252),
+        Color(182, 182, 255),
+        Color(0, 0, 230),
+        Color(220, 20, 60),
+        Color(163, 255, 0),
+        Color(0, 82, 0),
+        Color(3, 95, 161),
+        Color(0, 80, 100),
+        Color(183, 130, 88),
+    ]
+
+    def __class_getitem__(cls, index: int) -> Color:
+        index %= len(cls.palette)
+        return cls.palette[index]
 
 
 if __name__ == '__main__':

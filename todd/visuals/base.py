@@ -7,20 +7,14 @@ __all__ = [
 
 import enum
 from abc import ABC, abstractmethod
-from typing import Any, NamedTuple
+from typing import Any, Sequence
 
 import cv2
 import numpy as np
 import numpy.typing as npt
 import torch
 
-from ..base import Registry
-
-
-class Color(NamedTuple):
-    red: float
-    green: float
-    blue: float
+from ..base import BBoxes, BBoxesXYWH, Color, Registry
 
 
 class XAnchor(enum.Enum):
@@ -34,28 +28,6 @@ class YAnchor(enum.Enum):
 
 
 class BaseVisual(ABC):
-    PALETTE = [
-        Color(106, 0, 228),
-        Color(119, 11, 32),
-        Color(165, 42, 42),
-        Color(0, 0, 192),
-        Color(197, 226, 255),
-        Color(0, 60, 100),
-        Color(0, 0, 142),
-        Color(255, 77, 255),
-        Color(153, 69, 1),
-        Color(120, 166, 157),
-        Color(0, 182, 199),
-        Color(0, 226, 252),
-        Color(182, 182, 255),
-        Color(0, 0, 230),
-        Color(220, 20, 60),
-        Color(163, 255, 0),
-        Color(0, 82, 0),
-        Color(3, 95, 161),
-        Color(0, 80, 100),
-        Color(183, 130, 88),
-    ]
 
     @abstractmethod
     def __init__(self, width: int, height: int) -> None:
@@ -70,10 +42,6 @@ class BaseVisual(ABC):
     @abstractmethod
     def height(self) -> int:
         pass
-
-    def color(self, index: int) -> Color:
-        index %= len(self.PALETTE)
-        return self.PALETTE[index]
 
     @abstractmethod
     def save(self, path) -> None:
@@ -103,6 +71,15 @@ class BaseVisual(ABC):
     ):
         """Draw the activation map.
 
+        Args:
+            activation: :math:`(H, W)` or :math:`(H, W, 1)`.
+            left: x coordinate of the left side of the activation map.
+            top: y coordinate of the top size of the activation map.
+            width: width of the activation map.
+            height: height of the activation map.
+            inverse: invert the activation map or not.
+            opacity: opacity of the activation map.
+
         Suppose our activation map is :math:`(256, 13, 20)`, where 256 is the
         number of channels, 13 is the height, and 20 is the width::
 
@@ -127,15 +104,6 @@ class BaseVisual(ABC):
             ...     height=visual.height,
             ... )
             <pptx.shapes.picture.Picture object at ...>
-
-        Args:
-            activation: :math:`(H, W)` or :math:`(H, W, 1)`
-            left: x coordinate of the left side of the activation map
-            top: y coordinate of the top size of the activation map
-            width: width of the activation map
-            height: height of the activation map
-            inverse: invert the activation map or not
-            opacity: opacity of the activation map
         """
         activation = activation.detach()
         activation -= activation.min()
@@ -182,6 +150,18 @@ class BaseVisual(ABC):
     ) -> tuple[Any, Any]:
         """Draw an annotation bbox.
 
+        Args:
+            text: annotated text along with the bbox. Typically is the class
+                name or class id.
+            left: x coordinate of the bbox.
+            top: y coordinate of the bbox.
+            width: width of the bbox.
+            height: height of the bbox.
+            color: color of the bbox.
+
+        Returns:
+            Bounding box and the text object.
+
         Each annotation comprises a bbox and a textual label.
         The bbox is given by (left, top, width, height).
         The text is labeled above the bbox, left-aligned.
@@ -191,36 +171,11 @@ class BaseVisual(ABC):
 
             >>> from .pptx import PPTXVisual
             >>> visual = PPTXVisual(640, 426)
-            >>>
-            >>> annotations = [
-            ...     dict(bbox=[236.98, 142.51, 24.7, 69.5], category_id=64),
-            ...     dict(bbox=[7.03, 167.76, 149.32, 94.87], category_id=72),
-            ... ]
-            >>> categories = {64: 'potted plant', 72: 'tv'}
-            >>> for annotation in annotations:
-            ...     category_id = annotation['category_id']
-            ...     category_name = categories[category_id]
-            ...     rectangle, text = visual.annotation(
-            ...         category_name,
-            ...         *annotation['bbox'],
-            ...         visual.color(category_id),
-            ...     )
+            >>> rectangle, text = visual.annotation('tv', 7, 167, 149, 94)
             >>> rectangle
             <pptx.shapes.autoshape.Shape object at ...>
             >>> text
             <pptx.shapes.autoshape.Shape object at ...>
-
-        Args:
-            text: annotated text along with the bbox. Typically is the class
-                name or class id.
-            left: x coordinate of the bbox
-            top: y coordinate of the bbox
-            width: width of the bbox
-            height: height of the bbox
-            color: color of the bbox
-
-        Returns:
-            tuple of the bbox and the text object
         """
         rectangle = self.rectangle(left, top, width, height, color)
         text_ = self.text(
@@ -230,6 +185,22 @@ class BaseVisual(ABC):
             color=color,
         )
         return (rectangle, text_)
+
+    def annotations(
+        self,
+        texts: Sequence[str],
+        bboxes: BBoxes,
+        colors: Sequence[Color],
+    ) -> list[tuple[Any, Any]]:
+        assert len(texts) == len(bboxes) == len(colors)
+        bboxes = bboxes.to(BBoxesXYWH)
+
+        annotations = []
+        for text, bbox, color in zip(texts, bboxes, colors):
+            x, y, w, h = map(int, bbox)
+            annotation = self.annotation(text, x, y, w, h, color)
+            annotations.append(annotation)
+        return annotations
 
 
 class VisualRegistry(Registry):

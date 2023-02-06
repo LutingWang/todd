@@ -2,22 +2,19 @@ import os
 import zipfile
 from io import BytesIO
 from pathlib import Path
-from typing import Any, Iterator
+from typing import Any, Iterator, TypeVar
 
 import torch
 
-from .base import (
-    AccessLayerRegistry,
-    BaseAccessLayer,
-    BaseDataset,
-    DatasetRegistry,
-)
+from .base import AccessLayerRegistry, BaseAccessLayer
 
 # TODO: update
 
+T = TypeVar('T')
+
 
 @AccessLayerRegistry.register()
-class ZipAccessLayer(BaseAccessLayer[str]):
+class ZipAccessLayer(BaseAccessLayer[str, T]):
 
     def _init(self):
         assert self._readonly, 'ZipAccessLayer is read-only.'
@@ -63,8 +60,3 @@ class ZipAccessLayer(BaseAccessLayer[str]):
 
     def __delitem__(self, key: str):
         raise NotImplementedError
-
-
-@DatasetRegistry.register()
-class ZipDataset(BaseDataset[str]):
-    ACCESS_LAYER = ZipAccessLayer

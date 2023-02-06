@@ -1,4 +1,15 @@
 """Toolkit for Object Detection Distillation."""
+__all__ = [
+    'adapts',
+    'datasets',
+    'distillers',
+    'hooks',
+    'losses',
+    'reproduction',
+    'utils',
+    'visuals',
+]
+
 from . import (
     adapts,
     datasets,
@@ -11,13 +22,4 @@ from . import (
 )
 from .base import *
 
-__all__ = [
-    'adapts',
-    'datasets',
-    'distillers',
-    'hooks',
-    'losses',
-    'reproduction',
-    'utils',
-    'visuals',
-]
+__version__ = '0.3.0'
