@@ -8,5 +8,8 @@
     "python.testing.pytestEnabled": true,
     "python.analysis.extraPaths": [
         "tests/helpers"
+    ],
+    "cSpell.words": [
+        "odpscmd"
     ]
 }
