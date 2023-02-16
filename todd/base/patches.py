@@ -154,7 +154,7 @@ def set_temp(obj, name: str, value) -> Generator[None, None, None]:
         del_(obj, name)
 
 
-if importlib.util.find_spec('mmcv.runner') and not TYPE_CHECKING:
+if importlib.util.find_spec('mmcv') and not TYPE_CHECKING:
     from mmcv.runner import BaseModule as Module
     from mmcv.runner import ModuleDict, ModuleList, Sequential
 else:
