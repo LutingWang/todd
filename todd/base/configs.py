@@ -12,8 +12,10 @@ import webbrowser
 from collections import UserDict
 from typing import Any, Mapping, MutableMapping, Sequence, TypeVar, cast
 
+import toml
 import yapf.yapflib.yapf_api as yapf
 
+from .constants import FileType
 from .patches import exec_, set_
 
 AttrDictType = TypeVar('AttrDictType', bound='AttrDict')
@@ -94,37 +96,77 @@ class Config(AttrDict, dict):  # type: ignore[misc]
         super().__setitem__(name, value)
 
     @classmethod
-    def loads(cls: type[ConfigType], s: str) -> ConfigType:
+    def loads(
+        cls: type[ConfigType],
+        s: str,
+        *,
+        file_type: FileType = FileType.PYTHON,
+        override: Mapping[str, Any] | None = None,
+    ) -> ConfigType:
         """Load config from string.
 
         Args:
             s: config string.
+            file_type: type of the contents of `s`.
+            override: fields to be overridden.
 
         Returns:
             The corresponding config.
+
+        Raises:
+            ValueError: if `file_type` is not supported.
 
         Config strings are valid python codes:
 
             >>> Config.loads('a = 1\\nb = dict(c=3)')
             {'a': 1, 'b': {'c': 3}}
         """
-        return cls(exec_(s))
+        if file_type is FileType.PYTHON:
+            contents = exec_(s)
+        elif file_type is FileType.TOML:
+            contents = toml.loads(s)
+        else:
+            raise ValueError(f"Unsupported file type {file_type}")
+        config = cls(contents)
+        if override is not None:
+            for k, v in override.items():
+                set_(config, k, v)
+        return config
 
     @classmethod
-    def load(cls: type[ConfigType], file) -> ConfigType:
+    def load(cls: type[ConfigType], file, **kwargs) -> ConfigType:
+        """Load a configuration file.
+
+        Args:
+            file: any type of file path that can be converted to ``Path``.
+
+        Returns:
+            The loaded configuration.
+
+        .. note:
+            `file` need to be named with appropriate extension, so that the
+            file type can be determined.
+        """
         file = pathlib.Path(file)
-        config = cls.loads(file.read_text())
+        file_type = FileType(file.suffix)
+        config = cls.loads(file.read_text(), file_type=file_type, **kwargs)
         base_config = cls()
         for base in config.pop('_base_', []):
             base_config.update(cls.load(file.parent / base))
         base_config.update(config)
         return base_config
 
-    def dumps(self) -> str:
+    def dumps(self, *, file_type: FileType = FileType.PYTHON) -> str:
         """Reverse of `loads`.
+
+        Args:
+            file_type: type to be dumped.
 
         Returns:
             The corresponding config string.
+
+        Raises:
+            ValueError: if `file_type` is not supported.
 
         The dumped string is a readable version of the config:
 
@@ -146,13 +188,18 @@ class Config(AttrDict, dict):  # type: ignore[misc]
             l = 'mn'
             <BLANKLINE>
         """
-        code, _ = yapf.FormatCode(
-            '\n'.join(f'{k}={repr(self[k])}' for k in sorted(self)),
-            verify=True,
-        )
-        return code
+        if file_type is FileType.PYTHON:
+            config, _ = yapf.FormatCode(
+                '\n'.join(f'{k}={repr(self[k])}' for k in sorted(self)),
+                verify=True,
+            )
+        elif file_type is FileType.TOML:
+            config = toml.dumps(self)
+        else:
+            raise ValueError(f"Unsupported file type {file_type}")
+        return config
 
-    def dump(self, file) -> None:
+    def dump(self, file, **kwargs) -> None:
         """Dump the config to a file.
 
         Args:
@@ -160,19 +207,25 @@ class Config(AttrDict, dict):  # type: ignore[misc]
 
         Refer to `dumps` for more details:
 
-            >>> with tempfile.NamedTemporaryFile('r') as f:
+            >>> with tempfile.NamedTemporaryFile('r', suffix='.py') as f:
             ...     Config(a=1, b=dict(c=3)).dump(f.name)
             ...     f.readlines()
             ['a = 1\\n', "b = {'c': 3}\\n"]
         """
-        pathlib.Path(file).write_text(self.dumps())
+        file = pathlib.Path(file)
+        file_type = FileType(file.suffix)
+        file.write_text(self.dumps(file_type=file_type, **kwargs))
 
-    def diff(self, other: 'Config', html: bool = False) -> str:
+    def diff(
+        self,
+        other: ConfigType,
+        file_type: FileType = FileType.TEXT,
+    ) -> str:
         """Diff configs.
 
         Args:
             other: the other config to diff.
-            html: output diff in html format. Default is pure text.
+            file_type: diff text type.
 
         Returns:
             Diff message.
@@ -188,13 +241,11 @@ class Config(AttrDict, dict):  # type: ignore[misc]
         """
         a = self.dumps().split('\n')
         b = other.dumps().split('\n')
-        if html:
+        if file_type is FileType.TEXT:
+            return '\n'.join(difflib.Differ().compare(a, b))
+        if file_type is FileType.HTML:
             return difflib.HtmlDiff().make_file(a, b)
-        return '\n'.join(difflib.Differ().compare(a, b))
-
-    def override(self, other: Mapping[str, Any]) -> None:
-        for k, v in other.items():
-            set_(self, k, v)
+        raise ValueError(f"Unsupported file type {file_type}")
 
     def update(self, *args, **kwargs) -> None:
         for m in args + (kwargs, ):
@@ -213,25 +264,34 @@ def diff_cli() -> None:
     parser = argparse.ArgumentParser(description="Compare Configs")
     parser.add_argument('a', type=Config.load)
     parser.add_argument('b', type=Config.load)
-    parser.add_argument('--out', default='terminal')
+    parser.add_argument(
+        '-f',
+        '--file',
+        default='terminal.txt',
+        help=(
+            "Path to output the diff results. Default is the stdout stream. "
+            "To view the diff results in web browser, pass in "
+            "`webbrowser.html`."
+        ),
+    )
     args = parser.parse_args()
 
     a: Config = args.a
     b: Config = args.b
-    out: str = args.out
+    file = pathlib.Path(args.file)
 
-    diff = a.diff(b, out == 'browser' or out.endswith('.html'))
-    if out == 'terminal':
+    diff = a.diff(b, file_type=FileType(file.suffix))
+    if file.stem == 'terminal':
         print(diff)
-    elif out == 'browser':
+    elif file.stem == 'browser':
         with tempfile.NamedTemporaryFile(
-            suffix='.html',
+            suffix=str(file),
             delete=False,
         ) as html_file:
             html_file.write(diff.encode('utf-8'))
             webbrowser.open('file://' + html_file.name)
     else:
-        with open(out, 'w') as f:
+        with open(file, 'w') as f:
             f.write(diff)
 
 

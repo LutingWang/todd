@@ -2,15 +2,15 @@ __all__ = [
     'SGR',
     'Color',
     'Colors',
+    'FileType',
 ]
 
 import enum
-from typing import Iterable, NamedTuple, TypeVar, final
+from typing import Iterable, NamedTuple, TypeVar
 
 SGRType = TypeVar('SGRType', bound='SGR')
 
 
-@final
 class SGR(enum.IntEnum):
     """Select Graphic Rendition.
 
@@ -88,6 +88,13 @@ class Colors:
     def __class_getitem__(cls, index: int) -> Color:
         index %= len(cls.palette)
         return cls.palette[index]
+
+
+class FileType(str, enum.Enum):
+    TEXT = '.txt'
+    HTML = '.html'
+    PYTHON = '.py'
+    TOML = '.toml'
 
 
 if __name__ == '__main__':
