@@ -107,14 +107,14 @@ class Config(AttrDict, dict):  # type: ignore[misc]
 
         Args:
             s: config string.
-            file_type: type of the contents of `s`.
+            file_type: type of the contents of ``s``.
             override: fields to be overridden.
 
         Returns:
             The corresponding config.
 
         Raises:
-            ValueError: if `file_type` is not supported.
+            ValueError: if ``file_type`` is not supported.
 
         Config strings are valid python codes:
 
@@ -166,7 +166,7 @@ class Config(AttrDict, dict):  # type: ignore[misc]
             The corresponding config string.
 
         Raises:
-            ValueError: if `file_type` is not supported.
+            ValueError: if ``file_type`` is not supported.
 
         The dumped string is a readable version of the config:
 
