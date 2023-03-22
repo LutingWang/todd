@@ -6,14 +6,13 @@ __all__ = [
     'BBoxesCXCYWH',
 ]
 
-import numbers
 from abc import ABC, abstractmethod
 from typing import Generator, TypeVar
 
 import einops
 import torch
 
-BBox = tuple[numbers.Real, numbers.Real, numbers.Real, numbers.Real]
+BBox = tuple[float, float, float, float]
 T = TypeVar('T', bound='BBoxes')
 
 
@@ -317,14 +316,20 @@ class BBoxes(ABC):
     def indices(
         self,
         *,
-        min_area: numbers.Real | None = None,
+        min_area: float | None = None,
+        max_area: float | None = None,
         min_wh: tuple[int, int] | None = None,
+        max_wh: tuple[int, int] | None = None,
     ) -> torch.Tensor:
         indices = self._bboxes.new_ones(len(self), dtype=torch.bool)
         if min_area is not None:
             indices &= self.area.ge(min_area)
+        if max_area is not None:
+            indices &= self.area.le(max_area)
         if min_wh is not None:
             indices &= self.wh.ge(torch.tensor(min_wh)).all(-1)
+        if max_wh is not None:
+            indices &= self.wh.le(torch.tensor(max_wh)).all(-1)
         return indices
 
 

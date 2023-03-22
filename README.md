@@ -15,7 +15,7 @@ _/      _/_/      _/_/_/    _/_/_/
 
 [![codecov](https://codecov.io/gh/LutingWang/todd/branch/master/graph/badge.svg?token=BHDPCKVM1T)](https://codecov.io/gh/LutingWang/todd)
 [![PyPI](https://img.shields.io/pypi/v/todd_ai)](https://pypi.org/project/todd-ai/)
-[![PyPI - Downloads](https://img.shields.io/pypi/dm/todd_ai)]((https://pypi.org/project/todd-ai/))
+[![PyPI - Downloads](https://img.shields.io/pypi/dm/todd_ai)](https://pypi.org/project/todd-ai/)
 [![wakatime](https://wakatime.com/badge/github/LutingWang/todd.svg)](https://wakatime.com/badge/github/LutingWang/todd)
 
 ## Installation
@@ -39,3 +39,4 @@ pip install .\[dev,doc,test\]
 TODO
 
 1. Complete repr
+2. update to typing.Self
