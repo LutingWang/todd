@@ -1,0 +1,47 @@
+{
+    "configurations": [
+        {
+            "name": "Mac",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/Users/lutingwang/anaconda3/envs/todd/include/python3.10",
+                "/Users/lutingwang/anaconda3/envs/todd/lib/python3.10/site-packages/torch/include",
+                "/Users/lutingwang/anaconda3/envs/todd/lib/python3.10/site-packages/torch/include/torch/csrc/api/include"
+            ],
+            "defines": [],
+            "macFrameworkPath": [
+                "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks"
+            ],
+            "compilerPath": "/usr/bin/clang",
+            "intelliSenseMode": "macos-clang-arm64",
+            "configurationProvider": "ms-vscode.makefile-tools"
+        },
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/usr/local/cuda-10.1/include",
+                "/data2/wlt/anaconda3/envs/todd/include/python3.9",
+                "/data2/wlt/anaconda3/envs/todd/lib/python3.9/site-packages/torch/include",
+                "/data2/wlt/anaconda3/envs/todd/lib/python3.9/site-packages/torch/include/torch/csrc/api/include"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/local/cuda/bin/nvcc",
+            "intelliSenseMode": "linux-gcc-x64"
+        },
+        {
+            "name": "gpushare",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/usr/local/cuda-11.3/include",
+                "/hy-tmp/todd/include/python3.9",
+                "/hy-tmp/todd/lib/python3.9/site-packages/torch/include",
+                "/hy-tmp/todd/lib/python3.9/site-packages/torch/include/torch/csrc/api/include"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/local/cuda/bin/nvcc",
+            "intelliSenseMode": "linux-gcc-x64"
+        }
+    ],
+    "version": 4
+}

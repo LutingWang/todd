@@ -1,0 +1,13 @@
+---
+AlignAfterOpenBracket: AlwaysBreak
+AlignEscapedNewlines: DontAlign
+BasedOnStyle: Google
+BinPackArguments: false
+BinPackParameters: false
+BreakBeforeBinaryOperators: All
+ColumnLimit: 79
+IncludeBlocks: Regroup
+IndentWidth: 2
+NamespaceIndentation: All
+SeparateDefinitionBlocks: Always
+SpaceAfterCStyleCast: true
