@@ -9,22 +9,26 @@
 namespace py = pybind11;
 
 Category::Category(const py::dict& dict)
-    : id(py::cast<int>(dict["id"])),
+    : id(py::cast<Id>(dict["id"])),
       name(py::cast<std::string>(dict["name"])) {}
 
 Image::Image(const py::dict& dict)
-    : id(py::cast<int>(dict["id"])),
+    : id(py::cast<Id>(dict["id"])),
       width(py::cast<int>(dict["width"])),
       height(py::cast<int>(dict["height"])),
       filename(py::cast<std::string>(dict["file_name"])) {}
 
 Annotation::Annotation(const py::dict& dict)
-    : id(py::cast<int>(dict["id"])),
-      category_id(py::cast<int>(dict["category_id"])),
-      image_id(py::cast<int>(dict["image_id"])),
-      is_crowd(py::cast<bool>(dict["iscrowd"])),
-      bbox(py::cast<BBox>(dict["bbox"])),
-      area(py::cast<float>(dict["area"])) {}
+    : id(py::cast<Id>(dict["id"])),
+      category_id(py::cast<Id>(dict["category_id"])),
+      image_id(py::cast<Id>(dict["image_id"])),
+      is_crowd(py::cast<int>(dict["iscrowd"])),
+      area(py::float_(dict["area"])) {
+  py::list bbox = dict["bbox"];
+  for (int i = 0; i < bbox.size(); i++) {
+    this->bbox[i] = py::float_(bbox[i]);
+  }
+}
 
 Annotations::Annotations(const py::dict& dict) {
   for (const auto& category_dict : dict["categories"]) {
@@ -39,8 +43,6 @@ Annotations::Annotations(const py::dict& dict) {
     const Annotation* annotation
         = new Annotation(py::cast<py::dict>(annotation_dict));
     annotations_[annotation->id] = annotation;
-    image_to_annotations_[annotation->image_id].insert(annotation->id);
-    category_to_images_[annotation->category_id].insert(annotation->image_id);
   }
 }
 

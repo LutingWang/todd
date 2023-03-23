@@ -53,5 +53,26 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
       .def_property_readonly("categories", &Annotations::categories)
       .def_property_readonly("images", &Annotations::images)
       .def_property_readonly("annotations", &Annotations::annotations)
-      .def_static("load", &Annotations::load);
+      .def_static("load", &Annotations::load)
+      .def("__repr__", [](const Annotations& a) {
+        std::vector<const Category*> categories;
+        std::vector<const Image*> images;
+        std::vector<const Annotation*> annotations;
+        for (const auto& category : a.categories()) {
+          categories.push_back(category.second);
+        }
+        for (const auto& image : a.images()) {
+          images.push_back(image.second);
+        }
+        for (const auto& annotation : a.annotations()) {
+          annotations.push_back(annotation.second);
+        }
+        py::object Repr = py::module_::import("reprlib").attr("Repr");
+        py::object repr = Repr();
+        repr.attr("maxother") = 500;
+        return "Annotations({})"_s.format(py::dict(
+            "categories"_a = repr.attr("repr")(py::cast(categories)),
+            "images"_a = repr.attr("repr")(py::cast(images)),
+            "annotations"_a = repr.attr("repr")(py::cast(annotations))));
+      });
 }

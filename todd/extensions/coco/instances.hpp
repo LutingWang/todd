@@ -10,17 +10,18 @@
 
 namespace py = pybind11;
 
+using Id = py::int_;
 using BBox = std::array<float, 4>;
 
 struct Category {
-  int id;
+  Id id;
   std::string name;
 
   Category(const py::dict&);
 };
 
 struct Image {
-  int id;
+  Id id;
   int width;
   int height;
   std::string filename;
@@ -29,9 +30,9 @@ struct Image {
 };
 
 struct Annotation {
-  int id;
-  int category_id;
-  int image_id;
+  Id id;
+  Id category_id;
+  Id image_id;
   bool is_crowd;
   BBox bbox;
   float area;
@@ -40,24 +41,21 @@ struct Annotation {
 };
 
 class Annotations {
-  std::map<int, const Category*> categories_;
-  std::map<int, const Image*> images_;
-  std::map<int, const Annotation*> annotations_;
-
-  std::map<int, std::set<int>> image_to_annotations_;
-  std::map<int, std::set<int>> category_to_images_;
+  std::map<Id, const Category*> categories_;
+  std::map<Id, const Image*> images_;
+  std::map<Id, const Annotation*> annotations_;
 
  public:
   Annotations(const py::dict&);
   ~Annotations();
 
-  const std::map<int, const Category*>& categories(void) const {
+  const std::map<Id, const Category*>& categories(void) const {
     return categories_;
   }
 
-  const std::map<int, const Image*>& images(void) const { return images_; }
+  const std::map<Id, const Image*>& images(void) const { return images_; }
 
-  const std::map<int, const Annotation*>& annotations(void) const {
+  const std::map<Id, const Annotation*>& annotations(void) const {
     return annotations_;
   }
 
