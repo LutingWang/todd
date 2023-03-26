@@ -18,5 +18,10 @@
     ],
     "cSpell.ignoreWords": [
         "iscrowd"
-    ]
+    ],
+    "files.associations": {
+        ".flake8": "ini",
+        "map": "cpp",
+        "vector": "cpp"
+    }
 }
