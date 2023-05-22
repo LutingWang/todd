@@ -9,6 +9,7 @@ __all__ = [
 import numbers
 from abc import ABC, abstractmethod
 from typing import Generator, TypeVar
+from typing_extensions import Self
 
 import einops
 import torch
@@ -61,7 +62,7 @@ class BBoxes(ABC):
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({self._bboxes})'
 
-    def __add__(self: T, other: T) -> T:
+    def __add__(self, other: Self) -> Self:
         """Concatenate bboxes.
 
         Args:
@@ -81,7 +82,7 @@ class BBoxes(ABC):
         bboxes = torch.cat([self._bboxes, other._bboxes])
         return self.__class__(bboxes)
 
-    def __getitem__(self: T, indices) -> T:
+    def __getitem__(self, indices) -> Self:
         """Get specific bboxes.
 
         Args:
@@ -296,22 +297,22 @@ class BBoxes(ABC):
         return intersections / unions
 
     @classmethod
-    def from_bboxes(cls: type[T], *args, **kwargs) -> T:
+    def from_bboxes(cls, *args, **kwargs) -> Self:
         return cls(cls._from_bboxes(*args, **kwargs))
 
-    def round(self: T, *args, **kwargs) -> T:
+    def round(self, *args, **kwargs) -> Self:
         return self.__class__(self._round(*args, **kwargs))
 
-    def expand(self: T, *args, **kwargs) -> T:
+    def expand(self, *args, **kwargs) -> Self:
         return self.__class__(self._expand(*args, **kwargs))
 
-    def clamp(self: T, *args, **kwargs) -> T:
+    def clamp(self, *args, **kwargs) -> Self:
         return self.__class__(self._clamp(*args, **kwargs))
 
-    def scale(self: T, *args, **kwargs) -> T:
+    def scale(self, *args, **kwargs) -> Self:
         return self.__class__(self._scale(*args, **kwargs))
 
-    def translate(self: T, *args, **kwargs) -> T:
+    def translate(self, *args, **kwargs) -> Self:
         return self.__class__(self._translate(*args, **kwargs))
 
     def indices(

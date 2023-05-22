@@ -10,14 +10,12 @@ import pathlib
 import tempfile
 import webbrowser
 from collections import UserDict
-from typing import Any, Mapping, MutableMapping, Sequence, TypeVar, cast
+from typing import Any, Mapping, MutableMapping, Sequence, cast
+from typing_extensions import Self
 
 import yapf.yapflib.yapf_api as yapf
 
 from .patches import exec_, set_
-
-AttrDictType = TypeVar('AttrDictType', bound='AttrDict')
-ConfigType = TypeVar('ConfigType', bound='Config')
 
 
 class AttrDict(UserDict):
@@ -94,7 +92,7 @@ class Config(AttrDict, dict):  # type: ignore[misc]
         super().__setitem__(name, value)
 
     @classmethod
-    def loads(cls: type[ConfigType], s: str) -> ConfigType:
+    def loads(cls, s: str) -> Self:
         """Load config from string.
 
         Args:
@@ -111,7 +109,7 @@ class Config(AttrDict, dict):  # type: ignore[misc]
         return cls(exec_(s))
 
     @classmethod
-    def load(cls: type[ConfigType], file) -> ConfigType:
+    def load(cls, file) -> Self:
         file = pathlib.Path(file)
         config = cls.loads(file.read_text())
         base_config = cls()

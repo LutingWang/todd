@@ -15,15 +15,8 @@ from collections import UserDict, UserList
 from functools import partial
 from itertools import repeat
 from symtable import symtable
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    Iterable,
-    NamedTuple,
-    TypeVar,
-    final,
-)
+from typing import TYPE_CHECKING, Any, Callable, Iterable, NamedTuple, final
+from typing_extensions import Self
 
 import pandas as pd
 
@@ -32,9 +25,6 @@ from .patches import logger
 from .types import RegistryMeta
 
 Message = dict[str, Any]
-
-TaskType = TypeVar('TaskType', bound='Task')
-JobType = TypeVar('JobType', bound='Job')
 
 
 class Spec(NamedTuple):
@@ -47,7 +37,7 @@ class Task(ABC):
 
     @classmethod
     @abstractmethod
-    def build(cls: type[TaskType], config: Config) -> TaskType:
+    def build(cls, config: Config) -> Self:
         """Builds a task.
 
         Args:
@@ -328,7 +318,7 @@ class ParallelSingleStep(ParallelStep):
 class Job(UserList[Step], Task):
 
     @classmethod
-    def build(cls: type[JobType], config: Config) -> JobType:
+    def build(cls, config: Config) -> Self:
         config = config.copy()
         steps: Config = config.pop('steps')
         return cls([

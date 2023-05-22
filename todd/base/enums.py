@@ -3,12 +3,10 @@ __all__ = [
 ]
 
 import enum
-from typing import Iterable, TypeVar, final
+from typing import Iterable
+from typing_extensions import Self
 
-SGRType = TypeVar('SGRType', bound='SGR')
 
-
-@final
 class SGR(enum.IntEnum):
     """Select Graphic Rendition.
 
@@ -44,12 +42,12 @@ class SGR(enum.IntEnum):
     BG_WHITE = enum.auto()
 
     @classmethod
-    def CSI(cls: type[SGRType], parameters: Iterable[SGRType]) -> str:
+    def CSI(cls, parameters: Iterable[Self]) -> str:
         """Control Sequence Introducer."""
         return f'\033[{";".join(str(p.value) for p in parameters)}m'
 
     @classmethod
-    def format(cls: type[SGRType], text: str, *args: SGRType) -> str:
+    def format(cls, text: str, *args: Self) -> str:
         return cls.CSI(args) + text + cls.CSI(tuple())
 
 

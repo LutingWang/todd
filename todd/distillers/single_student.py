@@ -7,6 +7,7 @@ __all__ = [
 ]
 
 from typing import Generic, TypeVar, final
+from typing_extensions import Self
 
 import torch.nn as nn
 
@@ -14,16 +15,11 @@ from ..base import Config, ModuleList
 from ..reproduction import freeze
 from .base import BaseDistiller, DistillerRegistry
 
-SSDType = TypeVar('SSDType', bound='SingleStudentDistiller')
-MTDType = TypeVar('MTDType', bound='MultiTeacherDistiller')
-STDType = TypeVar('STDType', bound='SingleTeacherDistiller')
-SDType = TypeVar('SDType', bound='SelfDistiller')
-
 
 class SingleStudentDistiller(BaseDistiller):
 
     @classmethod
-    def build(cls: type[SSDType], config: Config) -> SSDType:
+    def build(cls, config: Config) -> Self:
         assert 'models' not in config
         assert 'hooks' not in config
 
@@ -50,7 +46,7 @@ class SingleStudentDistiller(BaseDistiller):
 class MultiTeacherDistiller(SingleStudentDistiller):
 
     @classmethod
-    def build(cls: type[MTDType], config: Config) -> MTDType:
+    def build(cls, config: Config) -> Self:
         assert 'teachers' not in config
         assert 'teacher_hooks' not in config
         assert 'num_onlines' not in config
@@ -101,7 +97,7 @@ class MultiTeacherDistiller(SingleStudentDistiller):
 class SingleTeacherDistiller(SingleStudentDistiller):
 
     @classmethod
-    def build(cls: type[STDType], config: Config) -> STDType:
+    def build(cls, config: Config) -> Self:
         assert 'teachers' not in config
 
         config = config.copy()
@@ -130,7 +126,7 @@ class SingleTeacherDistiller(SingleStudentDistiller):
 class SelfDistiller(SingleStudentDistiller):
 
     @classmethod
-    def build(cls: type[SDType], config: Config) -> SDType:
+    def build(cls, config: Config) -> Self:
         assert 'teachers' not in config
         assert 'teacher_hooks' not in config
 

@@ -5,7 +5,8 @@ __all__ = [
 ]
 
 import warnings
-from typing import Callable, Iterable, Mapping, TypeVar, cast
+from typing import Callable, Iterable, Mapping, cast
+from typing_extensions import Self
 
 import torch.nn as nn
 
@@ -26,8 +27,6 @@ from ..hooks import BaseHook, HookRegistry
 from ..losses import LossRegistry
 from ..losses.base import BaseLoss
 
-T = TypeVar('T', bound='BaseDistiller')
-
 
 class DistillerStore(metaclass=StoreMeta):
     CHECK_INPUTS: bool
@@ -37,7 +36,7 @@ class DistillerStore(metaclass=StoreMeta):
 class BaseDistiller(Module, Workflow):
 
     @classmethod
-    def build(cls: type[T], config: Config) -> T:
+    def build(cls, config: Config) -> Self:
         config = config.copy()
 
         models = tuple(config.pop('models'))
@@ -135,7 +134,7 @@ class BaseDistiller(Module, Workflow):
     def models(self) -> tuple[nn.Module, ...]:
         return self._models
 
-    def _apply(self: T, fn: Callable[..., None]) -> T:
+    def _apply(self, fn: Callable[..., None]) -> Self:
         for model in self._models:
             if getattr(model, 'sync_apply', True):
                 model._apply(fn)

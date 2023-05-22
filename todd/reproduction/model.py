@@ -6,7 +6,8 @@ __all__ = [
     'FrozenMixin',
 ]
 
-from typing import Any, Sequence, TypeVar
+from typing import Any, Sequence
+from typing_extensions import Self
 
 import torch.nn as nn
 from torch.nn.modules.batchnorm import _BatchNorm
@@ -16,7 +17,7 @@ from ..base import get_
 DEFAULT_STOCHASTIC_MODULE_TYPES: tuple[Any, ...] = (_BatchNorm, nn.Dropout)
 
 try:
-    from timm.models.layers import DropPath
+    from timm.layers import DropPath
 
     DEFAULT_STOCHASTIC_MODULE_TYPES += DropPath,
 except Exception:
@@ -57,9 +58,6 @@ def freeze(model: nn.Module, **kwargs) -> None:
     eval_(model, **kwargs)
 
 
-T = TypeVar('T', bound='FrozenMixin')
-
-
 class FrozenMixin(nn.Module):
 
     def __init__(
@@ -74,13 +72,13 @@ class FrozenMixin(nn.Module):
         if eval_config:
             eval_(self, **eval_config)
 
-    def requires_grad_(self: T, requires_grad: bool = True) -> T:
+    def requires_grad_(self, requires_grad: bool = True) -> Self:
         result = super().requires_grad_(requires_grad)
         if self._no_grad:
             no_grad(self, **self._no_grad)
         return result
 
-    def train(self: T, mode: bool = True) -> T:
+    def train(self, mode: bool = True) -> Self:
         result = super().train(mode)
         if self._eval:
             eval_(self, **self._eval)

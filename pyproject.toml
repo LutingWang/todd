@@ -49,14 +49,14 @@ dev = [
     'torch-tb-profiler',
 ]
 doc = [
-    'mmcv',
+    'mmcv<2.0',
     'python-docs-theme',
     'sphinx',
     'sphinx_rtd_theme',
 ]
 test = [
     'coverage',
-    'mmcv',
+    'mmcv<2.0',
     'pytest',
 ]
 
@@ -77,6 +77,9 @@ split_complex_comprehension = true
 split_before_arithmetic_operator = true
 
 [tool.isort]
+extra_standard_library = [
+    'typing_extensions',
+]
 profile = 'hug'
 src_paths = [
     'tests',
@@ -107,7 +110,10 @@ ignore_errors = true
 [tool.pytest.ini_options]
 norecursedirs = 'tests/helpers'
 filterwarnings = [
-    'ignore:lib2to3 package is deprecated and may not be able to parse Python 3.10+:PendingDeprecationWarning',
+    'ignore::DeprecationWarning:pkg_resources:121',
+    'ignore::DeprecationWarning:pkg_resources:2870',
+    'ignore::DeprecationWarning:yapf:16',
+    'ignore::UserWarning:mmcv:20',
 ]
 testpaths = 'tests todd'
 addopts = '--doctest-modules'
