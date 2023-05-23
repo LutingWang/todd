@@ -1,4 +1,3 @@
-import os
 import pathlib
 
 import torch
@@ -83,35 +82,35 @@ class TestCKD:
     #     filename = os.path.join(os.path.dirname(__file__), 'ckd.pth')
     #     return torch.load(filename, map_location='cpu')
 
-    @torch.no_grad()
-    def generate_result(self):
-        from todd.utils import CollectionTensor
-        ckd = self.ckd()
-        old_filename = os.path.join(os.path.dirname(__file__), 'ckd.pth')
-        filename = os.path.join(os.path.dirname(__file__), 'ckd.pth.tmp')
-        old_result: dict = torch.load(old_filename, map_location='cpu')
-        result = {}
-        for rank, old_rank_result in old_result.items():
-            adapt = self.adapt()
-            old_inputs = old_rank_result['inputs']
-            inputs = {
-                'preds': [f[:, :4, :, :] for f in old_inputs['preds']],
-                'targets': old_inputs['targets'][:, :16],
-                'bboxes': old_inputs['bboxes'],
-                'bbox_ids': old_inputs['bbox_ids'],
-            }
-            tensors = adapt(inputs, inplace=False)
-            losses = ckd(tensors)
-            result[rank] = CollectionTensor.apply(
-                {
-                    'state_dict': adapt.state_dict(),
-                    'inputs': inputs,
-                    'tensors': tensors,
-                    'losses': losses,
-                },
-                lambda f: f.contiguous(),
-            )
-        torch.save(result, filename)
+    # @torch.no_grad()
+    # def generate_result(self) -> None:
+    #     from todd.utils import CollectionTensor
+    #     ckd = self.ckd()
+    #     old_filename = os.path.join(os.path.dirname(__file__), 'ckd.pth')
+    #     filename = os.path.join(os.path.dirname(__file__), 'ckd.pth.tmp')
+    #     old_result: dict = torch.load(old_filename, map_location='cpu')
+    #     result = {}
+    #     for rank, old_rank_result in old_result.items():
+    #         adapt = self.adapt()
+    #         old_inputs = old_rank_result['inputs']
+    #         inputs = {
+    #             'preds': [f[:, :4, :, :] for f in old_inputs['preds']],
+    #             'targets': old_inputs['targets'][:, :16],
+    #             'bboxes': old_inputs['bboxes'],
+    #             'bbox_ids': old_inputs['bbox_ids'],
+    #         }
+    #         tensors = adapt(inputs, inplace=False)
+    #         losses = ckd(tensors)
+    #         result[rank] = CollectionTensor.apply(
+    #             {
+    #                 'state_dict': adapt.state_dict(),
+    #                 'inputs': inputs,
+    #                 'tensors': tensors,
+    #                 'losses': losses,
+    #             },
+    #             lambda f: f.contiguous(),
+    #         )
+    #     torch.save(result, filename)
 
     def test_ckd(self, data_dir: pathlib.Path) -> None:
         config = Config.load(data_dir / 'ckd.py')
@@ -134,6 +133,6 @@ class TestCKD:
             assert CollectionTensor.allclose(rank_result['losses'], losses)
 
 
-if __name__ == '__main__':
-    test = TestCKD()
-    test.generate_result()
+# if __name__ == '__main__':
+#     test = TestCKD()
+#     test.generate_result()

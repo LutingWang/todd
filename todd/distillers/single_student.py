@@ -12,7 +12,6 @@ from typing_extensions import Self
 import torch.nn as nn
 
 from ..base import Config, ModuleList
-from ..reproduction import freeze
 from .base import BaseDistiller, DistillerRegistry
 
 
@@ -53,8 +52,10 @@ class MultiTeacherDistiller(SingleStudentDistiller):
 
         config = config.copy()
 
-        online_teachers = config.pop('online_teachers', tuple())
-        offline_teachers = config.pop('offline_teachers', tuple())
+        online_teachers: tuple[nn.Module] = \
+            config.pop('online_teachers', tuple())
+        offline_teachers: tuple[nn.Module] = \
+            config.pop('offline_teachers', tuple())
         config.teachers = online_teachers + offline_teachers
 
         config.num_onlines = len(online_teachers)
@@ -71,7 +72,8 @@ class MultiTeacherDistiller(SingleStudentDistiller):
         distiller = super().build(config)
 
         for offline_teacher in offline_teachers:
-            freeze(offline_teacher)
+            offline_teacher.requires_grad_(False)
+            offline_teacher.eval()
         distiller.add_module('_teachers', ModuleList(online_teachers))
 
         return distiller
@@ -102,7 +104,7 @@ class SingleTeacherDistiller(SingleStudentDistiller):
 
         config = config.copy()
 
-        teacher = config.pop('teacher')
+        teacher: nn.Module = config.pop('teacher')
         config.teachers = teacher,
 
         if 'teacher_hooks' in config:
@@ -113,7 +115,8 @@ class SingleTeacherDistiller(SingleStudentDistiller):
         if config.pop('online', False):
             distiller.add_module('_teacher', teacher)
         else:
-            freeze(teacher)
+            teacher.requires_grad_(False)
+            teacher.eval()
 
         return distiller
 

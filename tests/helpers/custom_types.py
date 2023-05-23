@@ -19,8 +19,3 @@ class CustomModule(nn.Module):
         super().__init__()
         for k, v in kwargs.items():
             setattr(self, k, v)
-
-    if TYPE_CHECKING:
-
-        def __getattr__(self, name: str) -> nn.Module:
-            ...
