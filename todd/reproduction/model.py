@@ -404,6 +404,8 @@ def state_dict_hook(
 0., 0.])), ('0.bn.running_mean', tensor([0., 0.])), ('0.bn.running_var', tenso\
 r([1., 1.])), ('0.bn.num_batches_tracked', tensor(0))])
     """
+    if len(state_dict) == 0:
+        return
     finder = ParameterFinder(model)
     modes = finder.determine_modes(model.requires_grad_configs)
     parameter_names = {
@@ -412,4 +414,6 @@ r([1., 1.])), ('0.bn.num_batches_tracked', tensor(0))])
     }
     for parameter, mode in modes.items():
         if mode is False:
-            state_dict.pop(prefix + parameter_names[parameter])
+            name = parameter_names[parameter]
+            name = name.replace('_fsdp_wrapped_module.', '')
+            state_dict.pop(prefix + name)
