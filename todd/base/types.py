@@ -420,6 +420,7 @@ class RegistryMeta(UserDict, NonInstantiableMeta):  # type: ignore[misc]
 
         Refer to `_build` for customizations.
         """
+        # TODO: remove default_config, use **kwargs
         default_config = (
             Config() if default_config is None else Config(default_config)
         )

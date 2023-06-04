@@ -111,7 +111,7 @@ class Config(AttrDict, dict):  # type: ignore[misc]
     @classmethod
     def load(cls, file) -> Self:
         file = pathlib.Path(file)
-        config = cls.loads(file.read_text())
+        config = exec_(file.read_text())  # do not use `loads`
         base_config = cls()
         for base in config.pop('_base_', []):
             base_config.update(cls.load(file.parent / base))
