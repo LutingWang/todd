@@ -323,13 +323,16 @@ class FrozenMixin(nn.Module):
         self,
         requires_grad_configs: Iterable[Config] = tuple(),
         train_configs: Iterable[Config] = tuple(),
+        with_state_dict_hook: bool = False,
         *args,
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
         self._requires_grad_configs = tuple(requires_grad_configs)
         self._train_configs = tuple(train_configs)
-        self._register_state_dict_hook(state_dict_hook)
+        self._with_state_dict_hook = with_state_dict_hook
+        if with_state_dict_hook:
+            self._register_state_dict_hook(state_dict_hook)
 
     @property
     def requires_grad_configs(self) -> tuple[Config, ...]:
