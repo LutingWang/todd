@@ -394,6 +394,7 @@ def state_dict_hook(
         ...                 Config(names=['.conv'], mode=False),
         ...                 Config(names=['.bn'], mode=...),
         ...             ],
+        ...             with_state_dict_hook=True,
         ...             **kwargs,
         ...         )
         ...         self.conv = nn.Conv1d(1, 2, 1)
