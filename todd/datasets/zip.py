@@ -10,7 +10,6 @@ from .base import (
     AccessLayerRegistry,
     BaseAccessLayer,
     BaseDataset,
-    Codec,
     DatasetRegistry,
 )
 
@@ -22,8 +21,6 @@ class ZipAccessLayer(BaseAccessLayer[str]):
 
     def _init(self):
         assert self._readonly, 'ZipAccessLayer is read-only.'
-        assert self._codec is Codec.PYTORCH, \
-            'ZipAccessLayer only supports PyTorch.'
         data_root_parts = Path(self._data_root).parts
         zip_indices = [  # yapf: disable
             i for i, part in enumerate(data_root_parts)

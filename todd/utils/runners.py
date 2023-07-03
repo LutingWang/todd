@@ -77,8 +77,10 @@ class BaseRunner(ABC):
         return len(self._dataloader)
 
     def _build_logger(self) -> logging.Logger:
-        file = self._work_dir / '_.log'
-        file = file.with_stem(datetime.now().astimezone().isoformat())
+        timestamp = datetime.now().astimezone().isoformat()
+        timestamp = timestamp.replace(':', '-').replace('+', '-')
+        timestamp = timestamp.replace('.', '_')
+        file = self._work_dir / f'{timestamp}.log'
         handler = logging.FileHandler(file)
         handler.setFormatter(Formatter())
 
