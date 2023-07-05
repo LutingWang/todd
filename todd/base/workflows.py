@@ -22,7 +22,7 @@ import pandas as pd
 
 from .configs import Config
 from .patches import logger
-from .types import RegistryMeta
+from .registries import RegistryMeta
 
 Message = dict[str, Any]
 

@@ -33,7 +33,7 @@ import torchvision.transforms as transforms
 from packaging import version
 from PIL import Image
 
-from .enums import SGR
+from ..utils import SGR
 
 
 class Formatter(logging.Formatter):

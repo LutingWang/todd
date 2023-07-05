@@ -1,4 +1,4 @@
-from todd.base.enums import SGR
+from todd.utils.sgr import SGR
 
 
 class TestSGR:

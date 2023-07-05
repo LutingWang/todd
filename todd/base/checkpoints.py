@@ -6,7 +6,7 @@ __all__ = [
 
 from .configs import Config
 from .patches import Module, get_, logger
-from .types import RegistryMeta
+from .registries import RegistryMeta
 
 
 def load_open_mmlab_models(

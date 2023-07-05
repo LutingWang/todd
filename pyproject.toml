@@ -44,6 +44,7 @@ dev = [
     'ipykernel',
     'jupyter',
     'matplotlib',
+    'pandas-stubs',
     'pre-commit',
     'tensorboard',
     'torch-tb-profiler',

@@ -5,7 +5,7 @@ import torch
 from custom_types import CustomModule
 
 from todd import Config
-from todd.base.types import (
+from todd.base.registries import (
     OptimizerRegistry,
     Registry,
     RegistryMeta,
