@@ -144,10 +144,6 @@ if not Store.CUDA and not Store.MPS:
 
 assert Store.CPU ^ (Store.CUDA or Store.MPS)
 
-if Store.CPU:
-    Store.DRY_RUN = True
-    Store.TRAIN_WITH_VAL_DATASET = True
-
 
 class RegistryMeta(UserDict, NonInstantiableMeta):  # type: ignore[misc]
     """Meta class for registries.
@@ -497,5 +493,5 @@ for _, class_ in inspect.getmembers(torch.optim, inspect.isclass):
     OptimizerRegistry.register()(class_)
 
 for _, class_ in inspect.getmembers(torch.optim.lr_scheduler, inspect.isclass):
-    if issubclass(class_, torch.optim.lr_scheduler._LRScheduler):
+    if issubclass(class_, torch.optim.lr_scheduler.LRScheduler):
         LrSchedulerRegistry.register()(class_)
