@@ -44,6 +44,7 @@ dev = [
     'ipykernel',
     'jupyter',
     'matplotlib',
+    'mypy',
     'pandas-stubs',
     'pre-commit',
     'tensorboard',
