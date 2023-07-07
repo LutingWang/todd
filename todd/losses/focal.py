@@ -5,7 +5,7 @@ __all__ = [
 
 import torch
 
-from .base import LossRegistry
+from ..base import LossRegistry
 from .functional import BCELoss, BCEWithLogitsLoss, FunctionalLoss
 
 

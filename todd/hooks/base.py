@@ -1,26 +1,26 @@
 __all__ = [
-    'HookRegistry',
     'BaseHook',
 ]
 
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from enum import IntEnum, auto
-from typing import TYPE_CHECKING, Protocol
 
 import torch.nn as nn
 
-from ..base import Registry, StatusMixin, get_
+from ..base import StatusMixin, get_
 
-if TYPE_CHECKING:
+# from typing import TYPE_CHECKING, Protocol
 
-    class _HookProto(Protocol):
-        _path: str
+# if TYPE_CHECKING:
 
-        def register_tensor(self, tensor) -> None:
-            pass
+#     class _HookProto(Protocol):
+#         _path: str
 
-else:
-    _HookProto = object
+#         def register_tensor(self, tensor) -> None:
+#             pass
+
+# else:
+#     _HookProto = object
 
 
 class Status(IntEnum):
@@ -29,7 +29,18 @@ class Status(IntEnum):
     REGISTERED = auto()
 
 
-class _HookMixin(_HookProto):
+class BaseMixin(ABC):
+
+    def __init__(self, *args, path: str, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self._path = path
+
+    @abstractmethod
+    def register_tensor(self, tensor) -> None:
+        pass
+
+
+class HookMixin(BaseMixin):
 
     def _forward_hook(self, module: nn.Module, input_, output) -> None:
         self.register_tensor(output)
@@ -42,12 +53,15 @@ class _HookMixin(_HookProto):
         self._handle.remove()
 
 
-class _TrackingMixin(_HookProto):
+class TrackingMixin(BaseMixin):
 
     def __init__(
         self,
+        *args,
         tracking_mode: bool = False,
+        **kwargs,
     ) -> None:
+        super().__init__(*args, **kwargs)
         self._tracking_mode = tracking_mode
 
     @property
@@ -67,17 +81,10 @@ class _TrackingMixin(_HookProto):
         self.register_tensor(tensor)
 
 
-class BaseHook(StatusMixin[Status], _HookMixin, _TrackingMixin):
+class BaseHook(StatusMixin[Status], HookMixin, TrackingMixin):
 
-    def __init__(
-        self,
-        path: str,
-        tracking_mode: bool = False,
-    ) -> None:
-        StatusMixin.__init__(self, Status.INITIALIZED)
-        _HookMixin.__init__(self)
-        _TrackingMixin.__init__(self, tracking_mode)
-        self._path = path
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(self, *args, status=Status.INITIALIZED, **kwargs)
         self._reset()
 
     def __call__(self):
@@ -104,16 +111,16 @@ class BaseHook(StatusMixin[Status], _HookMixin, _TrackingMixin):
     @StatusMixin.transit(Status.INITIALIZED, Status.BINDED)
     def bind(self, model: nn.Module) -> None:
         if self._tracking_mode:
-            _TrackingMixin.bind(self, model)
+            TrackingMixin.bind(self, model)
         else:
-            _HookMixin.bind(self, model)
+            HookMixin.bind(self, model)
 
     @StatusMixin.transit(Status.BINDED, Status.INITIALIZED)
     def unbind(self) -> None:
         if self._tracking_mode:
-            _TrackingMixin.unbind(self)
+            TrackingMixin.unbind(self)
         else:
-            _HookMixin.unbind(self)
+            HookMixin.unbind(self)
 
     @StatusMixin.transit(
         (Status.BINDED, Status.REGISTERED),
@@ -128,7 +135,3 @@ class BaseHook(StatusMixin[Status], _HookMixin, _TrackingMixin):
     )
     def reset(self) -> None:
         self._reset()
-
-
-class HookRegistry(Registry):
-    pass

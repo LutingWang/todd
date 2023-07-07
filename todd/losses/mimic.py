@@ -9,7 +9,7 @@ import einops
 import torch
 import torch.nn.functional as F
 
-from .base import LossRegistry
+from ..base import LossRegistry
 from .functional import FunctionalLoss, L1Loss, MSELoss
 
 

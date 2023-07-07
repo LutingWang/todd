@@ -8,6 +8,10 @@ __all__ = [
     'build_param_groups',
     'RunnerRegistry',
     'CallbackRegistry',
+    'LossRegistry',
+    'SchedulerRegistry',
+    'VisualRegistry',
+    'HookRegistry',
 ]
 
 import inspect
@@ -382,4 +386,20 @@ class RunnerRegistry(Registry):
 
 
 class CallbackRegistry(Registry):
+    pass
+
+
+class LossRegistry(Registry):
+    pass
+
+
+class SchedulerRegistry(Registry):
+    pass
+
+
+class VisualRegistry(Registry):
+    pass
+
+
+class HookRegistry(Registry):
     pass

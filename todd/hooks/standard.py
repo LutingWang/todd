@@ -2,7 +2,8 @@ __all__ = [
     'StandardHook',
 ]
 
-from .base import BaseHook, HookRegistry
+from ..base import HookRegistry
+from .base import BaseHook
 
 
 @HookRegistry.register()

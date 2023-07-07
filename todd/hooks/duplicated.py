@@ -4,7 +4,7 @@ __all__ = [
 
 from typing import Any
 
-from .base import HookRegistry
+from ..base import HookRegistry
 from .standard import StandardHook
 
 

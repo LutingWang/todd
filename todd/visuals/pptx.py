@@ -19,7 +19,8 @@ import pptx.shapes.shapetree
 import pptx.slide
 import pptx.util
 
-from .base import BaseVisual, Color, VisualRegistry, XAnchor, YAnchor
+from ..base import VisualRegistry
+from .base import BaseVisual, Color, XAnchor, YAnchor
 
 
 @VisualRegistry.register()

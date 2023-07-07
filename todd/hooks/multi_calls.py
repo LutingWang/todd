@@ -4,7 +4,8 @@ __all__ = [
 
 import torch
 
-from .base import BaseHook, HookRegistry
+from ..base import HookRegistry
+from .base import BaseHook
 
 
 @HookRegistry.register()

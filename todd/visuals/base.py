@@ -2,7 +2,6 @@ __all__ = [
     'XAnchor',
     'YAnchor',
     'BaseVisual',
-    'VisualRegistry',
 ]
 
 import enum
@@ -13,8 +12,6 @@ import cv2
 import numpy as np
 import numpy.typing as npt
 import torch
-
-from ..base import Registry
 
 
 class Color(NamedTuple):
@@ -230,7 +227,3 @@ class BaseVisual(ABC):
             color=color,
         )
         return (rectangle, text_)
-
-
-class VisualRegistry(Registry):
-    pass

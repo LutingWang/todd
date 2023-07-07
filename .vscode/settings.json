@@ -11,6 +11,9 @@
     ],
     "python.analysis.typeCheckingMode": "basic",
     "cSpell.words": [
+        "FGFI",
+        "gethostname",
+        "SGFI",
         "yapflib"
     ]
 }

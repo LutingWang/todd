@@ -1,6 +1,5 @@
 __all__ = [
     'BaseScheduler',
-    'SchedulerRegistry',
     'ConstantScheduler',
     'WarmupScheduler',
     'EarlyStopScheduler',
@@ -17,7 +16,7 @@ from typing import Iterable
 
 import torch
 
-from ..base import Registry
+from ..base import SchedulerRegistry
 
 
 class BaseScheduler(torch.nn.Module, ABC):
@@ -76,10 +75,6 @@ class BaseScheduler(torch.nn.Module, ABC):
 
 def forward_hook(module: BaseScheduler, input_, output: float) -> float:
     return output * module.gain
-
-
-class SchedulerRegistry(Registry):
-    pass
 
 
 @SchedulerRegistry.register()

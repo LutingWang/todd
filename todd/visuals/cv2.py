@@ -8,7 +8,8 @@ import cv2
 import numpy as np
 import numpy.typing as npt
 
-from .base import BaseVisual, Color, VisualRegistry, XAnchor, YAnchor
+from ..base import VisualRegistry
+from .base import BaseVisual, Color, XAnchor, YAnchor
 
 
 @VisualRegistry.register()

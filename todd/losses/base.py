@@ -1,13 +1,12 @@
 __all__ = [
     'BaseLoss',
-    'LossRegistry',
 ]
 
 from typing import Literal
 
 import torch
 
-from ..base import Config, Module, Registry
+from ..base import Config, Module
 from .schedulers import BaseScheduler, SchedulerRegistry
 
 Reduction = Literal['none', 'mean', 'sum', 'prod']
@@ -79,7 +78,3 @@ def forward_hook(
 
     output = weight * output
     return output
-
-
-class LossRegistry(Registry):
-    pass

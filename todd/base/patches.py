@@ -155,8 +155,11 @@ def set_temp(obj, name: str, value) -> Generator[None, None, None]:
 
 
 if importlib.util.find_spec('mmcv') and not TYPE_CHECKING:
-    from mmcv.runner import BaseModule as Module
-    from mmcv.runner import ModuleDict, ModuleList, Sequential
+    try:
+        from mmcv.runner import BaseModule as Module
+        from mmcv.runner import ModuleDict, ModuleList, Sequential
+    except Exception:
+        from torch.nn import Module, ModuleDict, ModuleList, Sequential
 else:
     from torch.nn import Module, ModuleDict, ModuleList, Sequential
 

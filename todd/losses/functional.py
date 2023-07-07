@@ -11,7 +11,8 @@ from abc import abstractmethod
 import torch
 import torch.nn.functional as F
 
-from .base import BaseLoss, LossRegistry
+from ..base import LossRegistry
+from .base import BaseLoss
 
 
 class FunctionalLoss(BaseLoss):

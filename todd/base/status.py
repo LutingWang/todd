@@ -11,7 +11,8 @@ T = TypeVar('T', bound=enum.Enum)
 
 class StatusMixin(Generic[T]):
 
-    def __init__(self, status: T) -> None:
+    def __init__(self, *args, status: T, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
         self._status = status
 
     @property

@@ -13,7 +13,9 @@ import torch.nn as nn
 from ..adapts import AdaptRegistry
 from ..base import (
     Config,
+    HookRegistry,
     Job,
+    LossRegistry,
     Message,
     Module,
     ModuleList,
@@ -23,9 +25,8 @@ from ..base import (
     Workflow,
     transfer_weights,
 )
-from ..hooks import BaseHook, HookRegistry
-from ..losses import LossRegistry
-from ..losses.base import BaseLoss
+from ..hooks import BaseHook
+from ..losses import BaseLoss
 
 
 class DistillerStore(metaclass=StoreMeta):
