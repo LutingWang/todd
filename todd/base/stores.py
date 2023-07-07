@@ -121,4 +121,4 @@ if parse(torch.__version__) >= parse('1.12'):
 if not Store.CUDA and not Store.MPS:
     Store.CPU = True
 
-assert Store.CPU ^ (Store.CUDA or Store.MPS)
+assert Store.CPU or Store.CUDA or Store.MPS

@@ -12,6 +12,7 @@ import logging
 import pathlib
 import socket
 from abc import ABC, abstractmethod
+from contextlib import nullcontext
 from typing import TYPE_CHECKING, Any, Mapping
 
 import torch
@@ -25,9 +26,11 @@ from ..base import (
     LrSchedulerRegistry,
     OptimizerRegistry,
     Store,
+    StrategyRegistry,
     get_world_size,
     logger,
 )
+from .strategies import BaseStrategy
 
 if TYPE_CHECKING:
     from .callbacks import BaseCallback
@@ -43,16 +46,24 @@ class BaseRunner(ABC):
     def __init__(
         self,
         name: str,
-        model: torch.nn.Module,
+        strategy: Config,
+        model: nn.Module,
         dataloader: Config,
         callbacks: Config,
         work_dirs_root: str = 'work_dirs',
+        autocast: Config | None = None,
     ) -> None:
         self._name = name
-        self._model = model
+        self._strategy = self._build_strategy(strategy)
+        self._model = self._strategy.wrap_model(model)
         self._dataloader = self._build_dataloader(dataloader)
         self._callbacks = self._build_callbacks(callbacks)
         self._work_dir = self._build_work_dir(work_dirs_root, name)
+
+        if autocast is None:
+            self._autocast = nullcontext()
+        else:
+            self._autocast = self._build_autocast(autocast)
 
         self._logger = self._build_logger()
         self._iter = 0
@@ -67,12 +78,9 @@ class BaseRunner(ABC):
         return self._name
 
     @property
-    def model(self) -> torch.nn.Module:
+    def model(self) -> nn.Module:
         """The underlying model if being wrapped."""
-        model = self._model
-        if isinstance(model, torch.nn.parallel.DistributedDataParallel):
-            model = model.module
-        return model
+        return self._strategy.get_model(self._model)
 
     @property
     def work_dir(self) -> pathlib.Path:
@@ -99,6 +107,9 @@ class BaseRunner(ABC):
         """
         pass
 
+    def _build_strategy(self, config: Config) -> BaseStrategy:
+        return StrategyRegistry.build(config)
+
     def _build_callbacks(self, config: Config) -> BaseCallback:
         return CallbackRegistry.build(config)
 
@@ -110,6 +121,9 @@ class BaseRunner(ABC):
     def _build_logger(self) -> logging.Logger:
         name = f'{logger.name}.{self.__class__.__name__}.{self._name}'
         return logging.getLogger(name)
+
+    def _build_autocast(self, config: Config) -> torch.autocast:
+        return torch.autocast('cuda', **config)
 
     @abstractmethod
     def _run_iter(self, batch, memo: Memo) -> None:
@@ -192,22 +206,29 @@ class Trainer(BaseRunner):
         *args,
         optimizer: Config,
         lr_scheduler: Config | None = None,
-        lr_scalar: Config | None = None,
+        lr_scaler: Config | None = None,
+        grad_scaler: Config | None = None,
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
         self._optimizer = self._build_optimizer(optimizer, self.model)
-        if lr_scalar is not None:
-            self._lr_scalar = self._build_lr_scalar(lr_scalar)
-            self._scale_lr(self._optimizer, self._lr_scalar)
+        if lr_scaler is not None:
+            self._lr_scaler = self._build_lr_scaler(lr_scaler)
+            self._scale_lr(self._optimizer, self._lr_scaler)
         if lr_scheduler is not None:
             self._lr_scheduler = self._build_lr_scheduler(
                 lr_scheduler, self._optimizer
             )
+        if grad_scaler is not None:
+            self._grad_scaler = self._build_grad_scaler(grad_scaler)
 
     @property
     def with_lr_scheduler(self) -> bool:
         return hasattr(self, '_lr_scheduler')
+
+    @property
+    def with_grad_scaler(self) -> bool:
+        return hasattr(self, '_grad_scaler')
 
     @property
     def optimizer(self) -> torch.optim.Optimizer:
@@ -216,6 +237,10 @@ class Trainer(BaseRunner):
     @property
     def lr_scheduler(self) -> torch.optim.lr_scheduler.LRScheduler:
         return self._lr_scheduler
+
+    @property
+    def grad_scaler(self) -> torch.cuda.amp.GradScaler:
+        return self._grad_scaler
 
     def _build_optimizer(
         self,
@@ -231,21 +256,24 @@ class Trainer(BaseRunner):
     ) -> torch.optim.lr_scheduler.LRScheduler:
         return LrSchedulerRegistry.build(config, Config(optimizer=optimizer))
 
-    def _build_lr_scalar(self, config: Config) -> float:
+    def _build_lr_scaler(self, config: Config) -> float:
         base_batch_size = config.base_batch_size
         batch_size = get_world_size() * self._dataloader.batch_size
         return batch_size / base_batch_size
 
+    def _build_grad_scaler(self, config: Config) -> torch.cuda.amp.GradScaler:
+        return torch.cuda.amp.GradScaler(**config)
+
     def _scale_lr(
         self,
         optimizer: torch.optim.Optimizer,
-        lr_scalar: float,
+        lr_scaler: float,
     ) -> None:
         if 'lr' in optimizer.defaults:
-            self._optimizer.defaults['lr'] *= lr_scalar
+            self._optimizer.defaults['lr'] *= lr_scaler
         for param_group in optimizer.param_groups:
             if 'lr' in param_group:
-                param_group['lr'] *= lr_scalar
+                param_group['lr'] *= lr_scaler
 
     def _setup(self) -> Memo:
         self._model.train()
@@ -261,12 +289,16 @@ class Trainer(BaseRunner):
         self._optimizer.load_state_dict(state_dict['optimizer'])
         if self.with_lr_scheduler:
             self._lr_scheduler.load_state_dict(state_dict['lr_scheduler'])
+        if self.with_grad_scaler:
+            self._grad_scaler.load_state_dict(state_dict['grad_scaler'])
 
     def state_dict(self, *args, **kwargs) -> dict[str, Any]:
         state_dict = super().state_dict(*args, **kwargs)
         state_dict['optimizer'] = self._optimizer.state_dict()
         if self.with_lr_scheduler:
             state_dict['lr_scheduler'] = self._lr_scheduler.state_dict()
+        if self.with_grad_scaler:
+            state_dict['grad_scaler'] = self._grad_scaler.state_dict()
         return state_dict
 
 

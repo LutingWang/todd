@@ -14,9 +14,17 @@ Memo = dict[str, Any]
 @CallbackRegistry.register()
 class OptimizeCallback(BaseCallback):
 
+    # TODO: add grad clip
+
     def after_run_iter(self, runner: BaseRunner, batch, memo: Memo) -> None:
         assert isinstance(runner, Trainer)
         loss: torch.Tensor = memo['loss']
+        if runner.with_grad_scaler:
+            loss = runner.grad_scaler.scale(loss)
         loss.backward()
-        runner.optimizer.step()
+        if runner.with_grad_scaler:
+            runner.grad_scaler.step(runner.optimizer)
+            runner.grad_scaler.update()
+        else:
+            runner.optimizer.step()
         runner.optimizer.zero_grad()

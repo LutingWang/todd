@@ -12,6 +12,7 @@ __all__ = [
     'HookRegistry',
     'AccessLayerRegistry',
     'DatasetRegistry',
+    'StrategyRegistry',
 ]
 
 import inspect
@@ -402,4 +403,8 @@ class DatasetRegistry(Registry):
 
 
 class AccessLayerRegistry(Registry):
+    pass
+
+
+class StrategyRegistry(Registry):
     pass
