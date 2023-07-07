@@ -1,6 +1,4 @@
 __all__ = [
-    'AccessLayerRegistry',
-    'DatasetRegistry',
     'BaseAccessLayer',
     'BaseDataset',
 ]
@@ -11,7 +9,7 @@ from typing import Any, Generic, MutableMapping, TypeVar
 
 from torch.utils.data import Dataset
 
-from ..base import Config, Registry, logger
+from ..base import AccessLayerRegistry, Config, logger
 
 T = TypeVar('T')
 
@@ -40,10 +38,6 @@ class BaseAccessLayer(MutableMapping[T, Any]):
         pass
 
 
-class AccessLayerRegistry(Registry):
-    pass
-
-
 class BaseDataset(Dataset, Generic[T]):
     ACCESS_LAYER: type = BaseAccessLayer[T]
 
@@ -67,7 +61,3 @@ class BaseDataset(Dataset, Generic[T]):
     def __getitem__(self, index: int) -> Any:
         key = self._keys[index]
         return self._access_layer[key]
-
-
-class DatasetRegistry(Registry):
-    pass

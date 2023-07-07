@@ -6,12 +6,8 @@ from typing import Any, Iterator
 
 import torch
 
-from .base import (
-    AccessLayerRegistry,
-    BaseAccessLayer,
-    BaseDataset,
-    DatasetRegistry,
-)
+from ..base import DatasetRegistry
+from .base import AccessLayerRegistry, BaseAccessLayer, BaseDataset
 
 # TODO: update
 
