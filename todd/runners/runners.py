@@ -25,6 +25,7 @@ from ..base import (
     LrSchedulerRegistry,
     OptimizerRegistry,
     Store,
+    get_world_size,
     logger,
 )
 
@@ -191,10 +192,14 @@ class Trainer(BaseRunner):
         *args,
         optimizer: Config,
         lr_scheduler: Config | None = None,
+        lr_scalar: Config | None = None,
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
         self._optimizer = self._build_optimizer(optimizer, self.model)
+        if lr_scalar is not None:
+            self._lr_scalar = self._build_lr_scalar(lr_scalar)
+            self._scale_lr(self._optimizer, self._lr_scalar)
         if lr_scheduler is not None:
             self._lr_scheduler = self._build_lr_scheduler(
                 lr_scheduler, self._optimizer
@@ -225,6 +230,22 @@ class Trainer(BaseRunner):
         optimizer: torch.optim.Optimizer,
     ) -> torch.optim.lr_scheduler.LRScheduler:
         return LrSchedulerRegistry.build(config, Config(optimizer=optimizer))
+
+    def _build_lr_scalar(self, config: Config) -> float:
+        base_batch_size = config.base_batch_size
+        batch_size = get_world_size() * self._dataloader.batch_size
+        return batch_size / base_batch_size
+
+    def _scale_lr(
+        self,
+        optimizer: torch.optim.Optimizer,
+        lr_scalar: float,
+    ) -> None:
+        if 'lr' in optimizer.defaults:
+            self._optimizer.defaults['lr'] *= lr_scalar
+        for param_group in optimizer.param_groups:
+            if 'lr' in param_group:
+                param_group['lr'] *= lr_scalar
 
     def _setup(self) -> Memo:
         self._model.train()

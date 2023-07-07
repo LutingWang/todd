@@ -4,8 +4,6 @@ __all__ = [
     'NormRegistry',
     'LrSchedulerRegistry',
     'OptimizerRegistry',
-    'build_param_group',
-    'build_param_groups',
     'RunnerRegistry',
     'CallbackRegistry',
     'LossRegistry',
@@ -17,7 +15,7 @@ __all__ = [
 import inspect
 import re
 from collections import UserDict
-from typing import Callable, Iterable, NoReturn, Sequence, TypeVar
+from typing import Callable, Iterable, NoReturn, TypeVar
 
 import torch
 import torch.nn as nn
@@ -330,31 +328,23 @@ class NormRegistry(Registry):
     pass
 
 
-def build_param_group(model: nn.Module, param_group: Config) -> Config:
-    params = [
-        p for n, p in model.named_parameters()
-        if re.match(param_group['params'], n)
-    ]
-    param_group = param_group.copy()
-    param_group.params = params
-    return param_group
-
-
-def build_param_groups(
-    model: nn.Module,
-    param_groups: Sequence[Config] | None = None,
-) -> list[Config]:
-    if param_groups is None:
-        return [Config(params=model.parameters())]
-    return [build_param_group(model, param) for param in param_groups]
-
-
 class OptimizerRegistry(Registry):
+
+    @staticmethod
+    def _build_params(model: nn.Module, config: Config) -> Config:
+        config.params = [
+            p for n, p in model.named_parameters()
+            if re.match(config.params, n)
+        ]
+        return config
 
     @classmethod
     def _build(cls, config: Config) -> torch.optim.Optimizer:
-        model = config.pop('model')
-        config.params = build_param_groups(model, config.get('params', None))
+        model: nn.Module = config.pop('model')
+        params: Iterable[Config] | None = config.pop('params', None)
+        config.params = model.parameters() if params is None else [
+            cls._build_params(model, p) for p in params
+        ]
         return RegistryMeta._build(cls, config)
 
 
@@ -373,8 +363,8 @@ NormRegistry['IN2d'] = NormRegistry['IN'] = nn.InstanceNorm2d
 NormRegistry['IN3d'] = nn.InstanceNorm3d
 
 for _, class_ in inspect.getmembers(torch.optim, inspect.isclass):
-    assert issubclass(class_, torch.optim.Optimizer)
-    OptimizerRegistry.register()(class_)
+    if issubclass(class_, torch.optim.Optimizer):
+        OptimizerRegistry.register()(class_)
 
 for _, class_ in inspect.getmembers(torch.optim.lr_scheduler, inspect.isclass):
     if issubclass(class_, torch.optim.lr_scheduler.LRScheduler):

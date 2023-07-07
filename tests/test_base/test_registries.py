@@ -1,17 +1,9 @@
-from typing import cast
-
 import pytest
 import torch
 from custom_types import CustomModule
 
 from todd import Config
-from todd.base.registries import (
-    OptimizerRegistry,
-    Registry,
-    RegistryMeta,
-    build_param_group,
-    build_param_groups,
-)
+from todd.base.registries import OptimizerRegistry, Registry, RegistryMeta
 
 
 class Registry1(metaclass=RegistryMeta):
@@ -63,34 +55,24 @@ class TestRegistryMeta:
             Registry.build(Config(type='custom_key'))
 
 
-def test_build_param_group(model: CustomModule) -> None:
-    params = build_param_group(model, Config(params='conv.[^w]'))
-    assert len(params) == 1
-    assert len(params['params']) == 1
-    param = cast(torch.Tensor, model.conv.bias)
-    assert param.eq(params['params'][0]).all()
+class TestOptimizerRegistry:
 
+    def test_build_params(self, model: CustomModule) -> None:
+        config = OptimizerRegistry._build_params(
+            model,
+            Config(params='conv.[^w]'),
+        )
+        assert len(config) == 1
+        assert len(config['params']) == 1
+        assert config['params'][0] is model.conv.bias
 
-def test_build_param_groups(model: CustomModule) -> None:
-    params = build_param_groups(model)
-    assert len(params) == 1
-    assert len(params[0]) == 1
-    assert len(list(params[0]['params'])) == len(list(model.parameters()))
-
-    params = build_param_groups(model, [Config(params='conv.[^w]')])
-    assert len(params) == 1
-    assert len(params[0]) == 1
-    assert len(params[0]['params']) == 1
-    param = cast(torch.Tensor, model.conv.bias)
-    assert param.eq(params[0]['params'][0]).all()
-
-
-def test_build_optimizer(model: CustomModule) -> None:
-    optimizer = OptimizerRegistry._build(
-        Config(
-            type='Adam',
-            model=model,
-            params=[dict(params='conv.[^w]')],
-        ),
-    )
-    assert isinstance(optimizer, torch.optim.Adam)
+    def test_build(self, model: CustomModule) -> None:
+        optimizer = OptimizerRegistry._build(
+            Config(
+                type='Adam',
+                model=model,
+            ),
+        )
+        assert isinstance(optimizer, torch.optim.Adam)
+        assert set(optimizer.param_groups[0]['params']) == \
+            set(model.parameters())

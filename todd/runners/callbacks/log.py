@@ -5,7 +5,7 @@ __all__ = [
 import logging
 from typing import Any
 
-from ...base import CallbackRegistry, Formatter
+from ...base import CallbackRegistry, Formatter, get_rank
 from ...utils import get_timestamp
 from .. import BaseRunner, EpochBasedTrainer
 from .base import BaseCallback
@@ -25,7 +25,7 @@ class LogCallback(BaseCallback):
         self._with_file_handler = with_file_handler
 
     def _should_log(self, runner: BaseRunner) -> bool:
-        if self._interval <= 0:
+        if get_rank() > 0 and self._interval <= 0:
             return False
         return runner.iter_ % self._interval == 0
 
@@ -50,7 +50,7 @@ class LogCallback(BaseCallback):
         runner.logger.info(f"Epoch [{runner.epoch}/{runner.epochs}]")
 
     def before_run(self, runner: BaseRunner, memo: Memo) -> None:
-        if self._with_file_handler:
+        if get_rank() == 0 and self._with_file_handler:
             file = runner.work_dir / f'{get_timestamp()}.log'
             handler = logging.FileHandler(file)
             handler.setFormatter(Formatter())
@@ -58,5 +58,5 @@ class LogCallback(BaseCallback):
             self._handler = handler
 
     def after_run(self, runner: BaseRunner, memo: Memo) -> None:
-        if self._with_file_handler:
+        if get_rank() == 0 and self._with_file_handler:
             runner.logger.removeHandler(self._handler)

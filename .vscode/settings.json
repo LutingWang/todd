@@ -4,12 +4,9 @@
         "todd",
         "--doctest-modules"
     ],
-    "python.testing.unittestEnabled": true,
-    "python.testing.pytestEnabled": true,
     "python.analysis.extraPaths": [
         "tests/helpers"
     ],
-    "python.analysis.typeCheckingMode": "basic",
     "cSpell.words": [
         "FGFI",
         "gethostname",
