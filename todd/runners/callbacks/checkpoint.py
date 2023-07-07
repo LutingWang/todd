@@ -16,10 +16,13 @@ class CheckpointCallback(BaseCallback):
 
     def __init__(
         self,
+        *args,
         every_n_iters: int = 0,
         every_n_epochs: int = 0,
         state_dict: Config = Config(),
+        **kwargs,
     ) -> None:
+        super().__init__(*args, **kwargs)
         self._every_n_iters = every_n_iters
         self._every_n_epochs = every_n_epochs
         self._state_dict = state_dict

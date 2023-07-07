@@ -12,7 +12,8 @@ Memo = dict[str, Any]
 @CallbackRegistry.register()
 class LrScheduleCallback(BaseCallback):
 
-    def __init__(self, by_epoch: bool = False) -> None:
+    def __init__(self, *args, by_epoch: bool = False, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
         self._by_epoch = by_epoch
 
     def after_run_iter(self, runner: BaseRunner, batch, memo: Memo) -> None:

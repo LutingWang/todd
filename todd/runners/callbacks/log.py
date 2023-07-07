@@ -9,28 +9,25 @@ from ...base import CallbackRegistry, Formatter, get_rank
 from ...utils import get_timestamp
 from .. import BaseRunner, EpochBasedTrainer
 from .base import BaseCallback
+from .interval import IntervalMixin
 
 Memo = dict[str, Any]
 
 
 @CallbackRegistry.register()
-class LogCallback(BaseCallback):
+class LogCallback(IntervalMixin, BaseCallback):
 
     def __init__(
         self,
-        interval: int = 0,
+        *args,
         with_file_handler: bool = False,
+        **kwargs,
     ) -> None:
-        self._interval = interval
+        super().__init__(*args, **kwargs)
         self._with_file_handler = with_file_handler
 
-    def _should_log(self, runner: BaseRunner) -> bool:
-        if get_rank() > 0 and self._interval <= 0:
-            return False
-        return runner.iter_ % self._interval == 0
-
     def before_run_iter(self, runner: BaseRunner, batch, memo: Memo) -> None:
-        if self._should_log(runner):
+        if get_rank() == 0 and self._should_run_iter(runner):
             memo['log'] = dict()
 
     def after_run_iter(self, runner: BaseRunner, batch, memo: Memo) -> None:

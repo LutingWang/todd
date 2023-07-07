@@ -9,21 +9,23 @@ import torch.distributed
 from ...base import CallbackRegistry, Config, RunnerRegistry
 from .. import BaseRunner, EpochBasedTrainer, Trainer, Validator
 from .base import BaseCallback
+from .interval import IntervalMixin
 
 Memo = dict[str, Any]
 
 
 @CallbackRegistry.register()
-class ValidateCallback(BaseCallback):
+class ValidateCallback(IntervalMixin, BaseCallback):
 
     def __init__(
         self,
+        *args,
         validator: Config,
-        interval: int = 0,
         by_epoch: bool = False,
+        **kwargs,
     ) -> None:
+        super().__init__(*args, **kwargs)
         self._validator: Validator = RunnerRegistry.build(validator)
-        self._interval = interval
         self._by_epoch = by_epoch
 
     def _validate(self) -> None:
@@ -34,7 +36,7 @@ class ValidateCallback(BaseCallback):
         assert isinstance(runner, Trainer)
         if self._by_epoch:
             return
-        if self._interval > 0 and runner.iter_ % self._interval == 0:
+        if self._should_run_iter(runner):
             self._validate()
 
     def after_run_epoch(
@@ -45,7 +47,7 @@ class ValidateCallback(BaseCallback):
     ) -> None:
         if not self._by_epoch:
             return
-        if self._interval > 0 and runner.epoch % self._interval == 0:
+        if self._should_run_epoch(runner):
             self._validate()
 
     def after_run(self, runner: BaseRunner, memo: Memo) -> None:
