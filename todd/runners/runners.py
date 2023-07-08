@@ -47,7 +47,7 @@ class BaseRunner(ABC):
         strategy: Config,
         model: nn.Module,
         dataloader: Config,
-        callbacks: Config,
+        callbacks: Config | list[Config],
         work_dirs_root: str = 'work_dirs',
         autocast: Config | None = None,
     ) -> None:
@@ -109,7 +109,9 @@ class BaseRunner(ABC):
     def _build_strategy(self, config: Config) -> BaseStrategy:
         return StrategyRegistry.build(config)
 
-    def _build_callbacks(self, config: Config) -> BaseCallback:
+    def _build_callbacks(self, config: Config | list[Config]) -> BaseCallback:
+        if isinstance(config, list):
+            config = Config(type='ComposedCallback', callbacks=config)
         return CallbackRegistry.build(config)
 
     def _build_work_dir(self, root: str, name: str) -> pathlib.Path:
@@ -169,17 +171,34 @@ class BaseRunner(ABC):
         **kwargs,
     ) -> None:
         self._iter = state_dict['meta']['iter_']
-        self.model.load_state_dict(state_dict['model'], *args, **kwargs)
+        self._strategy.load_state_dict(
+            self._model,
+            state_dict['model'],
+            *args,
+            **kwargs,
+        )
 
     def state_dict(self, *args, **kwargs) -> dict[str, Any]:
         meta = dict(iter_=self._iter)
-        model = self.model.state_dict(*args, **kwargs)
+        model = self._strategy.state_dict(self._model, *args, **kwargs)
         return dict(meta=meta, model=model)
 
-    def load_state_dict_from(self, f: pathlib.Path, *args, **kwargs) -> None:
-        self._logger.info(f"Loading state dict from {f}")
+    def resume_from(self, f: pathlib.Path, *args, **kwargs) -> None:
+        self._logger.info(f"Resuming from {f}")
         state_dict = torch.load(f, 'cpu')
         self.load_state_dict(state_dict, *args, **kwargs)
+
+    def load_from(self, f: pathlib.Path, *args, **kwargs) -> None:
+        self._logger.info(f"Loading from {f}")
+        state_dict = torch.load(f, 'cpu')
+        if 'model' in state_dict:  # runner checkpoint
+            state_dict = state_dict['model']
+        self._strategy.load_state_dict(
+            self._model,
+            state_dict,
+            *args,
+            **kwargs,
+        )
 
 
 class Validator(BaseRunner):

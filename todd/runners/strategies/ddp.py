@@ -2,8 +2,9 @@ __all__ = [
     'DDPStrategy',
 ]
 
+from typing import Any
+
 import torch
-import torch.cuda
 import torch.distributed
 import torch.nn as nn
 
@@ -46,3 +47,22 @@ class DDPStrategy(BaseStrategy):
         model: nn.parallel.DistributedDataParallel,
     ) -> nn.Module:
         return model.module
+
+    def state_dict(
+        self,
+        model: nn.parallel.DistributedDataParallel,
+        *args,
+        **kwargs,
+    ) -> dict[str, Any]:
+        module: nn.Module = model.module
+        return module.state_dict(*args, **kwargs)
+
+    def load_state_dict(
+        self,
+        model: nn.parallel.DistributedDataParallel,
+        state_dict: dict[str, Any],
+        *args,
+        **kwargs,
+    ) -> None:
+        module: nn.Module = model.module
+        module.load_state_dict(state_dict, *args, **kwargs)

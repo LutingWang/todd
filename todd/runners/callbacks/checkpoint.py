@@ -5,6 +5,7 @@ from typing import Any
 import torch
 
 from ...base import CallbackRegistry, Config
+from ...base.patches import get_rank
 from .. import BaseRunner, EpochBasedTrainer, Trainer
 from .base import BaseCallback
 
@@ -28,6 +29,8 @@ class CheckpointCallback(BaseCallback):
         self._state_dict = state_dict
 
     def _save(self, runner: Trainer, name: str) -> None:
+        if get_rank() != 0:
+            return
         f = runner.work_dir / f'{name}.pth'
         runner.logger.info(f"Saving state dict to {f}")
         torch.save(runner.state_dict(**self._state_dict), f)
