@@ -13,7 +13,8 @@ import torch
 import torch.backends.cudnn as cudnn
 import torch.distributed as dist
 
-from ..base import Store, get_world_size, logger
+from ..base import Store, logger
+from ..utils import get_world_size
 
 
 def randint(high: int = 2**30) -> int:
@@ -31,7 +32,7 @@ def init_seed(seed: int) -> None:
     np.random.seed(seed)
     torch.manual_seed(seed)
     if Store.CUDA:
-        torch.cuda.manual_seed_all(seed)
+        torch.cuda.manual_seed(seed)
 
 
 @contextmanager

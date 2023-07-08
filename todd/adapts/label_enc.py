@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from ..base import Module, Sequential
+from ..utils import Module, Sequential
 from .base import AdaptRegistry, BaseAdapt
 
 

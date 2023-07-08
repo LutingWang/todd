@@ -1,6 +1,6 @@
 import torch
 
-from ..base import ModuleList
+from ..utils import ModuleList
 from .base import AdaptRegistry, BaseAdapt
 
 

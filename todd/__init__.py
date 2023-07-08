@@ -7,10 +7,10 @@ from . import (
     losses,
     reproduction,
     runners,
-    utils,
     visuals,
 )
 from .base import *
+from .utils import *
 
 __all__ = [
     'adapts',
@@ -19,6 +19,6 @@ __all__ = [
     'hooks',
     'losses',
     'reproduction',
-    'utils',
+    'runners',
     'visuals',
 ]

@@ -26,9 +26,9 @@ from ..base import (
     LrSchedulerRegistry,
     OptimizerRegistry,
     StrategyRegistry,
-    get_world_size,
     logger,
 )
+from ..utils import get_world_size
 from .strategies import BaseStrategy
 
 if TYPE_CHECKING:

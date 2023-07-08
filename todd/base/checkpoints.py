@@ -4,8 +4,9 @@ __all__ = [
     'transfer_weights',
 ]
 
+from ..utils import Module
 from .configs import Config
-from .patches import Module, get_, logger
+from .patches import get_, logger
 from .registries import RegistryMeta
 
 

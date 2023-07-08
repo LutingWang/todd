@@ -8,9 +8,8 @@ import torch
 import torch.distributed
 import torch.nn as nn
 
-from ...base import Config, StrategyRegistry
-from ...base.patches import get_local_rank
-from ...base.stores import Store
+from ...base import Config, Store, StrategyRegistry
+from ...utils import get_local_rank
 from .base import BaseStrategy
 
 

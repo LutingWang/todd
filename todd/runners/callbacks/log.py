@@ -5,8 +5,8 @@ __all__ = [
 import logging
 from typing import Any
 
-from ...base import CallbackRegistry, Formatter, get_rank
-from ...utils import get_timestamp
+from ...base import CallbackRegistry, Formatter
+from ...utils import get_rank, get_timestamp
 from .. import BaseRunner, EpochBasedTrainer
 from .base import BaseCallback
 from .interval import IntervalMixin

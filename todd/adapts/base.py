@@ -9,7 +9,8 @@ import itertools
 import einops.layers.torch
 import torch.nn as nn
 
-from ..base import Module, Registry
+from ..base import Registry
+from ..utils import Module
 
 
 class BaseAdapt(Module):

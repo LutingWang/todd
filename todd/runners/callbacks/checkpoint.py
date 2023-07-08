@@ -5,7 +5,7 @@ from typing import Any
 import torch
 
 from ...base import CallbackRegistry, Config
-from ...base.patches import get_rank
+from ...utils import get_rank
 from .. import BaseRunner, EpochBasedTrainer, Trainer
 from .base import BaseCallback
 

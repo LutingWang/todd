@@ -17,8 +17,6 @@ from ..base import (
     Job,
     LossRegistry,
     Message,
-    Module,
-    ModuleList,
     Registry,
     Spec,
     StoreMeta,
@@ -27,6 +25,7 @@ from ..base import (
 )
 from ..hooks import BaseHook
 from ..losses import BaseLoss
+from ..utils import Module, ModuleList
 
 
 class DistillerStore(metaclass=StoreMeta):

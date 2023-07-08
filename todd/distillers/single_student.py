@@ -11,7 +11,8 @@ from typing_extensions import Self
 
 import torch.nn as nn
 
-from ..base import Config, ModuleList
+from ..base import Config
+from ..utils import ModuleList
 from .base import BaseDistiller, DistillerRegistry
 
 
