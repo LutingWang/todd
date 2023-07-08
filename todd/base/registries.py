@@ -13,6 +13,7 @@ __all__ = [
     'AccessLayerRegistry',
     'DatasetRegistry',
     'StrategyRegistry',
+    'SamplerRegistry',
 ]
 
 import inspect
@@ -22,6 +23,7 @@ from typing import Callable, Iterable, NoReturn, TypeVar
 
 import torch
 import torch.nn as nn
+import torch.utils.data
 
 from ..utils import NonInstantiableMeta
 from .configs import Config
@@ -408,3 +410,12 @@ class AccessLayerRegistry(Registry):
 
 class StrategyRegistry(Registry):
     pass
+
+
+class SamplerRegistry(Registry):
+    pass
+
+
+for _, class_ in inspect.getmembers(torch.utils.data, inspect.isclass):
+    if issubclass(class_, torch.utils.data.Sampler):
+        SamplerRegistry.register()(class_)
