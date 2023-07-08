@@ -53,6 +53,7 @@ class BaseRunner(ABC):
     ) -> None:
         self._name = name
         self._strategy = self._build_strategy(strategy)
+        self._strategy.setup()
         self._model = self._strategy.wrap_model(model)
         self._dataloader = self._build_dataloader(dataloader)
         self._callbacks = self._build_callbacks(callbacks)

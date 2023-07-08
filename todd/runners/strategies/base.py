@@ -8,6 +8,9 @@ from ...base import StrategyRegistry
 @StrategyRegistry.register()
 class BaseStrategy:
 
+    def setup(self) -> None:
+        pass
+
     def wrap_model(self, model: nn.Module) -> nn.Module:
         return model
 
