@@ -44,7 +44,8 @@ class LogCallback(IntervalMixin, BaseCallback):
         epoch_memo: Memo,
         memo: Memo,
     ) -> None:
-        runner.logger.info(f"Epoch [{runner.epoch}/{runner.epochs}]")
+        if get_rank() == 0:
+            runner.logger.info(f"Epoch [{runner.epoch}/{runner.epochs}]")
 
     def before_run(self, runner: BaseRunner, memo: Memo) -> None:
         if get_rank() == 0 and self._with_file_handler:

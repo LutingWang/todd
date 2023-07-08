@@ -25,7 +25,6 @@ from ..base import (
     Config,
     LrSchedulerRegistry,
     OptimizerRegistry,
-    Store,
     StrategyRegistry,
     get_world_size,
     logger,
@@ -41,7 +40,6 @@ Memo = dict[str, Any]
 
 
 class BaseRunner(ABC):
-    DRY_RUN_ITERS = 200
 
     def __init__(
         self,
@@ -133,8 +131,7 @@ class BaseRunner(ABC):
         dataloader = memo['dataloader']
         for batch in dataloader:
             self._iter += 1
-            if Store.DRY_RUN and self._iter > self.DRY_RUN_ITERS:
-                break
+
             if self._callbacks.should_break(self, batch, memo):
                 break
             if self._callbacks.should_continue(self, batch, memo):
