@@ -48,12 +48,16 @@ class LogCallback(IntervalMixin, BaseCallback):
             runner.logger.info(f"Epoch [{runner.epoch}/{runner.epochs}]")
 
     def before_run(self, runner: BaseRunner, memo: Memo) -> None:
-        if get_rank() == 0 and self._with_file_handler:
-            file = runner.work_dir / f'{get_timestamp()}.log'
-            handler = logging.FileHandler(file)
-            handler.setFormatter(Formatter())
-            runner.logger.addHandler(handler)
-            self._handler = handler
+        if get_rank() > 0 or not self._with_file_handler:
+            return
+        file = runner.work_dir / f'{get_timestamp()}.log'
+        handler = logging.FileHandler(file)
+        handler.setFormatter(Formatter())
+        runner.logger.addHandler(handler)
+        self._handler = handler
+
+        if runner.config is not None:
+            runner.logger.info("Config: \n" + runner.config.dumps())
 
     def after_run(self, runner: BaseRunner, memo: Memo) -> None:
         if get_rank() == 0 and self._with_file_handler:

@@ -28,7 +28,7 @@ from ..base import (
     StrategyRegistry,
     logger,
 )
-from ..utils import get_world_size
+from ..utils import get_rank, get_world_size
 from .strategies import BaseStrategy
 
 if TYPE_CHECKING:
@@ -50,6 +50,7 @@ class BaseRunner(ABC):
         callbacks: Config | list[Config],
         work_dirs_root: str = 'work_dirs',
         autocast: Config | None = None,
+        config: Config | None = None,
     ) -> None:
         self._name = name
         self._strategy = self._build_strategy(strategy)
@@ -59,18 +60,22 @@ class BaseRunner(ABC):
         self._callbacks = self._build_callbacks(callbacks)
         self._work_dir = self._build_work_dir(work_dirs_root, name)
 
-        if autocast is None:
-            self._autocast = nullcontext()
-        else:
-            self._autocast = self._build_autocast(autocast)
+        self._autocast = (
+            nullcontext()
+            if autocast is None else self._build_autocast(autocast)
+        )
+        self._config = config
 
         self._logger = self._build_logger()
         self._iter = 0
 
         self._logger.debug(
-            f"Runner {name} initialized by {getpass.getuser()}@"
-            f"{socket.gethostname()}"
+            f"Runner {name} initialized by "
+            f"{getpass.getuser()}@{socket.gethostname()}"
         )
+
+        if get_rank() == 0 and config is not None:
+            config.dump(self._work_dir / 'config.py')
 
     @property
     def name(self) -> str:
@@ -88,6 +93,10 @@ class BaseRunner(ABC):
     @property
     def logger(self) -> logging.Logger:
         return self._logger
+
+    @property
+    def config(self) -> Config | None:
+        return self._config
 
     @property
     def iter_(self) -> int:
