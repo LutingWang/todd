@@ -7,7 +7,7 @@ name = 'todd_ai'
 version = '0.3.0'
 description = 'Toolkit for Object Detection Distillation'
 readme = 'README.md'
-requires-python = '>=3.10'
+requires-python = '>=3.8'
 classifiers = [
     'Programming Language :: Python :: 3',
     'License :: OSI Approved :: Apache Software License',

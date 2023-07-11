@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python: ["3.10"]
+        python: ["3.8"]
     steps:
       - uses: LutingWang/todd/.github/actions/checkout-todd@master
       - uses: actions/setup-python@master
