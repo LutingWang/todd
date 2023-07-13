@@ -22,3 +22,6 @@ class BaseStrategy(nn.Module, ABC):
     @abstractmethod
     def model(self) -> nn.Module:
         pass
+
+    def forward(self, *args, **kwargs):
+        return self._model(*args, **kwargs)
