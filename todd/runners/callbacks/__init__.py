@@ -5,6 +5,6 @@ from .checkpoint import *
 from .composed import *
 from .interval import *
 from .log import *
-from .lr_schedule import *
+from .lr import *
 from .monitor import *
 from .optimize import *
