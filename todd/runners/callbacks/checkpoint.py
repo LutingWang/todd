@@ -1,4 +1,6 @@
-__all__ = ['CheckpointCallback']
+__all__ = [
+    'CheckpointCallback',
+]
 
 from typing import Any
 
@@ -6,26 +8,23 @@ import torch
 
 from ...base import CallbackRegistry, Config
 from ...utils import get_rank
-from .. import BaseRunner, EpochBasedTrainer, Trainer
+from ..runners import BaseRunner, EpochBasedTrainer, Trainer
 from .base import BaseCallback
+from .interval import IntervalMixin
 
 Memo = dict[str, Any]
 
 
 @CallbackRegistry.register()
-class CheckpointCallback(BaseCallback):
+class CheckpointCallback(IntervalMixin, BaseCallback):
 
     def __init__(
         self,
         *args,
-        every_n_iters: int = 0,
-        every_n_epochs: int = 0,
         state_dict: Config = Config(),
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
-        self._every_n_iters = every_n_iters
-        self._every_n_epochs = every_n_epochs
         self._state_dict = state_dict
 
     def _save(self, runner: Trainer, name: str) -> None:
@@ -37,9 +36,8 @@ class CheckpointCallback(BaseCallback):
 
     def after_run_iter(self, runner: BaseRunner, batch, memo: Memo) -> None:
         assert isinstance(runner, Trainer)
-        iter_ = runner.iter_
-        if self._every_n_iters > 0 and iter_ % self._every_n_iters == 0:
-            self._save(runner, f'iter_{iter_}')
+        if self._should_run_iter(runner):
+            self._save(runner, f'iter_{runner.iter_}')
 
     def after_run_epoch(
         self,
@@ -47,9 +45,8 @@ class CheckpointCallback(BaseCallback):
         epoch_memo: Memo,
         memo: Memo,
     ) -> None:
-        epoch = runner.epoch
-        if self._every_n_epochs > 0 and epoch % self._every_n_epochs == 0:
-            self._save(runner, f'epoch_{epoch}')
+        if self._should_run_epoch(runner):
+            self._save(runner, f'epoch_{runner.epoch}')
 
     def after_run(self, runner: BaseRunner, memo: Memo) -> None:
         assert isinstance(runner, Trainer)

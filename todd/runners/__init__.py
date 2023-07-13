@@ -1,4 +1,2 @@
-from . import strategies
+from . import callbacks, strategies
 from .runners import *
-
-from . import callbacks  # isort: skip

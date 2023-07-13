@@ -6,29 +6,28 @@ __all__ = [
     'EpochBasedTrainer',
 ]
 
-import getpass
+import contextlib
 import itertools
 import logging
+import os
 import pathlib
-import socket
-from abc import ABC, abstractmethod
-from contextlib import nullcontext
+from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Mapping
 
 import torch
 import torch.distributed
-import torch.nn as nn
 import torch.utils.data
 
 from ..base import (
     CallbackRegistry,
     Config,
-    LrSchedulerRegistry,
+    DatasetRegistry,
     OptimizerRegistry,
+    SamplerRegistry,
+    StateDict,
     StrategyRegistry,
-    logger,
 )
-from ..utils import get_rank, get_world_size
+from ..base import logger as base_logger
 from .strategies import BaseStrategy
 
 if TYPE_CHECKING:
@@ -38,53 +37,24 @@ else:
 
 Memo = dict[str, Any]
 
+# TODO: split into multiple files
 
-class BaseRunner(ABC):
 
-    def __init__(
-        self,
-        name: str,
-        strategy: Config,
-        model: nn.Module,
-        dataloader: Config,
-        callbacks: Config | list[Config],
-        work_dirs_root: str = 'work_dirs',
-        autocast: Config | None = None,
-        config: Config | None = None,
-    ) -> None:
+class BaseRunner(StateDict):
+
+    def __init__(self, name: str, *args, **kwargs) -> None:
         self._name = name
-        self._strategy = self._build_strategy(strategy)
-        self._strategy.setup()
-        self._model = self._strategy.wrap_model(model)
-        self._dataloader = self._build_dataloader(dataloader)
-        self._callbacks = self._build_callbacks(callbacks)
-        self._work_dir = self._build_work_dir(work_dirs_root, name)
-
-        self._autocast = (
-            nullcontext()
-            if autocast is None else self._build_autocast(autocast)
-        )
-        self._config = config
-
-        self._logger = self._build_logger()
         self._iter = 0
-
-        self._logger.debug(
-            f"Runner {name} initialized by "
-            f"{getpass.getuser()}@{socket.gethostname()}"
-        )
-
-        if get_rank() == 0 and config is not None:
-            config.dump(self._work_dir / 'config.py')
+        self._build(*args, **kwargs)
+        self._callbacks.connect(self)
 
     @property
     def name(self) -> str:
         return self._name
 
     @property
-    def model(self) -> nn.Module:
-        """The underlying model if being wrapped."""
-        return self._strategy.get_model(self._model)
+    def iter_(self) -> int:
+        return self._iter
 
     @property
     def work_dir(self) -> pathlib.Path:
@@ -95,45 +65,89 @@ class BaseRunner(ABC):
         return self._logger
 
     @property
-    def config(self) -> Config | None:
-        return self._config
-
-    @property
-    def iter_(self) -> int:
-        return self._iter
+    def strategy(self) -> BaseStrategy:
+        return self._strategy
 
     @property
     def iters(self) -> int:
         return len(self._dataloader)
 
-    @abstractmethod
-    def _build_dataloader(self, config: Config) -> torch.utils.data.DataLoader:
+    @property
+    def dataloader(self) -> torch.utils.data.DataLoader:
+        return self._dataloader
+
+    def _build_dataloader(self, *args, dataloader: Config, **kwargs) -> None:
         """Build the dataloader.
 
         Args:
             config: dataloader config.
         """
-        pass
+        dataloader = dataloader.copy()
+        dataset = DatasetRegistry.build(dataloader.pop('dataset'))
+        if 'sampler' in dataloader:
+            dataloader.sampler = SamplerRegistry.build(
+                dataloader.pop('sampler'),
+                Config(dataset=dataset),
+            )
+        self._dataloader = torch.utils.data.DataLoader(dataset, **dataloader)
 
-    def _build_strategy(self, config: Config) -> BaseStrategy:
-        return StrategyRegistry.build(config)
+    def _build_strategy(
+        self,
+        *args,
+        strategy: Config,
+        **kwargs,
+    ) -> None:
+        self._strategy: BaseStrategy = StrategyRegistry.build(strategy)
 
-    def _build_callbacks(self, config: Config | list[Config]) -> BaseCallback:
-        if isinstance(config, list):
-            config = Config(type='ComposedCallback', callbacks=config)
-        return CallbackRegistry.build(config)
+    def _build_callbacks(
+        self,
+        *args,
+        callbacks: Config | list[Config] | None = None,
+        **kwargs,
+    ) -> None:
+        if callbacks is None:
+            callbacks = []
+        if isinstance(callbacks, list):
+            callbacks = Config(type='ComposedCallback', callbacks=callbacks)
+        self._callbacks: BaseCallback = CallbackRegistry.build(callbacks)
 
-    def _build_work_dir(self, root: str, name: str) -> pathlib.Path:
-        work_dir = pathlib.Path(root) / name
-        work_dir.mkdir(parents=True, exist_ok=True)
-        return work_dir
+    def _build_work_dir(
+        self,
+        *args,
+        work_dir: Config | None = None,
+        **kwargs,
+    ) -> None:
+        if work_dir is None:
+            work_dir = Config()
+        if 'path' in work_dir:
+            path = work_dir.path
+        else:
+            root = work_dir.get('root', 'work_dirs')
+            name = work_dir.get('name', self._name)
+            path = os.path.join(root, name)
+        self._work_dir = pathlib.Path(path)
+        self._work_dir.mkdir(parents=True, exist_ok=True)
 
-    def _build_logger(self) -> logging.Logger:
-        name = f'{logger.name}.{self.__class__.__name__}.{self._name}'
-        return logging.getLogger(name)
+    def _build_logger(
+        self,
+        *args,
+        logger: Config | None = None,
+        **kwargs,
+    ) -> None:
+        if logger is None:
+            logger = Config()
+        name = logger.get(
+            'name',
+            f'{self.__class__.__name__}.{self._name}',
+        )
+        self._logger = logging.getLogger(f'{base_logger.name}.{name}')
 
-    def _build_autocast(self, config: Config) -> torch.autocast:
-        return torch.autocast('cuda', **config)
+    def _build(self, *args, **kwargs) -> None:
+        self._build_strategy(*args, **kwargs)
+        self._build_dataloader(*args, **kwargs)
+        self._build_callbacks(*args, **kwargs)
+        self._build_work_dir(*args, **kwargs)
+        self._build_logger(*args, **kwargs)
 
     @abstractmethod
     def _run_iter(self, batch, memo: Memo) -> None:
@@ -150,13 +164,9 @@ class BaseRunner(ABC):
                 continue
 
             self._callbacks.before_run_iter(self, batch, memo)
-            try:
+            with contextlib.ExitStack() as exit_stack:
+                self._callbacks.run_iter_context(self, exit_stack, batch, memo)
                 self._run_iter(batch, memo)
-            except Exception:
-                self._logger.exception(
-                    f"Unable to run iter {self._iter}\n{batch=}\n{memo=}"
-                )
-                raise
             self._callbacks.after_run_iter(self, batch, memo)
 
     def _setup(self) -> Memo:
@@ -181,16 +191,15 @@ class BaseRunner(ABC):
     ) -> None:
         self._iter = state_dict['meta']['iter_']
         self._strategy.load_state_dict(
-            self._model,
-            state_dict['model'],
+            state_dict['strategy'],
             *args,
             **kwargs,
         )
 
     def state_dict(self, *args, **kwargs) -> dict[str, Any]:
         meta = dict(iter_=self._iter)
-        model = self._strategy.state_dict(self._model, *args, **kwargs)
-        return dict(meta=meta, model=model)
+        strategy = self._strategy.state_dict(*args, **kwargs)
+        return dict(meta=meta, strategy=strategy)
 
     def resume_from(self, f: pathlib.Path, *args, **kwargs) -> None:
         self._logger.info(f"Resuming from {f}")
@@ -200,11 +209,12 @@ class BaseRunner(ABC):
     def load_from(self, f: pathlib.Path, *args, **kwargs) -> None:
         self._logger.info(f"Loading from {f}")
         state_dict = torch.load(f, 'cpu')
-        if 'model' in state_dict:  # runner checkpoint
-            state_dict = state_dict['model']
+        if 'strategy' not in state_dict:
+            self._strategy.model.load_state_dict(state_dict, *args, **kwargs)
+            return
+        # runner checkpoint
         self._strategy.load_state_dict(
-            self._model,
-            state_dict,
+            state_dict['strategy'],
             *args,
             **kwargs,
         )
@@ -213,12 +223,8 @@ class BaseRunner(ABC):
 class Validator(BaseRunner):
 
     def _setup(self) -> Memo:
-        self._model.eval()
+        self._strategy.eval()
         return super()._setup()
-
-    def _teardown(self, memo: Memo) -> None:
-        super()._teardown(memo)
-        self._model.train()
 
     @torch.no_grad()
     def run(self) -> Memo:
@@ -227,83 +233,33 @@ class Validator(BaseRunner):
 
 class Trainer(BaseRunner):
 
-    def __init__(
-        self,
-        *args,
-        optimizer: Config,
-        lr_scheduler: Config | None = None,
-        lr_scaler: Config | None = None,
-        grad_scaler: Config | None = None,
-        **kwargs,
-    ) -> None:
-        super().__init__(*args, **kwargs)
-        self._optimizer = self._build_optimizer(optimizer, self.model)
-        if lr_scaler is not None:
-            self._lr_scaler = self._build_lr_scaler(lr_scaler)
-            self._scale_lr(self._optimizer, self._lr_scaler)
-        if lr_scheduler is not None:
-            self._lr_scheduler = self._build_lr_scheduler(
-                lr_scheduler, self._optimizer
-            )
-        if grad_scaler is not None:
-            self._grad_scaler = self._build_grad_scaler(grad_scaler)
-
-    @property
-    def with_lr_scheduler(self) -> bool:
-        return hasattr(self, '_lr_scheduler')
-
-    @property
-    def with_grad_scaler(self) -> bool:
-        return hasattr(self, '_grad_scaler')
-
     @property
     def optimizer(self) -> torch.optim.Optimizer:
         return self._optimizer
 
-    @property
-    def lr_scheduler(self) -> torch.optim.lr_scheduler.LRScheduler:
-        return self._lr_scheduler
-
-    @property
-    def grad_scaler(self) -> torch.cuda.amp.GradScaler:
-        return self._grad_scaler
-
     def _build_optimizer(
         self,
-        config: Config,
-        model: nn.Module,
-    ) -> torch.optim.Optimizer:
-        return OptimizerRegistry.build(config, Config(model=model))
-
-    def _build_lr_scheduler(
-        self,
-        config: Config,
-        optimizer: torch.optim.Optimizer,
-    ) -> torch.optim.lr_scheduler.LRScheduler:
-        return LrSchedulerRegistry.build(config, Config(optimizer=optimizer))
-
-    def _build_lr_scaler(self, config: Config) -> float:
-        base_batch_size = config.base_batch_size
-        batch_size = get_world_size() * self._dataloader.batch_size
-        return batch_size / base_batch_size
-
-    def _build_grad_scaler(self, config: Config) -> torch.cuda.amp.GradScaler:
-        return torch.cuda.amp.GradScaler(**config)
-
-    def _scale_lr(
-        self,
-        optimizer: torch.optim.Optimizer,
-        lr_scaler: float,
+        *args,
+        optimizer: Config,
+        **kwargs,
     ) -> None:
-        if 'lr' in optimizer.defaults:
-            self._optimizer.defaults['lr'] *= lr_scaler
-        for param_group in optimizer.param_groups:
-            if 'lr' in param_group:
-                param_group['lr'] *= lr_scaler
+        self._optimizer: torch.optim.Optimizer = OptimizerRegistry.build(
+            optimizer,
+            Config(model=self._strategy.model),
+        )
+
+    def _build(self, *args, **kwargs) -> None:
+        super()._build(*args, **kwargs)
+        self._build_optimizer(*args, **kwargs)
 
     def _setup(self) -> Memo:
-        self._model.train()
+        self._strategy.train()
         return super()._setup()
+
+    def state_dict(self, *args, **kwargs) -> dict[str, Any]:
+        state_dict = super().state_dict(*args, **kwargs)
+        state_dict['optimizer'] = self._optimizer.state_dict()
+        return state_dict
 
     def load_state_dict(
         self,
@@ -313,19 +269,6 @@ class Trainer(BaseRunner):
     ) -> None:
         super().load_state_dict(state_dict, *args, **kwargs)
         self._optimizer.load_state_dict(state_dict['optimizer'])
-        if self.with_lr_scheduler:
-            self._lr_scheduler.load_state_dict(state_dict['lr_scheduler'])
-        if self.with_grad_scaler:
-            self._grad_scaler.load_state_dict(state_dict['grad_scaler'])
-
-    def state_dict(self, *args, **kwargs) -> dict[str, Any]:
-        state_dict = super().state_dict(*args, **kwargs)
-        state_dict['optimizer'] = self._optimizer.state_dict()
-        if self.with_lr_scheduler:
-            state_dict['lr_scheduler'] = self._lr_scheduler.state_dict()
-        if self.with_grad_scaler:
-            state_dict['grad_scaler'] = self._grad_scaler.state_dict()
-        return state_dict
 
 
 class IterBasedTrainer(Trainer):
@@ -369,7 +312,7 @@ class EpochBasedTrainer(Trainer):
     def _run_epoch(self, epoch_memo: Memo, memo: Memo) -> None:
         super()._run(epoch_memo)
 
-    def _setup_epoch(self, memo) -> Memo:
+    def _setup_epoch(self, memo: Memo) -> Memo:
         sampler = self._dataloader.batch_sampler
         if sampler is None:
             sampler = self._dataloader.sampler
@@ -392,14 +335,14 @@ class EpochBasedTrainer(Trainer):
                 continue
 
             self._callbacks.before_run_epoch(self, epoch_memo, memo)
-            try:
-                self._run_epoch(epoch_memo, memo)
-            except Exception:
-                self._logger.exception(
-                    f"Unable to run epoch {self._epoch}\n{epoch_memo=}\n"
-                    f"{memo=}"
+            with contextlib.ExitStack() as exit_stack:
+                self._callbacks.run_epoch_context(
+                    self,
+                    exit_stack,
+                    epoch_memo,
+                    memo,
                 )
-                raise
+                self._run_epoch(epoch_memo, memo)
             self._callbacks.after_run_epoch(self, epoch_memo, memo)
 
             self._teardown_epoch(epoch_memo, memo)

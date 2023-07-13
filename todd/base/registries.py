@@ -14,9 +14,9 @@ __all__ = [
     'DatasetRegistry',
     'StrategyRegistry',
     'SamplerRegistry',
+    'ModelRegistry',
 ]
 
-import inspect
 import re
 from collections import UserDict
 from typing import Callable, Iterable, NoReturn, TypeVar
@@ -336,7 +336,7 @@ class NormRegistry(Registry):
 class OptimizerRegistry(Registry):
 
     @staticmethod
-    def _build_params(model: nn.Module, config: Config) -> Config:
+    def params(model: nn.Module, config: Config) -> Config:
         config.params = [
             p for n, p in model.named_parameters()
             if re.match(config.params, n)
@@ -348,32 +348,13 @@ class OptimizerRegistry(Registry):
         model: nn.Module = config.pop('model')
         params: Iterable[Config] | None = config.pop('params', None)
         config.params = model.parameters() if params is None else [
-            cls._build_params(model, p) for p in params
+            cls.params(model, p) for p in params
         ]
         return RegistryMeta._build(cls, config)
 
 
 class LrSchedulerRegistry(Registry):
     pass
-
-
-NormRegistry['BN1d'] = nn.BatchNorm1d
-NormRegistry['BN2d'] = NormRegistry['BN'] = nn.BatchNorm2d
-NormRegistry['BN3d'] = nn.BatchNorm3d
-NormRegistry['SyncBN'] = nn.SyncBatchNorm
-NormRegistry['GN'] = nn.GroupNorm
-NormRegistry['LN'] = nn.LayerNorm
-NormRegistry['IN1d'] = nn.InstanceNorm1d
-NormRegistry['IN2d'] = NormRegistry['IN'] = nn.InstanceNorm2d
-NormRegistry['IN3d'] = nn.InstanceNorm3d
-
-for _, class_ in inspect.getmembers(torch.optim, inspect.isclass):
-    if issubclass(class_, torch.optim.Optimizer):
-        OptimizerRegistry.register()(class_)
-
-for _, class_ in inspect.getmembers(torch.optim.lr_scheduler, inspect.isclass):
-    if issubclass(class_, torch.optim.lr_scheduler.LRScheduler):
-        LrSchedulerRegistry.register()(class_)
 
 
 class RunnerRegistry(Registry):
@@ -416,6 +397,25 @@ class SamplerRegistry(Registry):
     pass
 
 
-for _, class_ in inspect.getmembers(torch.utils.data, inspect.isclass):
-    if issubclass(class_, torch.utils.data.Sampler):
-        SamplerRegistry.register()(class_)
+class ModelRegistry(Registry):
+    pass
+
+
+for c in torch.utils.data.Sampler.__subclasses__():
+    SamplerRegistry.register()(c)
+
+for c in torch.optim.Optimizer.__subclasses__():
+    OptimizerRegistry.register()(c)
+
+for c in torch.optim.lr_scheduler.LRScheduler.__subclasses__():
+    LrSchedulerRegistry.register()(c)
+
+NormRegistry['BN1d'] = nn.BatchNorm1d
+NormRegistry['BN2d'] = NormRegistry['BN'] = nn.BatchNorm2d
+NormRegistry['BN3d'] = nn.BatchNorm3d
+NormRegistry['SyncBN'] = nn.SyncBatchNorm
+NormRegistry['GN'] = nn.GroupNorm
+NormRegistry['LN'] = nn.LayerNorm
+NormRegistry['IN1d'] = nn.InstanceNorm1d
+NormRegistry['IN2d'] = NormRegistry['IN'] = nn.InstanceNorm2d
+NormRegistry['IN3d'] = nn.InstanceNorm3d

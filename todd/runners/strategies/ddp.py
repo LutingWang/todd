@@ -2,8 +2,6 @@ __all__ = [
     'DDPStrategy',
 ]
 
-from typing import Any
-
 import torch
 import torch.distributed
 import torch.nn as nn
@@ -19,49 +17,25 @@ class DDPStrategy(BaseStrategy):
     def __init__(
         self,
         *args,
-        setup: Config | None = None,
-        wrap_model: Config | None = None,
+        init_process_group: Config | None = None,
+        ddp: Config | None = None,
         **kwargs,
     ) -> None:
-        super().__init__(*args, **kwargs)
-        self._setup = Config(backend='nccl') if setup is None else setup
-        self._wrap_model = Config() if wrap_model is None else wrap_model
-
-    def setup(self) -> None:
         assert Store.CUDA
-        torch.distributed.init_process_group(**self._setup)
+        super().__init__(*args, **kwargs)
+
+        if init_process_group is None:
+            init_process_group = Config(backend='nccl')
+        torch.distributed.init_process_group(**init_process_group)
         torch.cuda.set_device(get_local_rank() % torch.cuda.device_count())
 
-    def wrap_model(
-        self,
-        model: nn.Module,
-    ) -> nn.parallel.DistributedDataParallel:
-        return nn.parallel.DistributedDataParallel(
-            model.cuda(),
-            **self._wrap_model,
+        if ddp is None:
+            ddp = Config()
+        self._model = nn.parallel.DistributedDataParallel(
+            self._model.cuda(),
+            **ddp,
         )
 
-    def get_model(
-        self,
-        model: nn.parallel.DistributedDataParallel,
-    ) -> nn.Module:
-        return model.module
-
-    def state_dict(
-        self,
-        model: nn.parallel.DistributedDataParallel,
-        *args,
-        **kwargs,
-    ) -> dict[str, Any]:
-        module: nn.Module = model.module
-        return module.state_dict(*args, **kwargs)
-
-    def load_state_dict(
-        self,
-        model: nn.parallel.DistributedDataParallel,
-        state_dict: dict[str, Any],
-        *args,
-        **kwargs,
-    ) -> None:
-        module: nn.Module = model.module
-        module.load_state_dict(state_dict, *args, **kwargs)
+    @property
+    def model(self) -> nn.Module:
+        return self._model.module

@@ -1,37 +1,24 @@
-__all__ = ["BaseStrategy"]
+__all__ = [
+    'BaseStrategy',
+]
 
-from typing import Any
+from abc import ABC, abstractmethod
 
 import torch.nn as nn
 
-from ...base import StrategyRegistry
+from ...base import Config, ModelRegistry, StrategyRegistry
 
 
 @StrategyRegistry.register()
-class BaseStrategy:
+class BaseStrategy(nn.Module, ABC):
 
-    def setup(self) -> None:
+    def __init__(self, *args, model: nn.Module | Config, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        if isinstance(model, Config):
+            model = ModelRegistry.build(model)
+        self._model: nn.Module = model
+
+    @property
+    @abstractmethod
+    def model(self) -> nn.Module:
         pass
-
-    def wrap_model(self, model: nn.Module) -> nn.Module:
-        return model
-
-    def get_model(self, model: nn.Module) -> nn.Module:
-        return model
-
-    def state_dict(
-        self,
-        model: nn.Module,
-        *args,
-        **kwargs,
-    ) -> dict[str, Any]:
-        return model.state_dict(*args, **kwargs)
-
-    def load_state_dict(
-        self,
-        model: nn.Module,
-        state_dict: dict[str, Any],
-        *args,
-        **kwargs,
-    ) -> None:
-        model.load_state_dict(state_dict, *args, **kwargs)

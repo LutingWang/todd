@@ -2,14 +2,19 @@ __all__ = [
     'BaseCallback',
 ]
 
-from typing import Any
+import contextlib
+from typing import Any, Mapping
 
-from .. import BaseRunner, EpochBasedTrainer
+from ...base import StateDict
+from ..runners import BaseRunner, EpochBasedTrainer
 
 Memo = dict[str, Any]
 
 
-class BaseCallback:
+class BaseCallback(StateDict):
+
+    def connect(self, runner: BaseRunner) -> None:
+        pass
 
     def should_break(self, runner: BaseRunner, batch, memo: Memo) -> bool:
         """Determine whether to break the run loop.
@@ -44,6 +49,15 @@ class BaseCallback:
     def before_run_iter(self, runner: BaseRunner, batch, memo: Memo) -> None:
         pass
 
+    def run_iter_context(
+        self,
+        runner: BaseRunner,
+        exit_stack: contextlib.ExitStack,
+        batch,
+        memo: Memo,
+    ) -> None:
+        pass
+
     def after_run_iter(self, runner: BaseRunner, batch, memo: Memo) -> None:
         pass
 
@@ -71,6 +85,15 @@ class BaseCallback:
     ) -> None:
         pass
 
+    def run_epoch_context(
+        self,
+        runner: EpochBasedTrainer,
+        exit_stack: contextlib.ExitStack,
+        epoch_memo: Memo,
+        memo: Memo,
+    ) -> None:
+        pass
+
     def after_run_epoch(
         self,
         runner: EpochBasedTrainer,
@@ -83,4 +106,15 @@ class BaseCallback:
         pass
 
     def after_run(self, runner: BaseRunner, memo: Memo) -> None:
+        pass
+
+    def state_dict(self, *args, **kwargs) -> dict[str, Any]:
+        return dict()
+
+    def load_state_dict(
+        self,
+        state_dict: Mapping[str, Any],
+        *args,
+        **kwargs,
+    ) -> None:
         pass

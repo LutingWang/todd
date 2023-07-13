@@ -1,6 +1,7 @@
 from .bboxes import *
 from .checkpoints import *
 from .configs import *
+from .interfaces import *
 from .patches import *
 from .registries import *
 from .status import *

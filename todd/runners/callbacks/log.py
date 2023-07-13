@@ -2,12 +2,14 @@ __all__ = [
     'LogCallback',
 ]
 
+import getpass
 import logging
+import socket
 from typing import Any
 
 from ...base import CallbackRegistry, Formatter
 from ...utils import get_rank, get_timestamp
-from .. import BaseRunner, EpochBasedTrainer
+from ..runners import BaseRunner, EpochBasedTrainer
 from .base import BaseCallback
 from .interval import IntervalMixin
 
@@ -25,6 +27,17 @@ class LogCallback(IntervalMixin, BaseCallback):
     ) -> None:
         super().__init__(*args, **kwargs)
         self._with_file_handler = with_file_handler
+
+    def connect(self, runner: BaseRunner) -> None:
+        if get_rank() == 0 and self._with_file_handler:
+            file = runner.work_dir / f'{get_timestamp()}.log'
+            handler = logging.FileHandler(file)
+            handler.setFormatter(Formatter())
+            runner.logger.addHandler(handler)
+        runner.logger.debug(
+            f"Rank {get_rank()} initialized by "
+            f"{getpass.getuser()}@{socket.gethostname()}"
+        )
 
     def before_run_iter(self, runner: BaseRunner, batch, memo: Memo) -> None:
         if get_rank() == 0 and self._should_run_iter(runner):
@@ -46,19 +59,3 @@ class LogCallback(IntervalMixin, BaseCallback):
     ) -> None:
         if get_rank() == 0:
             runner.logger.info(f"Epoch [{runner.epoch}/{runner.epochs}]")
-
-    def before_run(self, runner: BaseRunner, memo: Memo) -> None:
-        if get_rank() > 0 or not self._with_file_handler:
-            return
-        file = runner.work_dir / f'{get_timestamp()}.log'
-        handler = logging.FileHandler(file)
-        handler.setFormatter(Formatter())
-        runner.logger.addHandler(handler)
-        self._handler = handler
-
-        if runner.config is not None:
-            runner.logger.info("Config: \n" + runner.config.dumps())
-
-    def after_run(self, runner: BaseRunner, memo: Memo) -> None:
-        if get_rank() == 0 and self._with_file_handler:
-            runner.logger.removeHandler(self._handler)

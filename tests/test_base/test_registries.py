@@ -57,8 +57,8 @@ class TestRegistryMeta:
 
 class TestOptimizerRegistry:
 
-    def test_build_params(self, model: CustomModule) -> None:
-        config = OptimizerRegistry._build_params(
+    def test_params(self, model: CustomModule) -> None:
+        config = OptimizerRegistry.params(
             model,
             Config(params='conv.[^w]'),
         )
