@@ -90,7 +90,9 @@ class LRScaleCallback(BaseCallback):
         for param_group in runner.optimizer.param_groups:
             if 'lr' in param_group:
                 param_group['lr'] *= lr_scaler
-        runner.logger.info(f"{base_batch_size=} {batch_size=} {lr_scaler=}")
+        runner.logger.info(
+            f"{base_batch_size=} {batch_size=} {lr_scaler=:.3f}"
+        )
 
     def connect(self, runner: BaseRunner) -> None:
         assert isinstance(runner, Trainer)

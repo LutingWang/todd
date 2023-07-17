@@ -1,10 +1,5 @@
 from .base import *
-from .lmdb_ import LmdbDataset
+from .folder import *
+from .lmdb import *
 from .pth import *
-from .zip import ZipAccessLayer, ZipDataset
-
-__all__ = [
-    'LmdbDataset',
-    'ZipAccessLayer',
-    'ZipDataset',
-]
+from .zip import *

@@ -3,47 +3,38 @@ __all__ = [
     'PthDataset',
 ]
 
-from pathlib import Path
-from typing import Any, Iterator
+import pathlib
+from typing import Iterator, TypeVar
 
 import torch
 
-from ..base import DatasetRegistry
-from .base import AccessLayerRegistry, BaseAccessLayer, BaseDataset
+from .base import AccessLayerRegistry, BaseDataset
+from .folder import FolderAccessLayer
+
+VT = TypeVar('VT')
 
 
 @AccessLayerRegistry.register()
-class PthAccessLayer(BaseAccessLayer[str]):
+class PthAccessLayer(FolderAccessLayer[VT]):
 
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        self._pth_root = Path(self._data_root) / self._task_name
+    def _files(self) -> Iterator[pathlib.Path]:
+        return self._folder_root.glob('*.pth')
 
-    @property
-    def exists(self) -> bool:
-        return self._pth_root.exists()
-
-    def touch(self) -> None:
-        self._pth_root.mkdir(parents=True, exist_ok=self._exist_ok)
+    def _file(self, key: str) -> pathlib.Path:
+        return super()._file(f'{key}.pth')
 
     def __iter__(self) -> Iterator[str]:
-        return (path.stem for path in self._pth_root.glob('*.pth'))
+        return (path.stem for path in self._files())
 
-    def __len__(self) -> int:
-        return len(list(self._pth_root.glob('*.pth')))
+    def __getitem__(self, key: str) -> VT:
+        return torch.load(self._file(key), map_location='cpu')
 
-    def __getitem__(self, key: str):
-        data_file = self._pth_root / f'{key}.pth'
-        return torch.load(data_file, map_location='cpu')
-
-    def __setitem__(self, key: str, value: Any) -> None:
-        torch.save(value, self._pth_root / f'{key}.pth')
-
-    def __delitem__(self, key: str) -> None:
-        data_file = self._pth_root / f'{key}.pth'
-        data_file.unlink()
+    def __setitem__(self, key: str, value: VT) -> None:
+        torch.save(value, self._file(key))
 
 
-@DatasetRegistry.register()
-class PthDataset(BaseDataset[str]):
-    ACCESS_LAYER = PthAccessLayer
+T = TypeVar('T')
+
+
+class PthDataset(BaseDataset[T, str, VT]):
+    ACCESS_LAYER = PthAccessLayer.__name__

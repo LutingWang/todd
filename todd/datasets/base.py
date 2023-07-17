@@ -4,29 +4,26 @@ __all__ = [
 ]
 
 import reprlib
-from abc import abstractmethod
-from typing import Any, Generic, MutableMapping, TypeVar
+from abc import ABC, abstractmethod
+from typing import Generic, MutableMapping, TypeVar
 
 from torch.utils.data import Dataset
 
 from ..base import AccessLayerRegistry, Config, logger
 
-T = TypeVar('T')
+KT = TypeVar('KT')
+VT = TypeVar('VT')
 
 
-class BaseAccessLayer(MutableMapping[T, Any]):
+class BaseAccessLayer(MutableMapping[KT, VT]):
 
     def __init__(
         self,
         data_root: str,
         task_name: str = '',
-        readonly: bool = True,
-        exist_ok: bool = False,
     ) -> None:
         self._data_root = data_root
         self._task_name = task_name
-        self._readonly = readonly
-        self._exist_ok = exist_ok
 
     @property
     @abstractmethod
@@ -38,16 +35,29 @@ class BaseAccessLayer(MutableMapping[T, Any]):
         pass
 
 
-class BaseDataset(Dataset, Generic[T]):
-    ACCESS_LAYER: type = BaseAccessLayer[T]
+T = TypeVar('T')
 
-    def __init__(self, *args, access_layer: Config, **kwargs) -> None:
+
+class BaseDataset(Dataset[T], Generic[T, KT, VT], ABC):
+
+    def __init__(
+        self,
+        *args,
+        access_layer: Config,
+        keys: Config | None = None,
+        **kwargs,
+    ) -> None:
         super().__init__(*args, **kwargs)
-        self._access_layer: BaseAccessLayer[T] = AccessLayerRegistry.build(
-            access_layer,
-            default_config=Config(type=self.ACCESS_LAYER.__name__),
-        )
+        self._build_access_layer(access_layer)
+        if keys is None:
+            keys = Config()
+        self._build_keys(keys)
 
+    def _build_access_layer(self, config: Config) -> None:
+        self._access_layer: BaseAccessLayer[KT, VT] = \
+            AccessLayerRegistry.build(config)
+
+    def _build_keys(self, config: Config) -> None:
         logger.debug("Initializing keys.")
         self._keys = list(self._access_layer.keys())
         logger.debug(
@@ -58,6 +68,6 @@ class BaseDataset(Dataset, Generic[T]):
     def __len__(self) -> int:
         return len(self._keys)
 
-    def __getitem__(self, index: int) -> Any:
+    def _access(self, index: int) -> VT:
         key = self._keys[index]
         return self._access_layer[key]

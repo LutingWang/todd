@@ -49,6 +49,7 @@ dev = [
     'pre-commit',
     'tensorboard',
     'torch-tb-profiler',
+    'types-Pillow',
 ]
 doc = [
     'mmcv<2.0',
