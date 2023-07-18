@@ -4,7 +4,7 @@ import torch.nn.functional as F
 
 from ..base import Module, Sequential
 from .base import AdaptRegistry, BaseAdapt
-
+from typing import List
 
 class Bottleneck(Module):
 
@@ -134,7 +134,7 @@ class LabelEncAdapt(BaseAdapt):
             downsample=True,
         )
 
-    def forward(self, x: torch.Tensor) -> list[torch.Tensor]:
+    def forward(self, x: torch.Tensor) -> List[torch.Tensor]:
         x1 = self._stage1(x)
         x2 = self._stage2(x1)
         x3 = self._stage3(x2)

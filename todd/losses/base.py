@@ -18,8 +18,8 @@ class BaseLoss(Module):
     def __init__(
         self,
         reduction: Reduction = 'mean',
-        weight: float | Config = 1.0,
-        bound: float | None = None,
+        weight = 1.0,
+        bound = None,
         **kwargs,
     ) -> None:
         if isinstance(weight, float):
@@ -31,24 +31,24 @@ class BaseLoss(Module):
         self._weight: BaseScheduler = SchedulerRegistry.build(weight)
         self._threshold = None if bound is None else bound / self.weight
 
-        self.register_forward_hook(forward_hook)
+        self.register_forward_hook(forward_hook) # type: ignore
 
     @property
     def reduction(self) -> Reduction:
-        return self._reduction
+        return self._reduction # type: ignore
 
     @property
     def weight(self) -> float:
         return self._weight()
 
     @property
-    def threshold(self) -> float | None:
+    def threshold(self):
         return self._threshold
 
     def reduce(
         self,
         loss: torch.Tensor,
-        mask: torch.Tensor | None = None,
+        mask = None,
     ) -> torch.Tensor:
         if mask is not None:
             loss = loss * mask

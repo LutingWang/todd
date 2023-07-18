@@ -253,8 +253,8 @@ class DictAction(argparse.Action):
         self,
         parser: argparse.ArgumentParser,
         namespace: argparse.Namespace,
-        values: str | Sequence | None = None,
-        option_string: str | None = None,
+        values,
+        option_string,
     ) -> None:
         values = cast(Sequence[str], values)
         value_dict: dict[str, Any] = dict()

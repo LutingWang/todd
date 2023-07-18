@@ -15,7 +15,7 @@ import inspect
 import os
 import re
 from collections import UserDict
-from typing import Callable, Iterable, NoReturn, Sequence, TypeVar
+from typing import Callable, Iterable, NoReturn, Sequence, TypeVar, Dict, List, Tuple, Optional, Union
 
 import torch
 import torch.distributed
@@ -89,7 +89,7 @@ class StoreMeta(NonInstantiableMeta):
         >>> EnvStore.ENV_INT
         2
     """
-    _read_only: dict[str, bool] = dict()
+    _read_only: Dict[str, bool] = dict()
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -241,7 +241,7 @@ class RegistryMeta(UserDict, NonInstantiableMeta):  # type: ignore[misc]
 
     def __subclasses__(
         self=...,  # type: ignore[assignment]
-    ) -> list['RegistryMeta']:
+    ) -> List['RegistryMeta']:
         """Refer to `ABC subclassed by meta classes`_.
 
         Returns:
@@ -251,8 +251,8 @@ class RegistryMeta(UserDict, NonInstantiableMeta):  # type: ignore[misc]
            https://blog.csdn.net/LutingWang/article/details/128320057
         """
         if self is ...:
-            return NonInstantiableMeta.__subclasses__(RegistryMeta)
-        return super().__subclasses__()
+            return NonInstantiableMeta.__subclasses__(RegistryMeta) # type: ignore
+        return super().__subclasses__() # type: ignore
 
     def child(self, key: str) -> 'RegistryMeta':
         """Get a direct or indirect derived child registry.
@@ -279,7 +279,7 @@ class RegistryMeta(UserDict, NonInstantiableMeta):  # type: ignore[misc]
             self, = subclasses
         return self
 
-    def _parse(self, key: str) -> tuple['RegistryMeta', str]:
+    def _parse(self, key: str) -> Tuple['RegistryMeta', str]:
         """Parse the child name from the ``key``.
 
         Returns:
@@ -292,7 +292,7 @@ class RegistryMeta(UserDict, NonInstantiableMeta):  # type: ignore[misc]
 
     def register(
         self,
-        keys: Iterable[str] | None = None,
+        keys: Union[Iterable[str], None] = None,
         **kwargs,
     ) -> Callable[[T], T]:
         """Register decorator.
@@ -383,7 +383,7 @@ class RegistryMeta(UserDict, NonInstantiableMeta):  # type: ignore[misc]
     def build(
         self,
         config: Config,
-        default_config: Config | None = None,
+        default_config: Optional[Config] = None,
     ):
         """Call the registered object to construct a new instance.
 
@@ -462,8 +462,8 @@ def build_param_group(model: nn.Module, param_group: Config) -> Config:
 
 def build_param_groups(
     model: nn.Module,
-    param_groups: Sequence[Config] | None = None,
-) -> list[Config]:
+    param_groups,
+) -> List[Config]:
     if param_groups is None:
         return [Config(params=model.parameters())]
     return [build_param_group(model, param) for param in param_groups]

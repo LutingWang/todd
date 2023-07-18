@@ -2,7 +2,7 @@ import torch
 
 from ..base import BBoxesXYXY
 from .base import AdaptRegistry, BaseAdapt
-
+from typing import Tuple, List
 
 @AdaptRegistry.register()
 class IoU(BaseAdapt):
@@ -22,7 +22,7 @@ class IoU(BaseAdapt):
     def _reshape(
         self,
         bboxes: torch.Tensor,
-    ) -> tuple[torch.Tensor, torch.Size]:
+    ) -> Tuple[torch.Tensor, torch.Size]:
         """
         Args:
             bboxes: * x 4
@@ -61,9 +61,9 @@ class IoU(BaseAdapt):
 
     def forward(
         self,
-        bboxes1: list[torch.Tensor],
-        bboxes2: list[torch.Tensor],
-    ) -> list[list[torch.Tensor]]:
+        bboxes1: List[torch.Tensor],
+        bboxes2: List[torch.Tensor],
+    ) -> List[List[torch.Tensor]]:
         """
         Args:
             bboxes1: n1 x m1 x 4

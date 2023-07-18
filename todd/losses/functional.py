@@ -25,7 +25,7 @@ class FunctionalLoss(BaseLoss):
         self,
         pred: torch.Tensor,
         target: torch.Tensor,
-        mask: torch.Tensor | None = None,
+        mask = None,
         *args,
         **kwargs,
     ) -> torch.Tensor:

@@ -1,5 +1,5 @@
 import torch
-
+from typing import List
 from .base import AdaptRegistry, BaseAdapt
 
 
@@ -13,5 +13,5 @@ class Detach(BaseAdapt):
 @AdaptRegistry.register()
 class ListDetach(BaseAdapt):
 
-    def forward(self, tensors: list[torch.Tensor]) -> list[torch.Tensor]:
+    def forward(self, tensors: List[torch.Tensor]) -> List[torch.Tensor]:
         return [tensor.detach() for tensor in tensors]

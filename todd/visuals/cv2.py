@@ -2,7 +2,7 @@ __all__ = [
     'CV2Visual',
 ]
 
-from typing import cast
+from typing import cast, Optional
 
 import cv2
 import numpy as np
@@ -33,8 +33,8 @@ class CV2Visual(BaseVisual):
         image: npt.NDArray[np.uint8],
         left: int = 0,
         top: int = 0,
-        width: int | None = None,
-        height: int | None = None,
+        width: Optional[int] = None,
+        height: Optional[int] = None,
         opacity: float = 1.0,
     ) -> npt.NDArray[np.uint8]:
         h, w, c = image.shape

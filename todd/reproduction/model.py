@@ -75,7 +75,7 @@ class Finder(Generic[T]):
         """
         self._model = model
 
-    def _formulate(self, objects) -> list[T]:
+    def _formulate(self, objects):
         """Formulate objects into desirable types.
 
         Args:
@@ -88,7 +88,7 @@ class Finder(Generic[T]):
         """
         return objects
 
-    def find_by_names(self, names: Iterable[str]) -> list[T]:
+    def find_by_names(self, names: Iterable[str]):
         """Find objects by exact name match.
 
         Args:
@@ -102,7 +102,7 @@ class Finder(Generic[T]):
         objects = [get_(self._model, name) for name in names]
         return self._formulate(objects)
 
-    def find_by_regex(self, regex: str, member: str) -> list[T]:
+    def find_by_regex(self, regex: str, member: str):
         """Find objects by regex match.
 
         Args:
@@ -124,9 +124,9 @@ class Finder(Generic[T]):
 
     def find_by_type(
         self,
-        type_: type | tuple[type, ...],
+        type_,
         member: str,
-    ) -> list[T]:
+    ):
         """Find objects by type.
 
         Args:
@@ -147,7 +147,7 @@ class Finder(Generic[T]):
         types: Iterable[type],
         *args,
         **kwargs,
-    ) -> list[T]:
+    ):
         """Find objects by types.
 
         Args:
@@ -158,7 +158,7 @@ class Finder(Generic[T]):
         """
         return self.find_by_type(tuple(types), *args, **kwargs)
 
-    def find_by_config(self, config: Config) -> list[T]:
+    def find_by_config(self, config: Config):
         """Find objects by config.
 
         Args:
@@ -197,7 +197,7 @@ class Finder(Generic[T]):
     def determine_modes(
         self,
         configs: Iterable[Config],
-    ) -> dict[T, bool | types.EllipsisType]:
+    ):
         """Determine modes of objects.
 
         Args:
@@ -224,7 +224,7 @@ taining:
             tensor([..., ...]): True, Parameter containing:
             tensor([0., 0., 0.]): Ellipsis}
         """
-        modes: dict[T, bool | types.EllipsisType] = dict()
+        modes = dict()
         for config in configs:
             config = config.copy()
             mode = config.pop('mode')
@@ -233,10 +233,10 @@ taining:
         return modes
 
 
-class ParameterFinder(Finder[nn.Parameter]):
+class ParameterFinder(Finder[nn.Parameter]): # type: ignore
     """Find parameters."""
 
-    def _formulate(self, objects) -> list[nn.Parameter]:
+    def _formulate(self, objects):
         """Formulate objects into parameters.
 
         Args:
@@ -274,7 +274,7 @@ class ParameterFinder(Finder[nn.Parameter]):
         """
         parameters = []
         for object_ in objects:
-            if isinstance(object_, nn.Parameter):
+            if isinstance(object_, nn.Parameter): # type: ignore
                 parameters.append(object_)
             elif isinstance(object_, nn.Module):
                 parameters.extend(object_.parameters())
@@ -286,7 +286,7 @@ class ParameterFinder(Finder[nn.Parameter]):
 class ModuleFinder(Finder[nn.Module]):
     """Find modules."""
 
-    def _formulate(self, objects) -> list[nn.Module]:
+    def _formulate(self, objects):
         """Formulate objects into modules.
 
         Args:
@@ -335,11 +335,11 @@ class FrozenMixin(nn.Module):
             self._register_state_dict_hook(state_dict_hook)
 
     @property
-    def requires_grad_configs(self) -> tuple[Config, ...]:
+    def requires_grad_configs(self):
         return self._requires_grad_configs
 
     @property
-    def train_configs(self) -> tuple[Config, ...]:
+    def train_configs(self):
         return self._train_configs
 
     def requires_grad_(self, requires_grad: bool = True) -> Self:

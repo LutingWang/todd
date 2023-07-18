@@ -15,5 +15,5 @@ class DuplicatedHook(StandardHook):
         super().__init__(*args, **kwargs)
         self._num = num
 
-    def _tensor(self) -> list[Any]:
+    def _tensor(self):
         return [super()._tensor()] * self._num

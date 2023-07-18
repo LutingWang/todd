@@ -37,7 +37,7 @@ autodoc_class_signature = 'separated'
 autodoc_inherit_docstrings = False
 
 intersphinx_mapping = {
-    'python': ('https://docs.python.org/3.10', None),
+    'python': ('https://docs.python.org/3.8', None),
     'numpy': ('https://numpy.org/doc/stable/', None),
     'torch': ('https://pytorch.org/docs/master/', None),
     'python-pptx': ('https://python-pptx.readthedocs.io/en/latest/', None),

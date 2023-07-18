@@ -59,9 +59,9 @@ class PPTXVisual(BaseVisual):
         pre.slide_height = pptx.util.Pt(height)
 
         layout: pptx.slide.SlideLayout = pre.slide_layouts[6]
-        slides: pptx.slide.Slides = pre.slides
+        slides: pptx.slide.Slides = pre.slides # type: ignore
         slide: pptx.slide.Slide = slides.add_slide(layout)
-        shapes: pptx.shapes.shapetree.SlideShapes = slide.shapes
+        shapes: pptx.shapes.shapetree.SlideShapes = slide.shapes # type: ignore
 
         self._pre = pre
         self._shapes = shapes
@@ -69,13 +69,13 @@ class PPTXVisual(BaseVisual):
     @property
     def width(self) -> int:
         """Width of the PowerPoint."""
-        width: pptx.util.Pt = self._pre.slide_width
+        width: pptx.util.Pt = self._pre.slide_width # type: ignore
         return int(width.pt)
 
     @property
     def height(self) -> int:
         """Height of the PowerPoint."""
-        height: pptx.util.Pt = self._pre.slide_height
+        height: pptx.util.Pt = self._pre.slide_height # type: ignore
         return int(height.pt)
 
     def save(self, path) -> None:
@@ -102,8 +102,8 @@ class PPTXVisual(BaseVisual):
         image: npt.NDArray[np.uint8],
         left: int = 0,
         top: int = 0,
-        width: int | None = None,
-        height: int | None = None,
+        width = None,
+        height = None,
         opacity: float = 1.0,
     ) -> pptx.shapes.picture.Picture:
         """Add an image to the PowerPoint.
@@ -162,10 +162,10 @@ class PPTXVisual(BaseVisual):
             height_pixels,
         )
 
-        image_part: pptx.parts.image.Image = picture.image
+        image_part: pptx.parts.image.Image = picture.image # type: ignore
         assert image_part.dpi == (72, 72)
 
-        return picture
+        return picture # type: ignore
 
     def rectangle(
         self,
@@ -175,21 +175,21 @@ class PPTXVisual(BaseVisual):
         height: int,
         color: Color = Color(0, 0, 0),
     ) -> pptx.shapes.autoshape.Shape:
-        rectangle: pptx.shapes.autoshape.Shape = self._shapes.add_shape(
-            pptx.enum.shapes.MSO_AUTO_SHAPE_TYPE.RECTANGLE,
+        rectangle: pptx.shapes.autoshape.Shape = self._shapes.add_shape( # type: ignore
+            pptx.enum.shapes.MSO_AUTO_SHAPE_TYPE.RECTANGLE, # type: ignore
             pptx.util.Pt(left),
             pptx.util.Pt(top),
             pptx.util.Pt(width),
             pptx.util.Pt(height),
         )
 
-        fill: pptx.shapes.autoshape.FillFormat = rectangle.fill
+        fill: pptx.shapes.autoshape.FillFormat = rectangle.fill # type: ignore
         fill.background()
 
-        line: pptx.shapes.autoshape.LineFormat = rectangle.line
-        line.width = pptx.util.Pt(1)
+        line: pptx.shapes.autoshape.LineFormat = rectangle.line # type: ignore
+        line.width = pptx.util.Pt(1) 
 
-        line_color: pptx.dml.color.ColorFormat = line.color
+        line_color: pptx.dml.color.ColorFormat = line.color # type: ignore
         line_color.rgb = pptx.dml.color.RGBColor(*color)
 
         return rectangle
@@ -220,7 +220,7 @@ class PPTXVisual(BaseVisual):
         else:
             raise ValueError(f"Unsupported anchor {y_anchor}")
 
-        textbox: pptx.shapes.autoshape.Shape = self._shapes.add_textbox(
+        textbox: pptx.shapes.autoshape.Shape = self._shapes.add_textbox( # type: ignore
             left,
             top,
             width,
@@ -244,7 +244,7 @@ class PPTXVisual(BaseVisual):
         font.name = 'Times New Roman'
         font.size = pptx.util.Pt(12)
 
-        font_color: pptx.dml.color.ColorFormat = font.color
+        font_color: pptx.dml.color.ColorFormat = font.color # type: ignore
         font_color.rgb = pptx.dml.color.RGBColor(*color)
 
         return textbox

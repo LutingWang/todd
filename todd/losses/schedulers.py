@@ -42,7 +42,7 @@ class BaseScheduler(torch.nn.Module, ABC):
         """
         super().__init__()
         self._gain = gain
-        self.register_forward_hook(forward_hook)
+        self.register_forward_hook(forward_hook) # type: ignore
         self.register_buffer('_steps', torch.tensor(1))
 
     @property
@@ -51,7 +51,7 @@ class BaseScheduler(torch.nn.Module, ABC):
 
     @property
     def steps(self) -> int:
-        return self._steps.item()
+        return self._steps.item() # type: ignore
 
     @steps.setter
     def steps(self, value: int) -> None:

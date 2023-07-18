@@ -19,7 +19,7 @@ class _2DMixin(FunctionalLoss):
         self,
         pred: torch.Tensor,
         target: torch.Tensor,
-        mask: torch.Tensor | None = None,
+        mask = None,
         *args,
         **kwargs,
     ) -> torch.Tensor:

@@ -15,7 +15,7 @@ from collections import UserDict, UserList
 from functools import partial
 from itertools import repeat
 from symtable import symtable
-from typing import TYPE_CHECKING, Any, Callable, Iterable, NamedTuple, final
+from typing import TYPE_CHECKING, Any, Callable, Iterable, NamedTuple, final, Dict, Set, Tuple
 from typing_extensions import Self
 
 import pandas as pd
@@ -24,12 +24,12 @@ from .configs import Config
 from .patches import logger
 from .types import RegistryMeta
 
-Message = dict[str, Any]
+Message = Dict[str, Any]
 
 
 class Spec(NamedTuple):
-    inputs: set[str]
-    outputs: set[str]
+    inputs: Set[str]
+    outputs: Set[str]
 
 
 class Task(ABC):
@@ -62,7 +62,7 @@ class Task(ABC):
 
     @property
     @abstractmethod
-    def actions(self) -> tuple[Callable, ...]:
+    def actions(self) -> Tuple[Callable, ...]:
         """User-defined actions used by the task."""
         pass
 
@@ -264,7 +264,7 @@ class SingleStep(Step):
         )
 
     @property
-    def actions(self) -> tuple[Callable]:
+    def actions(self) -> Tuple[Callable]:
         return self._action,
 
 
@@ -280,7 +280,7 @@ class ParallelStep(Step):
         for action, *_ in zip(self._actions, *inputs):
             _ = action(*_)
             outputs.append(self._output(_))
-        return pd.DataFrame(outputs).to_dict(orient="list")
+        return pd.DataFrame(outputs).to_dict(orient="list") # type: ignore
 
     def __repr__(self) -> str:
         return (
@@ -291,7 +291,7 @@ class ParallelStep(Step):
         )
 
     @property
-    def actions(self) -> tuple[Callable, ...]:
+    def actions(self) -> Tuple[Callable, ...]:
         return tuple(self._actions)
 
 
@@ -311,7 +311,7 @@ class ParallelSingleStep(ParallelStep):
         )
 
     @property
-    def actions(self) -> tuple[Callable]:
+    def actions(self) -> Tuple[Callable]:
         return next(self._actions),
 
 
@@ -342,7 +342,7 @@ class Job(UserList[Step], Task):
         return (f"{type(self).__name__}({super().__repr__()})")
 
     @property
-    def actions(self) -> tuple[Callable, ...]:
+    def actions(self) -> Tuple[Callable, ...]:
         """Actions of all steps.
 
         A flat list of actions in sequence:
@@ -378,5 +378,5 @@ class Job(UserList[Step], Task):
 class Workflow(UserDict[str, Job], Task):
 
     @property
-    def actions(self) -> tuple[Callable, ...]:
+    def actions(self) -> Tuple[Callable, ...]:
         return sum((job.actions for job in self.values()), tuple())

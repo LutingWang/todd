@@ -6,13 +6,14 @@ import torch
 
 from .base import AdaptRegistry, BaseAdapt
 
+from typing import List, Tuple
 
 class MultiLevelMask:
 
     def __init__(
         self,
         *args,
-        strides: list[int],
+        strides: List[int],
         ceil_mode: bool = False,
         **kwargs,
     ):
@@ -21,14 +22,14 @@ class MultiLevelMask:
         super().__init__(*args, **kwargs)
 
     @property
-    def strides(self) -> list[int]:
+    def strides(self) -> List[int]:
         return self._strides
 
     @abstractmethod
     def _forward(
         self,
-        shape: tuple[int, int],
-        bboxes: list[torch.Tensor],
+        shape: Tuple[int, int],
+        bboxes: List[torch.Tensor],
         *args,
         **kwargs,
     ) -> torch.Tensor:
@@ -41,11 +42,11 @@ class MultiLevelMask:
 
     def forward(
         self,
-        shape: tuple[int, int],
-        bboxes: list[torch.Tensor],
+        shape: Tuple[int, int],
+        bboxes: List[torch.Tensor],
         *args,
         **kwargs,
-    ) -> list[torch.Tensor]:
+    ) -> List[torch.Tensor]:
         """
         Args:
             shape: (h, w)
@@ -98,7 +99,7 @@ class LabelEncMask(BaseAdapt):
 
     def _mask(
         self,
-        shape: tuple[int, int],
+        shape: Tuple[int, int],
         bboxes: torch.Tensor,
         labels: torch.Tensor,
     ) -> torch.Tensor:
@@ -137,9 +138,9 @@ class LabelEncMask(BaseAdapt):
 
     def forward(
         self,
-        shape: tuple[int, int],
-        bboxes: list[torch.Tensor],
-        labels: list[torch.Tensor],
+        shape: Tuple[int, int],
+        bboxes: List[torch.Tensor],
+        labels: List[torch.Tensor],
     ) -> torch.Tensor:
         """
         Args:
@@ -194,7 +195,7 @@ class DeFeatMask(MultiLevelMask, BaseAdapt):
 
     def _mask(
         self,
-        shape: tuple[int, int],
+        shape: Tuple[int, int],
         bboxes: torch.Tensor,
     ) -> torch.Tensor:
         """
@@ -212,8 +213,8 @@ class DeFeatMask(MultiLevelMask, BaseAdapt):
 
     def _forward(
         self,
-        shape: tuple[int, int],
-        bboxes: list[torch.Tensor],
+        shape: Tuple[int, int],
+        bboxes: List[torch.Tensor],
         *args,
         **kwargs,
     ) -> torch.Tensor:
@@ -241,7 +242,7 @@ class FGDMask(DeFeatMask):
 
     def _mask(
         self,
-        shape: tuple[int, int],
+        shape: Tuple[int, int],
         bboxes: torch.Tensor,
     ) -> torch.Tensor:
         """
@@ -287,7 +288,7 @@ class FGFIMask(BaseAdapt):
         mask = einops.reduce(ious > thresh, 'h w k m -> h w', reduction='max')
         return mask
 
-    def _batch(self, ious: list[torch.Tensor]) -> torch.Tensor:
+    def _batch(self, ious: List[torch.Tensor]) -> torch.Tensor:
         """
         Args:
             ious: n x h x w x k x m
@@ -299,7 +300,7 @@ class FGFIMask(BaseAdapt):
         masks = einops.rearrange(masks, 'n h w -> n 1 h w')
         return masks
 
-    def forward(self, ious: list[list[torch.Tensor]]) -> list[torch.Tensor]:
+    def forward(self, ious: List[List[torch.Tensor]]) -> List[torch.Tensor]:
         """
         Args:
             ious: l x n x h x w x k x m

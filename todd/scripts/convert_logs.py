@@ -138,13 +138,13 @@ class TensorBoardWriter(BaseWriter):
     def __init__(
         self,
         *args,
-        main_tag: str | None = None,
-        tag_value_dict: dict[str, str],
-        global_step: str | None = None,
-        walltime: str | None = None,
+        main_tag,
+        tag_value_dict,
+        global_step,
+        walltime,
         **kwargs,
     ) -> None:
-        from torch.utils.tensorboard import SummaryWriter
+        from torch.utils.tensorboard.writer import SummaryWriter
 
         super().__init__(*args, **kwargs)
         self._main_tag = main_tag

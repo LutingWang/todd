@@ -17,14 +17,14 @@ class LmdbDataset(BaseDataset[bytes]):
         self,
         *args,
         filepath: str,
-        db: str | None = None,
-        decoder: Literal['None', 'pytorch'] | None = 'pytorch',
+        db,
+        decoder,
         **kwargs,
     ):
         self._env: lmdb.Environment = lmdb.open(
             filepath, readonly=True, max_dbs=1
         )
-        self._db: lmdb._Database | None = (  # yapf: disable
+        self._db = (  # yapf: disable
             None if db is None else self._env.open_db(db.encode())
         )
         self._decoder = decoder
@@ -34,14 +34,14 @@ class LmdbDataset(BaseDataset[bytes]):
     def load_from(cls, source: BaseDataset, *args, **kwargs):
         pass
 
-    def _map_indices(self) -> list[bytes]:
+    def _map_indices(self):
         with self.begin() as txn, txn.cursor() as cur:
             return list(cur.iternext(keys=True, values=False))
 
     @cached_property
     def _len(self) -> int:
         with self.begin() as txn:
-            return txn.stat()['entries']
+            return txn.stat()['entries'] # type: ignore
 
     def _getitem(self, index: bytes) -> Any:
         if not isinstance(index, bytes):
@@ -51,7 +51,7 @@ class LmdbDataset(BaseDataset[bytes]):
         if self._decoder is None or self._decoder == 'None':
             return buffer
         if self._decoder == 'pytorch':
-            buffer = io.BytesIO(buffer)
+            buffer = io.BytesIO(buffer) # type: ignore
             return torch.load(buffer, map_location='cpu')
         raise Exception
 

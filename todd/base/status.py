@@ -20,8 +20,8 @@ class StatusMixin(Generic[T]):
 
     @staticmethod
     def transit(
-        source: T | Sequence[T],
-        target: T | Sequence[T],
+        source,
+        target,
     ) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
         if not isinstance(source, Sequence):
             assert not isinstance(target, Sequence)

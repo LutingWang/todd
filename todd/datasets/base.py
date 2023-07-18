@@ -29,7 +29,7 @@ class BaseAccessLayer(MutableMapping[T, Any]):
         *args,
         data_root: str,
         task_name: str = '',
-        codec: str | Codec = 'pytorch',
+        codec,
         readonly: bool = True,
         exist_ok: bool = False,
         **kwargs,
@@ -78,7 +78,7 @@ class BaseDataset(Dataset, Generic[T]):
         super().__init__(*args, **kwargs)
         self._access_layer = AccessLayerRegistry.build(
             access_layer,
-            default_config=dict(type=self.ACCESS_LAYER),
+            default_config=dict(type=self.ACCESS_LAYER), # type: ignore
         )
 
         logger.debug("Initializing keys.")

@@ -7,7 +7,7 @@ __all__ = [
 
 import enum
 from abc import ABC, abstractmethod
-from typing import Any, NamedTuple
+from typing import Any, NamedTuple, Optional, Tuple
 
 import cv2
 import numpy as np
@@ -85,8 +85,8 @@ class BaseVisual(ABC):
         image: npt.NDArray[np.uint8],
         left: int = 0,
         top: int = 0,
-        width: int | None = None,
-        height: int | None = None,
+        width: Optional[int] = None,
+        height: Optional[int] = None,
         opacity: float = 1.0,
     ):
         pass
@@ -96,8 +96,8 @@ class BaseVisual(ABC):
         activation: torch.Tensor,
         left: int = 0,
         top: int = 0,
-        width: int | None = None,
-        height: int | None = None,
+        width: Optional[int] = None,
+        height: Optional[int] = None,
         inverse: bool = False,
         opacity: float = 0.5,
     ):
@@ -179,7 +179,7 @@ class BaseVisual(ABC):
         width: int,
         height: int,
         color: Color = Color(0, 0, 0),
-    ) -> tuple[Any, Any]:
+    ) -> Tuple[Any, Any]:
         """Draw an annotation bbox.
 
         Each annotation comprises a bbox and a textual label.

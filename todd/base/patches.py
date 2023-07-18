@@ -127,7 +127,7 @@ def del_(obj, attr: str) -> None:
     exec(f'del __o{attr}', dict(__o=obj))
 
 
-def exec_(source: str, **kwargs) -> dict[str, Any]:
+def exec_(source: str, **kwargs):
     locals_: dict[str, Any] = dict()
     exec(source, kwargs, locals_)
     return locals_

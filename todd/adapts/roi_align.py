@@ -2,28 +2,28 @@ import torch
 
 from ..base import ModuleList
 from .base import AdaptRegistry, BaseAdapt
-
+from typing import List
 
 @AdaptRegistry.register()
 class RoIAlign(BaseAdapt):
 
-    def __init__(self, strides: list[int], *args, **kwargs):
+    def __init__(self, strides: List[int], *args, **kwargs):
         import mmcv.ops
 
         super().__init__(*args, **kwargs)
         self._layers = ModuleList([
             mmcv.ops.RoIAlign(
                 spatial_scale=1 / s,
-                output_size=7,
+                output_size=(7, 7),
                 sampling_ratio=0,
             ) for s in strides
         ])
 
     def forward(
         self,
-        feats: list[torch.Tensor],
-        bboxes: list[torch.Tensor],
-    ) -> list[torch.Tensor]:
+        feats: List[torch.Tensor],
+        bboxes: List[torch.Tensor],
+    ) -> List[torch.Tensor]:
         """
         Args:
             feats: l x n x c x h x w

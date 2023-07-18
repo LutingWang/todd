@@ -17,7 +17,7 @@ import pathlib
 import socket
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Any, Mapping, Protocol, runtime_checkable
+from typing import Any, Mapping, Protocol, runtime_checkable, Dict
 
 import torch
 import torch.distributed
@@ -32,7 +32,7 @@ from ..base import (
     Store,
 )
 
-Memo = dict[str, Any]
+Memo = Dict[str, Any]
 
 
 @runtime_checkable
@@ -78,7 +78,7 @@ class BaseRunner(ABC):
 
     def _build_logger(self) -> logging.Logger:
         file = self._work_dir / '_.log'
-        file = file.with_stem(datetime.now().astimezone().isoformat())
+        file = file.with_stem(datetime.now().astimezone().isoformat()) # type: ignore
         handler = logging.FileHandler(file)
         handler.setFormatter(Formatter())
 
@@ -110,7 +110,7 @@ class BaseRunner(ABC):
         """
         pass
 
-    def _control_run_iter(self, batch, memo: Memo) -> Control | None:
+    def _control_run_iter(self, batch, memo: Memo):
         """Whether the current iteration should execute or not.
 
         Args:
@@ -132,14 +132,14 @@ class BaseRunner(ABC):
     def _before_run_iter(self, batch, memo: Memo) -> None:
         pass
 
-    def _before_run_iter_log(self, batch, memo: Memo) -> str | None:
+    def _before_run_iter_log(self, batch, memo: Memo):
         pass
 
     @abstractmethod
     def _run_iter(self, batch, memo: Memo) -> torch.Tensor:
         pass
 
-    def _after_run_iter_log(self, batch, memo: Memo) -> str | None:
+    def _after_run_iter_log(self, batch, memo: Memo):
         loss: torch.Tensor = memo['loss']
         return f"Iter [{self._iter}/{self.iters}] Loss {loss.item():.3f}"
 
@@ -193,7 +193,7 @@ class BaseRunner(ABC):
         )
         self._iter = state_dict['iter_']
 
-    def state_dict(self) -> dict[str, Any]:
+    def state_dict(self):
         model = self.model.state_dict(**self._state_dict.model)
         return dict(model=model, iter_=self._iter)
 
@@ -223,8 +223,8 @@ class Trainer(BaseRunner):
         self,
         *args,
         optimizer: Config,
-        lr_scheduler: Config | None = None,
-        validator: Config | None = None,
+        lr_scheduler = None,
+        validator = None,
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
@@ -233,7 +233,7 @@ class Trainer(BaseRunner):
             None if lr_scheduler is None else
             self._build_lr_scheduler(lr_scheduler)
         )
-        self._validator: Validator | None = (
+        self._validator = (
             None if validator is None else RunnerRegistry.build(validator)
         )
 
@@ -253,7 +253,7 @@ class Trainer(BaseRunner):
         self._optimizer.step()
         self._model.zero_grad()
 
-    def _after_run_iter_log(self, batch, memo: Memo) -> str | None:
+    def _after_run_iter_log(self, batch, memo: Memo):
         info = super()._after_run_iter_log(batch, memo)
         if self._lr_scheduler is None:
             return info
@@ -292,7 +292,7 @@ class Trainer(BaseRunner):
                 **self._load_state_dict.lr_scheduler,
             )
 
-    def state_dict(self) -> dict[str, Any]:
+    def state_dict(self):
         state_dict = super().state_dict()
         state_dict['optimizer'] = self._optimizer.state_dict(
             **self._state_dict.optimizer,
@@ -342,7 +342,7 @@ class EpochBasedTrainer(Trainer):
         self._epoch = 0
         self._epochs = epochs
 
-    def _control_run_epoch(self, memo: Memo) -> Control | None:
+    def _control_run_epoch(self, memo: Memo):
         return None
 
     def _before_run_epoch(self, memo: Memo) -> Memo:
@@ -357,7 +357,7 @@ class EpochBasedTrainer(Trainer):
         self,
         epoch_memo: Memo,
         memo: Memo,
-    ) -> str | None:
+    ):
         return f"Epoch [{self._epoch}/{self._epochs}] beginning"
 
     def _run_epoch(self, epoch_memo: Memo, memo: Memo) -> None:
@@ -367,7 +367,7 @@ class EpochBasedTrainer(Trainer):
         self,
         epoch_memo: Memo,
         memo: Memo,
-    ) -> str | None:
+    ):
         return f"Epoch [{self._epoch}/{self._epochs}] ended"
 
     def _after_run_epoch(

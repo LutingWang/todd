@@ -41,8 +41,8 @@ class CollectionTensor(Generic[T]):
 
     @staticmethod
     def allclose(
-        feat1: T | numbers.Complex,
-        feat2: T | numbers.Complex,
+        feat1,
+        feat2,
         rtol: float = 1e-5,
         atol: float = 1e-8,
     ) -> bool:
@@ -70,9 +70,8 @@ class CollectionTensor(Generic[T]):
     def reduce(
         feat: T,
         tensor_op: Callable[[torch.Tensor], torch.Tensor],
-        tensors_op: Callable[[Iterable[torch.Tensor | Literal[0]]],
-                             torch.Tensor | Literal[0]],
-    ) -> torch.Tensor | Literal[0]:
+        tensors_op,
+    ):
         if isinstance(feat, torch.Tensor):
             return tensor_op(feat)
         if isinstance(feat, list) or isinstance(feat, tuple):
@@ -87,7 +86,7 @@ class CollectionTensor(Generic[T]):
         raise TypeError(f'Unknown type {type(feat)}.')
 
     @staticmethod
-    def sum(feat: T) -> torch.Tensor | Literal[0]:
+    def sum(feat: T):
         return CollectionTensor.reduce(feat, torch.sum, sum)
 
 
@@ -100,7 +99,7 @@ class ListTensor(CollectionTensor[T]):
         return torch.stack([ListTensor.stack(f) for f in feat])
 
     @staticmethod
-    def shape(feat: T, depth: int = 0) -> tuple[int, ...]:
+    def shape(feat: T, depth: int = 0):
         if isinstance(feat, torch.Tensor):
             return feat.shape[max(depth, 0):]
         shapes = {ListTensor.shape(f, depth - 1) for f in feat}
@@ -147,7 +146,7 @@ class ListTensor(CollectionTensor[T]):
             feat_shape = pos.new_tensor(feat.shape)
             assert (max_pos < feat_shape[:n]).all(), \
                 f'max_pos({max_pos}) larger than feat_shape({feat_shape}).'
-            return feat[pos.split(1, 1)].squeeze(1)
+            return feat[pos.split(1, 1)].squeeze(1) # type: ignore
         indices = []
         indexed_feats = []
         for i, f in enumerate(feat):

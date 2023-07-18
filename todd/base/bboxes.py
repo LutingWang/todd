@@ -8,13 +8,13 @@ __all__ = [
 
 import numbers
 from abc import ABC, abstractmethod
-from typing import Generator, TypeVar
+from typing import Generator, TypeVar, Tuple
 from typing_extensions import Self
 
 import einops
 import torch
 
-BBox = tuple[numbers.Real, numbers.Real, numbers.Real, numbers.Real]
+BBox = Tuple[numbers.Real, numbers.Real, numbers.Real, numbers.Real]
 T = TypeVar('T', bound='BBoxes')
 
 
@@ -233,15 +233,15 @@ class BBoxes(ABC):
         pass
 
     @abstractmethod
-    def _expand(self, ratio_wh: tuple[float, float]) -> torch.Tensor:
+    def _expand(self, ratio_wh: Tuple[float, float]) -> torch.Tensor:
         pass
 
     @abstractmethod
-    def _clamp(self, image_wh: tuple[int, int]) -> torch.Tensor:
+    def _clamp(self, image_wh: Tuple[int, int]) -> torch.Tensor:
         pass
 
     @abstractmethod
-    def _scale(self, ratio_wh: tuple[float, float]) -> torch.Tensor:
+    def _scale(self, ratio_wh: Tuple[float, float]) -> torch.Tensor:
         pass
 
     @abstractmethod
@@ -263,7 +263,7 @@ class BBoxes(ABC):
     def to_tensor(self) -> torch.Tensor:
         return self._bboxes
 
-    def to(self, cls: type[T]) -> T:
+    def to(self, cls):
         return cls.from_bboxes(self)
 
     def unions(
@@ -318,8 +318,8 @@ class BBoxes(ABC):
     def indices(
         self,
         *,
-        min_area: numbers.Real | None = None,
-        min_wh: tuple[int, int] | None = None,
+        min_area,
+        min_wh,
     ) -> torch.Tensor:
         indices = self._bboxes.new_ones(len(self), dtype=torch.bool)
         if min_area is not None:
@@ -343,7 +343,7 @@ class BBoxesXY(BBoxes):
     def lt(self) -> torch.Tensor:
         return self._bboxes[:, :2]
 
-    def _scale(self, ratio_wh: tuple[float, float]) -> torch.Tensor:
+    def _scale(self, ratio_wh) -> torch.Tensor:
         scale = torch.tensor(ratio_wh * 2)
         return self._bboxes * scale
 
@@ -414,12 +414,12 @@ class BBoxesXYXY(BBoxesXY):
         rb = self.rb.ceil()
         return torch.cat([lt, rb], dim=-1)
 
-    def _expand(self, ratio_wh: tuple[float, float]) -> torch.Tensor:
+    def _expand(self, ratio_wh) -> torch.Tensor:
         delta = self.wh * (torch.tensor(ratio_wh) - 1) / 2
         delta = torch.cat([-delta, delta], dim=-1)
         return self._bboxes + delta
 
-    def _clamp(self, image_wh: tuple[int, int]) -> torch.Tensor:
+    def _clamp(self, image_wh) -> torch.Tensor:
         lt = self.lt.clamp_min(0)
         rb = self.rb.clamp_max(torch.tensor(image_wh))
         return torch.cat([lt, rb], dim=-1)
@@ -464,12 +464,12 @@ class BBoxesXYWH(BBoxesXY, BBoxesWH):
         wh = self.rb.ceil() - lt
         return torch.cat([lt, wh], dim=-1)
 
-    def _expand(self, ratio_wh: tuple[float, float]) -> torch.Tensor:
+    def _expand(self, ratio_wh) -> torch.Tensor:
         wh = self.wh * torch.tensor(ratio_wh)
         lt = self.lt - (wh - self.wh) / 2
         return torch.cat([lt, wh], dim=-1)
 
-    def _clamp(self, image_wh: tuple[int, int]) -> torch.Tensor:
+    def _clamp(self, image_wh) -> torch.Tensor:
         lt = self.lt.clamp_min(0)
         rb = self.rb.clamp_max(torch.tensor(image_wh))
         return torch.cat([lt, rb - lt], dim=-1)
@@ -524,18 +524,18 @@ class BBoxesCXCYWH(BBoxesWH):
         wh = (rb - lt) / 2
         return torch.cat([center, wh], dim=-1)
 
-    def _expand(self, ratio_wh: tuple[float, float]) -> torch.Tensor:
+    def _expand(self, ratio_wh) -> torch.Tensor:
         wh = self.wh * torch.tensor(ratio_wh)
         return torch.stack([self.center, wh], dim=-1)
 
-    def _clamp(self, image_wh: tuple[int, int]) -> torch.Tensor:
+    def _clamp(self, image_wh) -> torch.Tensor:
         lt = self.lt.clamp_min(0)
         rb = self.rb.clamp_max(torch.tensor(image_wh))
         center = (lt + rb) / 2
         wh = (rb - lt) / 2
         return torch.stack([center, wh], dim=-1)
 
-    def _scale(self, ratio_wh: tuple[float, float]) -> torch.Tensor:
+    def _scale(self, ratio_wh) -> torch.Tensor:
         w, h = ratio_wh
         ratio_center = w / 2, h / 2
         scale = torch.tensor(ratio_center + ratio_wh)

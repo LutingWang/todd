@@ -22,7 +22,7 @@ def randint(high: int = 2**30) -> int:
         return seed
     tensor = torch.tensor(seed, dtype=torch.int)
     dist.broadcast(tensor, src=0)
-    return tensor.item()
+    return tensor.item() # type: ignore
 
 
 def init_seed(seed: int) -> None:
@@ -71,6 +71,6 @@ def set_seed_temp(
     torch.set_rng_state(torch_state)
 
     if Store.CUDA:
-        torch.cuda.set_rng_state(cuda_state)
-        cudnn.deterministic = prev_deterministic
-        cudnn.benchmark = prev_benchmark
+        torch.cuda.set_rng_state(cuda_state) # type: ignore
+        cudnn.deterministic = prev_deterministic # type: ignore
+        cudnn.benchmark = prev_benchmark # type: ignore

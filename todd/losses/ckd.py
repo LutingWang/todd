@@ -14,7 +14,7 @@ from .base import BaseLoss, LossRegistry
 def ckd_loss(
     pred: torch.Tensor,
     target: torch.Tensor,
-    ignore: tuple[torch.Tensor, torch.Tensor] | None = None,
+    ignore = None,
     gamma: float = 0.07,
 ) -> torch.Tensor:
     """Wrapper of CKD loss.
@@ -89,7 +89,7 @@ class CKDLoss(BaseLoss):
         self,
         preds: torch.Tensor,
         targets: torch.Tensor,
-        bboxes: list[torch.Tensor] | None = None,
+        bboxes = None,
     ) -> torch.Tensor:
         """Compute CKD loss.
 

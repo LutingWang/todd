@@ -1,7 +1,7 @@
 import itertools
 import operator
 from functools import reduce
-from typing import Iterable, Iterator, Mapping, Sequence, overload
+from typing import Iterable, Iterator, Mapping, Sequence, overload, Tuple, List, Union
 
 import einops
 import torch
@@ -14,14 +14,14 @@ __all__ = [
     'Intersect',
 ]
 
-KeyType = tuple[int, ...]
+KeyType = Tuple[int, ...]
 
 
 class DictTensor(Mapping):
 
     def __init__(
         self,
-        keys: KeyType | list[KeyType],
+        keys: Union[KeyType , List[KeyType]],
         values: torch.Tensor,
     ) -> None:
         if not isinstance(keys, list):
@@ -34,7 +34,7 @@ class DictTensor(Mapping):
         ...
 
     @overload
-    def __getitem__(self, keys: list[KeyType]) -> torch.Tensor:
+    def __getitem__(self, keys: List[KeyType]) -> torch.Tensor:
         ...
 
     def __getitem__(self, keys):
@@ -66,7 +66,7 @@ class DictTensor(Mapping):
     @staticmethod
     def union(
         dict_tensors: Sequence['DictTensor'],
-    ) -> tuple[list['DictTensor'], 'DictTensor']:
+    ) -> Tuple[List['DictTensor'], 'DictTensor']:
         keys = list(set(itertools.chain(*dict_tensors)))
         n = len(keys)
         s = len(dict_tensors)
@@ -88,7 +88,7 @@ class DictTensor(Mapping):
         return union_dict_tensors, mask
 
     @staticmethod
-    def intersect(dict_tensors: Iterable['DictTensor']) -> list['DictTensor']:
+    def intersect(dict_tensors: Iterable['DictTensor']) -> List['DictTensor']:
         keys: list[KeyType] = list(
             reduce(operator.and_, map(set, dict_tensors)),
         )
@@ -103,9 +103,9 @@ class Union_(BaseAdapt):
 
     def forward(
         self,
-        feats: list[torch.Tensor],
-        ids: list[torch.Tensor],
-    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        feats: List[torch.Tensor],
+        ids: List[torch.Tensor],
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """Match `feats` according to their `poses`.
 
         Align the `feats` coming from different sources to have same
@@ -144,9 +144,9 @@ class Intersect(BaseAdapt):
 
     def forward(
         self,
-        feats: list[torch.Tensor],
-        ids: list[torch.Tensor],
-    ) -> list[torch.Tensor]:
+        feats: List[torch.Tensor],
+        ids: List[torch.Tensor],
+    ) -> List[torch.Tensor]:
         """Match positions that show up both in `pred_poses` and
         `target_poses`.
 

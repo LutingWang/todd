@@ -83,15 +83,15 @@ class MultiTeacherDistiller(SingleStudentDistiller):
         self._num_onlines = num_onlines
 
     @property
-    def teachers(self) -> tuple[nn.Module, ...]:
+    def teachers(self):
         return self.models[1:]
 
     @property
-    def online_teachers(self) -> tuple[nn.Module, ...]:
+    def online_teachers(self):
         return self.models[1:1 + self._num_onlines]
 
     @property
-    def offline_teachers(self) -> tuple[nn.Module, ...]:
+    def offline_teachers(self):
         return self.models[1 + self._num_onlines:]
 
 

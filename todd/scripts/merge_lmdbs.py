@@ -21,7 +21,7 @@ def merge_txns(target_txn: lmdb.Transaction, source_txn: lmdb.Transaction):
 def merge_dbs(
     target_env: lmdb.Environment,
     source_env: lmdb.Environment,
-    dbs: list[str],
+    dbs,
 ):
     for db in dbs:
         target_db = target_env.open_db(db.encode())
@@ -35,8 +35,8 @@ def merge_dbs(
 
 def merge_envs(
     target_env: lmdb.Environment,
-    source_filepaths: list[str],
-    dbs: list[str],
+    source_filepaths,
+    dbs,
 ):
     for source_filepath in source_filepaths:
         with lmdb.open(

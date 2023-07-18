@@ -12,8 +12,8 @@ from .types import RegistryMeta
 def load_open_mmlab_models(
     registry: RegistryMeta,
     config: Config,
-    config_options: Config | None = None,  # TODO: rename overload
-    ckpt: str | None = None,
+    config_options,
+    ckpt,
 ) -> Module:
     model = (
         registry.build(config)
@@ -39,7 +39,7 @@ def transfer_weight(target: Module, source: Module) -> None:
     target._is_init = True  # type: ignore[assignment]
 
 
-def transfer_weights(models, weight_prefixes: dict[str, str]) -> None:
+def transfer_weights(models, weight_prefixes) -> None:
     for target_prefix, source_prefix in weight_prefixes.items():
         target = get_(models, target_prefix)
         source = get_(models, source_prefix)
