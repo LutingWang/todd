@@ -3,7 +3,7 @@ __all__ = [
 ]
 
 import contextlib
-from typing import Any, Mapping
+from typing import Any
 
 from ...base import StateDict
 from ..runners import BaseRunner, EpochBasedTrainer
@@ -106,15 +106,4 @@ class BaseCallback(StateDict):
         pass
 
     def after_run(self, runner: BaseRunner, memo: Memo) -> None:
-        pass
-
-    def state_dict(self, *args, **kwargs) -> dict[str, Any]:
-        return dict()
-
-    def load_state_dict(
-        self,
-        state_dict: Mapping[str, Any],
-        *args,
-        **kwargs,
-    ) -> None:
         pass

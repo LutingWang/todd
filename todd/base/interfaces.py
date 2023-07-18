@@ -1,16 +1,13 @@
 __all__ = ['StateDict']
 
-from abc import ABC, abstractmethod
 from typing import Any, Mapping
 
 
-class StateDict(ABC):
+class StateDict:
 
-    @abstractmethod
     def state_dict(self, *args, **kwargs) -> dict[str, Any]:
-        pass
+        return dict()
 
-    @abstractmethod
     def load_state_dict(
         self,
         state_dict: Mapping[str, Any],

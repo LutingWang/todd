@@ -13,27 +13,36 @@ from .base import BaseStrategy
 
 @StrategyRegistry.register()
 class DDPStrategy(BaseStrategy):
+    _model: nn.parallel.DistributedDataParallel
 
     def __init__(
         self,
         *args,
-        init_process_group: Config | None = None,
-        ddp: Config | None = None,
+        setup: Config | None = None,
+        wrap_model: Config | None = None,
         **kwargs,
     ) -> None:
         assert Store.CUDA
+        if setup is None:
+            setup = Config()
+        self._setup(setup)
         super().__init__(*args, **kwargs)
+        if wrap_model is None:
+            wrap_model = Config()
+        self._wrap_model(wrap_model)
 
-        if init_process_group is None:
-            init_process_group = Config(backend='nccl')
+    def _setup(self, config: Config) -> None:
+        init_process_group = config.get(
+            'init_process_group',
+            Config(backend='nccl'),
+        )
         torch.distributed.init_process_group(**init_process_group)
         torch.cuda.set_device(get_local_rank() % torch.cuda.device_count())
 
-        if ddp is None:
-            ddp = Config()
+    def _wrap_model(self, config: Config) -> None:
         self._model = nn.parallel.DistributedDataParallel(
             self._model.cuda(),
-            **ddp,
+            **config,
         )
 
     @property

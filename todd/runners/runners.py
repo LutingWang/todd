@@ -28,12 +28,10 @@ from ..base import (
     StrategyRegistry,
 )
 from ..base import logger as base_logger
-from .strategies import BaseStrategy
 
 if TYPE_CHECKING:
     from .callbacks import BaseCallback
-else:
-    BaseCallback = object
+    from .strategies import BaseStrategy
 
 Memo = dict[str, Any]
 
@@ -65,7 +63,7 @@ class BaseRunner(StateDict):
         return self._logger
 
     @property
-    def strategy(self) -> BaseStrategy:
+    def strategy(self) -> 'BaseStrategy':
         return self._strategy
 
     @property
@@ -97,7 +95,7 @@ class BaseRunner(StateDict):
         strategy: Config,
         **kwargs,
     ) -> None:
-        self._strategy: BaseStrategy = StrategyRegistry.build(strategy)
+        self._strategy: 'BaseStrategy' = StrategyRegistry.build(strategy)
 
     def _build_callbacks(
         self,
@@ -109,7 +107,7 @@ class BaseRunner(StateDict):
             callbacks = []
         if isinstance(callbacks, list):
             callbacks = Config(type='ComposedCallback', callbacks=callbacks)
-        self._callbacks: BaseCallback = CallbackRegistry.build(callbacks)
+        self._callbacks: 'BaseCallback' = CallbackRegistry.build(callbacks)
 
     def _build_work_dir(
         self,
@@ -189,17 +187,25 @@ class BaseRunner(StateDict):
         *args,
         **kwargs,
     ) -> None:
+        super().load_state_dict(state_dict, *args, **kwargs)
         self._iter = state_dict['meta']['iter_']
         self._strategy.load_state_dict(
             state_dict['strategy'],
             *args,
             **kwargs,
         )
+        self._callbacks.load_state_dict(
+            state_dict['callbacks'],
+            *args,
+            **kwargs,
+        )
 
     def state_dict(self, *args, **kwargs) -> dict[str, Any]:
-        meta = dict(iter_=self._iter)
-        strategy = self._strategy.state_dict(*args, **kwargs)
-        return dict(meta=meta, strategy=strategy)
+        state_dict = super().state_dict(*args, **kwargs)
+        state_dict['meta'] = dict(iter_=self._iter)
+        state_dict['strategy'] = self._strategy.state_dict(*args, **kwargs)
+        state_dict['callbacks'] = self._callbacks.state_dict(*args, **kwargs)
+        return state_dict
 
     def resume_from(self, f: pathlib.Path, *args, **kwargs) -> None:
         self._logger.info(f"Resuming from {f}")
@@ -223,7 +229,7 @@ class BaseRunner(StateDict):
 class Validator(BaseRunner):
 
     def _setup(self) -> Memo:
-        self._strategy.eval()
+        self._strategy.model.eval()
         return super()._setup()
 
     @torch.no_grad()
@@ -253,12 +259,16 @@ class Trainer(BaseRunner):
         self._build_optimizer(*args, **kwargs)
 
     def _setup(self) -> Memo:
-        self._strategy.train()
+        self._strategy.model.train()
         return super()._setup()
 
     def state_dict(self, *args, **kwargs) -> dict[str, Any]:
         state_dict = super().state_dict(*args, **kwargs)
-        state_dict['optimizer'] = self._optimizer.state_dict()
+        state_dict['optim'] = self._strategy.optim_state_dict(
+            self,
+            *args,
+            **kwargs,
+        )
         return state_dict
 
     def load_state_dict(
@@ -268,7 +278,12 @@ class Trainer(BaseRunner):
         **kwargs,
     ) -> None:
         super().load_state_dict(state_dict, *args, **kwargs)
-        self._optimizer.load_state_dict(state_dict['optimizer'])
+        self._strategy.load_optim_state_dict(
+            self,
+            state_dict['optim'],
+            *args,
+            **kwargs,
+        )
 
 
 class IterBasedTrainer(Trainer):
