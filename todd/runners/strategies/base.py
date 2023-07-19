@@ -30,6 +30,10 @@ class BaseStrategy(StateDict):
     def model(self) -> nn.Module:
         return self._model
 
+    @property
+    def module(self) -> nn.Module:
+        return self._model
+
     def forward(self, *args, **kwargs):
         return self._model(*args, **kwargs)
 

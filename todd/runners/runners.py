@@ -216,7 +216,7 @@ class BaseRunner(StateDict):
         self._logger.info(f"Loading from {f}")
         state_dict = torch.load(f, 'cpu')
         if 'strategy' not in state_dict:
-            self._strategy.model.load_state_dict(state_dict, *args, **kwargs)
+            self._strategy.module.load_state_dict(state_dict, *args, **kwargs)
             return
         # runner checkpoint
         self._strategy.load_state_dict(

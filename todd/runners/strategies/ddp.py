@@ -2,6 +2,8 @@ __all__ = [
     'DDPStrategy',
 ]
 
+from typing import TYPE_CHECKING
+
 import torch
 import torch.distributed
 import torch.nn as nn
@@ -46,5 +48,11 @@ class DDPStrategy(BaseStrategy):
         )
 
     @property
-    def model(self) -> nn.Module:
+    def module(self) -> nn.Module:
         return self._model.module
+
+    if TYPE_CHECKING:
+
+        @property
+        def model(self) -> nn.parallel.DistributedDataParallel:
+            ...

@@ -28,11 +28,14 @@ class CheckpointCallback(IntervalMixin, BaseCallback):
         self._state_dict = state_dict
 
     def _save(self, runner: Trainer, name: str) -> None:
+        # for FSDP, all ranks should call state dict
+        state_dict = runner.state_dict(**self._state_dict)
+
         if get_rank() != 0:
             return
         f = runner.work_dir / f'{name}.pth'
         runner.logger.info(f"Saving state dict to {f}")
-        torch.save(runner.state_dict(**self._state_dict), f)
+        torch.save(state_dict, f)
 
     def after_run_iter(self, runner: BaseRunner, batch, memo: Memo) -> None:
         assert isinstance(runner, Trainer)
