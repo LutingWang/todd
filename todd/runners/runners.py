@@ -22,7 +22,6 @@ from ..base import (
     CallbackRegistry,
     Config,
     DatasetRegistry,
-    OptimizerRegistry,
     SamplerRegistry,
     StateDict,
     StrategyRegistry,
@@ -249,10 +248,7 @@ class Trainer(BaseRunner):
         optimizer: Config,
         **kwargs,
     ) -> None:
-        self._optimizer: torch.optim.Optimizer = OptimizerRegistry.build(
-            optimizer,
-            model=self._strategy.model,
-        )
+        self._optimizer = self._strategy.build_optimizer(self, optimizer)
 
     def _build(self, *args, **kwargs) -> None:
         super()._build(*args, **kwargs)

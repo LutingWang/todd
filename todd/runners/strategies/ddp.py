@@ -8,8 +8,9 @@ import torch
 import torch.distributed
 import torch.nn as nn
 
-from ...base import Config, Store, StrategyRegistry
+from ...base import Config, OptimizerRegistry, Store, StrategyRegistry
 from ...utils import get_local_rank
+from ..runners import Trainer
 from .base import BaseStrategy
 
 
@@ -46,6 +47,13 @@ class DDPStrategy(BaseStrategy):
             self._model.cuda(),
             **config,
         )
+
+    def build_optimizer(
+        self,
+        runner: Trainer,
+        config: Config,
+    ) -> torch.optim.Optimizer:
+        return OptimizerRegistry.build(config, model=self._model.module)
 
     @property
     def module(self) -> nn.Module:

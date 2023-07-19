@@ -4,9 +4,16 @@ __all__ = [
 
 from typing import Any, Mapping
 
+import torch
 import torch.nn as nn
 
-from ...base import Config, ModelRegistry, StateDict, StrategyRegistry
+from ...base import (
+    Config,
+    ModelRegistry,
+    OptimizerRegistry,
+    StateDict,
+    StrategyRegistry,
+)
 from ..runners import Trainer
 
 
@@ -26,6 +33,13 @@ class BaseStrategy(StateDict):
     def _build_model(self, config: Config) -> None:
         self._model = ModelRegistry.build(config)
 
+    def build_optimizer(
+        self,
+        runner: Trainer,
+        config: Config,
+    ) -> torch.optim.Optimizer:
+        return OptimizerRegistry.build(config, model=self._model)
+
     @property
     def model(self) -> nn.Module:
         return self._model
@@ -34,10 +48,10 @@ class BaseStrategy(StateDict):
     def module(self) -> nn.Module:
         return self._model
 
-    def model_state_dict(self, *args, **kwargs) -> dict[str, Any]:
+    def _model_state_dict(self, *args, **kwargs) -> dict[str, Any]:
         return self._model.state_dict(*args, **kwargs)
 
-    def load_model_state_dict(
+    def _load_model_state_dict(
         self,
         state_dict: Mapping[str, Any],
         *args,
@@ -64,7 +78,7 @@ class BaseStrategy(StateDict):
 
     def state_dict(self, *args, **kwargs) -> dict[str, Any]:
         state_dict = super().state_dict(*args, **kwargs)
-        state_dict['model'] = self.model_state_dict(*args, **kwargs)
+        state_dict['model'] = self._model_state_dict(*args, **kwargs)
         return state_dict
 
     def load_state_dict(
@@ -74,4 +88,4 @@ class BaseStrategy(StateDict):
         **kwargs,
     ) -> None:
         super().load_state_dict(state_dict, *args, **kwargs)
-        self.load_model_state_dict(state_dict['model'], *args, **kwargs)
+        self._load_model_state_dict(state_dict['model'], *args, **kwargs)

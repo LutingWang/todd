@@ -1,8 +1,13 @@
+__all__ = [
+    'FSDPStrategy',
+]
+
 from typing import TYPE_CHECKING, Any, Mapping
 
+import torch
 from torch.distributed.fsdp import FullyShardedDataParallel as FSDP
 
-from ...base import Config, StrategyRegistry
+from ...base import Config, OptimizerRegistry, StrategyRegistry
 from ..runners import Trainer
 from .ddp import DDPStrategy
 
@@ -18,6 +23,13 @@ class FSDPStrategy(DDPStrategy):
             self._model.cuda(),
             **config,
         )
+
+    def build_optimizer(
+        self,
+        runner: Trainer,
+        config: Config,
+    ) -> torch.optim.Optimizer:
+        return OptimizerRegistry.build(config, model=self._model)
 
     def optim_state_dict(
         self,
