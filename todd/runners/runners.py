@@ -147,10 +147,19 @@ class BaseRunner(StateDict):
         self._build_logger(*args, **kwargs)
 
     @abstractmethod
-    def _run_iter(self, batch, memo: Memo) -> None:
+    def _run_iter(self, batch, memo: Memo) -> Memo:
+        """Run iteration.
+
+        Args:
+            batch: input data
+            memo: runtime memory
+
+        Returns:
+            Updated runtime memory.
+        """
         pass
 
-    def _run(self, memo: Memo) -> None:
+    def _run(self, memo: Memo) -> Memo:
         dataloader = memo['dataloader']
         for batch in dataloader:
             self._iter += 1
@@ -163,8 +172,9 @@ class BaseRunner(StateDict):
             self._callbacks.before_run_iter(self, batch, memo)
             with contextlib.ExitStack() as exit_stack:
                 self._callbacks.run_iter_context(self, exit_stack, batch, memo)
-                self._run_iter(batch, memo)
+                memo = self._run_iter(batch, memo)
             self._callbacks.after_run_iter(self, batch, memo)
+        return memo
 
     def _setup(self) -> Memo:
         return dict(dataloader=self._dataloader)
@@ -175,7 +185,7 @@ class BaseRunner(StateDict):
     def run(self) -> Memo:
         memo = self._setup()
         self._callbacks.before_run(self, memo)
-        self._run(memo)
+        memo = self._run(memo)
         self._callbacks.after_run(self, memo)
         self._teardown(memo)
         return memo
@@ -320,8 +330,8 @@ class EpochBasedTrainer(Trainer):
     def epochs(self) -> int:
         return self._epochs
 
-    def _run_epoch(self, epoch_memo: Memo, memo: Memo) -> None:
-        super()._run(epoch_memo)
+    def _run_epoch(self, epoch_memo: Memo, memo: Memo) -> Memo:
+        return super()._run(epoch_memo)
 
     def _setup_epoch(self, memo: Memo) -> Memo:
         sampler = self._dataloader.batch_sampler
@@ -335,7 +345,7 @@ class EpochBasedTrainer(Trainer):
         super()._teardown(epoch_memo)
         memo['epoch_memos'][self._epoch] = epoch_memo
 
-    def _run(self, memo: Memo) -> None:
+    def _run(self, memo: Memo) -> Memo:
         while self._epoch < self._epochs:
             self._epoch += 1
             epoch_memo = self._setup_epoch(memo)
@@ -353,10 +363,11 @@ class EpochBasedTrainer(Trainer):
                     epoch_memo,
                     memo,
                 )
-                self._run_epoch(epoch_memo, memo)
+                epoch_memo = self._run_epoch(epoch_memo, memo)
             self._callbacks.after_run_epoch(self, epoch_memo, memo)
 
             self._teardown_epoch(epoch_memo, memo)
+        return memo
 
     def _setup(self) -> Memo:
         return dict(epoch_memos=dict())
