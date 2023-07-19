@@ -38,7 +38,7 @@ class LRScheduleCallback(IntervalMixin, BaseCallback):
         self._lr_scheduler: torch.optim.lr_scheduler.LRScheduler = \
             LrSchedulerRegistry.build(
                 self._lr_scheduler_config,
-                Config(optimizer=runner.optimizer),
+                optimizer=runner.optimizer,
             )
 
     def after_run_iter(self, runner: BaseRunner, batch, memo: Memo) -> None:

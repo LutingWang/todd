@@ -154,7 +154,7 @@ class Student(Generic[T]):
     def __init__(self, distiller: Config) -> None:
         self._distiller = DistillerRegistry.build(
             distiller,
-            Config(student=self),
+            student=self,
         )
 
     @property

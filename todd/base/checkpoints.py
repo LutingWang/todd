@@ -1,30 +1,29 @@
 __all__ = [
-    'load_open_mmlab_models',
+    # 'load_open_mmlab_models',
     'transfer_weight',
     'transfer_weights',
 ]
 
 from ..utils import Module
-from .configs import Config
 from .patches import get_, logger
-from .registries import RegistryMeta
 
-
-def load_open_mmlab_models(
-    registry: RegistryMeta,
-    config: Config,
-    config_options: Config | None = None,  # TODO: rename overload
-    ckpt: str | None = None,
-) -> Module:
-    model = (
-        registry.build(config)
-        if config_options is None else registry.build(config_options, config)
-    )
-    if ckpt is not None:
-        import mmcv.runner
-        mmcv.runner.load_checkpoint(model, ckpt, map_location='cpu')
-        model._is_init = True
-    return model
+# from .configs import Config
+# from .registries import RegistryMeta
+# def load_open_mmlab_models(
+#     registry: RegistryMeta,
+#     config: Config,
+#     config_options: Config | None = None,  # TODO: rename overload
+#     ckpt: str | None = None,
+# ) -> Module:
+#     model = (
+#         registry.build(config)
+#         if config_options is None else registry.build(config_options, config)
+#     )
+#     if ckpt is not None:
+#         import mmcv.runner
+#         mmcv.runner.load_checkpoint(model, ckpt, map_location='cpu')
+#         model._is_init = True
+#     return model
 
 
 def transfer_weight(target: Module, source: Module) -> None:

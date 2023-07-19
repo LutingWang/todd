@@ -143,7 +143,7 @@ layers=50, num_classes=1024))
 
         parallel = config.pop('parallel', False)
         if isinstance(parallel, Iterable):
-            return ParallelStep(tuple(map(build, parallel)), **config)
+            return ParallelStep(tuple(build(**p) for p in parallel), **config)
         if isinstance(parallel, int) and not isinstance(parallel, bool):
             return ParallelStep(
                 tuple(build() for _ in range(parallel)),

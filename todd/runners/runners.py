@@ -85,7 +85,7 @@ class BaseRunner(StateDict):
         if 'sampler' in dataloader:
             dataloader.sampler = SamplerRegistry.build(
                 dataloader.pop('sampler'),
-                Config(dataset=dataset),
+                dataset=dataset,
             )
         self._dataloader = torch.utils.data.DataLoader(dataset, **dataloader)
 
@@ -251,7 +251,7 @@ class Trainer(BaseRunner):
     ) -> None:
         self._optimizer: torch.optim.Optimizer = OptimizerRegistry.build(
             optimizer,
-            Config(model=self._strategy.model),
+            model=self._strategy.model,
         )
 
     def _build(self, *args, **kwargs) -> None:

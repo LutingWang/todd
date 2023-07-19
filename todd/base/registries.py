@@ -263,16 +263,12 @@ class RegistryMeta(UserDict, NonInstantiableMeta):  # type: ignore[misc]
         type_ = self[config.pop('type')]
         return type_(**config)
 
-    def build(
-        self,
-        config: Config,
-        default_config: Config | None = None,
-    ):
+    def build(self, config: Config, **kwargs):
         """Call the registered object to construct a new instance.
 
         Args:
             config: build parameters.
-            default_config: default configuration.
+            kwargs: default configuration.
 
         Returns:
             The built instance.
@@ -284,7 +280,7 @@ class RegistryMeta(UserDict, NonInstantiableMeta):  # type: ignore[misc]
             >>> @Cat.register()
             ... def tabby(name: str) -> str:
             ...     return f'Tabby {name}'
-            >>> Cat.build(dict(type='tabby', name='Garfield'))
+            >>> Cat.build(Config(type='tabby', name='Garfield'))
             'Tabby Garfield'
 
         Typically, ``config`` is a `Mapping` object.
@@ -293,20 +289,17 @@ class RegistryMeta(UserDict, NonInstantiableMeta):  # type: ignore[misc]
         The other entries of ``config`` will be passed to the object's call
         method.
 
-        ``default_config`` is the default configuration:
+        Keyword arguments are the default configuration:
 
             >>> Cat.build(
-            ...     dict(type='tabby'),
-            ...     default_config=dict(name='Garfield'),
+            ...     Config(type='tabby'),
+            ...     name='Garfield',
             ... )
             'Tabby Garfield'
 
         Refer to `_build` for customizations.
         """
-        # TODO: remove default_config, use **kwargs
-        default_config = (
-            Config() if default_config is None else Config(default_config)
-        )
+        default_config = Config(kwargs)
         default_config.update(config)
 
         config = default_config.copy()
@@ -316,7 +309,7 @@ class RegistryMeta(UserDict, NonInstantiableMeta):  # type: ignore[misc]
             return registry._build(config)
         except Exception as e:
             # config may be altered
-            logger.error(f'Failed to build {default_config}')
+            logger.error(f"Failed to build\n{default_config.dumps()}")
             raise e
 
 

@@ -34,9 +34,6 @@ class BaseStrategy(StateDict):
     def module(self) -> nn.Module:
         return self._model
 
-    def forward(self, *args, **kwargs):
-        return self._model(*args, **kwargs)
-
     def model_state_dict(self, *args, **kwargs) -> dict[str, Any]:
         return self._model.state_dict(*args, **kwargs)
 
