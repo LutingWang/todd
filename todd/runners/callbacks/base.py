@@ -6,7 +6,7 @@ import contextlib
 from typing import Any
 
 from ...base import StateDictMixin
-from ..runners import EpochBasedTrainer, RunnerHolderMixin
+from ..runners import RunnerHolderMixin
 
 Memo = dict[str, Any]
 
@@ -59,15 +59,15 @@ class BaseCallback(RunnerHolderMixin, StateDictMixin):
         pass
 
     def should_break_epoch(self, epoch_memo: Memo, memo: Memo) -> bool:
-        assert isinstance(self._runner, EpochBasedTrainer)
+        self.epoch_based_trainer
         return False
 
     def should_continue_epoch(self, epoch_memo: Memo, memo: Memo) -> bool:
-        assert isinstance(self._runner, EpochBasedTrainer)
+        self.epoch_based_trainer
         return False
 
     def before_run_epoch(self, epoch_memo: Memo, memo: Memo) -> None:
-        assert isinstance(self._runner, EpochBasedTrainer)
+        self.epoch_based_trainer
 
     def run_epoch_context(
         self,
@@ -75,10 +75,10 @@ class BaseCallback(RunnerHolderMixin, StateDictMixin):
         epoch_memo: Memo,
         memo: Memo,
     ) -> None:
-        assert isinstance(self._runner, EpochBasedTrainer)
+        self.epoch_based_trainer
 
     def after_run_epoch(self, epoch_memo: Memo, memo: Memo) -> None:
-        assert isinstance(self._runner, EpochBasedTrainer)
+        self.epoch_based_trainer
 
     def before_run(self, memo: Memo) -> None:
         pass

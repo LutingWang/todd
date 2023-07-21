@@ -283,11 +283,7 @@ class Trainer(BaseRunner):
 
     def state_dict(self, *args, **kwargs) -> dict[str, Any]:
         state_dict = super().state_dict(*args, **kwargs)
-        state_dict['optim'] = self._strategy.optim_state_dict(
-            self.optimizer,
-            *args,
-            **kwargs,
-        )
+        state_dict['optim'] = self._strategy.optim_state_dict(*args, **kwargs)
         return state_dict
 
     def load_state_dict(
@@ -298,7 +294,6 @@ class Trainer(BaseRunner):
     ) -> None:
         super().load_state_dict(state_dict, *args, **kwargs)
         self._strategy.load_optim_state_dict(
-            self.optimizer,
             state_dict['optim'],
             *args,
             **kwargs,
@@ -414,3 +409,27 @@ class RunnerHolderMixin:
             weakref.proxy(runner)
         )
         self._runner = cast(BaseRunner, runner_proxy)
+
+    @property
+    def trainer(self) -> Trainer:
+        assert isinstance(self._runner, Trainer)
+        return self._runner
+
+    @property
+    def validator(self) -> Validator:
+        assert isinstance(self._runner, Validator)
+        return self._runner
+
+    @property
+    def runner(self) -> BaseRunner:
+        return self._runner
+
+    @property
+    def iter_based_trainer(self) -> IterBasedTrainer:
+        assert isinstance(self._runner, IterBasedTrainer)
+        return self._runner
+
+    @property
+    def epoch_based_trainer(self) -> EpochBasedTrainer:
+        assert isinstance(self._runner, EpochBasedTrainer)
+        return self._runner

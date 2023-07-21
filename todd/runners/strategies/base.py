@@ -61,19 +61,13 @@ class BaseStrategy(RunnerHolderMixin, StateDictMixin):
         model_state_dict = torch.load(f, 'cpu')
         self.load_model_state_dict(model_state_dict, *args, **kwargs)
 
-    def optim_state_dict(
-        self,
-        optimizer: torch.optim.Optimizer,
-        *args,
-        **kwargs,
-    ) -> dict[str, Any]:
-        return optimizer.state_dict()
+    def optim_state_dict(self, *args, **kwargs) -> dict[str, Any]:
+        return self.trainer.optimizer.state_dict()
 
     def load_optim_state_dict(
         self,
-        optimizer: torch.optim.Optimizer,
         state_dict: Mapping[str, Any],
         *args,
         **kwargs,
     ) -> None:
-        optimizer.load_state_dict(state_dict)
+        self.trainer.optimizer.load_state_dict(state_dict)

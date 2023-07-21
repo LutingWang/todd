@@ -2,7 +2,6 @@ __all__ = [
     'IntervalMixin',
 ]
 
-from ..runners import EpochBasedTrainer
 from .base import BaseCallback
 
 
@@ -26,5 +25,7 @@ class IntervalMixin(BaseCallback):
         return not self._by_epoch and self.__should_run(self._runner.iter_)
 
     def _should_run_epoch(self) -> bool:
-        assert isinstance(self._runner, EpochBasedTrainer)
-        return self._by_epoch and self.__should_run(self._runner.epoch)
+        return (
+            self._by_epoch
+            and self.__should_run(self.epoch_based_trainer.epoch)
+        )

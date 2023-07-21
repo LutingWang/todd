@@ -4,10 +4,9 @@ __all__ = [
 
 import contextlib
 import logging
-from typing import Any, cast
+from typing import Any
 
 from ...base import CallbackRegistry
-from ..runners import EpochBasedTrainer
 from .base import BaseCallback
 
 Memo = dict[str, Any]
@@ -54,7 +53,7 @@ class MonitorCallback(BaseCallback):
         memo: Memo,
     ) -> None:
         super().run_epoch_context(exit_stack, epoch_memo, memo)
-        runner = cast(EpochBasedTrainer, self._runner)
+        runner = self.epoch_based_trainer
         context = Context(
             runner.logger,
             epoch=runner.epoch,

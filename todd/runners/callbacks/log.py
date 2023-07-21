@@ -3,11 +3,10 @@ __all__ = [
 ]
 
 import logging
-from typing import Any, cast
+from typing import Any
 
 from ...base import CallbackRegistry, Formatter
 from ...utils import get_rank, get_timestamp
-from ..runners import EpochBasedTrainer
 from .base import BaseCallback
 from .interval import IntervalMixin
 
@@ -50,6 +49,6 @@ class LogCallback(IntervalMixin, BaseCallback):
 
     def before_run_epoch(self, epoch_memo: Memo, memo: Memo) -> None:
         super().before_run_epoch(epoch_memo, memo)
-        runner = cast(EpochBasedTrainer, self._runner)
+        runner = self.epoch_based_trainer
         if get_rank() == 0:
             runner.logger.info(f"Epoch [{runner.epoch}/{runner.epochs}]")

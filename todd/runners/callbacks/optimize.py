@@ -2,12 +2,11 @@ __all__ = [
     'OptimizeCallback',
 ]
 
-from typing import Any, Mapping, cast
+from typing import Any, Mapping
 
 import torch
 
 from ...base import CallbackRegistry, Config
-from ..runners import Trainer
 from .base import BaseCallback
 
 Memo = dict[str, Any]
@@ -24,7 +23,7 @@ class OptimizeCallback(BaseCallback):
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
-        assert isinstance(self._runner, Trainer)
+        self.trainer
         if grad_scaler is not None:
             self._build_grad_scaler(grad_scaler)
 
@@ -37,7 +36,7 @@ class OptimizeCallback(BaseCallback):
 
     def after_run_iter(self, batch, memo: Memo) -> None:
         super().after_run_iter(batch, memo)
-        runner = cast(Trainer, self._runner)
+        runner = self.trainer
         loss: torch.Tensor = memo['loss']
         if self.with_grad_scaler:
             loss = self._grad_scaler.scale(loss)

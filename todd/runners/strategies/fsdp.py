@@ -39,15 +39,13 @@ class FSDPStrategy(DDPStrategy):
 
     def optim_state_dict(
         self,
-        optimizer: torch.optim.Optimizer,
         *args,
         **kwargs,
     ) -> dict[str, Any]:
-        return FSDP.full_optim_state_dict(self._model, optimizer)
+        return FSDP.full_optim_state_dict(self._model, self.trainer.optimizer)
 
     def load_optim_state_dict(
         self,
-        optimizer: torch.optim.Optimizer,
         state_dict: Mapping[str, Any],
         *args,
         **kwargs,
@@ -56,7 +54,7 @@ class FSDPStrategy(DDPStrategy):
             state_dict,
             self._model,
         )
-        optimizer.load_state_dict(sharded_state_dict)
+        self.trainer.optimizer.load_state_dict(sharded_state_dict)
 
     if TYPE_CHECKING:
 

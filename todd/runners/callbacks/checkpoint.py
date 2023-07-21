@@ -3,13 +3,12 @@ __all__ = [
 ]
 
 import pathlib
-from typing import Any, cast
+from typing import Any
 
 import torch
 
 from ...base import CallbackRegistry, Config
 from ...utils import get_rank
-from ..runners import EpochBasedTrainer, Trainer
 from .base import BaseCallback
 from .interval import IntervalMixin
 
@@ -27,7 +26,7 @@ class CheckpointCallback(IntervalMixin, BaseCallback):
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
-        assert isinstance(self._runner, Trainer)
+        self.trainer
         if state_dict is None:
             state_dict = Config()
         self._state_dict = state_dict
@@ -68,9 +67,8 @@ class CheckpointCallback(IntervalMixin, BaseCallback):
 
     def after_run_epoch(self, epoch_memo: Memo, memo: Memo) -> None:
         super().after_run_epoch(epoch_memo, memo)
-        runner = cast(EpochBasedTrainer, self._runner)
         if self._should_run_epoch():
-            self._save(f'epoch_{runner.epoch}')
+            self._save(f'epoch_{self.epoch_based_trainer.epoch}')
 
     def after_run(self, memo: Memo) -> None:
         super().after_run(memo)
