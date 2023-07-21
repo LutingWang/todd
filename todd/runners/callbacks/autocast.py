@@ -8,7 +8,6 @@ from typing import Any
 import torch
 
 from ...base import CallbackRegistry, Config
-from ..runners import BaseRunner
 from .base import BaseCallback
 
 Memo = dict[str, Any]
@@ -23,7 +22,6 @@ class AutocastCallback(BaseCallback):
 
     def run_iter_context(
         self,
-        runner: BaseRunner,
         exit_stack: contextlib.ExitStack,
         batch,
         memo: Memo,

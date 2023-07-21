@@ -3,13 +3,13 @@ __all__ = [
     'LRScaleCallback',
 ]
 
-from typing import Any, Mapping
+from typing import Any, Mapping, cast
 
 import torch
 
 from ...base import CallbackRegistry, Config, LrSchedulerRegistry
 from ...utils import get_world_size
-from ..runners import BaseRunner, EpochBasedTrainer, Trainer
+from ..runners import Trainer
 from .base import BaseCallback
 from .interval import IntervalMixin
 
@@ -27,36 +27,33 @@ class LRScheduleCallback(IntervalMixin, BaseCallback):
         **kwargs,
     ) -> None:
         super().__init__(*args, interval=interval, **kwargs)
+        assert isinstance(self._runner, Trainer)
         self._lr_scheduler_config = lr_scheduler
 
-    def connect(self, runner: BaseRunner) -> None:
-        assert isinstance(runner, Trainer)
-        super().connect(runner)
-        self._build_lr_scheduler(runner)
+    def connect(self) -> None:
+        super().connect()
+        self._build_lr_scheduler()
 
-    def _build_lr_scheduler(self, runner: Trainer) -> None:
+    def _build_lr_scheduler(self) -> None:
+        runner = cast(Trainer, self._runner)
         self._lr_scheduler: torch.optim.lr_scheduler.LRScheduler = \
             LrSchedulerRegistry.build(
                 self._lr_scheduler_config,
                 optimizer=runner.optimizer,
             )
 
-    def after_run_iter(self, runner: BaseRunner, batch, memo: Memo) -> None:
-        assert isinstance(runner, Trainer)
-        if self._should_run_iter(runner):
+    def after_run_iter(self, batch, memo: Memo) -> None:
+        super().after_run_iter(batch, memo)
+        if self._should_run_iter():
             self._lr_scheduler.step()
         if 'log' in memo:
             memo['log']['lr'] = [
                 f'{lr:.3e}' for lr in self._lr_scheduler.get_last_lr()
             ]
 
-    def after_run_epoch(
-        self,
-        runner: EpochBasedTrainer,
-        epoch_memo: Memo,
-        memo: Memo,
-    ) -> None:
-        if self._should_run_epoch(runner):
+    def after_run_epoch(self, epoch_memo: Memo, memo: Memo) -> None:
+        super().after_run_epoch(epoch_memo, memo)
+        if self._should_run_epoch():
             self._lr_scheduler.step()
 
     def load_state_dict(
@@ -79,9 +76,11 @@ class LRScaleCallback(BaseCallback):
 
     def __init__(self, *args, lr_scaler: Config, **kwargs) -> None:
         super().__init__(*args, **kwargs)
+        assert isinstance(self._runner, Trainer)
         self._lr_scaler_config = lr_scaler
 
-    def _scale_lr(self, runner: Trainer, config: Config) -> None:
+    def _scale_lr(self, config: Config) -> None:
+        runner = cast(Trainer, self._runner)
         base_batch_size = config.base_batch_size
         batch_size = get_world_size() * runner.dataloader.batch_size
         lr_scaler = batch_size / base_batch_size
@@ -94,7 +93,6 @@ class LRScaleCallback(BaseCallback):
             f"{base_batch_size=} {batch_size=} {lr_scaler=:.3f}"
         )
 
-    def connect(self, runner: BaseRunner) -> None:
-        assert isinstance(runner, Trainer)
-        super().connect(runner)
-        self._scale_lr(runner, self._lr_scaler_config)
+    def connect(self) -> None:
+        super().connect()
+        self._scale_lr(self._lr_scaler_config)

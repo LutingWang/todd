@@ -5,22 +5,21 @@ __all__ = [
 import contextlib
 from typing import Any
 
-from ...base import StateDict
-from ..runners import BaseRunner, EpochBasedTrainer
+from ...base import StateDictMixin
+from ..runners import EpochBasedTrainer, RunnerHolderMixin
 
 Memo = dict[str, Any]
 
 
-class BaseCallback(StateDict):
+class BaseCallback(RunnerHolderMixin, StateDictMixin):
 
-    def connect(self, runner: BaseRunner) -> None:
+    def connect(self) -> None:
         pass
 
-    def should_break(self, runner: BaseRunner, batch, memo: Memo) -> bool:
+    def should_break(self, batch, memo: Memo) -> bool:
         """Determine whether to break the run loop.
 
         Args:
-            runner: the runner.
             batch: inputs.
             memo: runtime memory.
 
@@ -33,11 +32,10 @@ class BaseCallback(StateDict):
         """
         return False
 
-    def should_continue(self, runner: BaseRunner, batch, memo: Memo) -> bool:
+    def should_continue(self, batch, memo: Memo) -> bool:
         """Determine whether to skip the current iteration.
 
         Args:
-            runner: the runner.
             batch: inputs.
             memo: runtime memory.
 
@@ -46,64 +44,44 @@ class BaseCallback(StateDict):
         """
         return False
 
-    def before_run_iter(self, runner: BaseRunner, batch, memo: Memo) -> None:
+    def before_run_iter(self, batch, memo: Memo) -> None:
         pass
 
     def run_iter_context(
         self,
-        runner: BaseRunner,
         exit_stack: contextlib.ExitStack,
         batch,
         memo: Memo,
     ) -> None:
         pass
 
-    def after_run_iter(self, runner: BaseRunner, batch, memo: Memo) -> None:
+    def after_run_iter(self, batch, memo: Memo) -> None:
         pass
 
-    def should_break_epoch(
-        self,
-        runner: EpochBasedTrainer,
-        epoch_memo: Memo,
-        memo: Memo,
-    ) -> bool:
+    def should_break_epoch(self, epoch_memo: Memo, memo: Memo) -> bool:
+        assert isinstance(self._runner, EpochBasedTrainer)
         return False
 
-    def should_continue_epoch(
-        self,
-        runner: EpochBasedTrainer,
-        epoch_memo: Memo,
-        memo: Memo,
-    ) -> bool:
+    def should_continue_epoch(self, epoch_memo: Memo, memo: Memo) -> bool:
+        assert isinstance(self._runner, EpochBasedTrainer)
         return False
 
-    def before_run_epoch(
-        self,
-        runner: EpochBasedTrainer,
-        epoch_memo: Memo,
-        memo: Memo,
-    ) -> None:
-        pass
+    def before_run_epoch(self, epoch_memo: Memo, memo: Memo) -> None:
+        assert isinstance(self._runner, EpochBasedTrainer)
 
     def run_epoch_context(
         self,
-        runner: EpochBasedTrainer,
         exit_stack: contextlib.ExitStack,
         epoch_memo: Memo,
         memo: Memo,
     ) -> None:
+        assert isinstance(self._runner, EpochBasedTrainer)
+
+    def after_run_epoch(self, epoch_memo: Memo, memo: Memo) -> None:
+        assert isinstance(self._runner, EpochBasedTrainer)
+
+    def before_run(self, memo: Memo) -> None:
         pass
 
-    def after_run_epoch(
-        self,
-        runner: EpochBasedTrainer,
-        epoch_memo: Memo,
-        memo: Memo,
-    ) -> None:
-        pass
-
-    def before_run(self, runner: BaseRunner, memo: Memo) -> None:
-        pass
-
-    def after_run(self, runner: BaseRunner, memo: Memo) -> None:
+    def after_run(self, memo: Memo) -> None:
         pass

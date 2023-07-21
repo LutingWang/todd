@@ -4,15 +4,19 @@ __all__ = [
     'Trainer',
     'IterBasedTrainer',
     'EpochBasedTrainer',
+    'RunnerHolderMixin',
 ]
 
 import contextlib
+import getpass
 import itertools
 import logging
 import os
 import pathlib
+import socket
+import weakref
 from abc import abstractmethod
-from typing import TYPE_CHECKING, Any, Mapping
+from typing import TYPE_CHECKING, Any, Mapping, cast
 
 import torch
 import torch.distributed
@@ -23,10 +27,11 @@ from ..base import (
     Config,
     DatasetRegistry,
     SamplerRegistry,
-    StateDict,
+    StateDictMixin,
     StrategyRegistry,
 )
 from ..base import logger as base_logger
+from ..utils import get_rank
 
 if TYPE_CHECKING:
     from .callbacks import BaseCallback
@@ -37,17 +42,34 @@ Memo = dict[str, Any]
 # TODO: split into multiple files
 
 
-class BaseRunner(StateDict):
+class BaseRunner(StateDictMixin):
 
-    def __init__(self, name: str, *args, **kwargs) -> None:
+    def __init__(
+        self,
+        name: str,
+        *args,
+        load_from: str | None = None,
+        **kwargs,
+    ) -> None:
         self._name = name
+        self._load_from = load_from
+
         self._iter = 0
         self._build(*args, **kwargs)
-        self._callbacks.connect(self)
+        self._callbacks.connect()
+
+        self._logger.debug(
+            f"Rank {get_rank()} initialized by "
+            f"{getpass.getuser()}@{socket.gethostname()}"
+        )
 
     @property
     def name(self) -> str:
         return self._name
+
+    @property
+    def load_from(self) -> str | None:
+        return self._load_from
 
     @property
     def iter_(self) -> int:
@@ -94,7 +116,10 @@ class BaseRunner(StateDict):
         strategy: Config,
         **kwargs,
     ) -> None:
-        self._strategy: 'BaseStrategy' = StrategyRegistry.build(strategy)
+        self._strategy: 'BaseStrategy' = StrategyRegistry.build(
+            strategy,
+            runner=self,
+        )
 
     def _build_callbacks(
         self,
@@ -106,7 +131,10 @@ class BaseRunner(StateDict):
             callbacks = []
         if isinstance(callbacks, list):
             callbacks = Config(type='ComposedCallback', callbacks=callbacks)
-        self._callbacks: 'BaseCallback' = CallbackRegistry.build(callbacks)
+        self._callbacks: 'BaseCallback' = CallbackRegistry.build(
+            callbacks,
+            runner=self,
+        )
 
     def _build_work_dir(
         self,
@@ -116,12 +144,9 @@ class BaseRunner(StateDict):
     ) -> None:
         if work_dir is None:
             work_dir = Config()
-        if 'path' in work_dir:
-            path = work_dir.path
-        else:
-            root = work_dir.get('root', 'work_dirs')
-            name = work_dir.get('name', self._name)
-            path = os.path.join(root, name)
+        root = work_dir.get('root', 'work_dirs')
+        name = work_dir.get('name', self._name)
+        path = os.path.join(root, name)
         self._work_dir = pathlib.Path(path)
         self._work_dir.mkdir(parents=True, exist_ok=True)
 
@@ -164,16 +189,16 @@ class BaseRunner(StateDict):
         for batch in dataloader:
             self._iter += 1
 
-            if self._callbacks.should_break(self, batch, memo):
+            if self._callbacks.should_break(batch, memo):
                 break
-            if self._callbacks.should_continue(self, batch, memo):
+            if self._callbacks.should_continue(batch, memo):
                 continue
 
-            self._callbacks.before_run_iter(self, batch, memo)
+            self._callbacks.before_run_iter(batch, memo)
             with contextlib.ExitStack() as exit_stack:
-                self._callbacks.run_iter_context(self, exit_stack, batch, memo)
+                self._callbacks.run_iter_context(exit_stack, batch, memo)
                 memo = self._run_iter(batch, memo)
-            self._callbacks.after_run_iter(self, batch, memo)
+            self._callbacks.after_run_iter(batch, memo)
         return memo
 
     def _setup(self) -> Memo:
@@ -184,9 +209,9 @@ class BaseRunner(StateDict):
 
     def run(self) -> Memo:
         memo = self._setup()
-        self._callbacks.before_run(self, memo)
+        self._callbacks.before_run(memo)
         memo = self._run(memo)
-        self._callbacks.after_run(self, memo)
+        self._callbacks.after_run(memo)
         self._teardown(memo)
         return memo
 
@@ -198,6 +223,11 @@ class BaseRunner(StateDict):
     ) -> None:
         super().load_state_dict(state_dict, *args, **kwargs)
         self._iter = state_dict['meta']['iter_']
+        self._strategy.load_model_state_dict(
+            state_dict['model'],
+            *args,
+            **kwargs,
+        )
         self._strategy.load_state_dict(
             state_dict['strategy'],
             *args,
@@ -212,27 +242,10 @@ class BaseRunner(StateDict):
     def state_dict(self, *args, **kwargs) -> dict[str, Any]:
         state_dict = super().state_dict(*args, **kwargs)
         state_dict['meta'] = dict(iter_=self._iter)
+        state_dict['model'] = self._strategy.model_state_dict(*args, **kwargs)
         state_dict['strategy'] = self._strategy.state_dict(*args, **kwargs)
         state_dict['callbacks'] = self._callbacks.state_dict(*args, **kwargs)
         return state_dict
-
-    def resume_from(self, f: pathlib.Path, *args, **kwargs) -> None:
-        self._logger.info(f"Resuming from {f}")
-        state_dict = torch.load(f, 'cpu')
-        self.load_state_dict(state_dict, *args, **kwargs)
-
-    def load_from(self, f: pathlib.Path, *args, **kwargs) -> None:
-        self._logger.info(f"Loading from {f}")
-        state_dict = torch.load(f, 'cpu')
-        if 'strategy' not in state_dict:
-            self._strategy.module.load_state_dict(state_dict, *args, **kwargs)
-            return
-        # runner checkpoint
-        self._strategy.load_state_dict(
-            state_dict['strategy'],
-            *args,
-            **kwargs,
-        )
 
 
 class Validator(BaseRunner):
@@ -258,7 +271,7 @@ class Trainer(BaseRunner):
         optimizer: Config,
         **kwargs,
     ) -> None:
-        self._optimizer = self._strategy.build_optimizer(self, optimizer)
+        self._optimizer = self._strategy.build_optimizer(optimizer)
 
     def _build(self, *args, **kwargs) -> None:
         super()._build(*args, **kwargs)
@@ -271,7 +284,7 @@ class Trainer(BaseRunner):
     def state_dict(self, *args, **kwargs) -> dict[str, Any]:
         state_dict = super().state_dict(*args, **kwargs)
         state_dict['optim'] = self._strategy.optim_state_dict(
-            self,
+            self.optimizer,
             *args,
             **kwargs,
         )
@@ -285,7 +298,7 @@ class Trainer(BaseRunner):
     ) -> None:
         super().load_state_dict(state_dict, *args, **kwargs)
         self._strategy.load_optim_state_dict(
-            self,
+            self.optimizer,
             state_dict['optim'],
             *args,
             **kwargs,
@@ -314,9 +327,12 @@ class IterBasedTrainer(Trainer):
 class EpochBasedTrainer(Trainer):
 
     def __init__(self, *args, epochs: int, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        self._epoch = 0
         self._epochs = epochs
+
+        # must be set before _callbacks.connect() to allow loading state dict
+        self._epoch = 0
+
+        super().__init__(*args, **kwargs)
 
     @property
     def epoch(self) -> int:
@@ -350,21 +366,20 @@ class EpochBasedTrainer(Trainer):
             self._epoch += 1
             epoch_memo = self._setup_epoch(memo)
 
-            if self._callbacks.should_break_epoch(self, epoch_memo, memo):
+            if self._callbacks.should_break_epoch(epoch_memo, memo):
                 break
-            if self._callbacks.should_continue_epoch(self, epoch_memo, memo):
+            if self._callbacks.should_continue_epoch(epoch_memo, memo):
                 continue
 
-            self._callbacks.before_run_epoch(self, epoch_memo, memo)
+            self._callbacks.before_run_epoch(epoch_memo, memo)
             with contextlib.ExitStack() as exit_stack:
                 self._callbacks.run_epoch_context(
-                    self,
                     exit_stack,
                     epoch_memo,
                     memo,
                 )
                 epoch_memo = self._run_epoch(epoch_memo, memo)
-            self._callbacks.after_run_epoch(self, epoch_memo, memo)
+            self._callbacks.after_run_epoch(epoch_memo, memo)
 
             self._teardown_epoch(epoch_memo, memo)
         return memo
@@ -388,3 +403,14 @@ class EpochBasedTrainer(Trainer):
         state_dict = super().state_dict(*args, **kwargs)
         state_dict['meta']['epoch'] = self._epoch
         return state_dict
+
+
+class RunnerHolderMixin:
+
+    def __init__(self, *args, runner: BaseRunner, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        runner_proxy = (
+            runner if isinstance(runner, weakref.ProxyTypes) else
+            weakref.proxy(runner)
+        )
+        self._runner = cast(BaseRunner, runner_proxy)

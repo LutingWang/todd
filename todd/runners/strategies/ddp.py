@@ -2,21 +2,21 @@ __all__ = [
     'DDPStrategy',
 ]
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Mapping
 
 import torch
 import torch.distributed
 import torch.nn as nn
+from torch.nn.parallel import DistributedDataParallel as DDP
 
 from ...base import Config, OptimizerRegistry, Store, StrategyRegistry
 from ...utils import get_local_rank
-from ..runners import Trainer
 from .base import BaseStrategy
 
 
 @StrategyRegistry.register()
 class DDPStrategy(BaseStrategy):
-    _model: nn.parallel.DistributedDataParallel
+    _model: DDP
 
     def __init__(
         self,
@@ -43,17 +43,21 @@ class DDPStrategy(BaseStrategy):
         torch.cuda.set_device(get_local_rank() % torch.cuda.device_count())
 
     def _wrap_model(self, config: Config) -> None:
-        self._model = nn.parallel.DistributedDataParallel(
-            self._model.cuda(),
-            **config,
-        )
+        self._model = DDP(self._model.cuda(), **config)
 
-    def build_optimizer(
-        self,
-        runner: Trainer,
-        config: Config,
-    ) -> torch.optim.Optimizer:
+    def build_optimizer(self, config: Config) -> torch.optim.Optimizer:
         return OptimizerRegistry.build(config, model=self._model.module)
+
+    def model_state_dict(self, *args, **kwargs) -> dict[str, Any]:
+        return self.module.state_dict(*args, **kwargs)
+
+    def load_model_state_dict(
+        self,
+        state_dict: Mapping[str, Any],
+        *args,
+        **kwargs,
+    ) -> None:
+        self.module.load_state_dict(state_dict, *args, **kwargs)
 
     @property
     def module(self) -> nn.Module:
@@ -62,5 +66,5 @@ class DDPStrategy(BaseStrategy):
     if TYPE_CHECKING:
 
         @property
-        def model(self) -> nn.parallel.DistributedDataParallel:
+        def model(self) -> DDP:
             ...

@@ -2,12 +2,10 @@ __all__ = [
     'ComposedCallback',
 ]
 
-import contextlib
 from collections import UserList
 from typing import Any, Iterable, Literal, Mapping, TypedDict
 
 from ...base import CallbackRegistry, Config
-from ..runners import BaseRunner, EpochBasedTrainer
 from .base import BaseCallback
 
 Memo = dict[str, Any]
@@ -32,11 +30,14 @@ class Priority(TypedDict, total=False):
 @CallbackRegistry.register()
 class ComposedCallback(BaseCallback, UserList[BaseCallback]):
 
-    def __init__(self, callbacks: Iterable[Config]) -> None:
+    def __init__(self, *args, callbacks: Iterable[Config], **kwargs) -> None:
         self._priorities: list[Priority] = [
             c.pop('priority', dict()) for c in callbacks
         ]
-        super().__init__(CallbackRegistry.build(c) for c in callbacks)
+        super().__init__(*args, **kwargs)
+        self.extend(
+            CallbackRegistry.build(c, runner=self._runner) for c in callbacks
+        )
 
     def _callbacks(
         self,
@@ -52,78 +53,76 @@ class ComposedCallback(BaseCallback, UserList[BaseCallback]):
         _, indices = zip(*priority_index)
         return [self[i] for i in indices]
 
-    def connect(self, runner: BaseRunner) -> None:
-        super().connect(runner)
+    def connect(self) -> None:
+        super().connect()
         for c in self._callbacks('connect'):
-            c.connect(runner)
+            c.connect()
 
     def should_break(self, *args, **kwargs) -> bool:
+        super().should_break(*args, **kwargs)
         return any(
             c.should_break(*args, **kwargs)
             for c in self._callbacks('should_break')
         )
 
     def should_continue(self, *args, **kwargs) -> bool:
+        super().should_continue(*args, **kwargs)
         return any(
             c.should_continue(*args, **kwargs)
             for c in self._callbacks('should_continue')
         )
 
     def before_run_iter(self, *args, **kwargs) -> None:
+        super().before_run_iter(*args, **kwargs)
         for c in self._callbacks('before_run_iter'):
             c.before_run_iter(*args, **kwargs)
 
-    def run_iter_context(
-        self,
-        runner: BaseRunner,
-        exit_stack: contextlib.ExitStack,
-        batch,
-        memo: Memo,
-    ) -> None:
-        super().run_iter_context(runner, exit_stack, batch, memo)
+    def run_iter_context(self, *args, **kwargs) -> None:
+        super().run_iter_context(*args, **kwargs)
         for c in self._callbacks('run_iter_context'):
-            c.run_iter_context(runner, exit_stack, batch, memo)
+            c.run_iter_context(*args, **kwargs)
 
     def after_run_iter(self, *args, **kwargs) -> None:
+        super().after_run_iter(*args, **kwargs)
         for c in self._callbacks('after_run_iter'):
             c.after_run_iter(*args, **kwargs)
 
     def should_break_epoch(self, *args, **kwargs) -> bool:
+        super().should_break_epoch(*args, **kwargs)
         return any(
             c.should_break_epoch(*args, **kwargs)
             for c in self._callbacks('should_break_epoch')
         )
 
     def should_continue_epoch(self, *args, **kwargs) -> bool:
+        super().should_continue_epoch(*args, **kwargs)
         return any(
             c.should_continue_epoch(*args, **kwargs)
             for c in self._callbacks('should_continue_epoch')
         )
 
     def before_run_epoch(self, *args, **kwargs) -> None:
+        super().before_run_epoch(*args, **kwargs)
         for c in self._callbacks('before_run_epoch'):
             c.before_run_epoch(*args, **kwargs)
 
-    def run_epoch_context(
-        self,
-        runner: EpochBasedTrainer,
-        exit_stack: contextlib.ExitStack,
-        epoch_memo: Memo,
-        memo: Memo,
-    ) -> None:
-        super().run_epoch_context(runner, exit_stack, epoch_memo, memo)
+    def run_epoch_context(self, *args, **kwargs) -> None:
+        super().run_epoch_context(*args, **kwargs)
         for c in self._callbacks('run_epoch_context'):
-            c.run_epoch_context(runner, exit_stack, epoch_memo, memo)
+            c.run_epoch_context(*args, **kwargs)
 
     def after_run_epoch(self, *args, **kwargs) -> None:
+        super().after_run_epoch(*args, **kwargs)
         for c in self._callbacks('after_run_epoch'):
             c.after_run_epoch(*args, **kwargs)
 
     def before_run(self, *args, **kwargs) -> None:
+        super().before_run(*args, **kwargs)
         for c in self._callbacks('before_run'):
             c.before_run(*args, **kwargs)
 
     def after_run(self, *args, **kwargs) -> None:
+        super().after_run(*args, **kwargs)
         for c in self._callbacks('after_run'):
             c.after_run(*args, **kwargs)
 

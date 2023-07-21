@@ -2,12 +2,12 @@ __all__ = [
     'OptimizeCallback',
 ]
 
-from typing import Any, Mapping
+from typing import Any, Mapping, cast
 
 import torch
 
 from ...base import CallbackRegistry, Config
-from ..runners import BaseRunner, Trainer
+from ..runners import Trainer
 from .base import BaseCallback
 
 Memo = dict[str, Any]
@@ -24,6 +24,7 @@ class OptimizeCallback(BaseCallback):
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
+        assert isinstance(self._runner, Trainer)
         if grad_scaler is not None:
             self._build_grad_scaler(grad_scaler)
 
@@ -34,9 +35,9 @@ class OptimizeCallback(BaseCallback):
     def _build_grad_scaler(self, config: Config) -> None:
         self._grad_scaler = torch.cuda.amp.GradScaler(**config)
 
-    def after_run_iter(self, runner: BaseRunner, batch, memo: Memo) -> None:
-        assert isinstance(runner, Trainer)
-        super().after_run_iter(runner, batch, memo)
+    def after_run_iter(self, batch, memo: Memo) -> None:
+        super().after_run_iter(batch, memo)
+        runner = cast(Trainer, self._runner)
         loss: torch.Tensor = memo['loss']
         if self.with_grad_scaler:
             loss = self._grad_scaler.scale(loss)

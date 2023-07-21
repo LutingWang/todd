@@ -2,13 +2,14 @@ __all__ = [
     'CheckpointCallback',
 ]
 
-from typing import Any
+import pathlib
+from typing import Any, cast
 
 import torch
 
 from ...base import CallbackRegistry, Config
 from ...utils import get_rank
-from ..runners import BaseRunner, EpochBasedTrainer, Trainer
+from ..runners import EpochBasedTrainer, Trainer
 from .base import BaseCallback
 from .interval import IntervalMixin
 
@@ -21,36 +22,56 @@ class CheckpointCallback(IntervalMixin, BaseCallback):
     def __init__(
         self,
         *args,
-        state_dict: Config = Config(),
+        state_dict: Config | None = None,
+        load_state_dict: Config | None = None,
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
+        assert isinstance(self._runner, Trainer)
+        if state_dict is None:
+            state_dict = Config()
         self._state_dict = state_dict
+        if load_state_dict is None:
+            load_state_dict = Config()
+        self._load_state_dict = load_state_dict
 
-    def _save(self, runner: Trainer, name: str) -> None:
+    def connect(self) -> None:
+        super().connect()
+        self._checkpoint_dir = self._runner.work_dir / 'checkpoints'
+        self._checkpoint_dir.mkdir(parents=True, exist_ok=True)
+        if self._runner.load_from is not None:
+            load_from = pathlib.Path(self._runner.load_from)
+            assert load_from.exists()
+            self._runner._logger.info(f"Loading from {load_from}")
+            state_dict = {
+                f.stem: torch.load(f, 'cpu')
+                for f in load_from.glob('*.pth')
+            }
+            self._runner.load_state_dict(state_dict, **self._load_state_dict)
+
+    def _save(self, name: str) -> None:
         # for FSDP, all ranks should call state dict
-        state_dict = runner.state_dict(**self._state_dict)
+        state_dict = self._runner.state_dict(**self._state_dict)
 
         if get_rank() != 0:
             return
-        f = runner.work_dir / f'{name}.pth'
-        runner.logger.info(f"Saving state dict to {f}")
-        torch.save(state_dict, f)
+        work_dir = self._checkpoint_dir / name
+        work_dir.mkdir(parents=True, exist_ok=True)
+        self._runner.logger.info(f"Saving state dict to {work_dir}")
+        for k, v in state_dict.items():
+            torch.save(v, work_dir / f'{k}.pth')
 
-    def after_run_iter(self, runner: BaseRunner, batch, memo: Memo) -> None:
-        assert isinstance(runner, Trainer)
-        if self._should_run_iter(runner):
-            self._save(runner, f'iter_{runner.iter_}')
+    def after_run_iter(self, batch, memo: Memo) -> None:
+        super().after_run_iter(batch, memo)
+        if self._should_run_iter():
+            self._save(f'iter_{self._runner.iter_}')
 
-    def after_run_epoch(
-        self,
-        runner: EpochBasedTrainer,
-        epoch_memo: Memo,
-        memo: Memo,
-    ) -> None:
-        if self._should_run_epoch(runner):
-            self._save(runner, f'epoch_{runner.epoch}')
+    def after_run_epoch(self, epoch_memo: Memo, memo: Memo) -> None:
+        super().after_run_epoch(epoch_memo, memo)
+        runner = cast(EpochBasedTrainer, self._runner)
+        if self._should_run_epoch():
+            self._save(f'epoch_{runner.epoch}')
 
-    def after_run(self, runner: BaseRunner, memo: Memo) -> None:
-        assert isinstance(runner, Trainer)
-        self._save(runner, 'latest')
+    def after_run(self, memo: Memo) -> None:
+        super().after_run(memo)
+        self._save('latest')

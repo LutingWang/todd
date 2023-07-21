@@ -1,9 +1,9 @@
-__all__ = ['StateDict']
+__all__ = ['StateDictMixin']
 
 from typing import Any, Mapping
 
 
-class StateDict:
+class StateDictMixin:
 
     def state_dict(self, *args, **kwargs) -> dict[str, Any]:
         return dict()

@@ -2,6 +2,7 @@ __all__ = [
     'BaseStrategy',
 ]
 
+import pathlib
 from typing import Any, Mapping
 
 import torch
@@ -11,14 +12,14 @@ from ...base import (
     Config,
     ModelRegistry,
     OptimizerRegistry,
-    StateDict,
+    StateDictMixin,
     StrategyRegistry,
 )
-from ..runners import Trainer
+from ..runners import RunnerHolderMixin
 
 
 @StrategyRegistry.register()
-class BaseStrategy(StateDict):
+class BaseStrategy(RunnerHolderMixin, StateDictMixin):
     _model: nn.Module
 
     def __init__(
@@ -33,11 +34,7 @@ class BaseStrategy(StateDict):
     def _build_model(self, config: Config) -> None:
         self._model = ModelRegistry.build(config)
 
-    def build_optimizer(
-        self,
-        runner: Trainer,
-        config: Config,
-    ) -> torch.optim.Optimizer:
+    def build_optimizer(self, config: Config) -> torch.optim.Optimizer:
         return OptimizerRegistry.build(config, model=self._model)
 
     @property
@@ -48,10 +45,10 @@ class BaseStrategy(StateDict):
     def module(self) -> nn.Module:
         return self._model
 
-    def _model_state_dict(self, *args, **kwargs) -> dict[str, Any]:
+    def model_state_dict(self, *args, **kwargs) -> dict[str, Any]:
         return self._model.state_dict(*args, **kwargs)
 
-    def _load_model_state_dict(
+    def load_model_state_dict(
         self,
         state_dict: Mapping[str, Any],
         *args,
@@ -59,33 +56,24 @@ class BaseStrategy(StateDict):
     ) -> None:
         self._model.load_state_dict(state_dict, *args, **kwargs)
 
+    def load_model_from(self, f: pathlib.Path, *args, **kwargs) -> None:
+        self._runner._logger.info(f"Loading model from {f}")
+        model_state_dict = torch.load(f, 'cpu')
+        self.load_model_state_dict(model_state_dict, *args, **kwargs)
+
     def optim_state_dict(
         self,
-        runner: Trainer,
+        optimizer: torch.optim.Optimizer,
         *args,
         **kwargs,
     ) -> dict[str, Any]:
-        return runner.optimizer.state_dict()
+        return optimizer.state_dict()
 
     def load_optim_state_dict(
         self,
-        runner: Trainer,
+        optimizer: torch.optim.Optimizer,
         state_dict: Mapping[str, Any],
         *args,
         **kwargs,
     ) -> None:
-        runner.optimizer.load_state_dict(state_dict)
-
-    def state_dict(self, *args, **kwargs) -> dict[str, Any]:
-        state_dict = super().state_dict(*args, **kwargs)
-        state_dict['model'] = self._model_state_dict(*args, **kwargs)
-        return state_dict
-
-    def load_state_dict(
-        self,
-        state_dict: Mapping[str, Any],
-        *args,
-        **kwargs,
-    ) -> None:
-        super().load_state_dict(state_dict, *args, **kwargs)
-        self._load_model_state_dict(state_dict['model'], *args, **kwargs)
+        optimizer.load_state_dict(state_dict)
