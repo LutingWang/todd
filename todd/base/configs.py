@@ -6,6 +6,7 @@ __all__ = [
 
 import argparse
 import difflib
+import importlib
 import pathlib
 import tempfile
 import webbrowser
@@ -110,8 +111,24 @@ class Config(AttrDict, dict):  # type: ignore[misc]
 
     @classmethod
     def load(cls, file) -> Self:
+
+        class ModuleProxy:
+
+            def __init__(self, name: str) -> None:
+                self.__name = name
+                self.__module = importlib.import_module(name)
+
+            def __getattr__(self, attr: str):
+                return getattr(self.__module, attr)
+
+            def __repr__(self) -> str:
+                return f"_import_({repr(self.__name)})"
+
         file = pathlib.Path(file)
-        config = exec_(file.read_text())  # do not use `loads`
+        config = exec_(  # do not use `loads`
+            file.read_text(),
+            _import_=ModuleProxy,
+        )
         base_config = cls()
         for base in config.pop('_base_', []):
             base_config.update(cls.load(file.parent / base))

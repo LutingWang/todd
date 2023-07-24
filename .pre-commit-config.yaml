@@ -11,7 +11,7 @@ repos:
       - id: debug-statements
         exclude: ^todd/base/patches\.py$
       - id: end-of-file-fixer
-        exclude: ^tests/test_base/test_configs/diff\.html$
+        exclude: ^tests/test_base/configs/diff\.html$
       - id: fix-encoding-pragma
         args:
           - --remove
@@ -24,7 +24,7 @@ repos:
           - --fix=crlf
         files: \.bat$
       - id: trailing-whitespace
-        exclude: ^tests/test_base/test_configs/diff\.html$
+        exclude: ^tests/test_base/configs/diff\.html$
   - repo: https://github.com/pycqa/flake8
     rev: 6.0.0
     hooks:

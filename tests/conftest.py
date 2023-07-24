@@ -11,7 +11,8 @@ from custom_types import CustomModule, CustomObject  # noqa: E402
 
 @pytest.fixture
 def data_dir(request: pytest.FixtureRequest) -> pathlib.Path:
-    return request.path.resolve().with_suffix('')
+    stem = request.path.stem.removeprefix('test_')
+    return request.path.resolve().with_name(stem)
 
 
 @pytest.fixture

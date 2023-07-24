@@ -28,3 +28,10 @@ class TestConfigs:
         html = data_dir / 'diff.html'
         with set_temp(difflib.HtmlDiff, '._default_prefix', 0):
             assert diff == html.read_text()
+
+    def test_load_import(self, data_dir: pathlib.Path) -> None:
+        config_import = Config.load(data_dir / 'config_import.py')
+        assert config_import.dumps() == (
+            "fsdp = _import_('torch.distributed.fsdp')\n"
+            "torch = _import_('torch')\n"
+        )
