@@ -59,7 +59,7 @@ class Finder(Generic[T]):
         [Conv2d(3, 8, ...), BatchNorm2d(8, ...), Conv2d(8, 16, ...), BatchNorm\
 2d(16, ...)]
 
-    `find_by_configs` is a more flexible way to find objects.
+    `find_by_config` is a more flexible way to find objects.
     For example, we can find the first convolution and batch normalization
     layers by:
 
@@ -97,7 +97,7 @@ class Finder(Generic[T]):
         Returns:
             A list of objects.
 
-        Refer to `todd.get_` for more details about how names are resolved.
+        Refer to `get_` for more details about how names are resolved.
         """
         objects = [get_(self._model, name) for name in names]
         return self._formulate(objects)

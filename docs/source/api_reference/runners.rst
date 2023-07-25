@@ -1,5 +1,5 @@
 Runners
 =======
 
-.. automodule:: todd.utils.runners
+.. automodule:: todd.runners
    :private-members:
