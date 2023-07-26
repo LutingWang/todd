@@ -6,7 +6,7 @@ import contextlib
 from typing import Any
 
 from ...base import StateDictMixin
-from ..runners import RunnerHolderMixin
+from ..utils import RunnerHolderMixin
 
 Memo = dict[str, Any]
 

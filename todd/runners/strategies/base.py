@@ -15,7 +15,7 @@ from ...base import (
     StateDictMixin,
     StrategyRegistry,
 )
-from ..runners import RunnerHolderMixin
+from ..utils import RunnerHolderMixin
 
 
 @StrategyRegistry.register()

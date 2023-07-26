@@ -1,22 +1,15 @@
 __all__ = [
     'BaseRunner',
-    'Validator',
-    'Trainer',
-    'IterBasedTrainer',
-    'EpochBasedTrainer',
-    'RunnerHolderMixin',
 ]
 
 import contextlib
 import getpass
-import itertools
 import logging
 import os
 import pathlib
 import socket
-import weakref
 from abc import abstractmethod
-from typing import TYPE_CHECKING, Any, Mapping, cast
+from typing import TYPE_CHECKING, Any, Mapping
 
 import torch
 import torch.distributed
@@ -38,8 +31,6 @@ if TYPE_CHECKING:
     from .strategies import BaseStrategy
 
 Memo = dict[str, Any]
-
-# TODO: split into multiple files
 
 
 class BaseRunner(StateDictMixin):
@@ -103,9 +94,10 @@ class BaseRunner(StateDictMixin):
         """
         dataloader = dataloader.copy()
         dataset = DatasetRegistry.build(dataloader.pop('dataset'))
-        if 'sampler' in dataloader:
+        sampler = dataloader.pop('sampler', None)
+        if sampler is not None:
             dataloader.sampler = SamplerRegistry.build(
-                dataloader.pop('sampler'),
+                sampler,
                 dataset=dataset,
             )
         self._dataloader = torch.utils.data.DataLoader(dataset, **dataloader)
@@ -246,190 +238,3 @@ class BaseRunner(StateDictMixin):
         state_dict['strategy'] = self._strategy.state_dict(*args, **kwargs)
         state_dict['callbacks'] = self._callbacks.state_dict(*args, **kwargs)
         return state_dict
-
-
-class Validator(BaseRunner):
-
-    def _setup(self) -> Memo:
-        self._strategy.model.eval()
-        return super()._setup()
-
-    @torch.no_grad()
-    def run(self) -> Memo:
-        return super().run()
-
-
-class Trainer(BaseRunner):
-
-    @property
-    def optimizer(self) -> torch.optim.Optimizer:
-        return self._optimizer
-
-    def _build_optimizer(
-        self,
-        *args,
-        optimizer: Config,
-        **kwargs,
-    ) -> None:
-        self._optimizer = self._strategy.build_optimizer(optimizer)
-
-    def _build(self, *args, **kwargs) -> None:
-        super()._build(*args, **kwargs)
-        self._build_optimizer(*args, **kwargs)
-
-    def _setup(self) -> Memo:
-        self._strategy.model.train()
-        return super()._setup()
-
-    def state_dict(self, *args, **kwargs) -> dict[str, Any]:
-        state_dict = super().state_dict(*args, **kwargs)
-        state_dict['optim'] = self._strategy.optim_state_dict(*args, **kwargs)
-        return state_dict
-
-    def load_state_dict(
-        self,
-        state_dict: Mapping[str, Any],
-        *args,
-        **kwargs,
-    ) -> None:
-        super().load_state_dict(state_dict, *args, **kwargs)
-        self._strategy.load_optim_state_dict(
-            state_dict['optim'],
-            *args,
-            **kwargs,
-        )
-
-
-class IterBasedTrainer(Trainer):
-
-    def __init__(self, *args, iters: int, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        self._iters = iters
-
-    @property
-    def iters(self) -> int:
-        return self._iters
-
-    def _setup(self) -> Memo:
-        memo = super()._setup()
-        dataloader = memo['dataloader']
-        dataloader = itertools.cycle(dataloader)
-        dataloader = itertools.islice(dataloader, self._iters)
-        memo['dataloader'] = dataloader
-        return memo
-
-
-class EpochBasedTrainer(Trainer):
-
-    def __init__(self, *args, epochs: int, **kwargs) -> None:
-        self._epochs = epochs
-
-        # must be set before _callbacks.connect() to allow loading state dict
-        self._epoch = 0
-
-        super().__init__(*args, **kwargs)
-
-    @property
-    def epoch(self) -> int:
-        return self._epoch
-
-    @property
-    def iters(self) -> int:
-        return super().iters * self._epochs
-
-    @property
-    def epochs(self) -> int:
-        return self._epochs
-
-    def _run_epoch(self, epoch_memo: Memo, memo: Memo) -> Memo:
-        return super()._run(epoch_memo)
-
-    def _setup_epoch(self, memo: Memo) -> Memo:
-        sampler = self._dataloader.batch_sampler
-        if sampler is None:
-            sampler = self._dataloader.sampler
-        if isinstance(sampler, torch.utils.data.DistributedSampler):
-            sampler.set_epoch(self._epoch)
-        return super()._setup()
-
-    def _teardown_epoch(self, epoch_memo: Memo, memo: Memo) -> None:
-        super()._teardown(epoch_memo)
-        memo['epoch_memos'][self._epoch] = epoch_memo
-
-    def _run(self, memo: Memo) -> Memo:
-        while self._epoch < self._epochs:
-            self._epoch += 1
-            epoch_memo = self._setup_epoch(memo)
-
-            if self._callbacks.should_break_epoch(epoch_memo, memo):
-                break
-            if self._callbacks.should_continue_epoch(epoch_memo, memo):
-                continue
-
-            self._callbacks.before_run_epoch(epoch_memo, memo)
-            with contextlib.ExitStack() as exit_stack:
-                self._callbacks.run_epoch_context(
-                    exit_stack,
-                    epoch_memo,
-                    memo,
-                )
-                epoch_memo = self._run_epoch(epoch_memo, memo)
-            self._callbacks.after_run_epoch(epoch_memo, memo)
-
-            self._teardown_epoch(epoch_memo, memo)
-        return memo
-
-    def _setup(self) -> Memo:
-        return dict(epoch_memos=dict())
-
-    def _teardown(self, memo: Memo) -> None:
-        pass
-
-    def load_state_dict(
-        self,
-        state_dict: Mapping[str, Any],
-        *args,
-        **kwargs,
-    ) -> None:
-        super().load_state_dict(state_dict, *args, **kwargs)
-        self._epoch = state_dict['meta']['epoch']
-
-    def state_dict(self, *args, **kwargs) -> dict[str, Any]:
-        state_dict = super().state_dict(*args, **kwargs)
-        state_dict['meta']['epoch'] = self._epoch
-        return state_dict
-
-
-class RunnerHolderMixin:
-
-    def __init__(self, *args, runner: BaseRunner, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        runner_proxy = (
-            runner if isinstance(runner, weakref.ProxyTypes) else
-            weakref.proxy(runner)
-        )
-        self._runner = cast(BaseRunner, runner_proxy)
-
-    @property
-    def trainer(self) -> Trainer:
-        assert isinstance(self._runner, Trainer)
-        return self._runner
-
-    @property
-    def validator(self) -> Validator:
-        assert isinstance(self._runner, Validator)
-        return self._runner
-
-    @property
-    def runner(self) -> BaseRunner:
-        return self._runner
-
-    @property
-    def iter_based_trainer(self) -> IterBasedTrainer:
-        assert isinstance(self._runner, IterBasedTrainer)
-        return self._runner
-
-    @property
-    def epoch_based_trainer(self) -> EpochBasedTrainer:
-        assert isinstance(self._runner, EpochBasedTrainer)
-        return self._runner
