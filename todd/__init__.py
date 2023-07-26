@@ -22,3 +22,4 @@ __all__ = [
     'runners',
     'visuals',
 ]
+__version__ = '0.4.0'

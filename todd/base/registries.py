@@ -17,6 +17,7 @@ __all__ = [
     'ModelRegistry',
 ]
 
+import inspect
 import re
 from collections import UserDict
 from typing import Callable, Iterable, NoReturn, TypeVar
@@ -24,6 +25,7 @@ from typing import Callable, Iterable, NoReturn, TypeVar
 import torch
 import torch.nn as nn
 import torch.utils.data
+import torchvision.transforms as tf
 
 from ..utils import NonInstantiableMeta
 from .configs import Config
@@ -394,6 +396,10 @@ class ModelRegistry(Registry):
     pass
 
 
+class TransformRegistry(Registry):
+    pass
+
+
 for c in torch.utils.data.Sampler.__subclasses__():
     SamplerRegistry.register()(c)
 
@@ -412,3 +418,6 @@ NormRegistry['LN'] = nn.LayerNorm
 NormRegistry['IN1d'] = nn.InstanceNorm1d
 NormRegistry['IN2d'] = NormRegistry['IN'] = nn.InstanceNorm2d
 NormRegistry['IN3d'] = nn.InstanceNorm3d
+
+for _, c in inspect.getmembers(tf, inspect.isclass):
+    TransformRegistry.register()(c)
