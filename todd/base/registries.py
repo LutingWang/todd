@@ -15,6 +15,7 @@ __all__ = [
     'StrategyRegistry',
     'SamplerRegistry',
     'ModelRegistry',
+    'TransformRegistry',
 ]
 
 import inspect
@@ -397,7 +398,12 @@ class ModelRegistry(Registry):
 
 
 class TransformRegistry(Registry):
-    pass
+
+    @classmethod
+    def _build(cls, config: Config):
+        if config.type == 'Compose':
+            config.transforms = list(map(cls.build, config.transforms))
+        return RegistryMeta._build(cls, config)
 
 
 for c in torch.utils.data.Sampler.__subclasses__():
