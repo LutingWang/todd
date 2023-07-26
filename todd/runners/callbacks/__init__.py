@@ -3,6 +3,7 @@ from .base import *
 from .check import *
 from .checkpoint import *
 from .composed import *
+from .eta import *
 from .interval import *
 from .log import *
 from .lr import *
