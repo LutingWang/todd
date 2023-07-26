@@ -9,7 +9,7 @@ import torch
 
 from ...base import CallbackRegistry, Config, LrSchedulerRegistry
 from ...utils import get_world_size
-from ..runners import Trainer
+from ..trainer import Trainer
 from .base import BaseCallback
 from .interval import IntervalMixin
 

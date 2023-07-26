@@ -71,6 +71,11 @@ include = [
     'todd*',
 ]
 
+[tool.setuptools.package-data]
+todd = [
+    'py.typed',
+]
+
 [tool.yapf]
 allow_split_before_dict_value = false
 coalesce_brackets = true
