@@ -30,8 +30,8 @@ class LRScheduleCallback(IntervalMixin, BaseCallback):
         assert isinstance(self._runner, Trainer)
         self._lr_scheduler_config = lr_scheduler
 
-    def connect(self) -> None:
-        super().connect()
+    def init(self) -> None:
+        super().init()
         self._build_lr_scheduler()
 
     def _build_lr_scheduler(self) -> None:
@@ -93,6 +93,6 @@ class LRScaleCallback(BaseCallback):
             f"{base_batch_size=} {batch_size=} {lr_scaler=:.3f}"
         )
 
-    def connect(self) -> None:
-        super().connect()
+    def init(self) -> None:
+        super().init()
         self._scale_lr(self._lr_scaler_config)

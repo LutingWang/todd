@@ -7,7 +7,8 @@ from enum import IntEnum, auto
 
 import torch.nn as nn
 
-from ..base import StatusMixin, get_
+from ..base import StatusMixin
+from ..utils import get_
 
 # from typing import TYPE_CHECKING, Protocol
 

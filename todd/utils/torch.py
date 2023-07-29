@@ -14,6 +14,7 @@ from typing import TYPE_CHECKING
 
 import torch.distributed as dist
 
+# TODO: remove mmcv dependency
 if importlib.util.find_spec('mmcv') and not TYPE_CHECKING:
     try:
         from mmcv.runner import BaseModule as Module

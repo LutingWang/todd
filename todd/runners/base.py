@@ -47,7 +47,8 @@ class BaseRunner(StateDictMixin):
 
         self._iter = 0
         self._build(*args, **kwargs)
-        self._callbacks.connect()
+
+        self._callbacks.init()
 
         self._logger.debug(
             f"Rank {get_rank()} initialized by "

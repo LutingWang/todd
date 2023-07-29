@@ -21,7 +21,7 @@ from typing_extensions import Self
 import pandas as pd
 
 from .configs import Config
-from .patches import logger
+from .logger import logger
 from .registries import RegistryMeta
 
 Message = dict[str, Any]

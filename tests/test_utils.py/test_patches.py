@@ -1,7 +1,7 @@
 import pytest
 from custom_types import CustomObject
 
-from todd.base.patches import del_, get_, has_, set_, set_temp
+from todd.utils.patches import del_, get_, has_, set_, set_temp
 
 
 def test_has(obj: CustomObject) -> None:

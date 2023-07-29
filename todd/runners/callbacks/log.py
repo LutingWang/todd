@@ -2,10 +2,13 @@ __all__ = [
     'LogCallback',
 ]
 
+import datetime
 import logging
 from typing import Any
 
-from ...base import CallbackRegistry, Formatter
+import torch
+
+from ...base import CallbackRegistry, Formatter, Store
 from ...utils import get_rank, get_timestamp
 from .base import BaseCallback
 from .interval import IntervalMixin
@@ -25,13 +28,18 @@ class LogCallback(IntervalMixin, BaseCallback):
         super().__init__(*args, **kwargs)
         self._with_file_handler = with_file_handler
 
-    def connect(self) -> None:
-        super().connect()
+    def init(self) -> None:
+        super().init()
         if get_rank() == 0 and self._with_file_handler:
             file = self._runner.work_dir / f'{get_timestamp()}.log'
             handler = logging.FileHandler(file)
             handler.setFormatter(Formatter())
             self._runner.logger.addHandler(handler)
+
+    def before_run(self, memo: Memo) -> None:
+        super().before_run(memo)
+        self._start_time = datetime.datetime.now()
+        self._start_iter = self._runner.iter_
 
     def before_run_iter(self, batch, memo: Memo) -> None:
         super().before_run_iter(batch, memo)
@@ -42,8 +50,22 @@ class LogCallback(IntervalMixin, BaseCallback):
         super().after_run_iter(batch, memo)
         if 'log' not in memo:
             return
-        log: dict[str, Any] = memo.pop('log')
         prefix = f"Iter [{self._runner.iter_}/{self._runner.iters}] "
+
+        eta = datetime.datetime.now() - self._start_time
+        eta *= self._runner.iters - self._runner.iter_
+        eta /= self._runner.iter_ - self._start_iter
+        prefix += f"ETA {str(eta)} "
+
+        if Store.CUDA:
+            max_memory_allocated = max(
+                torch.cuda.max_memory_allocated(i)
+                for i in range(torch.cuda.device_count())
+            )
+            torch.cuda.reset_peak_memory_stats()
+            prefix += f"Memory {max_memory_allocated / 1024 ** 2:.2f}M "
+
+        log: dict[str, Any] = memo.pop('log')
         message = ' '.join(f'{k}={v}' for k, v in log.items())
         self._runner.logger.info(prefix + message)
 

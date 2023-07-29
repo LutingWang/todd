@@ -13,7 +13,8 @@ from typing_extensions import Self
 
 import torch.nn as nn
 
-from ..base import Config, get_
+from ..base import Config
+from ..utils import get_
 
 T = TypeVar('T')
 

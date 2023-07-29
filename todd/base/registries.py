@@ -30,7 +30,7 @@ import torchvision.transforms as tf
 
 from ..utils import NonInstantiableMeta
 from .configs import Config
-from .patches import logger
+from .logger import logger
 
 T = TypeVar('T', bound=Callable)
 

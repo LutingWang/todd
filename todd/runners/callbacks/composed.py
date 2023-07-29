@@ -12,7 +12,7 @@ Memo = dict[str, Any]
 
 
 class Priority(TypedDict, total=False):
-    connect: int
+    init: int
     should_break: int
     should_continue: int
     before_run_iter: int
@@ -41,7 +41,7 @@ class ComposedCallback(BaseCallback, UserList[BaseCallback]):
 
     def _callbacks(
         self,
-        name: Literal['connect', 'should_break', 'should_continue',
+        name: Literal['init', 'should_break', 'should_continue',
                       'before_run_iter', 'run_iter_context', 'after_run_iter',
                       'should_break_epoch', 'should_continue_epoch',
                       'before_run_epoch', 'run_epoch_context',
@@ -53,10 +53,10 @@ class ComposedCallback(BaseCallback, UserList[BaseCallback]):
         _, indices = zip(*priority_index)
         return [self[i] for i in indices]
 
-    def connect(self) -> None:
-        super().connect()
-        for c in self._callbacks('connect'):
-            c.connect()
+    def init(self) -> None:
+        super().init()
+        for c in self._callbacks('init'):
+            c.init()
 
     def should_break(self, *args, **kwargs) -> bool:
         super().should_break(*args, **kwargs)

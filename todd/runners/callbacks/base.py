@@ -13,7 +13,7 @@ Memo = dict[str, Any]
 
 class BaseCallback(RunnerHolderMixin, StateDictMixin):
 
-    def connect(self) -> None:
+    def init(self) -> None:
         pass
 
     def should_break(self, batch, memo: Memo) -> bool:

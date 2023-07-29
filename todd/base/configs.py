@@ -16,7 +16,7 @@ from typing_extensions import Self
 
 import yapf.yapflib.yapf_api as yapf
 
-from .patches import exec_, set_
+from ..utils import exec_, set_
 
 
 class AttrDict(UserDict):
