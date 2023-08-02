@@ -121,8 +121,8 @@ class BaseRunner(StateDictMixin):
         **kwargs,
     ) -> None:
         if callbacks is None:
-            callbacks = []
-        if isinstance(callbacks, list):
+            callbacks = Config(type='BaseCallback')
+        elif isinstance(callbacks, list):
             callbacks = Config(type='ComposedCallback', callbacks=callbacks)
         self._callbacks: 'BaseCallback' = CallbackRegistry.build(
             callbacks,

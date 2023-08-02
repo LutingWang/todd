@@ -13,6 +13,7 @@ from ...base import (
     ModelRegistry,
     OptimizerRegistry,
     StateDictMixin,
+    Store,
     StrategyRegistry,
 )
 from ..utils import RunnerHolderMixin
@@ -32,7 +33,10 @@ class BaseStrategy(RunnerHolderMixin, StateDictMixin):
         self._build_model(model)
 
     def _build_model(self, config: Config) -> None:
-        self._model = ModelRegistry.build(config)
+        model: nn.Module = ModelRegistry.build(config)
+        if Store.CUDA:
+            model = model.cuda()
+        self._model = model
 
     def build_optimizer(self, config: Config) -> torch.optim.Optimizer:
         return OptimizerRegistry.build(config, model=self._model)
