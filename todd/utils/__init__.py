@@ -1,4 +1,3 @@
-from .collect_env import *
 from .generic_tensors import *
 from .metas import *
 from .patches import *

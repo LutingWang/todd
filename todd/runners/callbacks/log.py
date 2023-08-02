@@ -8,7 +8,8 @@ from typing import Any
 
 import torch
 
-from ...base import CallbackRegistry, Formatter, Store
+from ...base import CallbackRegistry, Config, Formatter, Store
+from ...base.envs import EnvRegistry
 from ...utils import get_rank, get_timestamp
 from .base import BaseCallback
 from .interval import IntervalMixin
@@ -22,19 +23,28 @@ class LogCallback(IntervalMixin, BaseCallback):
     def __init__(
         self,
         *args,
+        collect_env: Config | None = None,
         with_file_handler: bool = False,
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
+        self._collect_env = collect_env
         self._with_file_handler = with_file_handler
 
     def init(self) -> None:
         super().init()
-        if get_rank() == 0 and self._with_file_handler:
-            file = self._runner.work_dir / f'{get_timestamp()}.log'
-            handler = logging.FileHandler(file)
-            handler.setFormatter(Formatter())
-            self._runner.logger.addHandler(handler)
+        if get_rank() > 0 or not self._with_file_handler:
+            return
+        file = self._runner.work_dir / f'{get_timestamp()}.log'
+        handler = logging.FileHandler(file)
+        handler.setFormatter(Formatter())
+        self._runner.logger.addHandler(handler)
+        if self._collect_env is None:
+            return
+        env = '\n'.join(
+            f'{k}: {v(**self._collect_env)}' for k, v in EnvRegistry.items()
+        )
+        self._runner.logger.info(f'\n{env}')
 
     def before_run(self, memo: Memo) -> None:
         super().before_run(memo)

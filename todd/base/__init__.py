@@ -2,6 +2,7 @@ from . import patches
 from .bboxes import *
 from .checkpoints import *
 from .configs import *
+from .envs import *
 from .interfaces import *
 from .logger import *
 from .registries import *

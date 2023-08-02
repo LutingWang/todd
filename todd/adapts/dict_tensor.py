@@ -98,7 +98,7 @@ class DictTensor(Mapping):
         return dict_tensors
 
 
-@AdaptRegistry.register(keys=('Union', ))
+@AdaptRegistry.register('Union')
 class Union_(BaseAdapt):
 
     def forward(

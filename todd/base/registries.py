@@ -178,13 +178,13 @@ class RegistryMeta(UserDict, NonInstantiableMeta):  # type: ignore[misc]
 
     def register(
         self,
-        keys: Iterable[str] | None = None,
+        *args: str,
         **kwargs,
     ) -> Callable[[T], T]:
         """Register decorator.
 
         Args:
-            keys: names to be registered as.
+            args: names to be registered as.
             kwargs: refer to `__setitem__`.
 
         Returns:
@@ -213,7 +213,7 @@ class RegistryMeta(UserDict, NonInstantiableMeta):  # type: ignore[misc]
 
         - multiple names
 
-          >>> @Cat.register(('British Longhair', 'british longhair'))
+          >>> @Cat.register('British Longhair', 'british longhair')
           ... class BritishLonghair: pass
           >>> 'British Longhair' in Cat
           True
@@ -223,7 +223,7 @@ class RegistryMeta(UserDict, NonInstantiableMeta):  # type: ignore[misc]
         - compatibility with child registries
 
           >>> class HairlessCat(Cat): pass
-          >>> @Cat.register(('HairlessCat.CanadianHairless',))
+          >>> @Cat.register('HairlessCat.CanadianHairless')
           ... def canadian_hairless() -> str:
           ...     return 'canadian hairless'
           >>> HairlessCat
@@ -231,12 +231,10 @@ class RegistryMeta(UserDict, NonInstantiableMeta):  # type: ignore[misc]
         """
 
         def wrapper_func(obj: T) -> T:
-            if keys is None:
-                self.__setitem__(obj.__name__, obj, **kwargs)
-            else:
-                for key in keys:
-                    registry, key = self._parse(key)
-                    registry.__setitem__(key, obj, **kwargs)
+            keys = [obj.__name__] if len(args) == 0 else args
+            for key in keys:
+                registry, key = self._parse(key)
+                registry.__setitem__(key, obj, **kwargs)
             return obj
 
         return wrapper_func
@@ -405,6 +403,11 @@ class TransformRegistry(Registry):
             config.transforms = list(map(cls.build, config.transforms))
         return RegistryMeta._build(cls, config)
 
+
+for c in torch.nn.Module.__subclasses__():
+    module = c.__module__.replace('.', '_')
+    name = c.__name__
+    ModelRegistry.register(f'{module}_{name}')(c)
 
 for c in torch.utils.data.Sampler.__subclasses__():
     SamplerRegistry.register()(c)

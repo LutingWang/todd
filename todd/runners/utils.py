@@ -33,10 +33,6 @@ class RunnerHolderMixin:
         return self._runner
 
     @property
-    def runner(self) -> BaseRunner:
-        return self._runner
-
-    @property
     def iter_based_trainer(self) -> IterBasedTrainer:
         assert isinstance(self._runner, IterBasedTrainer)
         return self._runner

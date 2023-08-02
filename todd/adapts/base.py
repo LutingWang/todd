@@ -35,6 +35,6 @@ try:
         mmcv.cnn.CONV_LAYERS.module_dict.items(),
         mmcv.cnn.PLUGIN_LAYERS.module_dict.items(),
     ):
-        AdaptRegistry.register(keys=(f'mmcv_{k}', ))(v)
+        AdaptRegistry.register(f'mmcv_{k}')(v)
 except Exception:
     pass
