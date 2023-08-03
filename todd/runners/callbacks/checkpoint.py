@@ -62,7 +62,7 @@ class CheckpointCallback(IntervalMixin, BaseCallback):
         for k, v in state_dict.items():
             torch.save(v, work_dir / f'{k}.pth')
 
-        if self._latest_checkpoint_dir.exists():
+        if self._latest_checkpoint_dir.is_symlink():
             self._latest_checkpoint_dir.unlink()
         self._latest_checkpoint_dir.symlink_to(work_dir)
 
