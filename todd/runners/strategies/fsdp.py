@@ -18,10 +18,7 @@ class FSDPStrategy(DDPStrategy):
     _model: FSDP
 
     def _wrap_model(self, config: Config) -> None:
-        self._model = FSDP(
-            self._model.cuda(),
-            **config,
-        )
+        self._model = FSDP(self._model, **config)
 
     def build_optimizer(self, config: Config) -> torch.optim.Optimizer:
         return OptimizerRegistry.build(config, model=self._model)

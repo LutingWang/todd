@@ -25,14 +25,14 @@ class EnvRegistry(Registry):
 @EnvRegistry.register('Platform')
 def platform(verbose: bool = False) -> str | None:
     from platform import platform as _platform
-    return _platform()
+    return _platform(terse=not verbose)
 
 
 @EnvRegistry.register('NVIDIA SMI')
 def nvidia_smi(verbose: bool = False) -> str | None:
     args = 'nvidia-smi -q' if verbose else 'nvidia-smi -L'
     try:
-        return subprocess.run(
+        log = subprocess.run(
             args,
             check=True,
             stdout=subprocess.PIPE,
@@ -42,6 +42,9 @@ def nvidia_smi(verbose: bool = False) -> str | None:
         ).stdout.strip()
     except subprocess.CalledProcessError:
         return None
+    if verbose:
+        log = '\n' + log
+    return log
 
 
 @EnvRegistry.register('Python version')

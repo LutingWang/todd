@@ -13,7 +13,6 @@ from ...base import (
     ModelRegistry,
     OptimizerRegistry,
     StateDictMixin,
-    Store,
     StrategyRegistry,
 )
 from ..utils import RunnerHolderMixin
@@ -33,13 +32,10 @@ class BaseStrategy(RunnerHolderMixin, StateDictMixin):
         self._build_model(model)
 
     def _build_model(self, config: Config) -> None:
-        model: nn.Module = ModelRegistry.build(config)
-        if Store.CUDA:
-            model = model.cuda()
-        self._model = model
+        self._model = ModelRegistry.build(config)
 
     def build_optimizer(self, config: Config) -> torch.optim.Optimizer:
-        return OptimizerRegistry.build(config, model=self._model)
+        return OptimizerRegistry.build(config, model=self.module)
 
     @property
     def model(self) -> nn.Module:
@@ -50,7 +46,7 @@ class BaseStrategy(RunnerHolderMixin, StateDictMixin):
         return self._model
 
     def model_state_dict(self, *args, **kwargs) -> dict[str, Any]:
-        return self._model.state_dict(*args, **kwargs)
+        return self.module.state_dict(*args, **kwargs)
 
     def load_model_state_dict(
         self,
@@ -58,7 +54,7 @@ class BaseStrategy(RunnerHolderMixin, StateDictMixin):
         *args,
         **kwargs,
     ) -> None:
-        self._model.load_state_dict(state_dict, *args, **kwargs)
+        self.module.load_state_dict(state_dict, *args, **kwargs)
 
     def load_model_from(self, f: pathlib.Path, *args, **kwargs) -> None:
         self._runner._logger.info(f"Loading model from {f}")
