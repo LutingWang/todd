@@ -16,6 +16,7 @@ __all__ = [
     'SamplerRegistry',
     'ModelRegistry',
     'TransformRegistry',
+    'EnvRegistry',
 ]
 
 import inspect
@@ -28,6 +29,7 @@ import torch.nn as nn
 import torch.utils.data
 import torchvision.transforms as tf
 
+from .. import utils
 from ..utils import NonInstantiableMeta
 from .configs import Config
 from .logger import logger
@@ -404,6 +406,10 @@ class TransformRegistry(Registry):
         return RegistryMeta._build(cls, config)
 
 
+class EnvRegistry(Registry):
+    pass
+
+
 for c in torch.nn.Module.__subclasses__():
     module = c.__module__.replace('.', '_')
     name = c.__name__
@@ -430,3 +436,14 @@ NormRegistry['IN3d'] = nn.InstanceNorm3d
 
 for _, c in inspect.getmembers(tf, inspect.isclass):
     TransformRegistry.register()(c)
+
+EnvRegistry.register('Platform')(utils.platform)
+EnvRegistry.register('NVIDIA SMI')(utils.nvidia_smi)
+EnvRegistry.register('Python version')(utils.python_version)
+EnvRegistry.register('PyTorch version')(utils.pytorch_version)
+EnvRegistry.register('TorchVision version')(utils.torchvision_version)
+EnvRegistry.register('OpenCV version')(utils.opencv_version)
+EnvRegistry.register('Todd version')(utils.todd_version)
+EnvRegistry.register('CUDA_HOME')(utils.cuda_home)
+EnvRegistry.register('Git commit ID')(utils.git_commit_id)
+EnvRegistry.register('Git status')(utils.git_status)

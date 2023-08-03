@@ -8,8 +8,7 @@ from typing import Any
 
 import torch
 
-from ...base import CallbackRegistry, Config, Formatter, Store
-from ...base.envs import EnvRegistry
+from ...base import CallbackRegistry, Config, EnvRegistry, Formatter, Store
 from ...utils import get_rank, get_timestamp
 from .base import BaseCallback
 from .interval import IntervalMixin
@@ -41,10 +40,14 @@ class LogCallback(IntervalMixin, BaseCallback):
         self._runner.logger.addHandler(handler)
         if self._collect_env is None:
             return
-        env = '\n'.join(
-            f'{k}: {v(**self._collect_env)}' for k, v in EnvRegistry.items()
-        )
-        self._runner.logger.info(f'\n{env}')
+        envs = ['']
+        for k, v in EnvRegistry.items():
+            env = str(v(**self._collect_env))
+            env = env.strip()
+            if '\n' in env:
+                env = '\n' + env
+            envs.append(f'{k}: {env}')
+        self._runner.logger.info('\n'.join(envs))
 
     def before_run(self, memo: Memo) -> None:
         super().before_run(memo)
