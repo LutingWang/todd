@@ -5,15 +5,15 @@ __all__ = [
 from typing import Literal
 
 import torch
+import torch.nn as nn
 
 from ..base import Config
-from ..utils import Module
 from .schedulers import BaseScheduler, SchedulerRegistry
 
 Reduction = Literal['none', 'mean', 'sum', 'prod']
 
 
-class BaseLoss(Module):
+class BaseLoss(nn.Module):
 
     def __init__(
         self,

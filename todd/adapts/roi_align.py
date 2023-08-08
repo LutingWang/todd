@@ -1,17 +1,17 @@
 import torch
+import torch.nn as nn
 
-from ..utils import ModuleList
 from .base import AdaptRegistry, BaseAdapt
 
 
 @AdaptRegistry.register()
 class RoIAlign(BaseAdapt):
 
-    def __init__(self, strides: list[int], *args, **kwargs):
+    def __init__(self, strides: list[int], *args, **kwargs) -> None:
         import mmcv.ops
 
         super().__init__(*args, **kwargs)
-        self._layers = ModuleList([
+        self._layers = nn.ModuleList([
             mmcv.ops.RoIAlign(
                 spatial_scale=1 / s,
                 output_size=7,

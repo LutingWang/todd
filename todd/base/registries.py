@@ -394,7 +394,24 @@ class SamplerRegistry(Registry):
 
 
 class ModelRegistry(Registry):
-    pass
+
+    @classmethod
+    def init_weights(cls, model, config: Config) -> None:
+        if not isinstance(model, nn.Module):
+            return
+        if hasattr(model, 'init_weights'):
+            model.init_weights(config)
+            return
+        for child in model.children():
+            cls.init_weights(child, config)
+
+    @classmethod
+    def _build(cls, config: Config):
+        config = config.copy()
+        init_weights = config.pop('init_weights', Config())
+        model = RegistryMeta._build(cls, config)
+        cls.init_weights(model, init_weights)
+        return model
 
 
 class TransformRegistry(Registry):

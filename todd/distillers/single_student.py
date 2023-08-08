@@ -12,7 +12,6 @@ from typing_extensions import Self
 import torch.nn as nn
 
 from ..base import Config
-from ..utils import ModuleList
 from .base import BaseDistiller, DistillerRegistry
 
 
@@ -75,7 +74,7 @@ class MultiTeacherDistiller(SingleStudentDistiller):
         for offline_teacher in offline_teachers:
             offline_teacher.requires_grad_(False)
             offline_teacher.eval()
-        distiller.add_module('_teachers', ModuleList(online_teachers))
+        distiller.add_module('_teachers', nn.ModuleList(online_teachers))
 
         return distiller
 

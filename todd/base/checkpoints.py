@@ -4,7 +4,9 @@ __all__ = [
     'transfer_weights',
 ]
 
-from ..utils import Module, get_
+import torch.nn as nn
+
+from ..utils import get_
 from .logger import logger
 
 # from .configs import Config
@@ -26,7 +28,7 @@ from .logger import logger
 #     return model
 
 
-def transfer_weight(target: Module, source: Module) -> None:
+def transfer_weight(target: nn.Module, source: nn.Module) -> None:
     state_dict = source.state_dict()
     missing_keys, unexpected_keys = target.load_state_dict(
         state_dict,
@@ -36,7 +38,6 @@ def transfer_weight(target: Module, source: Module) -> None:
         logger.warning('missing_keys:', missing_keys)
     if unexpected_keys:
         logger.warning('unexpected_keys:', unexpected_keys)
-    target._is_init = True  # type: ignore[assignment]
 
 
 def transfer_weights(models, weight_prefixes: dict[str, str]) -> None:

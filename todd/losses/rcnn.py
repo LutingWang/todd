@@ -23,7 +23,7 @@ class SGFILoss(MSELoss):
         hidden_channels: int = 128,
         out_channels: int = 64,
         **kwargs,
-    ):
+    ) -> None:
         from mmcv.cnn import ConvModule
 
         super().__init__(*args, **kwargs)

@@ -68,6 +68,7 @@ class LogCallback(IntervalMixin, BaseCallback):
         eta = datetime.datetime.now() - self._start_time
         eta *= self._runner.iters - self._runner.iter_
         eta /= self._runner.iter_ - self._start_iter
+        eta = datetime.timedelta(seconds=round(eta.total_seconds()))
         prefix += f"ETA {str(eta)} "
 
         if Store.CUDA:

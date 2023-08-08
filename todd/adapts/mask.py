@@ -15,7 +15,7 @@ class MultiLevelMask:
         strides: list[int],
         ceil_mode: bool = False,
         **kwargs,
-    ):
+    ) -> None:
         self._strides = strides
         self._ceil_mode = ceil_mode
         super().__init__(*args, **kwargs)
@@ -66,7 +66,7 @@ class MultiLevelMask:
 
 class SingleLevelMask(MultiLevelMask):
 
-    def __init__(self, *args, stride: int, **kwargs):
+    def __init__(self, *args, stride: int, **kwargs) -> None:
         super().__init__(*args, strides=[stride], **kwargs)
 
     @property
@@ -91,7 +91,7 @@ class LabelEncMask(BaseAdapt):
         num_classes: int = 80,
         aug: bool = True,
         **kwargs,
-    ):
+    ) -> None:
         super().__init__(*args, **kwargs)
         self._num_classes = num_classes
         self._aug = aug
@@ -165,7 +165,7 @@ class DeFeatMask(MultiLevelMask, BaseAdapt):
         *args,
         neg_gain: float = 4,
         **kwargs,
-    ):
+    ) -> None:
         super().__init__(*args, **kwargs)
         self._neg_gain = neg_gain
 
@@ -267,7 +267,7 @@ class FGDMask(DeFeatMask):
 @AdaptRegistry.register()
 class FGFIMask(BaseAdapt):
 
-    def __init__(self, *args, thresh: float = 0.5, **kwargs):
+    def __init__(self, *args, thresh: float = 0.5, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._thresh = thresh
 
@@ -334,7 +334,7 @@ class FGFIMask(BaseAdapt):
 @AdaptRegistry.register()
 class FRSMask(BaseAdapt):
 
-    def __init__(self, *args, with_logits: bool = True, **kwargs):
+    def __init__(self, *args, with_logits: bool = True, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._with_logits = with_logits
 

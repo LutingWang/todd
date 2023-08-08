@@ -17,7 +17,7 @@ class FocalMixin(FunctionalLoss):
         gamma=2.0,
         alpha=0.25,
         **kwargs,
-    ):
+    ) -> None:
         super().__init__(*args, **kwargs)
         self._gamma = gamma
         self._alpha = alpha

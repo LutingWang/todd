@@ -25,7 +25,6 @@ from ..base import (
 )
 from ..hooks import BaseHook
 from ..losses import BaseLoss
-from ..utils import Module, ModuleList
 
 
 class DistillerStore(metaclass=StoreMeta):
@@ -33,7 +32,7 @@ class DistillerStore(metaclass=StoreMeta):
     INTERMEDIATE_OUTPUTS: str
 
 
-class BaseDistiller(Module, Workflow):
+class BaseDistiller(nn.Module, Workflow):
 
     @classmethod
     def build(cls, config: Config) -> Self:
@@ -62,11 +61,11 @@ class BaseDistiller(Module, Workflow):
 
         distiller.add_module(
             '_adapts',
-            ModuleList(ModuleList(step.actions) for step in adapt_job),
+            nn.ModuleList(nn.ModuleList(step.actions) for step in adapt_job),
         )
         distiller.add_module(
             '_losses',
-            ModuleList(ModuleList(step.actions) for step in loss_job),
+            nn.ModuleList(nn.ModuleList(step.actions) for step in loss_job),
         )
 
         if weight_transfer is not None:
@@ -79,7 +78,7 @@ class BaseDistiller(Module, Workflow):
         models: Iterable[nn.Module],
         jobs: Mapping[str, Job],
     ) -> None:
-        Module.__init__(self)
+        nn.Module.__init__(self)
         Workflow.__init__(self, jobs)  # type: ignore[arg-type]
         self._models = tuple(models)
 

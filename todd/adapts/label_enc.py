@@ -2,11 +2,10 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from ..utils import Module, Sequential
 from .base import AdaptRegistry, BaseAdapt
 
 
-class Bottleneck(Module):
+class Bottleneck(nn.Module):
 
     def __init__(
         self,
@@ -14,7 +13,7 @@ class Bottleneck(Module):
         hidden_channels,
         out_channels,
         downsample: bool = False,
-    ):
+    ) -> None:
         super().__init__()
         stride = 2 if downsample else 1
         self._downsample = None if in_channels == out_channels else nn.Conv2d(
@@ -67,7 +66,7 @@ class Bottleneck(Module):
         return out
 
 
-class ResBlock(Sequential):
+class ResBlock(nn.Sequential):
 
     def __init__(
         self,
@@ -75,7 +74,7 @@ class ResBlock(Sequential):
         base_channels: int,
         expansion: int = 2,
         **kwargs,
-    ):
+    ) -> None:
         layer1 = Bottleneck(
             base_channels * expansion,
             base_channels,
@@ -100,7 +99,7 @@ class LabelEncAdapt(BaseAdapt):
         base_channels: int = 32,
         expansion: int = 2,
         **kwargs,
-    ):
+    ) -> None:
         super().__init__(*args, **kwargs)
         self._stage1 = nn.Conv2d(
             num_classes,

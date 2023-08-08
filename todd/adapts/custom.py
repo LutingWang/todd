@@ -21,7 +21,7 @@ class Custom(BaseAdapt):
         RuntimeError: {'b'}
     """
 
-    def __init__(self, *args, pattern: str, **kwargs):
+    def __init__(self, *args, pattern: str, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._pattern = pattern
 

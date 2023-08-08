@@ -64,7 +64,7 @@ class CheckpointCallback(IntervalMixin, BaseCallback):
 
         if self._latest_checkpoint_dir.is_symlink():
             self._latest_checkpoint_dir.unlink()
-        self._latest_checkpoint_dir.symlink_to(work_dir)
+        self._latest_checkpoint_dir.symlink_to(name)
 
     def after_run_iter(self, batch, memo: Memo) -> None:
         super().after_run_iter(batch, memo)

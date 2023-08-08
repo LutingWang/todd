@@ -15,7 +15,7 @@ class Decouple(BaseAdapt):
         out_features: int,
         bias: bool = True,
         **kwargs,
-    ):
+    ) -> None:
         super().__init__(**kwargs)
         self._num = num
         self._layer = nn.Linear(in_features, out_features * num, bias)

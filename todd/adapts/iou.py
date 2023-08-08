@@ -13,7 +13,7 @@ class IoU(BaseAdapt):
         aligned: bool = False,
         eps: float = 1e-6,
         **kwargs,
-    ):
+    ) -> None:
         super().__init__(*args, **kwargs)
         assert not aligned
         self._aligned = aligned

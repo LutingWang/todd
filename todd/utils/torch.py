@@ -1,28 +1,12 @@
 __all__ = [
-    'Module',
-    'ModuleList',
-    'ModuleDict',
-    'Sequential',
     'get_rank',
     'get_local_rank',
     'get_world_size',
 ]
 
-import importlib.util
 import os
-from typing import TYPE_CHECKING
 
 import torch.distributed as dist
-
-# TODO: remove mmcv dependency
-if importlib.util.find_spec('mmcv') and not TYPE_CHECKING:
-    try:
-        from mmcv.runner import BaseModule as Module
-        from mmcv.runner import ModuleDict, ModuleList, Sequential
-    except Exception:
-        from torch.nn import Module, ModuleDict, ModuleList, Sequential
-else:
-    from torch.nn import Module, ModuleDict, ModuleList, Sequential
 
 
 def get_rank(*args, **kwargs) -> int:

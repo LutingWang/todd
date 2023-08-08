@@ -10,10 +10,9 @@ import einops.layers.torch
 import torch.nn as nn
 
 from ..base import Registry
-from ..utils import Module
 
 
-class BaseAdapt(Module):
+class BaseAdapt(nn.Module):
     pass
 
 

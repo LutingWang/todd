@@ -11,7 +11,7 @@ from todd.utils import CollectionTensor
 @AdaptRegistry.register()
 class CustomAdapt(BaseAdapt):
 
-    def __init__(self, stride: int = 1, **kwargs):
+    def __init__(self, stride: int = 1, **kwargs) -> None:
         super().__init__(**kwargs)
         self._stride = stride
 

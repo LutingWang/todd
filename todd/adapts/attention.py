@@ -8,7 +8,7 @@ from .base import AdaptRegistry, BaseAdapt
 @AdaptRegistry.register()
 class AbsMeanSpatialAttention(BaseAdapt):
 
-    def __init__(self, *args, temperature: float = 1, **kwargs):
+    def __init__(self, *args, temperature: float = 1, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._temperature = temperature
 
@@ -26,7 +26,7 @@ class AbsMeanSpatialAttention(BaseAdapt):
 @AdaptRegistry.register()
 class AbsMeanChannelAttention(BaseAdapt):
 
-    def __init__(self, *args, temperature: float = 1, **kwargs):
+    def __init__(self, *args, temperature: float = 1, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._temperature = temperature
 

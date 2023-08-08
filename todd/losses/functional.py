@@ -46,7 +46,7 @@ class FunctionalLoss(BaseLoss):
 
 class NormMixin(FunctionalLoss):
 
-    def __init__(self, *args, norm: bool = False, **kwargs):
+    def __init__(self, *args, norm: bool = False, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._norm = norm
 
