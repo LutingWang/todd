@@ -400,6 +400,7 @@ class ModelRegistry(Registry):
         if not isinstance(model, nn.Module):
             return
         if hasattr(model, 'init_weights'):
+            logger.debug(f"Initializing {model.__class__.__name__} weights.")
             model.init_weights(config)
             return
         for child in model.children():

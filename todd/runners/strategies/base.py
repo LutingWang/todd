@@ -54,10 +54,15 @@ class BaseStrategy(RunnerHolderMixin, StateDictMixin):
         *args,
         **kwargs,
     ) -> None:
-        self.module.load_state_dict(state_dict, *args, **kwargs)
+        incompatible_keys = self.module.load_state_dict(
+            state_dict,
+            *args,
+            **kwargs,
+        )
+        self._runner.logger.info(incompatible_keys)
 
     def load_model_from(self, f: pathlib.Path, *args, **kwargs) -> None:
-        self._runner._logger.info(f"Loading model from {f}")
+        self._runner.logger.info(f"Loading model from {f}")
         model_state_dict = torch.load(f, 'cpu')
         self.load_model_state_dict(model_state_dict, *args, **kwargs)
 
