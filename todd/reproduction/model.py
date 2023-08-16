@@ -344,6 +344,8 @@ class FrozenMixin(nn.Module):
         return self._train_configs
 
     def init_weights(self, config: Config) -> None:
+        if hasattr(super(), 'init_weights'):
+            super().init_weights(config)
         self.requires_grad_()
         self.train()
 
