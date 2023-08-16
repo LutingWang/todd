@@ -343,6 +343,10 @@ class FrozenMixin(nn.Module):
     def train_configs(self) -> tuple[Config, ...]:
         return self._train_configs
 
+    def init_weights(self, config: Config) -> None:
+        self.requires_grad_()
+        self.train()
+
     def requires_grad_(self, requires_grad: bool = True) -> Self:
         self = super().requires_grad_(requires_grad)
         finder = ParameterFinder(self)

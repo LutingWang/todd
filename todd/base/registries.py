@@ -17,11 +17,13 @@ __all__ = [
     'ModelRegistry',
     'TransformRegistry',
     'EnvRegistry',
+    'GradClipperRegistry',
 ]
 
 import inspect
 import re
 from collections import UserDict
+from functools import partial
 from typing import Callable, Iterable, NoReturn, TypeVar
 
 import torch
@@ -428,6 +430,14 @@ class EnvRegistry(Registry):
     pass
 
 
+class GradClipperRegistry(Registry):
+
+    @classmethod
+    def _build(cls, config: Config):
+        func = cls[config.pop('type')]
+        return partial(func, **config)
+
+
 for c in torch.nn.Module.__subclasses__():
     module = c.__module__.replace('.', '_')
     name = c.__name__
@@ -465,3 +475,6 @@ EnvRegistry.register('Todd version')(utils.todd_version)
 EnvRegistry.register('CUDA_HOME')(utils.cuda_home)
 EnvRegistry.register('Git commit ID')(utils.git_commit_id)
 EnvRegistry.register('Git status')(utils.git_status)
+
+GradClipperRegistry.register()(nn.utils.clip_grad_norm_)
+GradClipperRegistry.register()(nn.utils.clip_grad_value_)
