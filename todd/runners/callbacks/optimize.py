@@ -44,29 +44,38 @@ class OptimizeCallback(BaseCallback):
     def _build_grad_clipper(self, config: Config) -> None:
         self._grad_clipper = GradClipperRegistry.build(config)
 
-    def after_run_iter(self, batch, memo: Memo) -> None:
-        super().after_run_iter(batch, memo)
-        runner = self.trainer
-        loss: torch.Tensor = memo['loss']
+    def _scale_grad(self, loss: torch.Tensor) -> torch.Tensor:
+        return self._grad_scaler.scale(loss)
+
+    def _clip_grad(self, optimizer: torch.optim.Optimizer) -> torch.Tensor:
         if self.with_grad_scaler:
-            loss = self._grad_scaler.scale(loss)
-        loss.backward()
-        if self.with_grad_clipper is not None:
-            if self.with_grad_scaler:
-                self._grad_scaler.unscale_(runner.optimizer)
-            parameters = [
-                param for param_group in runner.optimizer.param_groups
-                for param in param_group['params']
-            ]
-            grad = self._grad_clipper(parameters)
-            if 'log' in memo:
-                memo['log']['grad'] = grad
+            self._grad_scaler.unscale_(optimizer)
+        parameters = [
+            param for param_group in optimizer.param_groups
+            for param in param_group['params']
+        ]
+        return self._grad_clipper(parameters)
+
+    def _step(self, optimizer: torch.optim.Optimizer) -> None:
         if self.with_grad_scaler:
-            self._grad_scaler.step(runner.optimizer)
+            self._grad_scaler.step(optimizer)
             self._grad_scaler.update()
         else:
-            runner.optimizer.step()
-        runner.optimizer.zero_grad()
+            optimizer.step()
+
+    def after_run_iter(self, batch, memo: Memo) -> None:
+        super().after_run_iter(batch, memo)
+        optimizer = self.trainer.optimizer
+        loss: torch.Tensor = memo['loss']
+        if self.with_grad_scaler:
+            loss = self._scale_grad(loss)
+        loss.backward()
+        if self.with_grad_clipper is not None:
+            grad = self._clip_grad(optimizer)
+            if 'log' in memo:
+                memo['log']['grad'] = f'{grad:.3f}'
+        self._step(optimizer)
+        optimizer.zero_grad()
 
     def load_state_dict(
         self,
