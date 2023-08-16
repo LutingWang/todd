@@ -81,6 +81,7 @@ class LRScaleCallback(BaseCallback):
 
     def _scale_lr(self, config: Config) -> None:
         runner = cast(Trainer, self._runner)
+        assert runner.dataloader.batch_size is not None
         base_batch_size = config.base_batch_size
         batch_size = get_world_size() * runner.dataloader.batch_size
         lr_scaler = batch_size / base_batch_size

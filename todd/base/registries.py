@@ -24,7 +24,7 @@ import inspect
 import re
 from collections import UserDict
 from functools import partial
-from typing import Callable, Iterable, NoReturn, TypeVar
+from typing import Callable, Iterable, NoReturn, TypeVar, cast
 
 import torch
 import torch.nn as nn
@@ -403,7 +403,7 @@ class ModelRegistry(Registry):
             return
         if hasattr(model, 'init_weights'):
             logger.debug(f"Initializing {model.__class__.__name__} weights.")
-            model.init_weights(config)
+            cast(Callable[[Config], None], model.init_weights)(config)
             return
         for child in model.children():
             cls.init_weights(child, config)
@@ -437,6 +437,8 @@ class GradClipperRegistry(Registry):
         func = cls[config.pop('type')]
         return partial(func, **config)
 
+
+c: type
 
 for c in torch.nn.Module.__subclasses__():
     module = c.__module__.replace('.', '_')

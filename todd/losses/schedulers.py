@@ -12,7 +12,7 @@ __all__ = [
 import bisect
 import math
 from abc import ABC, abstractmethod
-from typing import Iterable
+from typing import Iterable, cast
 
 import torch
 
@@ -50,7 +50,7 @@ class BaseScheduler(torch.nn.Module, ABC):
 
     @property
     def steps(self) -> int:
-        return self._steps.item()
+        return cast(int, self._steps.item())
 
     @steps.setter
     def steps(self, value: int) -> None:

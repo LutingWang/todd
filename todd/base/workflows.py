@@ -15,7 +15,15 @@ from collections import UserDict, UserList
 from functools import partial
 from itertools import repeat
 from symtable import symtable
-from typing import TYPE_CHECKING, Any, Callable, Iterable, NamedTuple, final
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Iterable,
+    NamedTuple,
+    cast,
+    final,
+)
 from typing_extensions import Self
 
 import pandas as pd
@@ -280,7 +288,8 @@ class ParallelStep(Step):
         for action, *_ in zip(self._actions, *inputs):
             _ = action(*_)
             outputs.append(self._output(_))
-        return pd.DataFrame(outputs).to_dict(orient="list")
+        data_frame = pd.DataFrame(outputs)
+        return cast(Message, data_frame.to_dict(orient="list"))
 
     def __repr__(self) -> str:
         return (

@@ -106,6 +106,20 @@ files = [
 ]
 plugins = 'numpy.typing.mypy_plugin'
 
+[[tool.mypy.overrides]]
+module = [
+    'custom_types.*',
+    'cv2.*',
+    'lmdb.*',
+    'lvis.*',
+    'ipdb.*',
+    'mmcv.*',
+    'pptx.*',
+    'torchvision.*',
+    'yapf.*',
+]
+ignore_missing_imports = true
+
 [tool.codespell]
 write-changes = true
 

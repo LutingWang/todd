@@ -9,9 +9,13 @@
     ],
     "cSpell.words": [
         "autocast",
+        "CXCYWH",
         "FGFI",
         "gethostname",
         "SGFI",
+        "shorthair",
+        "XYWH",
+        "XYXY",
         "yapflib"
     ]
 }

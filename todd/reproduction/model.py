@@ -57,8 +57,8 @@ class Finder(Generic[T]):
     Different from `find_by_type`, `find_by_types` can match multiple types:
 
         >>> finder.find_by_types([nn.Conv2d, nn.BatchNorm2d], 'modules')
-        [Conv2d(3, 8, ...), BatchNorm2d(8, ...), Conv2d(8, 16, ...), BatchNorm\
-2d(16, ...)]
+        [Conv2d(3, 8, ...), BatchNorm2d(8, ...), Conv2d(8, 16, ...), \
+BatchNorm2d(16, ...)]
 
     `find_by_config` is a more flexible way to find objects.
     For example, we can find the first convolution and batch normalization
@@ -220,8 +220,8 @@ class Finder(Generic[T]):
             ...     Config(regex='bias', member='parameters', mode=True),
             ...     Config(names=['.bn.bias'], mode=Ellipsis),
             ... ])
-            {Conv1d(1, 2, kernel_size=(3,), stride=(1,)): False, Parameter con\
-taining:
+            {Conv1d(1, 2, kernel_size=(3,), stride=(1,)): False, Parameter \
+containing:
             tensor([..., ...]): True, Parameter containing:
             tensor([0., 0., 0.]): Ellipsis}
         """
@@ -345,7 +345,7 @@ class FrozenMixin(nn.Module):
 
     def init_weights(self, config: Config) -> None:
         if hasattr(super(), 'init_weights'):
-            super().init_weights(config)
+            super().init_weights(config)  # type: ignore[misc]
         self.requires_grad_()
         self.train()
 
@@ -408,12 +408,12 @@ def state_dict_hook(
         ...         self.bn = nn.BatchNorm1d(2)
         >>> Model().state_dict()
         OrderedDict([('bn.weight', tensor([1., 1.])), ('bn.bias', tensor([0., \
-0.])), ('bn.running_mean', tensor([0., 0.])), ('bn.running_var', tensor([1., 1\
-.])), ('bn.num_batches_tracked', tensor(0))])
+0.])), ('bn.running_mean', tensor([0., 0.])), ('bn.running_var', tensor([1., \
+1.])), ('bn.num_batches_tracked', tensor(0))])
         >>> nn.Sequential(Model()).state_dict()
         OrderedDict([('0.bn.weight', tensor([1., 1.])), ('0.bn.bias', tensor([\
-0., 0.])), ('0.bn.running_mean', tensor([0., 0.])), ('0.bn.running_var', tenso\
-r([1., 1.])), ('0.bn.num_batches_tracked', tensor(0))])
+0., 0.])), ('0.bn.running_mean', tensor([0., 0.])), ('0.bn.running_var', \
+tensor([1., 1.])), ('0.bn.num_batches_tracked', tensor(0))])
     """
     if len(state_dict) == 0:
         return

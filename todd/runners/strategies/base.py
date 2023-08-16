@@ -75,4 +75,5 @@ class BaseStrategy(RunnerHolderMixin, StateDictMixin):
         *args,
         **kwargs,
     ) -> None:
+        state_dict = dict(state_dict)
         self.trainer.optimizer.load_state_dict(state_dict)

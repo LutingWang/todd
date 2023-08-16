@@ -6,7 +6,7 @@ __all__ = [
 import hashlib
 import random
 from contextlib import contextmanager
-from typing import Generator
+from typing import Generator, cast
 
 import numpy as np
 import torch
@@ -23,7 +23,7 @@ def randint(high: int = 2**30) -> int:
         return seed
     tensor = torch.tensor(seed, dtype=torch.int)
     dist.broadcast(tensor, src=0)
-    return tensor.item()
+    return cast(int, tensor.item())
 
 
 def init_seed(seed: int) -> None:

@@ -61,11 +61,17 @@ class BaseDistiller(nn.Module, Workflow):
 
         distiller.add_module(
             '_adapts',
-            nn.ModuleList(nn.ModuleList(step.actions) for step in adapt_job),
+            nn.ModuleList(
+                nn.ModuleList(cast(Iterable[nn.Module], step.actions))
+                for step in adapt_job
+            ),
         )
         distiller.add_module(
             '_losses',
-            nn.ModuleList(nn.ModuleList(step.actions) for step in loss_job),
+            nn.ModuleList(
+                nn.ModuleList(cast(Iterable[nn.Module], step.actions))
+                for step in loss_job
+            ),
         )
 
         if weight_transfer is not None:

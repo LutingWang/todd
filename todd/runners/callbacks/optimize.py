@@ -20,15 +20,15 @@ class OptimizeCallback(BaseCallback):
         self,
         *args,
         grad_scaler: Config | None = None,
-        grad_clip: Config | None = None,
+        grad_clipper: Config | None = None,
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
         self.trainer
         if grad_scaler is not None:
             self._build_grad_scaler(grad_scaler)
-        if grad_clip is not None:
-            self._build_grad_clipper(grad_clip)
+        if grad_clipper is not None:
+            self._build_grad_clipper(grad_clipper)
 
     @property
     def with_grad_scaler(self) -> bool:

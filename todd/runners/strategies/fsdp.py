@@ -15,7 +15,7 @@ from .ddp import DDPStrategy
 
 @StrategyRegistry.register()
 class FSDPStrategy(DDPStrategy):
-    _model: FSDP
+    _model: FSDP  # type: ignore[assignment]
 
     def _wrap_model(self, config: Config) -> None:
         self._model = FSDP(self._model, **config)
@@ -47,6 +47,7 @@ class FSDPStrategy(DDPStrategy):
         *args,
         **kwargs,
     ) -> None:
+        state_dict = dict(state_dict)
         sharded_state_dict = FSDP.scatter_full_optim_state_dict(
             state_dict,
             self._model,
@@ -56,5 +57,5 @@ class FSDPStrategy(DDPStrategy):
     if TYPE_CHECKING:
 
         @property
-        def model(self) -> FSDP:
+        def model(self) -> FSDP:  # type: ignore[override]
             ...
