@@ -17,7 +17,7 @@ class TensorBoardCallback(IntervalMixin, BaseCallback):
     def __init__(
         self,
         *args,
-        summary_writer: Config,
+        summary_writer: Config = Config(),
         main_tag: str,
         **kwargs,
     ) -> None:
