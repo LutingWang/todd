@@ -75,3 +75,5 @@ class CheckpointCallback(IntervalMixin, BaseCallback):
         super().after_run_epoch(epoch_memo, memo)
         if self._should_run_epoch():
             self._save(f'epoch_{self.epoch_based_trainer.epoch}')
+
+    # TODO: save the last checkpoint if not saved

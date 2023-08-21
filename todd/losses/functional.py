@@ -1,4 +1,6 @@
 __all__ = [
+    'FunctionalLoss',
+    'NormMixin',
     'L1Loss',
     'MSELoss',
     'BCELoss',

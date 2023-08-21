@@ -55,6 +55,10 @@ class BaseRunner(StateDictMixin):
             f"{getpass.getuser()}@{socket.gethostname()}"
         )
 
+    def __repr__(self) -> str:
+        # TODO: update
+        return f"{type(self).__name__}()"
+
     @property
     def name(self) -> str:
         return self._name

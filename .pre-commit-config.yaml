@@ -26,7 +26,7 @@ repos:
       - id: trailing-whitespace
         exclude: ^tests/test_base/configs/diff\.html$
   - repo: https://github.com/pycqa/flake8
-    rev: 6.0.0
+    rev: 6.1.0
     hooks:
       - id: flake8
   - repo: https://github.com/pycqa/isort
@@ -45,19 +45,20 @@ repos:
     rev: v1.1.1
     hooks:
       - id: doc8
-  - repo: https://github.com/pre-commit/mirrors-yapf
-    rev: v0.32.0
+  - repo: https://github.com/google/yapf
+    rev: v0.40.0
     hooks:
       - id: yapf
         additional_dependencies:
           - toml
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.4.1
+    rev: v1.5.1
     hooks:
       - id: mypy
         exclude: docs
         additional_dependencies:
           - numpy
+          - types-Pillow
           - types-toml
   - repo: https://github.com/codespell-project/codespell
     rev: v2.2.5
@@ -69,6 +70,6 @@ repos:
           - tests
           - todd
   - repo: https://github.com/commitizen-tools/commitizen
-    rev: 3.5.2
+    rev: 3.6.0
     hooks:
       - id: commitizen

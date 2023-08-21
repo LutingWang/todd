@@ -22,8 +22,9 @@ class BaseLoss(nn.Module):
         bound: float | None = None,
         **kwargs,
     ) -> None:
-        if isinstance(weight, float):
-            weight = Config(type='ConstantScheduler', gain=weight)
+        # mypy takes int as float, while python does not
+        if isinstance(weight, (int, float)):
+            weight = Config(type='BaseScheduler', gain=weight)
         if bound is not None and bound <= 1e-4:
             raise ValueError('bound must be greater than 1e-4')
         super().__init__(**kwargs)

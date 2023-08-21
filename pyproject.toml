@@ -50,6 +50,7 @@ dev = [
     'tensorboard',
     'torch-tb-profiler',
     'types-Pillow',
+    'types-toml',
 ]
 doc = [
     'mmcv<2.0',

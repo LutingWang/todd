@@ -38,4 +38,4 @@ pip install .\[dev,doc,test\]
 
 TODO
 
-1. Complete repr
+1. Complete repr, especially for runners

@@ -1,8 +1,8 @@
 __all__ = [
     'BaseScheduler',
-    'ConstantScheduler',
     'WarmupScheduler',
     'EarlyStopScheduler',
+    'DeferScheduler',
     'DecayScheduler',
     'StepScheduler',
     'CosineAnnealingScheduler',
@@ -11,7 +11,6 @@ __all__ = [
 
 import bisect
 import math
-from abc import ABC, abstractmethod
 from typing import Iterable, cast
 
 import torch
@@ -19,7 +18,8 @@ import torch
 from ..base import SchedulerRegistry
 
 
-class BaseScheduler(torch.nn.Module, ABC):
+@SchedulerRegistry.register()
+class BaseScheduler(torch.nn.Module):
     """Base class for schedulers.
 
     Under most cases, schedulers are used as a variable loss weight.
@@ -31,15 +31,24 @@ class BaseScheduler(torch.nn.Module, ABC):
 
     .. note:: `steps` starts from 1, so `step` should be called after the
         first step.
+
+    The value of this scheduler is always the `gain`:
+
+        >>> base_scheduler = BaseScheduler(gain=5)
+        >>> base_scheduler()
+        5.0
+        >>> base_scheduler.step()
+        >>> base_scheduler()
+        5.0
     """
 
-    def __init__(self, gain: float = 1.0) -> None:
+    def __init__(self, *args, gain: float = 1.0, **kwargs) -> None:
         """Initialize.
 
         Args:
             gain: multiplier to the scheduler value.
         """
-        super().__init__()
+        super().__init__(*args, **kwargs)
         self._gain = gain
         self.register_forward_hook(forward_hook)
         self.register_buffer('_steps', torch.tensor(1))
@@ -59,7 +68,6 @@ class BaseScheduler(torch.nn.Module, ABC):
     def step(self) -> None:
         self._steps += 1
 
-    @abstractmethod
     def forward(self) -> float:
         """The scheduler's function.
 
@@ -70,29 +78,11 @@ class BaseScheduler(torch.nn.Module, ABC):
         Since `gain` is handled by this base class, it is usually adequate for
         `forward` to return a percentage value in :math:`[0, 1]`.
         """
-        pass
+        return 1.0
 
 
 def forward_hook(module: BaseScheduler, input_, output: float) -> float:
     return output * module.gain
-
-
-@SchedulerRegistry.register()
-class ConstantScheduler(BaseScheduler):
-    """Unvarying scheduler.
-
-    The value of this scheduler is always the `gain`:
-
-        >>> constant = ConstantScheduler(5)
-        >>> constant()
-        5.0
-        >>> constant.step()
-        >>> constant()
-        5.0
-    """
-
-    def forward(self) -> float:
-        return 1.0
 
 
 @SchedulerRegistry.register()
@@ -146,6 +136,17 @@ class EarlyStopScheduler(BaseScheduler):
 
     def forward(self) -> float:
         return float(self.steps < self._at)
+
+
+@SchedulerRegistry.register()
+class DeferScheduler(BaseScheduler):
+
+    def __init__(self, *args, to: int, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self._to = to
+
+    def forward(self) -> float:
+        return float(self.steps >= self._to)
 
 
 @SchedulerRegistry.register()
