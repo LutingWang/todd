@@ -98,7 +98,7 @@ BatchNorm2d(16, ...)]
         Returns:
             A list of objects.
 
-        Refer to `get_` for more details about how names are resolved.
+        Refer to :func:`get_` for more details about how names are resolved.
         """
         objects = [get_(self._model, name) for name in names]
         return self._formulate(objects)
