@@ -24,7 +24,7 @@ import inspect
 import re
 from collections import UserDict
 from functools import partial
-from typing import Callable, Iterable, NoReturn, TypeVar, cast
+from typing import Callable, Iterable, NoReturn, TypeVar
 
 import torch
 import torch.nn as nn
@@ -403,8 +403,13 @@ class ModelRegistry(Registry):
             return
         if hasattr(model, 'init_weights'):
             logger.debug(f"Initializing {model.__class__.__name__} weights.")
-            cast(Callable[[Config], None], model.init_weights)(config)
-            return
+            init_weights: Callable[[Config], bool] = getattr(
+                model,
+                'init_weights',
+            )
+            recursive = init_weights(config)
+            if not recursive:
+                return
         for child in model.children():
             cls.init_weights(child, config)
 

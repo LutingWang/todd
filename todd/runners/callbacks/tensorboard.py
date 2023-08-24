@@ -17,11 +17,13 @@ class TensorBoardCallback(IntervalMixin, BaseCallback):
     def __init__(
         self,
         *args,
-        summary_writer: Config = Config(),
+        summary_writer: Config | None = None,
         main_tag: str,
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
+        if summary_writer is None:
+            summary_writer = Config()
         self._summary_writer_config = summary_writer
         self._main_tag = main_tag
 

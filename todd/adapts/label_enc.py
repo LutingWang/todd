@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from ..base import Config
 from .base import AdaptRegistry, BaseAdapt
 
 
@@ -42,12 +43,13 @@ class Bottleneck(nn.Module):
             kernel_size=1,
         )
 
-    def init_weights(self):
+    def init_weights(self, config: Config) -> bool:
         assert not self.is_init
         for layer in self.children():
             assert isinstance(layer, nn.Conv2d)
             nn.init.kaiming_uniform_(layer.weight, a=1)
         self._is_init = True
+        return False
 
     def forward(self, x):
         identity = x

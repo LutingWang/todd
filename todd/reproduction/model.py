@@ -343,11 +343,13 @@ class FrozenMixin(nn.Module):
     def train_configs(self) -> tuple[Config, ...]:
         return self._train_configs
 
-    def init_weights(self, config: Config) -> None:
+    def init_weights(self, config: Config) -> bool:
+        recursive = True
         if hasattr(super(), 'init_weights'):
-            super().init_weights(config)  # type: ignore[misc]
+            recursive = super().init_weights(config)  # type: ignore[misc]
         self.requires_grad_()
         self.train()
+        return recursive
 
     def requires_grad_(self, requires_grad: bool = True) -> Self:
         self = super().requires_grad_(requires_grad)
