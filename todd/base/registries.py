@@ -318,6 +318,13 @@ class RegistryMeta(UserDict, NonInstantiableMeta):  # type: ignore[misc]
             raise e
 
 
+class PartialRegistryMeta(RegistryMeta):
+
+    def _build(self, config: Config) -> partial:
+        func = self[config.pop('type')]
+        return partial(func, **config)
+
+
 class Registry(metaclass=RegistryMeta):
     """Base registry.
 
@@ -325,6 +332,10 @@ class Registry(metaclass=RegistryMeta):
 
         >>> class CatRegistry(Registry): pass
     """
+
+
+class PartialRegistry(metaclass=PartialRegistryMeta):
+    pass
 
 
 class NormRegistry(Registry):
@@ -435,12 +446,12 @@ class EnvRegistry(Registry):
     pass
 
 
-class GradClipperRegistry(Registry):
+class GradClipperRegistry(PartialRegistry):
+    pass
 
-    @classmethod
-    def _build(cls, config: Config):
-        func = cls[config.pop('type')]
-        return partial(func, **config)
+
+class InitRegistry(PartialRegistry):
+    pass
 
 
 c: type
@@ -485,3 +496,18 @@ EnvRegistry.register('Git status')(utils.git_status)
 
 GradClipperRegistry.register()(nn.utils.clip_grad_norm_)
 GradClipperRegistry.register()(nn.utils.clip_grad_value_)
+
+InitRegistry.register()(nn.init.uniform_)
+InitRegistry.register()(nn.init.normal_)
+InitRegistry.register()(nn.init.trunc_normal_)
+InitRegistry.register()(nn.init.constant_)
+InitRegistry.register()(nn.init.ones_)
+InitRegistry.register()(nn.init.zeros_)
+InitRegistry.register()(nn.init.eye_)
+InitRegistry.register()(nn.init.dirac_)
+InitRegistry.register()(nn.init.xavier_uniform_)
+InitRegistry.register()(nn.init.xavier_normal_)
+InitRegistry.register()(nn.init.kaiming_uniform_)
+InitRegistry.register()(nn.init.kaiming_normal_)
+InitRegistry.register()(nn.init.orthogonal_)
+InitRegistry.register()(nn.init.sparse_)
