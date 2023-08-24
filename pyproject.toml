@@ -137,6 +137,8 @@ filterwarnings = [
     'ignore::DeprecationWarning:pkg_resources:2870',
     'ignore::DeprecationWarning:yapf:16',
     'ignore::UserWarning:mmcv:20',
+    'ignore::DeprecationWarning:torch:4',
+    'ignore::DeprecationWarning:torch:6',
 ]
 testpaths = 'tests todd'
 addopts = '--doctest-modules'

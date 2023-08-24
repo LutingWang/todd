@@ -1,6 +1,8 @@
 __all__ = [
     'RegistryMeta',
+    'PartialRegistryMeta',
     'Registry',
+    'PartialRegistry',
     'NormRegistry',
     'LrSchedulerRegistry',
     'OptimizerRegistry',
@@ -18,13 +20,14 @@ __all__ = [
     'TransformRegistry',
     'EnvRegistry',
     'GradClipperRegistry',
+    'InitRegistry',
 ]
 
 import inspect
 import re
 from collections import UserDict
 from functools import partial
-from typing import Callable, Iterable, NoReturn, TypeVar
+from typing import Callable, Iterable, NoReturn, TypeVar, no_type_check
 
 import torch
 import torch.nn as nn
@@ -129,9 +132,8 @@ class RegistryMeta(UserDict, NonInstantiableMeta):  # type: ignore[misc]
             raise KeyError(key)
         return super().__setitem__(key, item)
 
-    def __subclasses__(
-        self=...,  # type: ignore[assignment]
-    ) -> list['RegistryMeta']:
+    @no_type_check
+    def __subclasses__(self=...):
         """Refer to `ABC subclassed by meta classes`_.
 
         Returns:
@@ -319,6 +321,12 @@ class RegistryMeta(UserDict, NonInstantiableMeta):  # type: ignore[misc]
 
 
 class PartialRegistryMeta(RegistryMeta):
+
+    @no_type_check
+    def __subclasses__(self=...):
+        if self is ...:
+            return NonInstantiableMeta.__subclasses__(PartialRegistryMeta)
+        return super().__subclasses__()
 
     def _build(self, config: Config) -> partial:
         func = self[config.pop('type')]
