@@ -417,11 +417,17 @@ class SamplerRegistry(Registry):
 class ModelRegistry(Registry):
 
     @classmethod
-    def init_weights(cls, model: nn.Module, config: Config) -> None:
+    def init_weights(
+        cls,
+        model: nn.Module,
+        config: Config,
+        prefix: str = '',
+    ) -> None:
         if hasattr(model, 'init_weights'):
             if get_rank() == 0:
                 logger.debug(
-                    f"Initializing {model.__class__.__name__} weights"
+                    f"Initializing {model.__class__.__name__}"
+                    f"({prefix}) weights"
                 )
             init_weights: Callable[[Config], bool] = getattr(
                 model,
@@ -431,8 +437,7 @@ class ModelRegistry(Registry):
             if not recursive:
                 return
         for name, child in model.named_children():
-            logger.debug(f"Initializer recursing into {name}")
-            cls.init_weights(child, config)
+            cls.init_weights(child, config, f'{prefix}.{name}')
 
     @classmethod
     def _build(cls, config: Config):
