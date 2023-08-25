@@ -27,7 +27,7 @@ import inspect
 import re
 from collections import UserDict
 from functools import partial
-from typing import Callable, Iterable, NoReturn, TypeVar, no_type_check
+from typing import Callable, NoReturn, TypeVar, no_type_check
 
 import torch
 import torch.nn as nn
@@ -354,19 +354,21 @@ class OptimizerRegistry(Registry):
 
     @staticmethod
     def params(model: nn.Module, config: Config) -> Config:
+        config = config.copy()
         config.params = [
             p for n, p in model.named_parameters()
-            if re.match(config.params, n)
+            if re.match(config.params, n) and p.requires_grad
         ]
         return config
 
     @classmethod
     def _build(cls, config: Config) -> torch.optim.Optimizer:
         model: nn.Module = config.pop('model')
-        params: Iterable[Config] | None = config.pop('params', None)
-        config.params = model.parameters() if params is None else [
-            cls.params(model, p) for p in params
-        ]
+        params = config.pop('params', None)
+        if params is None:
+            config.params = [p for p in model.parameters() if p.requires_grad]
+        else:
+            config.params = [cls.params(model, p) for p in params]
         return RegistryMeta._build(cls, config)
 
 
