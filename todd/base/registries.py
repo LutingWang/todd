@@ -35,7 +35,7 @@ import torch.utils.data
 import torchvision.transforms as tf
 
 from .. import utils
-from ..utils import NonInstantiableMeta
+from ..utils import NonInstantiableMeta, get_rank
 from .configs import Config
 from .logger import logger
 
@@ -417,11 +417,12 @@ class SamplerRegistry(Registry):
 class ModelRegistry(Registry):
 
     @classmethod
-    def init_weights(cls, model, config: Config) -> None:
-        if not isinstance(model, nn.Module):
-            return
+    def init_weights(cls, model: nn.Module, config: Config) -> None:
         if hasattr(model, 'init_weights'):
-            logger.debug(f"Initializing {model.__class__.__name__} weights.")
+            if get_rank() == 0:
+                logger.debug(
+                    f"Initializing {model.__class__.__name__} weights"
+                )
             init_weights: Callable[[Config], bool] = getattr(
                 model,
                 'init_weights',
@@ -429,7 +430,8 @@ class ModelRegistry(Registry):
             recursive = init_weights(config)
             if not recursive:
                 return
-        for child in model.children():
+        for name, child in model.named_children():
+            logger.debug(f"Initializer recursing into {name}")
             cls.init_weights(child, config)
 
     @classmethod
@@ -437,7 +439,8 @@ class ModelRegistry(Registry):
         config = config.copy()
         init_weights = config.pop('init_weights', Config())
         model = RegistryMeta._build(cls, config)
-        cls.init_weights(model, init_weights)
+        if isinstance(model, nn.Module):
+            cls.init_weights(model, init_weights)
         return model
 
 

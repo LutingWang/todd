@@ -322,10 +322,10 @@ class FrozenMixin(nn.Module):
 
     def __init__(
         self,
+        *args,
         requires_grad_configs: Iterable[Config] = tuple(),
         train_configs: Iterable[Config] = tuple(),
         with_state_dict_hook: bool = False,
-        *args,
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
