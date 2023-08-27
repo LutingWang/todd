@@ -31,7 +31,7 @@ class TestConfigs:
 
     def test_load_import(self, data_dir: pathlib.Path) -> None:
         config_import = Config.load(data_dir / 'config_import.py')
-        assert config_import.dumps() == (
-            "fsdp = _import_('torch.distributed.fsdp')\n"
-            "torch = _import_('torch')\n"
-        )
+        assert config_import.dumps() == '''TYPE_CHECKING = False
+fsdp = _import_('torch.distributed.fsdp')
+torch = _import_('torch')
+'''

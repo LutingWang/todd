@@ -8,14 +8,13 @@
         "tests/helpers"
     ],
     "cSpell.words": [
-        "autocast",
         "CXCYWH",
         "FGFI",
-        "gethostname",
         "SGFI",
         "shorthair",
         "XYWH",
-        "XYXY",
-        "yapflib"
-    ]
+        "XYXY"
+    ],
+    "python.testing.unittestEnabled": true,
+    "python.testing.pytestEnabled": true
 }

@@ -112,7 +112,7 @@ class Config(AttrDict, dict):  # type: ignore[misc]
     @classmethod
     def load(cls, file) -> Self:
 
-        class ModuleProxy:
+        class _import_:
 
             def __init__(self, name: str) -> None:
                 self.__name = name
@@ -127,7 +127,7 @@ class Config(AttrDict, dict):  # type: ignore[misc]
         file = pathlib.Path(file)
         config = exec_(  # do not use `loads`
             file.read_text(),
-            _import_=ModuleProxy,
+            _import_=_import_,
         )
         base_config = cls()
         for base in config.pop('_base_', []):

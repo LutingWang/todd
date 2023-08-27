@@ -1,6 +1,9 @@
-if '_import_' not in globals():
-    import importlib
-    _import_ = importlib.import_module
+from typing import TYPE_CHECKING
 
-torch = _import_('torch')
-fsdp = _import_('torch.distributed.fsdp')
+if TYPE_CHECKING:
+    import torch
+    import torch.distributed.fsdp as fsdp
+    _import_ = None
+else:
+    torch = _import_('torch')
+    fsdp = _import_('torch.distributed.fsdp')

@@ -131,7 +131,10 @@ module = [
 ignore_errors = true
 
 [tool.pytest.ini_options]
-norecursedirs = 'tests/helpers'
+norecursedirs = [
+    'tests/helpers',
+    'tests/test_base/configs',
+]
 filterwarnings = [
     'ignore::DeprecationWarning:pkg_resources:121',
     'ignore::DeprecationWarning:pkg_resources:2870',
