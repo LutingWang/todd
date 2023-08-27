@@ -26,11 +26,12 @@ class CUDAStrategy(BaseStrategy):
         super().__init__(*args, **kwargs)
 
     def _setup(self, config: Config) -> None:
-        init_process_group = config.get(
-            'init_process_group',
-            Config(backend='nccl'),
-        )
-        torch.distributed.init_process_group(**init_process_group)
+        if not torch.distributed.is_initialized():
+            init_process_group = config.get(
+                'init_process_group',
+                Config(backend='nccl'),
+            )
+            torch.distributed.init_process_group(**init_process_group)
         torch.cuda.set_device(get_local_rank() % torch.cuda.device_count())
 
     def _build_model(self, config: Config) -> None:
