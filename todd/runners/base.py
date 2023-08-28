@@ -8,7 +8,6 @@ import logging
 import os
 import pathlib
 import socket
-from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Mapping
 
 import torch
@@ -19,6 +18,7 @@ from ..base import (
     CallbackRegistry,
     Config,
     DatasetRegistry,
+    RunnerRegistry,
     SamplerRegistry,
     StateDictMixin,
     StrategyRegistry,
@@ -33,6 +33,7 @@ if TYPE_CHECKING:
 Memo = dict[str, Any]
 
 
+@RunnerRegistry.register()
 class BaseRunner(StateDictMixin):
 
     def __init__(
@@ -168,8 +169,7 @@ class BaseRunner(StateDictMixin):
         self._build_work_dir(*args, **kwargs)
         self._build_logger(*args, **kwargs)
 
-    @abstractmethod
-    def _run_iter(self, batch, memo: Memo) -> Memo:
+    def _run_iter(self, batch, memo: Memo, *args, **kwargs) -> Memo:
         """Run iteration.
 
         Args:
@@ -179,7 +179,7 @@ class BaseRunner(StateDictMixin):
         Returns:
             Updated runtime memory.
         """
-        pass
+        return self._strategy.model(self, batch, memo, *args, **kwargs)
 
     def _run(self, memo: Memo) -> Memo:
         dataloader = memo['dataloader']

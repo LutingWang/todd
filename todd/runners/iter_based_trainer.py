@@ -5,11 +5,13 @@ __all__ = [
 import itertools
 from typing import Any
 
+from ..base import RunnerRegistry
 from .trainer import Trainer
 
 Memo = dict[str, Any]
 
 
+@RunnerRegistry.register()
 class IterBasedTrainer(Trainer):
 
     def __init__(self, *args, iters: int, **kwargs) -> None:

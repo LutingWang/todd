@@ -9,11 +9,13 @@ import torch
 import torch.distributed
 import torch.utils.data
 
+from ..base import RunnerRegistry
 from .trainer import Trainer
 
 Memo = dict[str, Any]
 
 
+@RunnerRegistry.register()
 class EpochBasedTrainer(Trainer):
 
     def __init__(self, *args, epochs: int, **kwargs) -> None:

@@ -65,15 +65,17 @@ class OptimizeCallback(BaseCallback):
 
     def after_run_iter(self, batch, memo: Memo) -> None:
         super().after_run_iter(batch, memo)
+        log: dict[str, Any] | None = memo.get('log')
+
         optimizer = self.trainer.optimizer
         loss: torch.Tensor = memo['loss']
         if self.with_grad_scaler:
             loss = self._scale_grad(loss)
         loss.backward()
-        if self.with_grad_clipper is not None:
+        if self.with_grad_clipper:
             grad = self._clip_grad(optimizer)
-            if 'log' in memo:
-                memo['log']['grad'] = f'{grad:.3f}'
+            if log is not None:
+                log['grad'] = f'{grad:.3f}'
         self._step(optimizer)
         optimizer.zero_grad()
 

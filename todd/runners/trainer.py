@@ -8,12 +8,13 @@ import torch
 import torch.distributed
 import torch.utils.data
 
-from ..base import Config
+from ..base import Config, RunnerRegistry
 from .base import BaseRunner
 
 Memo = dict[str, Any]
 
 
+@RunnerRegistry.register()
 class Trainer(BaseRunner):
 
     @property

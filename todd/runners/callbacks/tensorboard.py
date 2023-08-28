@@ -1,4 +1,7 @@
-from collections import defaultdict
+__all__ = [
+    'TensorBoardCallback',
+]
+
 from typing import Any
 
 from torch.utils.tensorboard import SummaryWriter
@@ -37,28 +40,23 @@ class TensorBoardCallback(IntervalMixin, BaseCallback):
             **self._summary_writer_config,
         )
 
-    def _tag(self, tag: str) -> str:
+    @property
+    def summary_writer(self) -> SummaryWriter:
+        return self._summary_writer
+
+    @property
+    def main_tag(self) -> str:
+        return self._main_tag
+
+    def tag(self, tag: str) -> str:
         assert tag
         return self._main_tag + '/' + tag
 
     def before_run_iter(self, batch, memo: Memo) -> None:
         super().before_run_iter(batch, memo)
         if get_rank() == 0 and self._should_run_iter():
-            memo['tensorboard'] = defaultdict(list)
+            memo['tensorboard'] = self
 
     def after_run_iter(self, batch, memo: Memo) -> None:
         super().after_run_iter(batch, memo)
-        if 'tensorboard' not in memo:
-            return
-        tensorboard: defaultdict[str, list[dict[str, Any]]] = \
-            memo.pop('tensorboard')
-        for entry_type, entries in tensorboard.items():
-            add = getattr(self._summary_writer, 'add_' + entry_type)
-            for entry in entries:
-                if 'tag' in entry:
-                    entry['tag'] = self._tag(entry['tag'])
-                if 'main_tag' in entry:
-                    entry['main_tag'] = self._tag(entry['main_tag'])
-                if 'tags' in entry:
-                    entry['tags'] = list(map(self._tag, entry['tags']))
-                add(**entry)
+        memo.pop('tensorboard', None)

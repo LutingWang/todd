@@ -8,11 +8,12 @@ import torch
 import torch.distributed
 import torch.utils.data
 
-from .base import BaseRunner
+from .base import BaseRunner, RunnerRegistry
 
 Memo = dict[str, Any]
 
 
+@RunnerRegistry.register()
 class Validator(BaseRunner):
 
     def _setup(self) -> Memo:
