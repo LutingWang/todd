@@ -73,6 +73,18 @@ class BaseRunner(StateDictMixin):
         return self._iter
 
     @property
+    def strategy(self) -> 'BaseStrategy':
+        return self._strategy
+
+    @property
+    def dataloader(self) -> torch.utils.data.DataLoader:
+        return self._dataloader
+
+    @property
+    def callbacks(self) -> 'BaseCallback':
+        return self._callbacks
+
+    @property
     def work_dir(self) -> pathlib.Path:
         return self._work_dir
 
@@ -81,16 +93,19 @@ class BaseRunner(StateDictMixin):
         return self._logger
 
     @property
-    def strategy(self) -> 'BaseStrategy':
-        return self._strategy
-
-    @property
     def iters(self) -> int:
         return len(self._dataloader)
 
-    @property
-    def dataloader(self) -> torch.utils.data.DataLoader:
-        return self._dataloader
+    def _build_strategy(
+        self,
+        *args,
+        strategy: Config,
+        **kwargs,
+    ) -> None:
+        self._strategy: 'BaseStrategy' = StrategyRegistry.build(
+            strategy,
+            runner=self,
+        )
 
     def _build_dataloader(self, *args, dataloader: Config, **kwargs) -> None:
         """Build the dataloader.
@@ -107,17 +122,6 @@ class BaseRunner(StateDictMixin):
                 dataset=dataset,
             )
         self._dataloader = torch.utils.data.DataLoader(dataset, **dataloader)
-
-    def _build_strategy(
-        self,
-        *args,
-        strategy: Config,
-        **kwargs,
-    ) -> None:
-        self._strategy: 'BaseStrategy' = StrategyRegistry.build(
-            strategy,
-            runner=self,
-        )
 
     def _build_callbacks(
         self,
