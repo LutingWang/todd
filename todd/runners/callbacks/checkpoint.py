@@ -2,9 +2,8 @@ __all__ = [
     'CheckpointCallback',
 ]
 
-import os
 import pathlib
-from typing import Any, TypedDict
+from typing import Any
 
 import torch
 
@@ -14,13 +13,6 @@ from .base import BaseCallback
 from .interval import IntervalMixin
 
 Memo = dict[str, Any]
-
-
-class Stat(TypedDict, total=False):
-    iter_: int
-    epoch: int
-    keys: tuple[str, ...]
-    ctime: float
 
 
 @CallbackRegistry.register()
@@ -94,18 +86,5 @@ class CheckpointCallback(IntervalMixin, BaseCallback):
         super().after_run_epoch(epoch_memo, memo)
         if self._should_run_epoch():
             self._save(f'epoch_{self.epoch_based_trainer.epoch}')
-
-    def stat(self, name: str) -> Stat:
-        work_dir = self._work_dir(name)
-        keys = tuple(path.stem for path in work_dir.glob('*.pth'))
-        ctime = os.path.getctime(work_dir)
-        stat = Stat(keys=keys, ctime=ctime)
-        if name.startswith('iter_'):
-            stat['iter_'] = int(name.removeprefix('iter_'))
-        elif name.startswith('epoch_'):
-            stat['epoch'] = int(name.removeprefix('epoch_'))
-        else:
-            raise ValueError(f"Unknown checkpoint name {name}")
-        return stat
 
     # TODO: save the last checkpoint if not saved
