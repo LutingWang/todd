@@ -50,6 +50,14 @@ class CheckpointCallback(IntervalMixin, BaseCallback):
             }
             self._runner.load_state_dict(state_dict, **self._load_state_dict)
 
+    @property
+    def checkpoint_dir(self) -> pathlib.Path:
+        return self._checkpoint_dir
+
+    @property
+    def latest_checkpoint_dir(self) -> pathlib.Path:
+        return self._latest_checkpoint_dir
+
     def _save(self, name: str) -> None:
         # for FSDP, all ranks should call state dict
         state_dict = self._runner.state_dict(**self._state_dict)
