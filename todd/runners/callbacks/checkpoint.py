@@ -2,8 +2,9 @@ __all__ = [
     'CheckpointCallback',
 ]
 
+import os
 import pathlib
-from typing import Any
+from typing import Any, TypedDict
 
 import torch
 
@@ -13,6 +14,13 @@ from .base import BaseCallback
 from .interval import IntervalMixin
 
 Memo = dict[str, Any]
+
+
+class Stat(TypedDict, total=False):
+    iter_: int
+    epoch: int
+    keys: tuple[str, ...]
+    ctime: float
 
 
 @CallbackRegistry.register()
@@ -58,13 +66,16 @@ class CheckpointCallback(IntervalMixin, BaseCallback):
     def latest_checkpoint_dir(self) -> pathlib.Path:
         return self._latest_checkpoint_dir
 
+    def _work_dir(self, name: str) -> pathlib.Path:
+        return self._checkpoint_dir / name
+
     def _save(self, name: str) -> None:
         # for FSDP, all ranks should call state dict
         state_dict = self._runner.state_dict(**self._state_dict)
 
         if get_rank() != 0:
             return
-        work_dir = self._checkpoint_dir / name
+        work_dir = self._work_dir(name)
         work_dir.mkdir(parents=True, exist_ok=True)
         self._runner.logger.info(f"Saving state dict to {work_dir}")
         for k, v in state_dict.items():
@@ -83,5 +94,18 @@ class CheckpointCallback(IntervalMixin, BaseCallback):
         super().after_run_epoch(epoch_memo, memo)
         if self._should_run_epoch():
             self._save(f'epoch_{self.epoch_based_trainer.epoch}')
+
+    def stat(self, name: str) -> Stat:
+        work_dir = self._work_dir(name)
+        keys = tuple(path.stem for path in work_dir.glob('*.pth'))
+        ctime = os.path.getctime(work_dir)
+        stat = Stat(keys=keys, ctime=ctime)
+        if name.startswith('iter_'):
+            stat['iter_'] = int(name.removeprefix('iter_'))
+        elif name.startswith('epoch_'):
+            stat['epoch'] = int(name.removeprefix('epoch_'))
+        else:
+            raise ValueError(f"Unknown checkpoint name {name}")
+        return stat
 
     # TODO: save the last checkpoint if not saved
