@@ -422,14 +422,21 @@ class ModelRegistry(Registry):
     def init_weights(
         cls,
         model: nn.Module,
-        config: Config,
+        config: Config | None,
         prefix: str = '',
     ) -> None:
+        if config is None:
+            if get_rank() == 0:
+                logger.debug(
+                    f"Skip initializing {model.__class__.__name__}"
+                    f"({prefix}) weights"
+                )
+            return
         if hasattr(model, 'init_weights'):
             if get_rank() == 0:
                 logger.debug(
                     f"Initializing {model.__class__.__name__}"
-                    f"({prefix}) weights"
+                    f"({prefix}) weights with {config}"
                 )
             init_weights: Callable[[Config], bool] = getattr(
                 model,
