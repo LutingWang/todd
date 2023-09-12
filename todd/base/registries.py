@@ -425,26 +425,30 @@ class ModelRegistry(Registry):
         config: Config | None,
         prefix: str = '',
     ) -> None:
+        weights = f"{model.__class__.__name__} ({prefix}) weights"
+
+        if getattr(model, '__initialized', False):
+            if get_rank() == 0:
+                logger.debug(f"Skip re-initializing {weights}")
+            return
+        setattr(model, '__initialized', True)
+
         if config is None:
             if get_rank() == 0:
                 logger.debug(
-                    f"Skip initializing {model.__class__.__name__}"
-                    f"({prefix}) weights"
+                    f"Skip initializing {weights} since config is None"
                 )
             return
-        if hasattr(model, 'init_weights'):
+
+        init_weights: Callable[[Config], bool] | None = \
+            getattr(model, 'init_weights', None)
+        if init_weights is not None:
             if get_rank() == 0:
-                logger.debug(
-                    f"Initializing {model.__class__.__name__}"
-                    f"({prefix}) weights with {config}"
-                )
-            init_weights: Callable[[Config], bool] = getattr(
-                model,
-                'init_weights',
-            )
+                logger.debug(f"Initializing {weights} with {config}")
             recursive = init_weights(config)
             if not recursive:
                 return
+
         for name, child in model.named_children():
             cls.init_weights(child, config, f'{prefix}.{name}')
 
