@@ -27,7 +27,7 @@ from ..base import logger as base_logger
 from ..utils import get_rank
 
 if TYPE_CHECKING:
-    from .callbacks import BaseCallback
+    from .callbacks import ComposedCallback
     from .strategies import BaseStrategy
 
 Memo = dict[str, Any]
@@ -81,7 +81,7 @@ class BaseRunner(StateDictMixin):
         return self._dataloader
 
     @property
-    def callbacks(self) -> 'BaseCallback':
+    def callbacks(self) -> 'ComposedCallback':
         return self._callbacks
 
     @property
@@ -129,14 +129,18 @@ class BaseRunner(StateDictMixin):
         callbacks: Config | list[Config] | None = None,
         **kwargs,
     ) -> None:
+        from .callbacks import ComposedCallback
         if callbacks is None:
-            callbacks = Config(type='BaseCallback')
-        elif isinstance(callbacks, list):
-            callbacks = Config(type='ComposedCallback', callbacks=callbacks)
-        self._callbacks: 'BaseCallback' = CallbackRegistry.build(
-            callbacks,
-            runner=self,
-        )
+            callbacks = []
+        if isinstance(callbacks, list):
+            callbacks = Config(
+                type=ComposedCallback.__name__,
+                callbacks=callbacks,
+            )
+        callback = CallbackRegistry.build(callbacks, runner=self)
+        if not isinstance(callback, ComposedCallback):
+            callback = ComposedCallback(runner=self, callbacks=[callback])
+        self._callbacks = callback
 
     def _build_work_dir(
         self,

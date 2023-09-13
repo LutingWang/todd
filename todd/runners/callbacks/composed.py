@@ -27,6 +27,14 @@ class Priority(TypedDict, total=False):
     after_run: int
 
 
+CallbackNames = Literal['init', 'should_break', 'should_continue',
+                        'before_run_iter', 'run_iter_context',
+                        'after_run_iter', 'should_break_epoch',
+                        'should_continue_epoch', 'before_run_epoch',
+                        'run_epoch_context', 'after_run_epoch', 'before_run',
+                        'after_run']
+
+
 @CallbackRegistry.register()
 class ComposedCallback(BaseCallback, UserList[BaseCallback]):
 
@@ -39,14 +47,12 @@ class ComposedCallback(BaseCallback, UserList[BaseCallback]):
             CallbackRegistry.build(c, runner=self._runner) for c in callbacks
         )
 
-    def _callbacks(
-        self,
-        name: Literal['init', 'should_break', 'should_continue',
-                      'before_run_iter', 'run_iter_context', 'after_run_iter',
-                      'should_break_epoch', 'should_continue_epoch',
-                      'before_run_epoch', 'run_epoch_context',
-                      'after_run_epoch', 'before_run', 'after_run'],
-    ) -> list[BaseCallback]:
+    @property
+    def priorities(self) -> list[Priority]:
+        return self._priorities
+
+    def _callbacks(self, name: CallbackNames) -> list[BaseCallback]:
+        assert len(self) == len(self._priorities)
         priorities = [p.get(name, 0) for p in self._priorities]
         priority_index = [(p, i) for i, p in enumerate(priorities)]
         priority_index = sorted(priority_index)
