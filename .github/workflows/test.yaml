@@ -12,8 +12,8 @@ jobs:
       matrix:
         include:
           - python: "3.10"
-            torch: "1.11.0"
-            torchvision: "0.12.0"
+            torch: "2.0.1"
+            torchvision: "0.15.2"
     steps:
       - uses: LutingWang/todd/.github/actions/checkout-todd@master
         with:
@@ -23,7 +23,7 @@ jobs:
           python-version: ${{ matrix.python }}
       - name: Test
         run: |
-          pip install torch==${{ matrix.torch }} torchvision==${{ matrix.torchvision }} -f https://download.pytorch.org/whl/torch_stable.html
+          pip install torch==${{ matrix.torch }} torchvision==${{ matrix.torchvision }}
           pip install .[test]
           coverage run
           coverage xml && coverage report -m
