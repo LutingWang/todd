@@ -1,6 +1,10 @@
 __all__ = [
     'BBox',
     'BBoxes',
+    'BBoxesXY__',
+    'BBoxesCXCY__',
+    'BBoxes__XY',
+    'BBoxes__WH',
     'BBoxesXYXY',
     'BBoxesXYWH',
     'BBoxesCXCYWH',
@@ -164,7 +168,12 @@ class BBoxes(ABC):
 
     @classmethod
     @abstractmethod
-    def _from_bboxes(cls, bboxes: 'BBoxes') -> torch.Tensor:
+    def _from1(cls, bboxes: 'BBoxes') -> torch.Tensor:
+        pass
+
+    @classmethod
+    @abstractmethod
+    def _from2(cls, bboxes: 'BBoxes') -> torch.Tensor:
         pass
 
     @property
@@ -228,31 +237,11 @@ class BBoxes(ABC):
         pass
 
     @abstractmethod
-    def _round(self) -> torch.Tensor:
+    def _translate1(self, offset: torch.Tensor) -> torch.Tensor:
         pass
 
     @abstractmethod
-    def _expand(self, ratio_wh: tuple[float, float]) -> torch.Tensor:
-        pass
-
-    @abstractmethod
-    def _clamp(self, image_wh: tuple[int, int]) -> torch.Tensor:
-        pass
-
-    @abstractmethod
-    def _scale(self, ratio_wh: tuple[float, float]) -> torch.Tensor:
-        pass
-
-    @abstractmethod
-    def _translate(self, offset: torch.Tensor) -> torch.Tensor:
-        """Translate bboxes.
-
-        Args:
-            offset: :math:`n \\times 2` or 2.
-
-        Returns:
-            Translated bboxes.
-        """
+    def _translate2(self, offset: torch.Tensor) -> torch.Tensor:
         pass
 
     @property
@@ -263,7 +252,7 @@ class BBoxes(ABC):
         return self._bboxes
 
     def to(self, cls: type[T]) -> T:
-        return cls.from_bboxes(self)
+        return cls.from_(self)
 
     def unions(
         self,
@@ -296,23 +285,32 @@ class BBoxes(ABC):
         return intersections / unions
 
     @classmethod
-    def from_bboxes(cls, *args, **kwargs) -> Self:
-        return cls(cls._from_bboxes(*args, **kwargs))
+    def from_(cls, bboxes: 'BBoxes') -> Self:
+        from1 = cls._from1(bboxes)
+        from2 = cls._from2(bboxes)
+        bboxes = torch.cat([from1, from2], dim=-1)
+        return cls(bboxes)
 
-    def round(self, *args, **kwargs) -> Self:
-        return self.__class__(self._round(*args, **kwargs))
+    def round(self) -> Self:
+        return self.to(BBoxesXYXY).round().to(self.__class__)
 
-    def expand(self, *args, **kwargs) -> Self:
-        return self.__class__(self._expand(*args, **kwargs))
+    def expand(self, ratio_wh: tuple[float, float]) -> Self:
+        return self.to(BBoxesCXCYWH).expand(ratio_wh).to(self.__class__)
 
-    def clamp(self, *args, **kwargs) -> Self:
-        return self.__class__(self._clamp(*args, **kwargs))
+    def clamp(self, image_wh: tuple[int, int]) -> Self:
+        return self.to(BBoxesXYXY).clamp(image_wh).to(self.__class__)
 
-    def scale(self, *args, **kwargs) -> Self:
-        return self.__class__(self._scale(*args, **kwargs))
+    def scale(self, ratio_wh: tuple[float, float]) -> Self:
+        scale = torch.tensor(ratio_wh * 2)
+        bboxes = self._bboxes * scale
+        return self.__class__(bboxes)
 
-    def translate(self, *args, **kwargs) -> Self:
-        return self.__class__(self._translate(*args, **kwargs))
+    def translate(self, offset: torch.Tensor) -> Self:
+        offset1 = self._translate1(offset)
+        offset2 = self._translate2(offset)
+        offset = torch.cat([offset1, offset2], dim=-1)
+        bboxes = self._bboxes + offset
+        return self.__class__(bboxes)
 
     def indices(
         self,
@@ -328,7 +326,7 @@ class BBoxes(ABC):
         return indices
 
 
-class BBoxesXY(BBoxes):
+class BBoxesXY__(BBoxes):
 
     @property
     def left(self) -> torch.Tensor:
@@ -342,12 +340,59 @@ class BBoxesXY(BBoxes):
     def lt(self) -> torch.Tensor:
         return self._bboxes[:, :2]
 
-    def _scale(self, ratio_wh: tuple[float, float]) -> torch.Tensor:
-        scale = torch.tensor(ratio_wh * 2)
-        return self._bboxes * scale
+    @classmethod
+    def _from1(cls, bboxes: BBoxes) -> torch.Tensor:
+        return bboxes.lt
+
+    def _translate1(self, offset: torch.Tensor) -> torch.Tensor:
+        return offset
 
 
-class BBoxesWH(BBoxes):
+class BBoxesCXCY__(BBoxes):
+
+    @property
+    def center_x(self) -> torch.Tensor:
+        return self._bboxes[:, 0]
+
+    @property
+    def center_y(self) -> torch.Tensor:
+        return self._bboxes[:, 1]
+
+    @property
+    def center(self) -> torch.Tensor:
+        return self._bboxes[:, :2]
+
+    @classmethod
+    def _from1(cls, bboxes: BBoxes) -> torch.Tensor:
+        return bboxes.center
+
+    def _translate1(self, offset: torch.Tensor) -> torch.Tensor:
+        return offset
+
+
+class BBoxes__XY(BBoxes):
+
+    @property
+    def right(self) -> torch.Tensor:
+        return self._bboxes[:, 2]
+
+    @property
+    def bottom(self) -> torch.Tensor:
+        return self._bboxes[:, 3]
+
+    @property
+    def rb(self) -> torch.Tensor:
+        return self._bboxes[:, 2:]
+
+    @classmethod
+    def _from2(cls, bboxes: BBoxes) -> torch.Tensor:
+        return bboxes.rb
+
+    def _translate2(self, offset: torch.Tensor) -> torch.Tensor:
+        return offset
+
+
+class BBoxes__WH(BBoxes):
 
     @property
     def width(self) -> torch.Tensor:
@@ -361,24 +406,15 @@ class BBoxesWH(BBoxes):
     def wh(self) -> torch.Tensor:
         return self._bboxes[:, 2:]
 
-    def _translate(self, offset: torch.Tensor) -> torch.Tensor:
-        offset = torch.cat([offset, torch.zeros_like(offset)], dim=-1)
-        return self._bboxes + offset
-
-
-class BBoxesXYXY(BBoxesXY):
-
     @classmethod
-    def _from_bboxes(cls, bboxes: BBoxes) -> torch.Tensor:
-        return torch.cat([bboxes.lt, bboxes.rb], dim=-1)
+    def _from2(cls, bboxes: BBoxes) -> torch.Tensor:
+        return bboxes.wh
 
-    @property
-    def right(self) -> torch.Tensor:
-        return self._bboxes[:, 2]
+    def _translate2(self, offset: torch.Tensor) -> torch.Tensor:
+        return torch.zeros_like(offset)
 
-    @property
-    def bottom(self) -> torch.Tensor:
-        return self._bboxes[:, 3]
+
+class BBoxesXYXY(BBoxesXY__, BBoxes__XY):
 
     @property
     def width(self) -> torch.Tensor:
@@ -397,10 +433,6 @@ class BBoxesXYXY(BBoxesXY):
         return (self.top + self.bottom) / 2
 
     @property
-    def rb(self) -> torch.Tensor:
-        return self._bboxes[:, 2:]
-
-    @property
     def wh(self) -> torch.Tensor:
         return self.rb - self.lt
 
@@ -408,31 +440,20 @@ class BBoxesXYXY(BBoxesXY):
     def center(self) -> torch.Tensor:
         return (self.lt + self.rb) / 2
 
-    def _round(self) -> torch.Tensor:
+    def round(self) -> Self:
         lt = self.lt.floor()
         rb = self.rb.ceil()
-        return torch.cat([lt, rb], dim=-1)
+        bboxes = torch.cat([lt, rb], dim=-1)
+        return self.__class__(bboxes)
 
-    def _expand(self, ratio_wh: tuple[float, float]) -> torch.Tensor:
-        delta = self.wh * (torch.tensor(ratio_wh) - 1) / 2
-        delta = torch.cat([-delta, delta], dim=-1)
-        return self._bboxes + delta
-
-    def _clamp(self, image_wh: tuple[int, int]) -> torch.Tensor:
+    def clamp(self, image_wh: tuple[int, int]) -> Self:
         lt = self.lt.clamp_min(0)
         rb = self.rb.clamp_max(torch.tensor(image_wh))
-        return torch.cat([lt, rb], dim=-1)
-
-    def _translate(self, offset: torch.Tensor) -> torch.Tensor:
-        offset = torch.cat([offset, offset], dim=-1)
-        return self._bboxes + offset
+        bboxes = torch.cat([lt, rb], dim=-1)
+        return self.__class__(bboxes)
 
 
-class BBoxesXYWH(BBoxesXY, BBoxesWH):
-
-    @classmethod
-    def _from_bboxes(cls, bboxes: BBoxes) -> torch.Tensor:
-        return torch.cat([bboxes.lt, bboxes.wh], dim=-1)
+class BBoxesXYWH(BBoxesXY__, BBoxes__WH):
 
     @property
     def right(self) -> torch.Tensor:
@@ -458,39 +479,8 @@ class BBoxesXYWH(BBoxesXY, BBoxesWH):
     def center(self) -> torch.Tensor:
         return self.lt + self.wh / 2
 
-    def _round(self) -> torch.Tensor:
-        lt = self.lt.floor()
-        wh = self.rb.ceil() - lt
-        return torch.cat([lt, wh], dim=-1)
 
-    def _expand(self, ratio_wh: tuple[float, float]) -> torch.Tensor:
-        wh = self.wh * torch.tensor(ratio_wh)
-        lt = self.lt - (wh - self.wh) / 2
-        return torch.cat([lt, wh], dim=-1)
-
-    def _clamp(self, image_wh: tuple[int, int]) -> torch.Tensor:
-        lt = self.lt.clamp_min(0)
-        rb = self.rb.clamp_max(torch.tensor(image_wh))
-        return torch.cat([lt, rb - lt], dim=-1)
-
-
-class BBoxesCXCYWH(BBoxesWH):
-
-    @classmethod
-    def _from_bboxes(cls, bboxes: BBoxes) -> torch.Tensor:
-        return torch.cat([bboxes.center, bboxes.wh], dim=-1)
-
-    @property
-    def center_x(self) -> torch.Tensor:
-        return self._bboxes[:, 0]
-
-    @property
-    def center_y(self) -> torch.Tensor:
-        return self._bboxes[:, 1]
-
-    @property
-    def center(self) -> torch.Tensor:
-        return self._bboxes[:, :2]
+class BBoxesCXCYWH(BBoxesCXCY__, BBoxes__WH):
 
     @property
     def left(self) -> torch.Tensor:
@@ -516,26 +506,7 @@ class BBoxesCXCYWH(BBoxesWH):
     def rb(self) -> torch.Tensor:
         return self.center + self.wh / 2
 
-    def _round(self) -> torch.Tensor:
-        lt = self.lt.floor()
-        rb = self.rb.ceil()
-        center = (lt + rb) / 2
-        wh = (rb - lt) / 2
-        return torch.cat([center, wh], dim=-1)
-
-    def _expand(self, ratio_wh: tuple[float, float]) -> torch.Tensor:
+    def expand(self, ratio_wh: tuple[float, float]) -> Self:
         wh = self.wh * torch.tensor(ratio_wh)
-        return torch.stack([self.center, wh], dim=-1)
-
-    def _clamp(self, image_wh: tuple[int, int]) -> torch.Tensor:
-        lt = self.lt.clamp_min(0)
-        rb = self.rb.clamp_max(torch.tensor(image_wh))
-        center = (lt + rb) / 2
-        wh = (rb - lt) / 2
-        return torch.stack([center, wh], dim=-1)
-
-    def _scale(self, ratio_wh: tuple[float, float]) -> torch.Tensor:
-        w, h = ratio_wh
-        ratio_center = w / 2, h / 2
-        scale = torch.tensor(ratio_center + ratio_wh)
-        return self._bboxes * scale
+        bboxes = torch.cat([self.center, wh], dim=-1)
+        return self.__class__(bboxes)
