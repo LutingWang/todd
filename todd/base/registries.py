@@ -466,7 +466,7 @@ class TransformRegistry(Registry):
 
     @classmethod
     def _build(cls, config: Config):
-        if config.type == 'Compose':
+        if config.type == tf.Compose.__name__:
             config.transforms = list(map(cls.build, config.transforms))
         return RegistryMeta._build(cls, config)
 
