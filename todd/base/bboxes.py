@@ -1,5 +1,4 @@
 __all__ = [
-    'BBox',
     'BBoxes',
     'BBoxesXY__',
     'BBoxesCXCY__',
@@ -10,8 +9,9 @@ __all__ = [
     'BBoxesCXCYWH',
 ]
 
+import functools
 from abc import ABC, abstractmethod
-from typing import Generator, TypeVar
+from typing import Any, Generator, TypeVar
 from typing_extensions import Self
 
 import einops
@@ -23,67 +23,57 @@ T = TypeVar('T', bound='BBoxes')
 
 class BBoxes(ABC):
 
-    def __init__(self, bboxes: torch.Tensor) -> None:
+    def __init__(
+        self,
+        bboxes: torch.Tensor,
+        *,
+        normalized: bool = False,
+        image_wh: tuple[int, int] | None = None,
+    ) -> None:
         """Initialize.
 
         Args:
             bboxes: :math:`n \\times 4`.
+            normalized: whether the bboxes are normalized.
+            image_wh: the size of the image.
 
         Bounding boxes must be 2 dimensional and the second dimension must be
-        of size 4:
-
-            >>> bboxes = torch.tensor([[10.0, 20.0, 40.0, 100.0]])
-            >>> BBoxesXYXY(bboxes[0])
-            Traceback (most recent call last):
-            ...
-            ValueError: bboxes must be at least 2-dim
-            >>> BBoxesXYXY(bboxes[:, :3])
-            Traceback (most recent call last):
-            ...
-            ValueError: bboxes must have 4 columns
+        of size 4.
         """
-        if bboxes.ndim < 2:
-            raise ValueError('bboxes must be at least 2-dim')
+        if bboxes.ndim != 2:
+            raise ValueError('bboxes must be 2-dim')
         if bboxes.shape[-1] != 4:
             raise ValueError('bboxes must have 4 columns')
         self._bboxes = bboxes
+        self._normalized = normalized
+        if image_wh is not None:
+            self.set_image_wh(image_wh)
 
     def __len__(self) -> int:
-        """Number of bboxes.
-
-        Examples:
-
-            >>> bboxes = torch.tensor([
-            ...     [5.0, 15.0, 8.0, 18.0],
-            ...     [5.0, 15.0, 8.0, 60.0],
-            ... ])
-            >>> len(BBoxesXYXY(bboxes))
-            2
-        """
         return self._bboxes.shape[0]
 
-    def __repr__(self) -> str:
-        return f'{self.__class__.__name__}({self._bboxes})'
+    def __iter__(self) -> Generator[BBox, None, None]:
+        """Iterate over bboxes.
 
-    def __add__(self, other: Self) -> Self:
-        """Concatenate bboxes.
-
-        Args:
-            other: :math:`n' \\times 4`.
-
-        Returns:
-            :math:`(n + n') \\times 4`, where `n` is the length of `self`.
-
-        Examples:
-
-            >>> a = torch.tensor([[5.0, 15.0, 8.0, 18.0]])
-            >>> b = torch.tensor([[5.0, 15.0, 8.0, 60.0]])
-            >>> BBoxesXYXY(a) + BBoxesXYXY(b)
-            BBoxesXYXY(tensor([[ 5., 15.,  8., 18.],
-                    [ 5., 15.,  8., 60.]]))
+        Yields:
+            One bbox.
         """
-        bboxes = torch.cat([self._bboxes, other._bboxes])
-        return self.__class__(bboxes)
+        yield from map(tuple, self._bboxes.tolist())
+
+    def __repr__(self) -> str:
+        kwargs = ''
+        if self._normalized:
+            kwargs += ', normalized=True'
+        if self.has_image_wh:
+            kwargs += f', image_wh={self._image_wh}'
+        return f'{self.__class__.__name__}({self._bboxes}{kwargs})'
+
+    def _copy(self, bboxes: torch.Tensor, **kwargs) -> Self:
+        if self._normalized:
+            kwargs.setdefault('normalized', True)
+        if self.has_image_wh:
+            kwargs.setdefault('image_wh', self._image_wh)
+        return self.__class__(bboxes, **kwargs)
 
     def __getitem__(self, indices) -> Self:
         """Get specific bboxes.
@@ -94,87 +84,91 @@ class BBoxes(ABC):
         Returns:
             If `indices` refers to a single box, return a ``tuple``.
             Otherwise, return ``BBoxes``.
-
-        Examples:
-
-            >>> bboxes = torch.tensor([
-            ...     [5.0, 15.0, 8.0, 18.0],
-            ...     [5.0, 15.0, 8.0, 60.0],
-            ...     [5.0, 15.0, 8.0, 105.0],
-            ... ])
-            >>> BBoxesXYXY(bboxes)[0]
-            BBoxesXYXY(tensor([[ 5., 15.,  8., 18.]]))
-            >>> BBoxesXYXY(bboxes)[:-1]
-            BBoxesXYXY(tensor([[ 5., 15.,  8., 18.],
-                    [ 5., 15.,  8., 60.]]))
         """
-        tensor = self._bboxes[indices]
-        if tensor.ndim == 1:
-            tensor = tensor.unsqueeze(0)
-        return self.__class__(tensor)
+        bboxes = self._bboxes[indices]
+        if bboxes.ndim == 1:
+            bboxes = bboxes.unsqueeze(0)
+        return self._copy(bboxes)
 
-    def __iter__(self) -> Generator[BBox, None, None]:
-        """Iterate over bboxes.
-
-        Yields:
-            One bbox.
-
-        Examples:
-
-            >>> bboxes = torch.tensor([
-            ...     [5.0, 15.0, 8.0, 18.0],
-            ...     [5.0, 15.0, 8.0, 60.0],
-            ...     [5.0, 15.0, 8.0, 105.0],
-            ... ])
-            >>> for bbox in BBoxesXYXY(bboxes):
-            ...     print(bbox)
-            (5.0, 15.0, 8.0, 18.0)
-            (5.0, 15.0, 8.0, 60.0)
-            (5.0, 15.0, 8.0, 105.0)
-        """
-        yield from map(tuple, self._bboxes.tolist())
-
-    def __and__(self, other: 'BBoxes') -> torch.Tensor:
-        """Intersections.
+    def __add__(self, other: Self) -> Self:
+        """Concatenate bboxes.
 
         Args:
             other: :math:`n' \\times 4`.
 
         Returns:
-            :math:`n \\times n'`.
+            :math:`(n + n') \\times 4`, where `n` is the length of `self`.
         """
-        lt = torch.maximum(  # [n, n', 2]
-            einops.rearrange(self.lt, 'n1 lt -> n1 1 lt'),
-            einops.rearrange(other.lt, 'n2 lt -> 1 n2 lt'),
-        )
-        rb = torch.minimum(  # [n, n', 2]
-            einops.rearrange(self.rb, 'n1 rb -> n1 1 rb'),
-            einops.rearrange(other.rb, 'n2 rb -> 1 n2 rb'),
-        )
-        wh = rb - lt
-        wh = wh.clamp_min_(0)
-        return wh[..., 0] * wh[..., 1]
+        assert self._normalized == other._normalized
+        if self.has_image_wh:
+            assert self._image_wh == other._image_wh
+        else:
+            assert not other.has_image_wh
+        bboxes = torch.cat([self._bboxes, other._bboxes])
+        return self._copy(bboxes)
 
-    def __or__(self, other: 'BBoxes') -> torch.Tensor:
-        """Wraps `unions`.
+    @property
+    def normalized(self) -> bool:
+        return self._normalized
 
-        Args:
-            other: :math:`n' \\times 4`.
+    @property
+    def has_image_wh(self) -> bool:
+        return hasattr(self, '_image_wh')
 
-        Returns:
-            :math:`n \\times n'`.
-        """
-        return self.unions(other, self & other)
+    @property
+    def image_wh(self) -> tuple[int, int]:
+        return self._image_wh
 
-    @classmethod
-    @abstractmethod
-    def _from1(cls, bboxes: 'BBoxes') -> torch.Tensor:
-        pass
+    def set_image_wh(
+        self,
+        image_wh: tuple[int, int],
+        override: bool = False,
+    ) -> None:
+        if not self.has_image_wh or override:
+            self._image_wh = image_wh
+            return
+        assert self._image_wh == image_wh, f"{self._image_wh} != {image_wh}"
 
-    @classmethod
-    @abstractmethod
-    def _from2(cls, bboxes: 'BBoxes') -> torch.Tensor:
-        pass
+    def to_tensor(self) -> torch.Tensor:
+        return self._bboxes
+
+    def _scale(self, ratio_xy: tuple[float, float]) -> torch.Tensor:
+        return self._bboxes.new_tensor(ratio_xy * 2)
+
+    def scale(self, ratio_xy: tuple[float, float]) -> Self:
+        ratio = self._scale(ratio_xy)
+        bboxes = self._bboxes * ratio
+        return self._copy(bboxes)
+
+    def __mul__(self, ratio_xy: tuple[float, float]) -> Self:
+        return self.scale(ratio_xy)
+
+    def __truediv__(self, ratio_xy: tuple[float, float]) -> Self:
+        w, h = ratio_xy
+        ratio_xy = (1 / w, 1 / h)
+        return self.scale(ratio_xy)
+
+    def _translate(self, offset_xy: tuple[float, float]) -> torch.Tensor:
+        return self._bboxes.new_tensor(offset_xy * 2)
+
+    def translate(self, offset_xy: tuple[float, float]) -> Self:
+        offset = self._translate(offset_xy)
+        bboxes = self._bboxes + offset
+        return self._copy(bboxes)
+
+    def normalize(self) -> Self:
+        if self._normalized:
+            return self._copy(self._bboxes)
+        self = self / self.image_wh
+        self._normalized = True
+        return self
+
+    def denormalize(self) -> Self:
+        if not self._normalized:
+            return self._copy(self._bboxes)
+        self = self.scale(self.image_wh)
+        self._normalized = False
+        return self
 
     @property
     @abstractmethod
@@ -236,23 +230,74 @@ class BBoxes(ABC):
     def center(self) -> torch.Tensor:
         pass
 
-    @abstractmethod
-    def _translate1(self, offset: torch.Tensor) -> torch.Tensor:
-        pass
-
-    @abstractmethod
-    def _translate2(self, offset: torch.Tensor) -> torch.Tensor:
-        pass
-
     @property
     def area(self) -> torch.Tensor:
         return self.width * self.height
 
-    def to_tensor(self) -> torch.Tensor:
-        return self._bboxes
+    @classmethod
+    @abstractmethod
+    def _from1(cls, bboxes: 'BBoxes') -> torch.Tensor:
+        """Convert to the first two coordinates of the bboxes.
+
+        Args:
+            bboxes: the bboxes to convert.
+
+        Returns:
+            A tensor representing the first two coordinates of the bboxes.
+        """
+        pass
+
+    @classmethod
+    @abstractmethod
+    def _from2(cls, bboxes: 'BBoxes') -> torch.Tensor:
+        """Convert to the last two coordinates of the bboxes.
+
+        Args:
+            bboxes: the bboxes to convert.
+
+        Returns:
+            A tensor representing the last two coordinates of the bboxes.
+        """
+        pass
+
+    @classmethod
+    def from_(cls, bboxes: 'BBoxes') -> Self:
+        from1 = cls._from1(bboxes)
+        from2 = cls._from2(bboxes)
+        from_ = torch.cat([from1, from2], dim=-1)
+        kwargs: dict[str, Any] = dict()
+        if bboxes._normalized:
+            kwargs['normalized'] = True
+        if bboxes.has_image_wh:
+            kwargs['image_wh'] = bboxes._image_wh
+        return cls(from_, **kwargs)
 
     def to(self, cls: type[T]) -> T:
         return cls.from_(self)
+
+    def intersections(self, other: 'BBoxes') -> torch.Tensor:
+        """Intersections.
+
+        Args:
+            other: :math:`n' \\times 4`.
+
+        Returns:
+            :math:`n \\times n'`.
+        """
+        lt = torch.maximum(  # [n, n', 2]
+            einops.rearrange(self.lt, 'n1 lt -> n1 1 lt'),
+            einops.rearrange(other.lt, 'n2 lt -> 1 n2 lt'),
+        )
+        rb = torch.minimum(  # [n, n', 2]
+            einops.rearrange(self.rb, 'n1 rb -> n1 1 rb'),
+            einops.rearrange(other.rb, 'n2 rb -> 1 n2 rb'),
+        )
+        wh = rb - lt
+        wh = wh.clamp_min_(0)
+        return wh[..., 0] * wh[..., 1]
+
+    def __and__(self, other: 'BBoxes') -> torch.Tensor:
+        return self.intersections(other)
 
     def unions(
         self,
@@ -270,6 +315,18 @@ class BBoxes(ABC):
         """
         return self.area[:, None] + other.area[None, :] - intersections
 
+    def __or__(self, other: 'BBoxes') -> torch.Tensor:
+        """Wraps `unions`.
+
+        Args:
+            other: :math:`n' \\times 4`.
+
+        Returns:
+            :math:`n \\times n'`.
+        """
+        intersections = self.intersections(other)
+        return self.unions(other, intersections)
+
     def ious(self, other: 'BBoxes', eps: float = 1e-6) -> torch.Tensor:
         """Intersections over unions.
 
@@ -280,16 +337,10 @@ class BBoxes(ABC):
         Returns:
             :math:`n \\times n'`.
         """
-        intersections = self & other
-        unions = self.unions(other, intersections).clamp_min_(eps)
+        intersections = self.intersections(other)
+        unions = self.unions(other, intersections)
+        unions = unions.clamp_min_(eps)
         return intersections / unions
-
-    @classmethod
-    def from_(cls, bboxes: 'BBoxes') -> Self:
-        from1 = cls._from1(bboxes)
-        from2 = cls._from2(bboxes)
-        bboxes = torch.cat([from1, from2], dim=-1)
-        return cls(bboxes)
 
     def round(self) -> Self:
         return self.to(BBoxesXYXY).round().to(self.__class__)
@@ -297,20 +348,8 @@ class BBoxes(ABC):
     def expand(self, ratio_wh: tuple[float, float]) -> Self:
         return self.to(BBoxesCXCYWH).expand(ratio_wh).to(self.__class__)
 
-    def clamp(self, image_wh: tuple[int, int]) -> Self:
-        return self.to(BBoxesXYXY).clamp(image_wh).to(self.__class__)
-
-    def scale(self, ratio_wh: tuple[float, float]) -> Self:
-        scale = torch.tensor(ratio_wh * 2)
-        bboxes = self._bboxes * scale
-        return self.__class__(bboxes)
-
-    def translate(self, offset: torch.Tensor) -> Self:
-        offset1 = self._translate1(offset)
-        offset2 = self._translate2(offset)
-        offset = torch.cat([offset1, offset2], dim=-1)
-        bboxes = self._bboxes + offset
-        return self.__class__(bboxes)
+    def clamp(self) -> Self:
+        return self.to(BBoxesXYXY).clamp().to(self.__class__)
 
     def indices(
         self,
@@ -344,9 +383,6 @@ class BBoxesXY__(BBoxes):
     def _from1(cls, bboxes: BBoxes) -> torch.Tensor:
         return bboxes.lt
 
-    def _translate1(self, offset: torch.Tensor) -> torch.Tensor:
-        return offset
-
 
 class BBoxesCXCY__(BBoxes):
 
@@ -365,9 +401,6 @@ class BBoxesCXCY__(BBoxes):
     @classmethod
     def _from1(cls, bboxes: BBoxes) -> torch.Tensor:
         return bboxes.center
-
-    def _translate1(self, offset: torch.Tensor) -> torch.Tensor:
-        return offset
 
 
 class BBoxes__XY(BBoxes):
@@ -388,9 +421,6 @@ class BBoxes__XY(BBoxes):
     def _from2(cls, bboxes: BBoxes) -> torch.Tensor:
         return bboxes.rb
 
-    def _translate2(self, offset: torch.Tensor) -> torch.Tensor:
-        return offset
-
 
 class BBoxes__WH(BBoxes):
 
@@ -409,9 +439,6 @@ class BBoxes__WH(BBoxes):
     @classmethod
     def _from2(cls, bboxes: BBoxes) -> torch.Tensor:
         return bboxes.wh
-
-    def _translate2(self, offset: torch.Tensor) -> torch.Tensor:
-        return torch.zeros_like(offset)
 
 
 class BBoxesXYXY(BBoxesXY__, BBoxes__XY):
@@ -440,17 +467,34 @@ class BBoxesXYXY(BBoxesXY__, BBoxes__XY):
     def center(self) -> torch.Tensor:
         return (self.lt + self.rb) / 2
 
+    @staticmethod
+    def _denormalized_decorator(func):
+
+        @functools.wraps(func)
+        def wrapper(self: Self, *args, **kwargs) -> Self:
+            if normalized := self._normalized:
+                self = self.denormalize()
+            self = func(self, *args, **kwargs)
+            if normalized:
+                self = self.normalize()
+            return self
+
+        return wrapper
+
+    @_denormalized_decorator
     def round(self) -> Self:
         lt = self.lt.floor()
         rb = self.rb.ceil()
         bboxes = torch.cat([lt, rb], dim=-1)
-        return self.__class__(bboxes)
+        self = self._copy(bboxes)
+        return self
 
-    def clamp(self, image_wh: tuple[int, int]) -> Self:
-        lt = self.lt.clamp_min(0)
-        rb = self.rb.clamp_max(torch.tensor(image_wh))
-        bboxes = torch.cat([lt, rb], dim=-1)
-        return self.__class__(bboxes)
+    @_denormalized_decorator
+    def clamp(self) -> Self:
+        image_wh = self._bboxes.new_tensor(self.image_wh * 2)
+        bboxes = self._bboxes.clamp_min(0).clamp_max(image_wh)
+        self = self._copy(bboxes)
+        return self
 
 
 class BBoxesXYWH(BBoxesXY__, BBoxes__WH):
@@ -507,6 +551,6 @@ class BBoxesCXCYWH(BBoxesCXCY__, BBoxes__WH):
         return self.center + self.wh / 2
 
     def expand(self, ratio_wh: tuple[float, float]) -> Self:
-        wh = self.wh * torch.tensor(ratio_wh)
+        wh = self.wh * self._bboxes.new_tensor(ratio_wh)
         bboxes = torch.cat([self.center, wh], dim=-1)
-        return self.__class__(bboxes)
+        return self._copy(bboxes)
