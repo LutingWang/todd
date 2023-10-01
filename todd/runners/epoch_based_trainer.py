@@ -5,10 +5,6 @@ __all__ = [
 import contextlib
 from typing import Any, Mapping
 
-import torch
-import torch.distributed
-import torch.utils.data
-
 from ..base import RunnerRegistry
 from .trainer import Trainer
 
@@ -44,11 +40,18 @@ class EpochBasedTrainer(Trainer):
         return super()._run(epoch_memo)
 
     def _setup_epoch(self, memo: Memo) -> Memo:
-        sampler = self._dataloader.batch_sampler
-        if sampler is None:
-            sampler = self._dataloader.sampler
-        if isinstance(sampler, torch.utils.data.DistributedSampler):
-            sampler.set_epoch(self._epoch)
+        samplers = []
+        batch_sampler = self._dataloader.batch_sampler
+        samplers.append(batch_sampler)
+        if hasattr(batch_sampler, 'sampler'):
+            sampler = getattr(batch_sampler, 'sampler')
+            samplers.append(sampler)
+        sampler = self._dataloader.sampler
+        samplers.append(sampler)
+        for sampler in samplers:
+            if hasattr(sampler, 'set_epoch'):
+                set_epoch = getattr(sampler, 'set_epoch')
+                set_epoch(self._epoch)
         return super()._setup()
 
     def _teardown_epoch(self, epoch_memo: Memo, memo: Memo) -> None:
