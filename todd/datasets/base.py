@@ -53,6 +53,10 @@ class BaseDataset(Dataset[T], Generic[T, KT, VT], ABC):
             keys = Config()
         self._build_keys(keys)
 
+    @property
+    def access_layer(self) -> BaseAccessLayer[KT, VT]:
+        return self._access_layer
+
     def _build_access_layer(self, config: Config) -> None:
         self._access_layer: BaseAccessLayer[KT, VT] = \
             AccessLayerRegistry.build(config)
