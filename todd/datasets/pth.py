@@ -11,6 +11,7 @@ import torch
 from .base import AccessLayerRegistry, BaseDataset
 from .folder import FolderAccessLayer
 
+T = TypeVar('T')
 VT = TypeVar('VT')
 
 
@@ -31,9 +32,6 @@ class PthAccessLayer(FolderAccessLayer[VT]):
 
     def __setitem__(self, key: str, value: VT) -> None:
         torch.save(value, self._file(key))
-
-
-T = TypeVar('T')
 
 
 class PthDataset(BaseDataset[T, str, VT]):

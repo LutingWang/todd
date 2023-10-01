@@ -6,7 +6,7 @@ from typing import Any, Mapping
 
 import torch
 
-from ...base import CallbackRegistry, Config, GradClipperRegistry
+from ...base import CallbackRegistry, ClipGradRegistry, Config
 from .base import BaseCallback
 
 Memo = dict[str, Any]
@@ -42,7 +42,7 @@ class OptimizeCallback(BaseCallback):
         self._grad_scaler = torch.cuda.amp.GradScaler(**config)
 
     def _build_grad_clipper(self, config: Config) -> None:
-        self._grad_clipper = GradClipperRegistry.build(config)
+        self._grad_clipper = ClipGradRegistry.build(config)
 
     def _scale_grad(self, loss: torch.Tensor) -> torch.Tensor:
         return self._grad_scaler.scale(loss)

@@ -65,6 +65,7 @@ class LogCallback(IntervalMixin, BaseCallback):
             return
         prefix = f"Iter [{self._runner.iter_}/{self._runner.iters}] "
 
+        # TODO: upgrade eta estimation
         eta = datetime.datetime.now() - self._start_time
         eta *= self._runner.iters - self._runner.iter_
         eta /= self._runner.iter_ - self._start_iter

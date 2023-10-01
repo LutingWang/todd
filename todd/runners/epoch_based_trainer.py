@@ -14,6 +14,8 @@ from .trainer import Trainer
 
 Memo = dict[str, Any]
 
+# FIXME: resume from specific iter causes total iters mismatch
+
 
 @RunnerRegistry.register()
 class EpochBasedTrainer(Trainer):

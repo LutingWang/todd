@@ -8,7 +8,6 @@ from typing import Iterator, TypeVar
 from ..base import Config
 from .base import BaseAccessLayer
 
-KT = TypeVar('KT')
 VT = TypeVar('VT')
 
 

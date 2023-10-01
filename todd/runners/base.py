@@ -16,6 +16,7 @@ import torch.utils.data
 
 from ..base import (
     CallbackRegistry,
+    CollateRegistry,
     Config,
     DatasetRegistry,
     RunnerRegistry,
@@ -114,14 +115,22 @@ class BaseRunner(StateDictMixin):
             config: dataloader config.
         """
         dataloader = dataloader.copy()
-        dataset = DatasetRegistry.build(dataloader.pop('dataset'))
-        sampler = dataloader.pop('sampler', None)
-        if sampler is not None:
+        dataloader.dataset = DatasetRegistry.build(dataloader.dataset)
+        if 'sampler' in dataloader:
             dataloader.sampler = SamplerRegistry.build(
-                sampler,
-                dataset=dataset,
+                dataloader.sampler,
+                dataset=dataloader.dataset,
             )
-        self._dataloader = torch.utils.data.DataLoader(dataset, **dataloader)
+        if 'batch_sampler' in dataloader:
+            dataloader.batch_sampler = SamplerRegistry.build(
+                dataloader.batch_sampler,
+                sampler=dataloader.pop('sampler'),
+            )
+        if 'collate_fn' in dataloader:
+            dataloader.collate_fn = CollateRegistry.build(
+                dataloader.collate_fn,
+            )
+        self._dataloader = torch.utils.data.DataLoader(**dataloader)
 
     def _build_callbacks(
         self,

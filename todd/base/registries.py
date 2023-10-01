@@ -19,8 +19,9 @@ __all__ = [
     'ModelRegistry',
     'TransformRegistry',
     'EnvRegistry',
-    'GradClipperRegistry',
+    'ClipGradRegistry',
     'InitRegistry',
+    'CollateRegistry',
 ]
 
 import inspect
@@ -329,8 +330,10 @@ class PartialRegistryMeta(RegistryMeta):
         return super().__subclasses__()
 
     def _build(self, config: Config) -> partial:
-        func = self[config.pop('type')]
-        return partial(func, **config)
+        type_ = self[config.pop('type')]
+        if inspect.isclass(type_):
+            return type_(**config)
+        return partial(type_, **config)
 
 
 class Registry(metaclass=RegistryMeta):
@@ -475,11 +478,15 @@ class EnvRegistry(Registry):
     pass
 
 
-class GradClipperRegistry(PartialRegistry):
+class ClipGradRegistry(PartialRegistry):
     pass
 
 
 class InitRegistry(PartialRegistry):
+    pass
+
+
+class CollateRegistry(PartialRegistry):
     pass
 
 
@@ -523,8 +530,8 @@ EnvRegistry.register('CUDA_HOME')(utils.cuda_home)
 EnvRegistry.register('Git commit ID')(utils.git_commit_id)
 EnvRegistry.register('Git status')(utils.git_status)
 
-GradClipperRegistry.register()(nn.utils.clip_grad_norm_)
-GradClipperRegistry.register()(nn.utils.clip_grad_value_)
+ClipGradRegistry.register()(nn.utils.clip_grad_norm_)
+ClipGradRegistry.register()(nn.utils.clip_grad_value_)
 
 InitRegistry.register()(nn.init.uniform_)
 InitRegistry.register()(nn.init.normal_)

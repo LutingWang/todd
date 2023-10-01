@@ -71,3 +71,7 @@ class BaseDataset(Dataset[T], Generic[T, KT, VT], ABC):
     def _access(self, index: int) -> VT:
         key = self._keys[index]
         return self._access_layer[key]
+
+    @abstractmethod
+    def __getitem__(self, index: int) -> T:
+        pass
