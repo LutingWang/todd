@@ -85,7 +85,7 @@ class TrackingMixin(BaseMixin):
 class BaseHook(StatusMixin[Status], HookMixin, TrackingMixin):
 
     def __init__(self, *args, **kwargs) -> None:
-        super().__init__(self, *args, status=Status.INITIALIZED, **kwargs)
+        super().__init__(*args, status=Status.INITIALIZED, **kwargs)
         self._reset()
 
     def __call__(self):
