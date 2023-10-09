@@ -145,11 +145,6 @@ class BaseDistiller(nn.Module, Workflow):
                 model._apply(fn)
         return super()._apply(fn)
 
-    def track_tensors(self) -> None:
-        hooks = cast(tuple[BaseHook, ...], self['hooks'].actions)
-        for hook in filter(lambda hook: hook.tracking_mode, hooks):
-            hook.track_tensor()
-
     def tensors(self) -> Message:
         tensors: Message = dict()
         self['hooks'](tensors)

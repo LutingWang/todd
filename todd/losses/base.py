@@ -64,7 +64,7 @@ class BaseLoss(nn.Module):
 
 def forward_hook(
     module: BaseLoss,
-    input_,
+    inputs: tuple,
     output: torch.Tensor,
 ) -> torch.Tensor:
     weight = module.weight

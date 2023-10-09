@@ -1,4 +1,4 @@
+from .append import *
 from .base import *
-from .duplicated import *
-from .multi_calls import *
-from .standard import *
+from .duplicate import *
+from .vanilla import *

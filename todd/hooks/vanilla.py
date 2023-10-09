@@ -1,5 +1,5 @@
 __all__ = [
-    'StandardHook',
+    'VanillaHook',
 ]
 
 from ..base import HookRegistry
@@ -7,13 +7,13 @@ from .base import BaseHook
 
 
 @HookRegistry.register()
-class StandardHook(BaseHook):
+class VanillaHook(BaseHook):
 
-    def _reset(self):
-        self.__tensor = None
+    def _reset(self) -> None:
+        self._tensor_ = None
 
     def _tensor(self):
-        return self.__tensor
+        return self._tensor_
 
     def _register_tensor(self, tensor) -> None:
-        self.__tensor = tensor
+        self._tensor_ = tensor

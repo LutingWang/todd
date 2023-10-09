@@ -4,135 +4,97 @@ __all__ = [
 
 from abc import ABC, abstractmethod
 from enum import IntEnum, auto
+from typing import Literal
 
 import torch.nn as nn
 
-from ..base import StatusMixin
-from ..utils import get_
-
-# from typing import TYPE_CHECKING, Protocol
-
-# if TYPE_CHECKING:
-
-#     class _HookProto(Protocol):
-#         _path: str
-
-#         def register_tensor(self, tensor) -> None:
-#             pass
-
-# else:
-#     _HookProto = object
+from ..utils import Status, get_
 
 
-class Status(IntEnum):
+class StatusEnum(IntEnum):
     INITIALIZED = auto()
-    BINDED = auto()
+    BOUND = auto()
     REGISTERED = auto()
 
 
-class BaseMixin(ABC):
-
-    def __init__(self, *args, path: str, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        self._path = path
-
-    @abstractmethod
-    def register_tensor(self, tensor) -> None:
-        pass
-
-
-class HookMixin(BaseMixin):
-
-    def _forward_hook(self, module: nn.Module, input_, output) -> None:
-        self.register_tensor(output)
-
-    def bind(self, model: nn.Module) -> None:
-        module: nn.Module = get_(model, self._path)
-        self._handle = module.register_forward_hook(self._forward_hook)
-
-    def unbind(self) -> None:
-        self._handle.remove()
-
-
-class TrackingMixin(BaseMixin):
+class BaseHook(ABC):
 
     def __init__(
         self,
         *args,
-        tracking_mode: bool = False,
+        path: str,
+        name: Literal['inputs', 'output'] | str = 'output',
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
-        self._tracking_mode = tracking_mode
-
-    @property
-    def tracking_mode(self) -> bool:
-        return self._tracking_mode
-
-    def bind(self, model: nn.Module) -> None:
-        self._model = model
-
-    def unbind(self) -> None:
-        delattr(self, '_model')
-
-    def track_tensor(self) -> None:
-        if not self._tracking_mode:
-            raise AttributeError(f"Hook {self._path} does not support track.")
-        tensor = get_(self._model, self._path)
-        self.register_tensor(tensor)
-
-
-class BaseHook(StatusMixin[Status], HookMixin, TrackingMixin):
-
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, status=Status.INITIALIZED, **kwargs)
-        self._reset()
+        self._path = path
+        self._name = name
+        self._status = Status(StatusEnum.INITIALIZED)
+        self.reset()
 
     def __call__(self):
-        if self.status != Status.REGISTERED:
-            raise RuntimeError(f"Hook {self._path} is not registered.")
+        self._status.transit({StatusEnum.REGISTERED: StatusEnum.REGISTERED})
         return self._tensor()
 
     @property
     def path(self) -> str:
         return self._path
 
-    @abstractmethod
-    def _reset(self):
-        pass
+    @property
+    def name(self) -> str:
+        return self._name
+
+    @property
+    def status(self) -> StatusEnum:
+        return self._status.status
 
     @abstractmethod
-    def _register_tensor(self, tensor) -> None:
+    def _reset(self) -> None:
         pass
 
     @abstractmethod
     def _tensor(self):
         pass
 
-    @StatusMixin.transit(Status.INITIALIZED, Status.BINDED)
-    def bind(self, model: nn.Module) -> None:
-        if self._tracking_mode:
-            TrackingMixin.bind(self, model)
+    @abstractmethod
+    def _register_tensor(self, tensor) -> None:
+        pass
+
+    def _forward_hook(self, module: nn.Module, inputs: tuple, output) -> None:
+        if self._name == 'inputs':
+            tensor = inputs
+        elif self._name == 'outputs':
+            tensor = output
         else:
-            HookMixin.bind(self, model)
+            tensor = get_(module, self._name)
+        self.register_tensor(tensor)
 
-    @StatusMixin.transit(Status.BINDED, Status.INITIALIZED)
-    def unbind(self) -> None:
-        if self._tracking_mode:
-            TrackingMixin.unbind(self)
-        else:
-            HookMixin.unbind(self)
+    def _bind(self, model: nn.Module) -> None:
+        module: nn.Module = get_(model, self._path)
+        self._handle = module.register_forward_hook(self._forward_hook)
 
-    @StatusMixin.transit(
-        (Status.BINDED, Status.REGISTERED),
-        Status.REGISTERED,
-    )
-    def register_tensor(self, tensor) -> None:
-        self._register_tensor(tensor)
+    def _unbind(self) -> None:
+        self._handle.remove()
 
-    @StatusMixin.transit(
-        (Status.BINDED, Status.REGISTERED),
-        Status.BINDED,
-    )
     def reset(self) -> None:
+        self._status.transit({
+            StatusEnum.INITIALIZED: StatusEnum.INITIALIZED,
+            StatusEnum.BOUND: StatusEnum.BOUND,
+            StatusEnum.REGISTERED: StatusEnum.BOUND,
+        })
         self._reset()
+
+    def bind(self, model: nn.Module) -> None:
+        self._status.transit({StatusEnum.INITIALIZED: StatusEnum.BOUND})
+        self._bind(model)
+
+    def unbind(self) -> None:
+        self._status.transit({StatusEnum.BOUND: StatusEnum.INITIALIZED})
+        self._unbind()
+
+    def register_tensor(self, tensor) -> None:
+        self._status.transit({
+            StatusEnum.BOUND: StatusEnum.REGISTERED,
+            StatusEnum.REGISTERED: StatusEnum.REGISTERED,
+        })
+        self._register_tensor(tensor)

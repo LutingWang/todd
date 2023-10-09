@@ -81,7 +81,7 @@ class BaseScheduler(torch.nn.Module):
         return 1.0
 
 
-def forward_hook(module: BaseScheduler, input_, output: float) -> float:
+def forward_hook(module: BaseScheduler, inputs: tuple, output: float) -> float:
     return output * module.gain
 
 

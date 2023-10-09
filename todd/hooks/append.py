@@ -1,5 +1,5 @@
 __all__ = [
-    'MultiCallsHook',
+    'AppendHook',
 ]
 
 import torch
@@ -9,10 +9,10 @@ from .base import BaseHook
 
 
 @HookRegistry.register()
-class MultiCallsHook(BaseHook):
+class AppendHook(BaseHook):
 
-    def _reset(self):
-        self._tensors = []
+    def _reset(self) -> None:
+        self._tensors: list[torch.Tensor] = []
 
     def _tensor(self) -> list[torch.Tensor]:
         return self._tensors

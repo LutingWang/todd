@@ -1,19 +1,17 @@
 __all__ = [
-    'DuplicatedHook',
+    'DuplicateHook',
 ]
 
-from typing import Any
-
 from ..base import HookRegistry
-from .standard import StandardHook
+from .vanilla import VanillaHook
 
 
 @HookRegistry.register()
-class DuplicatedHook(StandardHook):
+class DuplicateHook(VanillaHook):
 
     def __init__(self, *args, num: int = 1, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._num = num
 
-    def _tensor(self) -> list[Any]:
+    def _tensor(self) -> list:
         return [super()._tensor()] * self._num
