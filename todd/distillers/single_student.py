@@ -3,84 +3,69 @@ __all__ = [
     'MultiTeacherDistiller',
     'SingleTeacherDistiller',
     'SelfDistiller',
-    'Student',
+    'StudentMixin',
 ]
 
-from typing import Generic, TypeVar, final
-from typing_extensions import Self
+from typing import Generic, Iterable, Mapping, TypeVar
 
 import torch.nn as nn
 
-from ..base import Config
-from .base import BaseDistiller, DistillerRegistry
+from ..base import Config, DistillerRegistry
+from .base import BaseDistiller
+
+Pipelines = Iterable[Config] | Mapping[str, Config]
 
 
 class SingleStudentDistiller(BaseDistiller):
 
-    @classmethod
-    def build(cls, config: Config) -> Self:
-        assert 'models' not in config
-        assert 'hooks' not in config
-
-        config = config.copy()
-
-        student = config.pop('student'),
-        teachers = config.pop('teachers', tuple())
-        config.models = student + teachers
-
-        hooks = config.pop('teacher_hooks', dict())
-        hooks = {k + 1: v for k, v in hooks.items()}
-        if 'student_hooks' in config:
-            hooks[0] = config.pop('student_hooks')
-        config.hooks = hooks
-
-        return super().build(config)
+    def __init__(
+        self,
+        *args,
+        student: nn.Module,
+        teachers: Iterable[nn.Module],
+        student_hook: Pipelines,
+        teacher_hooks: Iterable[Pipelines],
+        **kwargs,
+    ) -> None:
+        models = (student, ) + tuple(teachers)
+        hooks = (student_hook, ) + tuple(teacher_hooks)
+        super().__init__(*args, models=models, hook_pipelines=hooks, **kwargs)
 
     @property
     def student(self) -> nn.Module:
-        return self.models[0]
+        return self._models[0]
 
 
 @DistillerRegistry.register()
 class MultiTeacherDistiller(SingleStudentDistiller):
 
-    @classmethod
-    def build(cls, config: Config) -> Self:
-        assert 'teachers' not in config
-        assert 'teacher_hooks' not in config
-        assert 'num_onlines' not in config
-
-        config = config.copy()
-
-        online_teachers: tuple[nn.Module] = \
-            config.pop('online_teachers', tuple())
-        offline_teachers: tuple[nn.Module] = \
-            config.pop('offline_teachers', tuple())
-        config.teachers = online_teachers + offline_teachers
-
-        config.num_onlines = len(online_teachers)
-
-        teacher_hooks = config.pop('online_hook', dict())
-        if 'offline_hooks' in config:
-            offline_hooks: Config = config.pop('offline_hooks')
-            teacher_hooks.update({
-                config.num_onlines + k: v
-                for k, v in offline_hooks.items()
-            })
-        config.teacher_hooks = teacher_hooks
-
-        distiller = super().build(config)
+    def __init__(
+        self,
+        *args,
+        online_teachers: Iterable[nn.Module],
+        offline_teachers: Iterable[nn.Module],
+        online_teacher_hooks: Iterable[Pipelines],
+        offline_teacher_hooks: Iterable[Pipelines],
+        **kwargs,
+    ) -> None:
+        online_teachers = tuple(online_teachers)
+        offline_teachers = tuple(offline_teachers)
+        teachers = online_teachers + offline_teachers
+        online_teacher_hooks = tuple(online_teacher_hooks)
+        offline_teacher_hooks = tuple(offline_teacher_hooks)
+        teacher_hooks = online_teacher_hooks + offline_teacher_hooks
+        super().__init__(
+            *args,
+            teachers=teachers,
+            teacher_hooks=teacher_hooks,
+            **kwargs,
+        )
+        self._num_online_teachers = len(online_teachers)
 
         for offline_teacher in offline_teachers:
             offline_teacher.requires_grad_(False)
             offline_teacher.eval()
-        distiller.add_module('_teachers', nn.ModuleList(online_teachers))
-
-        return distiller
-
-    def __init__(self, *args, num_onlines: int = 0, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        self._num_onlines = num_onlines
+        self.add_module('_teachers', nn.ModuleList(online_teachers))
 
     @property
     def teachers(self) -> tuple[nn.Module, ...]:
@@ -88,37 +73,37 @@ class MultiTeacherDistiller(SingleStudentDistiller):
 
     @property
     def online_teachers(self) -> tuple[nn.Module, ...]:
-        return self.models[1:1 + self._num_onlines]
+        return self.models[1:1 + self._num_online_teachers]
 
     @property
     def offline_teachers(self) -> tuple[nn.Module, ...]:
-        return self.models[1 + self._num_onlines:]
+        return self.models[1 + self._num_online_teachers:]
 
 
 @DistillerRegistry.register()
 class SingleTeacherDistiller(SingleStudentDistiller):
 
-    @classmethod
-    def build(cls, config: Config) -> Self:
-        assert 'teachers' not in config
-
-        config = config.copy()
-
-        teacher: nn.Module = config.pop('teacher')
-        config.teachers = teacher,
-
-        if 'teacher_hooks' in config:
-            config.teacher_hooks = {0: config.teacher_hooks}
-
-        distiller = super().build(config)
-
-        if config.pop('online', False):
-            distiller.add_module('_teacher', teacher)
+    def __init__(
+        self,
+        *args,
+        teacher: nn.Module,
+        teacher_hook: Pipelines,
+        online: bool = False,
+        **kwargs,
+    ) -> None:
+        teachers = teacher,
+        teacher_hooks = teacher_hook,
+        super().__init__(
+            *args,
+            teachers=teachers,
+            teacher_hooks=teacher_hooks,
+            **kwargs,
+        )
+        if online:
+            self.add_module('_teacher', teacher)
         else:
             teacher.requires_grad_(False)
             teacher.eval()
-
-        return distiller
 
     @property
     def teacher(self) -> nn.Module:
@@ -128,39 +113,36 @@ class SingleTeacherDistiller(SingleStudentDistiller):
 @DistillerRegistry.register()
 class SelfDistiller(SingleStudentDistiller):
 
-    @classmethod
-    def build(cls, config: Config) -> Self:
-        assert 'teachers' not in config
-        assert 'teacher_hooks' not in config
-
-        config = config.copy()
-
-        if 'weight_transfer' in config:
-            weight_transfer: Config = config.weight_transfer
-            config.weight_transfer = {
+    def __init__(
+        self,
+        *args,
+        weight_transfer: Mapping[str, str] | None = None,
+        **kwargs,
+    ) -> None:
+        if weight_transfer is not None:
+            weight_transfer = {
                 '.student' + k: '.student' + v
                 for k, v in weight_transfer.items()
             }
-
-        return super().build(config)
-
-
-T = TypeVar('T', bound='SingleStudentDistiller')
+        super().__init__(*args, weight_transfer=weight_transfer, **kwargs)
 
 
-class Student(Generic[T]):
+T = TypeVar('T', bound=SingleStudentDistiller)
 
-    def __init__(self, distiller: Config) -> None:
-        self._distiller = DistillerRegistry.build(
-            distiller,
-            student=self,
-        )
+
+class StudentMixin(Generic[T]):
+
+    def __init__(self, *args, distiller: Config, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self._build_distiller(distiller)
+
+    def _build_distiller(self, config: Config) -> None:
+        self._distiller: T = DistillerRegistry.build(config, student=self)
 
     @property
     def distiller(self) -> T:
         return self._distiller
 
     @property
-    @final
     def sync_apply(self) -> bool:
         return False

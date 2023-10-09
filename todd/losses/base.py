@@ -46,6 +46,9 @@ class BaseLoss(nn.Module):
     def threshold(self) -> float | None:
         return self._threshold
 
+    def step(self) -> None:
+        self._weight.step()
+
     def reduce(
         self,
         loss: torch.Tensor,

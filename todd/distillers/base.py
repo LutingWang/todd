@@ -1,30 +1,29 @@
 __all__ = [
-    'DistillerRegistry',
-    'BaseDistiller',
     'DistillerStore',
+    'BaseDistiller',
 ]
 
 import warnings
-from typing import Callable, Iterable, Mapping, cast
+from typing import Any, Callable, Iterable, Mapping
 from typing_extensions import Self
 
 import torch.nn as nn
 
-from ..adapts import AdaptRegistry
+from ..adapts import AdaptRegistry, BaseAdapt
 from ..base import (
+    ComposedPipeline,
     Config,
     HookRegistry,
-    Job,
     LossRegistry,
-    Message,
-    Registry,
     Spec,
     StoreMeta,
-    Workflow,
     transfer_weights,
 )
 from ..hooks import BaseHook
 from ..losses import BaseLoss
+
+Message = dict[str, Any]
+Pipelines = Iterable[Config] | Mapping[str, Config]
 
 
 class DistillerStore(metaclass=StoreMeta):
@@ -32,80 +31,80 @@ class DistillerStore(metaclass=StoreMeta):
     INTERMEDIATE_OUTPUTS: str
 
 
-class BaseDistiller(nn.Module, Workflow):
-
-    @classmethod
-    def build(cls, config: Config) -> Self:
-        config = config.copy()
-
-        models = tuple(config.pop('models'))
-
-        hooks: Config = config.pop('hooks')
-        adapts: Config = config.pop('adapts')
-        losses: Config = config.pop('losses')
-
-        weight_transfer = config.pop('weight_transfer', None)
-
-        hook_job = Job([])
-        for k, v in hooks.items():
-            hook = Job.build(Config(registry=HookRegistry, steps=v))
-            for action in hook.actions:
-                cast(BaseHook, action).bind(models[k])
-            hook_job += hook
-
-        adapt_job = Job.build(Config(registry=AdaptRegistry, steps=adapts))
-        loss_job = Job.build(Config(registry=LossRegistry, steps=losses))
-
-        jobs = dict(hooks=hook_job, adapts=adapt_job, losses=loss_job)
-        distiller = cls(models, jobs, **config)
-
-        distiller.add_module(
-            '_adapts',
-            nn.ModuleList(
-                nn.ModuleList(cast(Iterable[nn.Module], step.actions))
-                for step in adapt_job
-            ),
-        )
-        distiller.add_module(
-            '_losses',
-            nn.ModuleList(
-                nn.ModuleList(cast(Iterable[nn.Module], step.actions))
-                for step in loss_job
-            ),
-        )
-
-        if weight_transfer is not None:
-            transfer_weights(distiller, weight_transfer)
-
-        return distiller
+class BaseDistiller(nn.Module):
 
     def __init__(
         self,
+        *args,
         models: Iterable[nn.Module],
-        jobs: Mapping[str, Job],
+        hook_pipelines: Iterable[Pipelines],
+        adapt_pipelines: Pipelines,
+        loss_pipelines: Pipelines,
+        weight_transfer: Mapping[str, str] | None = None,
+        **kwargs,
     ) -> None:
-        nn.Module.__init__(self)
-        Workflow.__init__(self, jobs)  # type: ignore[arg-type]
-        self._models = tuple(models)
+        super().__init__(*args, **kwargs)
+
+        models = tuple(models)
+        self._models = models
+
+        hook_pipeline: ComposedPipeline[BaseHook] = ComposedPipeline(
+            callable_registry=HookRegistry,
+            pipelines=[
+                Config(type=ComposedPipeline.__name__, pipelines=pipelines)
+                for pipelines in hook_pipelines
+            ],
+        )
+        for model, pipeline in zip(models, hook_pipeline.pipelines):
+            for callable_ in pipeline.callables:
+                callable_.bind(model)
+        self._hook_pipeline = hook_pipeline
+
+        adapt_pipeline: ComposedPipeline[BaseAdapt] = ComposedPipeline(
+            callable_registry=AdaptRegistry,
+            pipelines=adapt_pipelines,
+        )
+        adapts = nn.ModuleList(
+            nn.ModuleList(pipeline.callables)
+            for pipeline in adapt_pipeline.pipelines
+        )
+        self.add_module('_adapts', adapts)
+        self._adapt_pipeline = adapt_pipeline
+
+        loss_pipeline: ComposedPipeline[BaseLoss] = ComposedPipeline(
+            callable_registry=LossRegistry,
+            pipelines=loss_pipelines,
+        )
+        losses = nn.ModuleList(
+            nn.ModuleList(pipeline.callables)
+            for pipeline in loss_pipeline.pipelines
+        )
+        self.add_module('_losses', losses)
+        self._loss_pipeline = loss_pipeline
+
+        if weight_transfer is not None:
+            transfer_weights(self, weight_transfer)
 
         outputs: set[str] = set()
-        for hook in self['hooks']:
-            spec = hook.spec
+        for pipeline in self._hook_pipeline.pipelines:
+            spec = pipeline.spec
             assert len(spec.inputs) == 0
             assert outputs.isdisjoint(spec.outputs)
             outputs |= spec.outputs
-
-    def __hash__(self) -> int:
-        # self inherits from UserDict, which defines `__eq__`, so `__hash__`
-        # is disabled by default
-        return id(self)
 
     def __call__(self, message: Message | None = None) -> Message:
         if message is None:
             message = dict()
 
         if DistillerStore.CHECK_INPUTS:
-            spec = self.spec
+            hook_spec = self._hook_pipeline.spec
+            adapt_spec = self._adapt_pipeline.spec
+            loss_spec = self._loss_pipeline.spec
+            spec = Spec(
+                (loss_spec.inputs - adapt_spec.outputs)
+                | adapt_spec.inputs - hook_spec.outputs,
+                loss_spec.outputs,
+            )
             inputs = message.keys()
             if len(spec.inputs ^ inputs):
                 warnings.warn(
@@ -116,24 +115,13 @@ class BaseDistiller(nn.Module, Workflow):
         tensors = self.tensors()
         if message is not None:
             tensors.update(message)
-        self['adapts'](tensors)
-        losses = self['losses'](tensors.copy())
+        self._adapt_pipeline(tensors)
+        losses = self._loss_pipeline(tensors.copy())
 
         if DistillerStore.INTERMEDIATE_OUTPUTS:
             losses[DistillerStore.INTERMEDIATE_OUTPUTS] = tensors
 
         return losses
-
-    @property
-    def spec(self) -> Spec:
-        hook_spec = self['hooks'].spec
-        adapt_spec = self['adapts'].spec
-        loss_spec = self['losses'].spec
-        return Spec(
-            (loss_spec.inputs - adapt_spec.outputs)
-            | adapt_spec.inputs - hook_spec.outputs,
-            loss_spec.outputs,
-        )
 
     @property
     def models(self) -> tuple[nn.Module, ...]:
@@ -147,22 +135,13 @@ class BaseDistiller(nn.Module, Workflow):
 
     def tensors(self) -> Message:
         tensors: Message = dict()
-        self['hooks'](tensors)
+        self._hook_pipeline(tensors)
         return tensors
 
     def reset(self) -> None:
-        hooks = cast(tuple[BaseHook, ...], self['hooks'].actions)
-        for hook in hooks:
-            hook.reset()
+        for callable_ in self._hook_pipeline.callables:
+            callable_.reset()
 
     def step(self) -> None:
-        for loss in self['losses'].actions:
-            cast(BaseLoss, loss)._weight.step()
-
-
-class DistillerRegistry(Registry):
-
-    @classmethod
-    def _build(cls, config: Config) -> BaseDistiller:
-        distiller: type[BaseDistiller] = cls[config.pop('type')]
-        return distiller.build(config)
+        for callable_ in self._loss_pipeline.callables:
+            callable_.step()

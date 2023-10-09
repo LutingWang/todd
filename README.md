@@ -39,4 +39,4 @@ pip install .\[dev,doc,test\]
 TODO
 
 1. Complete repr, especially for runners
-2. refactor workflow
+2. refactor distiller

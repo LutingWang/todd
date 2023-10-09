@@ -12,6 +12,7 @@ __all__ = [
     'SchedulerRegistry',
     'VisualRegistry',
     'HookRegistry',
+    'DistillerRegistry',
     'AccessLayerRegistry',
     'DatasetRegistry',
     'StrategyRegistry',
@@ -19,6 +20,7 @@ __all__ = [
     'ModelRegistry',
     'TransformRegistry',
     'EnvRegistry',
+    'PipelineRegistry',
     'ClipGradRegistry',
     'InitRegistry',
     'CollateRegistry',
@@ -28,7 +30,7 @@ import inspect
 import re
 from collections import UserDict
 from functools import partial
-from typing import Callable, NoReturn, TypeVar, no_type_check
+from typing import Any, Callable, NoReturn, TypeVar, no_type_check
 
 import torch
 import torch.nn as nn
@@ -43,7 +45,10 @@ from .logger import logger
 T = TypeVar('T', bound=Callable)
 
 
-class RegistryMeta(UserDict, NonInstantiableMeta):  # type: ignore[misc]
+class RegistryMeta(  # type: ignore[misc]
+    UserDict[str, Any],
+    NonInstantiableMeta,
+):
     """Meta class for registries.
 
     Under the hood, registries are simply dictionaries:
@@ -403,6 +408,10 @@ class HookRegistry(Registry):
     pass
 
 
+class DistillerRegistry(Registry):
+    pass
+
+
 class DatasetRegistry(Registry):
     pass
 
@@ -475,6 +484,10 @@ class TransformRegistry(Registry):
 
 
 class EnvRegistry(Registry):
+    pass
+
+
+class PipelineRegistry(Registry):
     pass
 
 
