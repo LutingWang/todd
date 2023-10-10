@@ -63,7 +63,7 @@ class BaseHook(ABC):
     def _forward_hook(self, module: nn.Module, inputs: tuple, output) -> None:
         if self._name == 'inputs':
             tensor = inputs
-        elif self._name == 'outputs':
+        elif self._name == 'output':
             tensor = output
         else:
             tensor = get_(module, self._name)
