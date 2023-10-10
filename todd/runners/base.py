@@ -116,20 +116,25 @@ class BaseRunner(StateDictMixin):
         """
         dataloader = dataloader.copy()
         dataloader.dataset = DatasetRegistry.build(dataloader.dataset)
-        if 'sampler' in dataloader:
+
+        sampler = dataloader.pop('sampler', None)
+        if sampler is not None:
             dataloader.sampler = SamplerRegistry.build(
-                dataloader.sampler,
+                sampler,
                 dataset=dataloader.dataset,
             )
-        if 'batch_sampler' in dataloader:
+
+        batch_sampler = dataloader.pop('batch_sampler', None)
+        if batch_sampler is not None:
             dataloader.batch_sampler = SamplerRegistry.build(
-                dataloader.batch_sampler,
+                batch_sampler,
                 sampler=dataloader.pop('sampler'),
             )
-        if 'collate_fn' in dataloader:
-            dataloader.collate_fn = CollateRegistry.build(
-                dataloader.collate_fn,
-            )
+
+        collate_fn = dataloader.pop('collate_fn', None)
+        if collate_fn is not None:
+            dataloader.collate_fn = CollateRegistry.build(collate_fn)
+
         self._dataloader = torch.utils.data.DataLoader(**dataloader)
 
     def _build_callbacks(
