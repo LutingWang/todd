@@ -103,3 +103,11 @@ class CrossEntropyLoss(FunctionalLoss):
     @staticmethod
     def func(*args, **kwargs) -> torch.Tensor:
         return F.cross_entropy(*args, **kwargs)
+
+
+@LossRegistry.register()
+class CosineEmbeddingLoss(FunctionalLoss):
+
+    @staticmethod
+    def func(*args, **kwargs) -> torch.Tensor:
+        return F.cosine_embedding_loss(*args, **kwargs)
