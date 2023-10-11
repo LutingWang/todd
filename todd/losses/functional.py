@@ -6,6 +6,7 @@ __all__ = [
     'BCELoss',
     'BCEWithLogitsLoss',
     'CrossEntropyLoss',
+    'CosineEmbeddingLoss',
 ]
 
 from abc import abstractmethod
