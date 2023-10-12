@@ -380,8 +380,16 @@ class OptimizerRegistry(Registry):
         return RegistryMeta._build(cls, config)
 
 
-class LrSchedulerRegistry(Registry):
-    pass
+class LrSchedulerRegistry(Registry):  # TODO: rename to LR...
+
+    @classmethod
+    def _build(cls, config: Config) -> torch.optim.lr_scheduler.LRScheduler:
+        if config.type == torch.optim.lr_scheduler.SequentialLR.__name__:
+            config.schedulers = [
+                cls.build(scheduler, optimizer=config.optimizer)
+                for scheduler in config.schedulers
+            ]
+        return RegistryMeta._build(cls, config)
 
 
 class RunnerRegistry(Registry):
