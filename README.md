@@ -39,4 +39,4 @@ pip install .\[dev,doc,test\]
 TODO
 
 1. Complete repr, especially for runners
-2. refactor distiller
+2. simplify pyproject pylint configs

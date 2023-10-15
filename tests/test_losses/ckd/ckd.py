@@ -2,8 +2,8 @@ models = list()  # type: ignore[var-annotated]
 hook_pipelines = list()  # type: ignore[var-annotated]
 adapt_pipelines = {
     'pred_reshaped': dict(
-        type='SingleParallelPipeline',
-        inputs=('preds', ),
+        type='SharedParallelPipeline',
+        args=('preds', ),
         callable_=dict(
             type='Rearrange',
             pattern='bs dim h w -> bs h w dim',
@@ -11,7 +11,7 @@ adapt_pipelines = {
     ),
     'targets, bboxes, bbox_poses, anchor_ids': dict(
         type='VanillaPipeline',
-        inputs=('targets', 'bboxes', 'bbox_ids'),
+        args=('targets', 'bboxes', 'bbox_ids'),
         callable_=dict(
             type='CustomAdapt',
             stride=1,
@@ -19,12 +19,12 @@ adapt_pipelines = {
     ),
     'pred_indexed': dict(
         type='VanillaPipeline',
-        inputs=('pred_reshaped', 'bbox_poses'),
+        args=('pred_reshaped', 'bbox_poses'),
         callable_=dict(type='Index'),
     ),
     'preds': dict(
         type='VanillaPipeline',
-        inputs=('pred_indexed', 'anchor_ids'),
+        args=('pred_indexed', 'anchor_ids'),
         callable_=dict(
             type='Decouple',
             num=9,
@@ -37,7 +37,7 @@ adapt_pipelines = {
 loss_pipelines = dict(
     loss_ckd=dict(
         type='VanillaPipeline',
-        inputs=('preds', 'targets', 'bboxes'),
+        args=('preds', 'targets', 'bboxes'),
         callable_=dict(
             type='CKDLoss',
             weight=0.5,

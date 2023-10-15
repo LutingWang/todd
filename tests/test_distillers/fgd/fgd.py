@@ -2,32 +2,32 @@ models = list()  # type: ignore[var-annotated]
 hook_pipelines = list()  # type: ignore[var-annotated]
 adapt_pipelines = {
     'attn_spatial': dict(
-        type='SingleParallelPipeline',
-        inputs=('neck', ),
+        type='SharedParallelPipeline',
+        args=('neck', ),
         callable_=dict(
             type='AbsMeanSpatialAttention',
             temperature=0.5,
         ),
     ),
     'teacher_attn_spatial': dict(
-        type='SingleParallelPipeline',
-        inputs=('teacher_neck', ),
+        type='SharedParallelPipeline',
+        args=('teacher_neck', ),
         callable_=dict(
             type='AbsMeanSpatialAttention',
             temperature=0.5,
         ),
     ),
     'attn_channel': dict(
-        type='SingleParallelPipeline',
-        inputs=('neck', ),
+        type='SharedParallelPipeline',
+        args=('neck', ),
         callable_=dict(
             type='AbsMeanChannelAttention',
             temperature=0.5,
         ),
     ),
     'teacher_attn_channel': dict(
-        type='SingleParallelPipeline',
-        inputs=('teacher_neck', ),
+        type='SharedParallelPipeline',
+        args=('teacher_neck', ),
         callable_=dict(
             type='AbsMeanChannelAttention',
             temperature=0.5,
@@ -35,7 +35,7 @@ adapt_pipelines = {
     ),
     'masks': dict(
         type='VanillaPipeline',
-        inputs=('img_shape', 'gt_bboxes'),
+        args=('img_shape', 'gt_bboxes'),
         callable_=dict(
             type='FGDMask',
             neg_gain=0.5,
@@ -44,8 +44,8 @@ adapt_pipelines = {
         ),
     ),
     'global_': dict(
-        type='MultipleParallelPipeline',
-        inputs=('neck', ),
+        type='ParallelPipeline',
+        args=('neck', ),
         callables=[dict(
             type='mmcv_ContextBlock',
             in_channels=4,
@@ -53,8 +53,8 @@ adapt_pipelines = {
         )] * 5,
     ),
     'teacher_global': dict(
-        type='MultipleParallelPipeline',
-        inputs=('teacher_neck', ),
+        type='ParallelPipeline',
+        args=('teacher_neck', ),
         callables=[dict(
             type='mmcv_ContextBlock',
             in_channels=4,
@@ -64,13 +64,15 @@ adapt_pipelines = {
 }
 loss_pipelines = {
     'loss_feat': dict(
-        type='SingleParallelPipeline',
-        inputs=(
+        type='SharedParallelPipeline',
+        args=(
             'neck',
             'teacher_neck',
-            'teacher_attn_spatial',
-            'teacher_attn_channel',
-            'masks',
+        ),
+        kwargs=dict(
+            attn_spatial='teacher_attn_spatial',
+            attn_channel='teacher_attn_channel',
+            mask='masks',
         ),
         callable_=dict(
             type='FGDLoss',
@@ -79,8 +81,8 @@ loss_pipelines = {
         ),
     ),
     'loss_attn_spatial': dict(
-        type='SingleParallelPipeline',
-        inputs=('attn_spatial', 'teacher_attn_spatial'),
+        type='SharedParallelPipeline',
+        args=('attn_spatial', 'teacher_attn_spatial'),
         callable_=dict(
             type='L1Loss',
             weight=2.5e-4,
@@ -88,8 +90,8 @@ loss_pipelines = {
         ),
     ),
     'loss_attn_channel': dict(
-        type='SingleParallelPipeline',
-        inputs=('attn_channel', 'teacher_attn_channel'),
+        type='SharedParallelPipeline',
+        args=('attn_channel', 'teacher_attn_channel'),
         callable_=dict(
             type='L1Loss',
             weight=2.5e-4,
@@ -97,8 +99,8 @@ loss_pipelines = {
         ),
     ),
     'loss_global': dict(
-        type='SingleParallelPipeline',
-        inputs=('global_', 'teacher_global'),
+        type='SharedParallelPipeline',
+        args=('global_', 'teacher_global'),
         callable_=dict(
             type='MSELoss',
             weight=2.5e-6,

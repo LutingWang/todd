@@ -8,7 +8,7 @@ from todd.distillers import BaseDistiller, DistillerStore
 from todd.utils import CollectionTensor
 
 
-@AdaptRegistry.register()
+@AdaptRegistry.register_()
 class CustomAdapt(BaseAdapt):
 
     def __init__(self, stride: int = 1, **kwargs) -> None:

@@ -34,7 +34,7 @@ if TYPE_CHECKING:
 Memo = dict[str, Any]
 
 
-@RunnerRegistry.register()
+@RunnerRegistry.register_()
 class BaseRunner(StateDictMixin):
 
     def __init__(
@@ -53,8 +53,10 @@ class BaseRunner(StateDictMixin):
         self._callbacks.init()
 
         self._logger.debug(
-            f"Rank {get_rank()} initialized by "
-            f"{getpass.getuser()}@{socket.gethostname()}"
+            "Rank %d initialized by %s@%s",
+            get_rank(),
+            getpass.getuser(),
+            socket.gethostname(),
         )
 
     def __repr__(self) -> str:
@@ -143,6 +145,7 @@ class BaseRunner(StateDictMixin):
         callbacks: Config | list[Config] | None = None,
         **kwargs,
     ) -> None:
+        # pylint: disable=import-outside-toplevel
         from .callbacks import ComposedCallback
         if callbacks is None:
             callbacks = []

@@ -18,7 +18,7 @@ import torch
 from ..base import SchedulerRegistry
 
 
-@SchedulerRegistry.register()
+@SchedulerRegistry.register_()
 class BaseScheduler(torch.nn.Module):
     """Base class for schedulers.
 
@@ -85,7 +85,7 @@ def forward_hook(module: BaseScheduler, inputs: tuple, output: float) -> float:
     return output * module.gain
 
 
-@SchedulerRegistry.register()
+@SchedulerRegistry.register_()
 class WarmupScheduler(BaseScheduler):
     """Warmup scheduler.
 
@@ -113,7 +113,7 @@ class WarmupScheduler(BaseScheduler):
         return min(self.steps / self._end, 1.0)
 
 
-@SchedulerRegistry.register()
+@SchedulerRegistry.register_()
 class EarlyStopScheduler(BaseScheduler):
     """Early stop.
 
@@ -138,7 +138,7 @@ class EarlyStopScheduler(BaseScheduler):
         return float(self.steps < self._at)
 
 
-@SchedulerRegistry.register()
+@SchedulerRegistry.register_()
 class DeferScheduler(BaseScheduler):
 
     def __init__(self, *args, to: int, **kwargs) -> None:
@@ -149,7 +149,7 @@ class DeferScheduler(BaseScheduler):
         return float(self.steps >= self._to)
 
 
-@SchedulerRegistry.register()
+@SchedulerRegistry.register_()
 class DecayScheduler(BaseScheduler):
     """Decay scheduler.
 
@@ -184,7 +184,7 @@ class DecayScheduler(BaseScheduler):
         return (self._end - self.steps) / (self._end - self._start)
 
 
-@SchedulerRegistry.register()
+@SchedulerRegistry.register_()
 class StepScheduler(BaseScheduler):
     """Step scheduler.
 
@@ -216,7 +216,7 @@ class StepScheduler(BaseScheduler):
         return self._gamma**bisect.bisect(self._milestones, self.steps)
 
 
-@SchedulerRegistry.register()
+@SchedulerRegistry.register_()
 class CosineAnnealingScheduler(BaseScheduler):
     """Cosine annealing scheduler.
 
@@ -258,7 +258,7 @@ class CosineAnnealingScheduler(BaseScheduler):
         )
 
 
-@SchedulerRegistry.register()
+@SchedulerRegistry.register_()
 class ChainedScheduler(BaseScheduler):
     """Chained scheduler.
 

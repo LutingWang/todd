@@ -49,8 +49,8 @@ class CollectionTensor(Generic[T]):
         if isinstance(feat1, torch.Tensor):
             assert isinstance(feat2, torch.Tensor)
             return torch.allclose(feat1, feat2)
-        if isinstance(feat1, list) or isinstance(feat1, tuple):
-            assert isinstance(feat2, list) or isinstance(feat2, tuple)
+        if isinstance(feat1, (list, tuple)):
+            assert isinstance(feat2, (list, tuple))
             assert len(feat1) == len(feat2)
             return all(  # yapf: disable
                 CollectionTensor.allclose(f1, f2)
@@ -75,7 +75,7 @@ class CollectionTensor(Generic[T]):
     ) -> torch.Tensor | Literal[0]:
         if isinstance(feat, torch.Tensor):
             return tensor_op(feat)
-        if isinstance(feat, list) or isinstance(feat, tuple):
+        if isinstance(feat, (list, tuple)):
             return tensors_op([
                 CollectionTensor.reduce(f, tensor_op, tensors_op) for f in feat
             ])

@@ -5,7 +5,7 @@ import torch.nn.functional as F
 from .base import AdaptRegistry, BaseAdapt
 
 
-@AdaptRegistry.register()
+@AdaptRegistry.register_()
 class AbsMeanSpatialAttention(BaseAdapt):
 
     def __init__(self, *args, temperature: float = 1, **kwargs) -> None:
@@ -23,7 +23,7 @@ class AbsMeanSpatialAttention(BaseAdapt):
         return einops.rearrange(a, 'n (h w) -> n 1 h w', h=h, w=w)
 
 
-@AdaptRegistry.register()
+@AdaptRegistry.register_()
 class AbsMeanChannelAttention(BaseAdapt):
 
     def __init__(self, *args, temperature: float = 1, **kwargs) -> None:

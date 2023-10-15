@@ -11,11 +11,11 @@ class ListTensorAdapt(BaseAdapt):
         return self.func(*args, **kwargs)
 
 
-@AdaptRegistry.register()
+@AdaptRegistry.register_()
 class Stack(ListTensorAdapt):
     func = staticmethod(ListTensor.stack)
 
 
-@AdaptRegistry.register()
+@AdaptRegistry.register_()
 class Index(ListTensorAdapt):
     func = staticmethod(ListTensor.index)

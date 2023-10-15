@@ -28,7 +28,7 @@ class Context:
         self._logger.exception("Unable to run " + message)
 
 
-@CallbackRegistry.register()
+@CallbackRegistry.register_()
 class MonitorCallback(BaseCallback):
 
     def run_iter_context(

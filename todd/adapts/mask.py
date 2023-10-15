@@ -82,7 +82,7 @@ class SingleLevelMask(MultiLevelMask):
         return masks[0]
 
 
-@AdaptRegistry.register()
+@AdaptRegistry.register_()
 class LabelEncMask(BaseAdapt):
 
     def __init__(
@@ -157,7 +157,7 @@ class LabelEncMask(BaseAdapt):
         return torch.stack(masks)
 
 
-@AdaptRegistry.register()
+@AdaptRegistry.register_()
 class DeFeatMask(MultiLevelMask, BaseAdapt):
 
     def __init__(
@@ -233,7 +233,7 @@ class DeFeatMask(MultiLevelMask, BaseAdapt):
         return masks + neg_masks
 
 
-@AdaptRegistry.register()
+@AdaptRegistry.register_()
 class FGDMask(DeFeatMask):
 
     def _normalize_pos(self, masks: torch.Tensor) -> torch.Tensor:
@@ -264,7 +264,7 @@ class FGDMask(DeFeatMask):
         return mask
 
 
-@AdaptRegistry.register()
+@AdaptRegistry.register_()
 class FGFIMask(BaseAdapt):
 
     def __init__(self, *args, thresh: float = 0.5, **kwargs) -> None:
@@ -331,7 +331,7 @@ class FGFIMask(BaseAdapt):
 #         return masks
 
 
-@AdaptRegistry.register()
+@AdaptRegistry.register_()
 class FRSMask(BaseAdapt):
 
     def __init__(self, *args, with_logits: bool = True, **kwargs) -> None:

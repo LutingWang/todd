@@ -1,3 +1,5 @@
+# pylint: disable=invalid-name,self-cls-assignment
+
 __all__ = [
     'BBoxes',
     'BBoxesXY__',
@@ -245,7 +247,6 @@ class BBoxes(ABC):
         Returns:
             A tensor representing the first two coordinates of the bboxes.
         """
-        pass
 
     @classmethod
     @abstractmethod
@@ -258,7 +259,6 @@ class BBoxes(ABC):
         Returns:
             A tensor representing the last two coordinates of the bboxes.
         """
-        pass
 
     @classmethod
     def from_(cls, bboxes: 'BBoxes') -> Self:

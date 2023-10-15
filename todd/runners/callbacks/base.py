@@ -1,3 +1,5 @@
+# pylint: disable=pointless-statement
+
 __all__ = [
     'BaseCallback',
 ]
@@ -11,7 +13,7 @@ from ..utils import RunnerHolderMixin
 Memo = dict[str, Any]
 
 
-@CallbackRegistry.register()
+@CallbackRegistry.register_()
 class BaseCallback(RunnerHolderMixin, StateDictMixin):
 
     def init(self) -> None:

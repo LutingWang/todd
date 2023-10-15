@@ -15,7 +15,7 @@ T = TypeVar('T')
 VT = TypeVar('VT')
 
 
-@AccessLayerRegistry.register()
+@AccessLayerRegistry.register_()
 class PthAccessLayer(FolderAccessLayer[VT]):
 
     def _files(self) -> Iterator[pathlib.Path]:

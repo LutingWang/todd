@@ -14,7 +14,7 @@ from .base import BaseRunner
 Memo = dict[str, Any]
 
 
-@RunnerRegistry.register()
+@RunnerRegistry.register_()
 class Trainer(BaseRunner):
 
     @property

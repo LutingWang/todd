@@ -14,7 +14,7 @@ from .interval import IntervalMixin
 Memo = dict[str, Any]
 
 
-@CallbackRegistry.register()
+@CallbackRegistry.register_()
 class TensorBoardCallback(IntervalMixin, BaseCallback):
 
     def __init__(

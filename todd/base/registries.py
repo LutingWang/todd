@@ -1,3 +1,5 @@
+# pylint: disable=no-value-for-parameter
+
 __all__ = [
     'RegistryMeta',
     'PartialRegistryMeta',
@@ -33,9 +35,9 @@ from functools import partial
 from typing import Any, Callable, NoReturn, TypeVar, no_type_check
 
 import torch
-import torch.nn as nn
 import torch.utils.data
 import torchvision.transforms as tf
+from torch import nn
 
 from .. import utils
 from ..utils import NonInstantiableMeta, get_rank
@@ -70,12 +72,12 @@ class RegistryMeta(  # type: ignore[misc]
         <HairlessCat >
     """
 
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(cls, *args, **kwargs) -> None:
         """Initialize."""
-        UserDict.__init__(self)
-        NonInstantiableMeta.__init__(self, *args, **kwargs)
+        UserDict.__init__(cls)
+        NonInstantiableMeta.__init__(cls, *args, **kwargs)
 
-    def __call__(self, *args, **kwargs) -> NoReturn:
+    def __call__(cls, *args, **kwargs) -> NoReturn:
         """Prevent `Registry` classes from being initialized.
 
         Raises:
@@ -83,7 +85,7 @@ class RegistryMeta(  # type: ignore[misc]
         """
         raise TypeError("Registry cannot be initialized")
 
-    def __missing__(self, key: str) -> NoReturn:
+    def __missing__(cls, key: str) -> NoReturn:
         """Missing key.
 
         Args:
@@ -92,14 +94,14 @@ class RegistryMeta(  # type: ignore[misc]
         Raises:
             KeyError: always.
         """
-        logger.error(f"{key} does not exist in {self.__name__}")
+        logger.error("%s does not exist in %s", key, cls.__name__)
         raise KeyError(key)
 
-    def __repr__(self) -> str:
-        items = ' '.join(f'{k}={v}' for k, v in self.items())
-        return f"<{self.__name__} {items}>"
+    def __repr__(cls) -> str:
+        items = ' '.join(f'{k}={v}' for k, v in cls.items())
+        return f"<{cls.__name__} {items}>"
 
-    def __setitem__(self, key: str, item, forced: bool = False) -> None:
+    def __setitem__(cls, key: str, item, forced: bool = False) -> None:
         """Register ``item`` with name ``key``.
 
         Args:
@@ -133,13 +135,13 @@ class RegistryMeta(  # type: ignore[misc]
             >>> Cat['british shorthair']
             'BritishShorthair'
         """
-        if not forced and key in self:
-            logger.error(f"{key} already exist in {self.__name__}")
+        if not forced and key in cls:
+            logger.error("%s already exist in %s", key, cls.__name__)
             raise KeyError(key)
         return super().__setitem__(key, item)
 
     @no_type_check
-    def __subclasses__(self=...):
+    def __subclasses__(cls=...):
         """Refer to `ABC subclassed by meta classes`_.
 
         Returns:
@@ -148,11 +150,11 @@ class RegistryMeta(  # type: ignore[misc]
         .. _ABC subclassed by meta classes:
            https://blog.csdn.net/LutingWang/article/details/128320057
         """
-        if self is ...:
+        if cls is ...:
             return NonInstantiableMeta.__subclasses__(RegistryMeta)
         return super().__subclasses__()
 
-    def child(self, key: str) -> 'RegistryMeta':
+    def child(cls, key: str) -> 'RegistryMeta':
         """Get a direct or indirect derived child registry.
 
         Args:
@@ -167,29 +169,29 @@ class RegistryMeta(  # type: ignore[misc]
         for child_name in key.split('.'):
             subclasses = tuple(
                 subclass
-                for subclass in self.__subclasses__()  # type: ignore[misc]
+                for subclass in cls.__subclasses__()  # type: ignore[misc]
                 if subclass.__name__ == child_name
             )
             if len(subclasses) == 0:
-                raise ValueError(f"{key} is not a child of {self}")
+                raise ValueError(f"{key} is not a child of {cls}")
             if len(subclasses) > 1:
-                raise ValueError(f"{key} matches multiple children of {self}")
-            self, = subclasses
-        return self
+                raise ValueError(f"{key} matches multiple children of {cls}")
+            cls, = subclasses  # pylint: disable=self-cls-assignment
+        return cls
 
-    def _parse(self, key: str) -> tuple['RegistryMeta', str]:
+    def _parse(cls, key: str) -> tuple['RegistryMeta', str]:
         """Parse the child name from the ``key``.
 
         Returns:
             The child registry and the name to be registered.
         """
         if '.' not in key:
-            return self, key
+            return cls, key
         child_name, key = key.rsplit('.', 1)
-        return self.child(child_name), key
+        return cls.child(child_name), key
 
-    def register(
-        self,
+    def register_(
+        cls,
         *args: str,
         **kwargs,
     ) -> Callable[[T], T]:
@@ -205,9 +207,9 @@ class RegistryMeta(  # type: ignore[misc]
         `register` is designed to be an decorator for classes and functions:
 
             >>> class Cat(metaclass=RegistryMeta): pass
-            >>> @Cat.register()
+            >>> @Cat.register_()
             ... class Munchkin: pass
-            >>> @Cat.register()
+            >>> @Cat.register_()
             ... def munchkin() -> str:
             ...     return 'munchkin'
 
@@ -225,7 +227,7 @@ class RegistryMeta(  # type: ignore[misc]
 
         - multiple names
 
-          >>> @Cat.register('British Longhair', 'british longhair')
+          >>> @Cat.register_('British Longhair', 'british longhair')
           ... class BritishLonghair: pass
           >>> 'British Longhair' in Cat
           True
@@ -235,7 +237,7 @@ class RegistryMeta(  # type: ignore[misc]
         - compatibility with child registries
 
           >>> class HairlessCat(Cat): pass
-          >>> @Cat.register('HairlessCat.CanadianHairless')
+          >>> @Cat.register_('HairlessCat.CanadianHairless')
           ... def canadian_hairless() -> str:
           ...     return 'canadian hairless'
           >>> HairlessCat
@@ -245,13 +247,14 @@ class RegistryMeta(  # type: ignore[misc]
         def wrapper_func(obj: T) -> T:
             keys = [obj.__name__] if len(args) == 0 else args
             for key in keys:
-                registry, key = self._parse(key)
-                registry.__setitem__(key, obj, **kwargs)
+                registry, key = cls._parse(key)
+                registry.__setitem__(  # noqa: E501 pylint: disable=unnecessary-dunder-call
+                    key, obj, **kwargs,)
             return obj
 
         return wrapper_func
 
-    def _build(self, config: Config):
+    def _build(cls, config: Config):
         """Build an instance according to the given config.
 
         Args:
@@ -268,15 +271,15 @@ class RegistryMeta(  # type: ignore[misc]
             ...     def _build(cls, config: Config) -> str:
             ...         obj = RegistryMeta._build(cls, config)
             ...         return obj.__class__.__name__.upper()
-            >>> @Cat.register()
+            >>> @Cat.register_()
             ... class Munchkin: pass
             >>> Cat.build(Config(type='Munchkin'))
             'MUNCHKIN'
         """
-        type_ = self[config.pop('type')]
+        type_ = cls[config.pop('type')]
         return type_(**config)
 
-    def build(self, config: Config, **kwargs):
+    def build(cls, config: Config, **kwargs):
         """Call the registered object to construct a new instance.
 
         Args:
@@ -290,7 +293,7 @@ class RegistryMeta(  # type: ignore[misc]
         automatically call the objects:
 
             >>> class Cat(metaclass=RegistryMeta): pass
-            >>> @Cat.register()
+            >>> @Cat.register_()
             ... def tabby(name: str) -> str:
             ...     return f'Tabby {name}'
             >>> Cat.build(Config(type='tabby', name='Garfield'))
@@ -316,26 +319,26 @@ class RegistryMeta(  # type: ignore[misc]
         default_config.update(config)
 
         config = default_config.copy()
-        registry, config.type = self._parse(config.type)
+        registry, config.type = cls._parse(config.type)
 
         try:
             return registry._build(config)
         except Exception as e:
             # config may be altered
-            logger.error(f"Failed to build\n{default_config.dumps()}")
+            logger.error("Failed to build\n%s", default_config.dumps())
             raise e
 
 
 class PartialRegistryMeta(RegistryMeta):
 
     @no_type_check
-    def __subclasses__(self=...):
-        if self is ...:
+    def __subclasses__(cls=...):
+        if cls is ...:
             return NonInstantiableMeta.__subclasses__(PartialRegistryMeta)
         return super().__subclasses__()
 
-    def _build(self, config: Config) -> partial:
-        type_ = self[config.pop('type')]
+    def _build(cls, config: Config) -> partial:
+        type_ = cls[config.pop('type')]
         if inspect.isclass(type_):
             return type_(**config)
         return partial(type_, **config)
@@ -362,6 +365,7 @@ class OptimizerRegistry(Registry):
 
     @staticmethod
     def params(model: nn.Module, config: Config) -> Config:
+        # TODO: add more matchers except re
         config = config.copy()
         config.params = [
             p for n, p in model.named_parameters()
@@ -460,14 +464,15 @@ class ModelRegistry(Registry):
 
         if getattr(model, '__initialized', False):
             if get_rank() == 0:
-                logger.debug(f"Skip re-initializing {weights}")
+                logger.debug("Skip re-initializing %s", weights)
             return
         setattr(model, '__initialized', True)
 
         if config is None:
             if get_rank() == 0:
                 logger.debug(
-                    f"Skip initializing {weights} since config is None"
+                    "Skip initializing %s since config is None",
+                    weights,
                 )
             return
 
@@ -475,12 +480,12 @@ class ModelRegistry(Registry):
             getattr(model, 'init_weights', None)
         if init_weights is not None:
             if get_rank() == 0:
-                logger.debug(f"Initializing {weights} with {config}")
+                logger.debug("Initializing %s with %s", weights, config)
             recursive = init_weights(config)
             if not recursive:
                 return
 
-        for name, child in model.named_children():
+        for name, child in model.named_children():  # noqa: E501 pylint: disable=redefined-outer-name
             cls.init_weights(child, config, f'{prefix}.{name}')
 
     @classmethod
@@ -527,16 +532,16 @@ c: type
 for c in torch.nn.Module.__subclasses__():
     module = c.__module__.replace('.', '_')
     name = c.__name__
-    ModelRegistry.register(f'{module}_{name}')(c)
+    ModelRegistry.register_(f'{module}_{name}')(c)
 
 for c in torch.utils.data.Sampler.__subclasses__():
-    SamplerRegistry.register()(c)
+    SamplerRegistry.register_()(c)
 
 for c in torch.optim.Optimizer.__subclasses__():
-    OptimizerRegistry.register()(c)
+    OptimizerRegistry.register_()(c)
 
 for c in torch.optim.lr_scheduler.LRScheduler.__subclasses__():
-    LrSchedulerRegistry.register()(c)
+    LrSchedulerRegistry.register_()(c)
 
 NormRegistry['BN1d'] = nn.BatchNorm1d
 NormRegistry['BN2d'] = NormRegistry['BN'] = nn.BatchNorm2d
@@ -549,33 +554,33 @@ NormRegistry['IN2d'] = NormRegistry['IN'] = nn.InstanceNorm2d
 NormRegistry['IN3d'] = nn.InstanceNorm3d
 
 for _, c in inspect.getmembers(tf, inspect.isclass):
-    TransformRegistry.register()(c)
+    TransformRegistry.register_()(c)
 
-EnvRegistry.register('Platform')(utils.platform)
-EnvRegistry.register('NVIDIA SMI')(utils.nvidia_smi)
-EnvRegistry.register('Python version')(utils.python_version)
-EnvRegistry.register('PyTorch version')(utils.pytorch_version)
-EnvRegistry.register('TorchVision version')(utils.torchvision_version)
-EnvRegistry.register('OpenCV version')(utils.opencv_version)
-EnvRegistry.register('Todd version')(utils.todd_version)
-EnvRegistry.register('CUDA_HOME')(utils.cuda_home)
-EnvRegistry.register('Git commit ID')(utils.git_commit_id)
-EnvRegistry.register('Git status')(utils.git_status)
+EnvRegistry.register_('Platform')(utils.platform)
+EnvRegistry.register_('NVIDIA SMI')(utils.nvidia_smi)
+EnvRegistry.register_('Python version')(utils.python_version)
+EnvRegistry.register_('PyTorch version')(utils.pytorch_version)
+EnvRegistry.register_('TorchVision version')(utils.torchvision_version)
+EnvRegistry.register_('OpenCV version')(utils.opencv_version)
+EnvRegistry.register_('Todd version')(utils.todd_version)
+EnvRegistry.register_('CUDA_HOME')(utils.cuda_home)
+EnvRegistry.register_('Git commit ID')(utils.git_commit_id)
+EnvRegistry.register_('Git status')(utils.git_status)
 
-ClipGradRegistry.register()(nn.utils.clip_grad_norm_)
-ClipGradRegistry.register()(nn.utils.clip_grad_value_)
+ClipGradRegistry.register_()(nn.utils.clip_grad_norm_)
+ClipGradRegistry.register_()(nn.utils.clip_grad_value_)
 
-InitRegistry.register()(nn.init.uniform_)
-InitRegistry.register()(nn.init.normal_)
-InitRegistry.register()(nn.init.trunc_normal_)
-InitRegistry.register()(nn.init.constant_)
-InitRegistry.register()(nn.init.ones_)
-InitRegistry.register()(nn.init.zeros_)
-InitRegistry.register()(nn.init.eye_)
-InitRegistry.register()(nn.init.dirac_)
-InitRegistry.register()(nn.init.xavier_uniform_)
-InitRegistry.register()(nn.init.xavier_normal_)
-InitRegistry.register()(nn.init.kaiming_uniform_)
-InitRegistry.register()(nn.init.kaiming_normal_)
-InitRegistry.register()(nn.init.orthogonal_)
-InitRegistry.register()(nn.init.sparse_)
+InitRegistry.register_()(nn.init.uniform_)
+InitRegistry.register_()(nn.init.normal_)
+InitRegistry.register_()(nn.init.trunc_normal_)
+InitRegistry.register_()(nn.init.constant_)
+InitRegistry.register_()(nn.init.ones_)
+InitRegistry.register_()(nn.init.zeros_)
+InitRegistry.register_()(nn.init.eye_)
+InitRegistry.register_()(nn.init.dirac_)
+InitRegistry.register_()(nn.init.xavier_uniform_)
+InitRegistry.register_()(nn.init.xavier_normal_)
+InitRegistry.register_()(nn.init.kaiming_uniform_)
+InitRegistry.register_()(nn.init.kaiming_normal_)
+InitRegistry.register_()(nn.init.orthogonal_)
+InitRegistry.register_()(nn.init.sparse_)

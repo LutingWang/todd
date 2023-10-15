@@ -13,7 +13,7 @@ from .base import BaseCallback
 Memo = dict[str, Any]
 
 
-@CallbackRegistry.register()
+@CallbackRegistry.register_()
 class AutocastCallback(BaseCallback):
 
     def __init__(self, *args, autocast: Config, **kwargs) -> None:

@@ -4,7 +4,7 @@ from ..base import BBoxesXYXY
 from .base import AdaptRegistry, BaseAdapt
 
 
-@AdaptRegistry.register()
+@AdaptRegistry.register_()
 class IoU(BaseAdapt):
 
     def __init__(

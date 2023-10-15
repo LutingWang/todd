@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from enum import IntEnum, auto
 from typing import Literal
 
-import torch.nn as nn
+from torch import nn
 
 from ..utils import Status, get_
 

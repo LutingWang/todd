@@ -70,37 +70,37 @@ class StoreMeta(NonInstantiableMeta):
     """
     _read_only: dict[str, bool] = dict()
 
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(cls, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
-        if keys := self.__annotations__.keys() & self._read_only:
+        if keys := cls.__annotations__.keys() & cls._read_only:
             raise TypeError(f"Duplicated {keys=}")
 
-        for k, v in self.__annotations__.items():
+        for k, v in cls.__annotations__.items():
             variable = os.environ.get(k, '')
             if read_only := variable != '':
                 if v is not str:
                     variable = eval(variable)
                     assert isinstance(variable, v)
                 super().__setattr__(k, variable)
-            self._read_only[k] = read_only
+            cls._read_only[k] = read_only
 
-    def __getattr__(self, name: str) -> None:
-        if name in self.__annotations__:
-            return self.__annotations__[name]()
+    def __getattr__(cls, name: str) -> None:
+        if name in cls.__annotations__:
+            return cls.__annotations__[name]()
         raise AttributeError(name)
 
-    def __setattr__(self, name: str, value) -> None:
-        if name in self.__annotations__ and self._read_only.get(name, False):
-            logger.debug(f"Cannot set {name} to {value}.")
+    def __setattr__(cls, name: str, value) -> None:
+        if name in cls.__annotations__ and cls._read_only.get(name, False):
+            logger.debug("Cannot set %s to %s.", name, value)
             return
         super().__setattr__(name, value)
 
-    def __repr__(self) -> str:
+    def __repr__(cls) -> str:
         variables = ' '.join(
-            f'{k}={getattr(self, k)}' for k in self.__annotations__
+            f'{k}={getattr(cls, k)}' for k in cls.__annotations__
         )
-        return f"<{self.__name__} {variables}>"
+        return f"<{cls.__name__} {variables}>"
 
 
 class Store(metaclass=StoreMeta):
@@ -114,7 +114,7 @@ class Store(metaclass=StoreMeta):
 
 
 if parse(torch.__version__) >= parse('1.12'):
-    import torch.backends.mps as mps
+    from torch.backends import mps
     if mps.is_available():
         Store.MPS = True
 

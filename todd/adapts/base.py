@@ -7,7 +7,7 @@ import inspect
 import itertools
 
 import einops.layers.torch
-import torch.nn as nn
+from torch import nn
 
 from ..base import Registry
 
@@ -25,7 +25,7 @@ for _, class_ in itertools.chain(
     inspect.getmembers(einops.layers.torch, inspect.isclass),
 ):
     if issubclass(class_, nn.Module):
-        AdaptRegistry.register()(class_)
+        AdaptRegistry.register_()(class_)
 
 try:
     import mmcv.cnn
@@ -34,6 +34,6 @@ try:
         mmcv.cnn.CONV_LAYERS.module_dict.items(),
         mmcv.cnn.PLUGIN_LAYERS.module_dict.items(),
     ):
-        AdaptRegistry.register(f'mmcv_{k}')(v)
-except Exception:
+        AdaptRegistry.register_(f'mmcv_{k}')(v)
+except Exception:  # pylint: disable=broad-exception-caught
     pass

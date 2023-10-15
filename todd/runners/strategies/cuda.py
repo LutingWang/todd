@@ -10,7 +10,7 @@ from ...utils import get_local_rank
 from .base import BaseStrategy
 
 
-@StrategyRegistry.register()
+@StrategyRegistry.register_()
 class CUDAStrategy(BaseStrategy):
 
     def __init__(

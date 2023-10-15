@@ -40,11 +40,11 @@ class FocalMixin(FunctionalLoss):
         )
 
 
-@LossRegistry.register()
+@LossRegistry.register_()
 class FocalLoss(FocalMixin, BCELoss):
     pass
 
 
-@LossRegistry.register()
+@LossRegistry.register_()
 class FocalWithLogitsLoss(FocalMixin, BCEWithLogitsLoss):
     pass

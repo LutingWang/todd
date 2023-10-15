@@ -1,3 +1,5 @@
+# pylint: disable=import-outside-toplevel
+
 __all__ = [
     'platform',
     'nvidia_smi',

@@ -1,3 +1,5 @@
+# pylint: disable=self-cls-assignment
+
 __all__ = [
     'Finder',
     'ParameterFinder',
@@ -11,12 +13,14 @@ import types
 from typing import Any, Generic, Iterable, MutableMapping, TypeVar
 from typing_extensions import Self
 
-import torch.nn as nn
+from torch import nn
 
 from ..base import Config
 from ..utils import get_
 
 T = TypeVar('T')
+
+# TODO: refactor Finder
 
 
 class Finder(Generic[T]):

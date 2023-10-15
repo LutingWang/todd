@@ -1,3 +1,5 @@
+# pylint: disable=pointless-statement
+
 __all__ = [
     'CheckpointCallback',
 ]
@@ -15,7 +17,7 @@ from .interval import IntervalMixin
 Memo = dict[str, Any]
 
 
-@CallbackRegistry.register()
+@CallbackRegistry.register_()
 class CheckpointCallback(IntervalMixin, BaseCallback):
 
     def __init__(

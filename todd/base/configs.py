@@ -35,7 +35,8 @@ class AttrDict(UserDict):
 
     def __setattr__(self, name: str, value) -> None:
         if name == 'data' or hasattr(self.__class__, name):
-            return super().__setattr__(name, value)
+            super().__setattr__(name, value)
+            return
         self[name] = value
 
     def __getattr__(self, name: str):
@@ -44,16 +45,16 @@ class AttrDict(UserDict):
         try:
             return self[name]
         except KeyError as e:
-            raise AttributeError(e)
+            raise AttributeError(e) from e
 
     def __delattr__(self, name: str) -> None:
         try:
             del self[name]
         except KeyError as e:
-            raise AttributeError(e)
+            raise AttributeError(e) from e
 
 
-class _import_:
+class _import_:  # pylint: disable=invalid-name
 
     def __init__(self, name: str) -> None:
         self.__name = name

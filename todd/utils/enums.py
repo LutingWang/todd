@@ -42,7 +42,7 @@ class SGR(enum.IntEnum):
     BG_WHITE = enum.auto()
 
     @classmethod
-    def CSI(cls, parameters: Iterable[Self]) -> str:
+    def CSI(cls, parameters: Iterable[Self]) -> str:  # noqa: E501 pylint: disable=invalid-name
         """Control Sequence Introducer."""
         return f'\033[{";".join(str(p.value) for p in parameters)}m'
 

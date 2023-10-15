@@ -1,6 +1,6 @@
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
+from torch import nn
 
 from ..base import Config
 from .base import AdaptRegistry, BaseAdapt
@@ -91,7 +91,7 @@ class ResBlock(nn.Sequential):
         super().__init__(layer1, layer2, **kwargs)
 
 
-@AdaptRegistry.register()
+@AdaptRegistry.register_()
 class LabelEncAdapt(BaseAdapt):
 
     def __init__(

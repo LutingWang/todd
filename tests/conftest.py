@@ -3,7 +3,7 @@ import pathlib
 import sys
 
 import pytest
-import torch.nn as nn
+from torch import nn
 
 sys.path.append(os.path.join(os.path.dirname(__file__), 'helpers'))
 from custom_types import CustomModule, CustomObject  # noqa: E402

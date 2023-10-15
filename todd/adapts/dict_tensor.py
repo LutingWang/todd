@@ -98,7 +98,7 @@ class DictTensor(Mapping):
         return dict_tensors
 
 
-@AdaptRegistry.register('Union')
+@AdaptRegistry.register_('Union')
 class Union_(BaseAdapt):
 
     def forward(
@@ -139,7 +139,7 @@ class Union_(BaseAdapt):
         return union_feats, union_ids, union_mask
 
 
-@AdaptRegistry.register()
+@AdaptRegistry.register_()
 class Intersect(BaseAdapt):
 
     def forward(

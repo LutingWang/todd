@@ -11,7 +11,7 @@ from .trainer import Trainer
 Memo = dict[str, Any]
 
 
-@RunnerRegistry.register()
+@RunnerRegistry.register_()
 class IterBasedTrainer(Trainer):
 
     def __init__(self, *args, iters: int, **kwargs) -> None:

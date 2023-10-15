@@ -7,7 +7,7 @@ import warnings
 from typing import Any, Callable, Iterable, Mapping
 from typing_extensions import Self
 
-import torch.nn as nn
+from torch import nn
 
 from ..adapts import AdaptRegistry, BaseAdapt
 from ..base import (

@@ -13,7 +13,7 @@ from .ddp import DDPStrategy
 # TODO: update when pytorch updates
 
 
-@StrategyRegistry.register()
+@StrategyRegistry.register_()
 class FSDPStrategy(DDPStrategy):
     _model: FSDP  # type: ignore[assignment]
 

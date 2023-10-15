@@ -1,7 +1,7 @@
 from typing import cast
 
 import pytest
-import torch.nn as nn
+from torch import nn
 
 from todd import Config
 from todd.reproduction.model import FrozenMixin

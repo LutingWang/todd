@@ -1,14 +1,14 @@
 import torch
-import torch.nn as nn
+from torch import nn
 
 from .base import AdaptRegistry, BaseAdapt
 
 
-@AdaptRegistry.register()
+@AdaptRegistry.register_()
 class RoIAlign(BaseAdapt):
 
     def __init__(self, strides: list[int], *args, **kwargs) -> None:
-        import mmcv.ops
+        import mmcv.ops  # pylint: disable=import-outside-toplevel
 
         super().__init__(*args, **kwargs)
         self._layers = nn.ModuleList([

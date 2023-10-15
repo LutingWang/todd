@@ -16,7 +16,7 @@ from .interval import IntervalMixin
 Memo = dict[str, Any]
 
 
-@CallbackRegistry.register()
+@CallbackRegistry.register_()
 class LRScheduleCallback(IntervalMixin, BaseCallback):
 
     def __init__(
@@ -71,7 +71,7 @@ class LRScheduleCallback(IntervalMixin, BaseCallback):
         return state_dict
 
 
-@CallbackRegistry.register()
+@CallbackRegistry.register_()
 class LRScaleCallback(BaseCallback):
 
     def __init__(self, *args, lr_scaler: Config, **kwargs) -> None:

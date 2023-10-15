@@ -79,7 +79,7 @@ class MemoryPool:
         return torch.cat(self._memory)
 
 
-@LossRegistry.register()
+@LossRegistry.register_()
 class CKDLoss(BaseLoss):
 
     def __init__(self, *args, **kwargs) -> None:
@@ -90,7 +90,7 @@ class CKDLoss(BaseLoss):
         self,
         preds: torch.Tensor,
         targets: torch.Tensor,
-        bboxes: list[torch.Tensor] | None = None,
+        bboxes: list[torch.Tensor] | None = None,  # TODO: change to BBoxes
     ) -> torch.Tensor:
         """Compute CKD loss.
 

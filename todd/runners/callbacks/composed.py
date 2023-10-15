@@ -35,7 +35,7 @@ CallbackNames = Literal['init', 'should_break', 'should_continue',
                         'after_run']
 
 
-@CallbackRegistry.register()
+@CallbackRegistry.register_()
 class ComposedCallback(BaseCallback, UserList[BaseCallback]):
 
     def __init__(self, *args, callbacks: Iterable[Config], **kwargs) -> None:

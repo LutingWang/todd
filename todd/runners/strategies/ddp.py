@@ -4,14 +4,14 @@ __all__ = [
 
 from typing import TYPE_CHECKING
 
-import torch.nn as nn
+from torch import nn
 from torch.nn.parallel import DistributedDataParallel as DDP
 
 from ...base import Config, StrategyRegistry
 from .cuda import CUDAStrategy
 
 
-@StrategyRegistry.register()
+@StrategyRegistry.register_()
 class DDPStrategy(CUDAStrategy):
     _model: DDP
 

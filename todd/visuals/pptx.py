@@ -23,7 +23,7 @@ from ..base import VisualRegistry
 from .base import BaseVisual, Color, XAnchor, YAnchor
 
 
-@VisualRegistry.register()
+@VisualRegistry.register_()
 class PPTXVisual(BaseVisual):
     """Visualize data in the format of PowerPoint.
 

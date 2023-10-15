@@ -13,7 +13,7 @@ Memo = dict[str, Any]
 # FIXME: resume from specific iter causes total iters mismatch
 
 
-@RunnerRegistry.register()
+@RunnerRegistry.register_()
 class EpochBasedTrainer(Trainer):
 
     def __init__(self, *args, epochs: int, **kwargs) -> None:

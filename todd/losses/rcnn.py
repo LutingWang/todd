@@ -6,14 +6,14 @@ from typing import Callable
 
 import einops
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
+from torch import nn
 
 from ..base import LossRegistry
 from .functional import MSELoss
 
 
-@LossRegistry.register()
+@LossRegistry.register_()
 class SGFILoss(MSELoss):
 
     def __init__(
@@ -24,6 +24,7 @@ class SGFILoss(MSELoss):
         out_channels: int = 64,
         **kwargs,
     ) -> None:
+        # pylint: disable=import-outside-toplevel
         from mmcv.cnn import ConvModule
 
         super().__init__(*args, **kwargs)
@@ -33,11 +34,12 @@ class SGFILoss(MSELoss):
         )
         self._tau = nn.Parameter(torch.tensor([1.0], dtype=torch.float32))
 
-    def forward(  # type: ignore[override]
+    def forward(
         self,
-        preds: list[torch.Tensor],
-        targets: torch.Tensor,
+        pred: torch.Tensor,
+        target: torch.Tensor,
         *args,
+        mask: torch.Tensor | None = None,
         **kwargs,
     ):
         """Re-implementation of G-DetKD.
@@ -54,15 +56,14 @@ class SGFILoss(MSELoss):
         Returns:
             loss
         """
-        fused_preds = torch.stack(preds)
-        embed_pred = einops.rearrange(fused_preds, 'l r c h w -> (l r) c h w')
+        embed_pred = einops.rearrange(pred, 'l r c h w -> (l r) c h w')
         embed_pred = self._embed(embed_pred)
-        embed_target = self._embed(targets)
+        embed_target = self._embed(target)
 
         embed_pred = einops.rearrange(
             embed_pred,
             '(l r) out_channels 1 1 -> l r out_channels',
-            l=len(preds),
+            l=pred.shape[0],
         )
         embed_target = einops.rearrange(
             embed_target,
@@ -77,10 +78,10 @@ class SGFILoss(MSELoss):
 
         fused_pred = torch.einsum(
             'l r c h w, l r -> r c h w',
-            fused_preds,
+            pred,
             similarity,
         )
-        return super().forward(fused_pred, targets, *args, **kwargs)
+        return super().forward(fused_pred, target, *args, mask=mask, **kwargs)
 
 
 # @LOSSES.register()

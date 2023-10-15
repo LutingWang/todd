@@ -10,8 +10,8 @@ from typing import Generator, cast
 
 import numpy as np
 import torch
-import torch.backends.cudnn as cudnn
 import torch.distributed as dist
+from torch.backends import cudnn
 
 from ..base import Store, logger
 from ..utils import get_world_size
@@ -51,7 +51,7 @@ def set_seed_temp(
         seed = hashlib.blake2b(seed, digest_size=4).hexdigest()
         seed = int(seed, 16)
 
-    logger.info(f"Setting seed to {seed}.")
+    logger.info("Setting seed to %d", seed)
 
     random_state = random.getstate()
     np_state = np.random.get_state()

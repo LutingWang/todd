@@ -1,3 +1,5 @@
+# pylint: disable=pointless-statement
+
 __all__ = [
     'OptimizeCallback',
 ]
@@ -12,7 +14,7 @@ from .base import BaseCallback
 Memo = dict[str, Any]
 
 
-@CallbackRegistry.register()
+@CallbackRegistry.register_()
 class OptimizeCallback(BaseCallback):
 
     # TODO: add accumulate

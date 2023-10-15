@@ -5,7 +5,7 @@ __all__ = [
 
 from typing import Mapping
 
-import torch.nn as nn
+from torch import nn
 
 from ..utils import get_
 from .logger import logger
@@ -18,9 +18,9 @@ def transfer_weight(target: nn.Module, source: nn.Module) -> None:
         strict=False,
     )
     if missing_keys:
-        logger.warning('missing_keys:', missing_keys)
+        logger.warning("missing_keys: %s", missing_keys)
     if unexpected_keys:
-        logger.warning('unexpected_keys:', unexpected_keys)
+        logger.warning("unexpected_keys: %s", unexpected_keys)
 
 
 def transfer_weights(models, weight_prefixes: Mapping[str, str]) -> None:

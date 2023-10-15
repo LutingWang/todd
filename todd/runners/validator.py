@@ -13,7 +13,7 @@ from .base import BaseRunner, RunnerRegistry
 Memo = dict[str, Any]
 
 
-@RunnerRegistry.register()
+@RunnerRegistry.register_()
 class Validator(BaseRunner):
 
     def _setup(self) -> Memo:

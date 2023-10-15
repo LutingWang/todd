@@ -3,7 +3,7 @@ import string
 from .base import AdaptRegistry, BaseAdapt
 
 
-@AdaptRegistry.register()
+@AdaptRegistry.register_()
 class Custom(BaseAdapt):
     """Custom adaptation described using patterns.
 

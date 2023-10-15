@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, Any
 
-import torch.nn as nn
+from torch import nn
 
 if TYPE_CHECKING:
     CustomObject = Any

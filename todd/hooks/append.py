@@ -8,7 +8,7 @@ from ..base import HookRegistry
 from .base import BaseHook
 
 
-@HookRegistry.register()
+@HookRegistry.register_()
 class AppendHook(BaseHook):
 
     def _reset(self) -> None:

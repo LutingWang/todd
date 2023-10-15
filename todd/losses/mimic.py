@@ -19,8 +19,8 @@ class _2DMixin(FunctionalLoss):
         self,
         pred: torch.Tensor,
         target: torch.Tensor,
-        mask: torch.Tensor | None = None,
         *args,
+        mask: torch.Tensor | None = None,
         **kwargs,
     ) -> torch.Tensor:
         _, _, h, w = pred.shape
@@ -28,30 +28,31 @@ class _2DMixin(FunctionalLoss):
             target = F.adaptive_avg_pool2d(target, (h, w))
         if mask is not None and pred.shape != mask.shape:
             mask = F.adaptive_avg_pool2d(mask, (h, w))
-        return super().forward(pred, target, mask, *args, **kwargs)
+        return super().forward(pred, target, *args, mask=mask, **kwargs)
 
 
-@LossRegistry.register()
+@LossRegistry.register_()
 class L12DLoss(_2DMixin, L1Loss):
     pass
 
 
-@LossRegistry.register()
+@LossRegistry.register_()
 class MSE2DLoss(_2DMixin, MSELoss):
     pass
 
 
-@LossRegistry.register()
+@LossRegistry.register_()
 class FGFILoss(MSE2DLoss):
 
-    def forward(  # type: ignore[override]
+    def forward(
         self,
         pred: torch.Tensor,
         target: torch.Tensor,
-        mask: torch.Tensor,
         *args,
+        mask: torch.Tensor | None = None,
         **kwargs,
     ) -> torch.Tensor:
+        assert mask is not None
         n, _, h, w = pred.shape
         target = F.adaptive_avg_pool2d(target, (h, w))
         assert mask.shape == (n, 1, h, w) and mask.dtype == torch.bool
@@ -63,25 +64,29 @@ class FGFILoss(MSE2DLoss):
         return super().forward(  # type: ignore[misc]
             pred[mask],
             target[mask],
-            mask=None,
             *args,
+            mask=None,
             **kwargs,
         )
 
 
-@LossRegistry.register()
+@LossRegistry.register_()
 class FGDLoss(MSE2DLoss):
 
-    def forward(  # type: ignore[override]
+    def forward(
         self,
         pred: torch.Tensor,
         target: torch.Tensor,
-        attn_spatial: torch.Tensor,
-        attn_channel: torch.Tensor,
-        mask: torch.Tensor,
         *args,
+        mask: torch.Tensor | None = None,
+        attn_spatial: torch.Tensor | None = None,
+        attn_channel: torch.Tensor | None = None,
         **kwargs,
     ) -> torch.Tensor:
+        assert (
+            mask is not None and attn_spatial is not None
+            and attn_channel is not None
+        )
         _, _, h, w = pred.shape
         attn_spatial = F.adaptive_avg_pool2d(attn_spatial, (h, w))
         attn_channel = F.adaptive_avg_pool2d(attn_channel, (h, w))
@@ -89,8 +94,8 @@ class FGDLoss(MSE2DLoss):
         return super().forward(  # type: ignore[misc]
             pred,
             target,
-            mask=mask,
             *args,
+            mask=mask,
             **kwargs,
         )
 

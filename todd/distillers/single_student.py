@@ -8,7 +8,7 @@ __all__ = [
 
 from typing import Generic, Iterable, Mapping, TypeVar
 
-import torch.nn as nn
+from torch import nn
 
 from ..base import Config, DistillerRegistry
 from .base import BaseDistiller
@@ -36,7 +36,7 @@ class SingleStudentDistiller(BaseDistiller):
         return self._models[0]
 
 
-@DistillerRegistry.register()
+@DistillerRegistry.register_()
 class MultiTeacherDistiller(SingleStudentDistiller):
 
     def __init__(
@@ -80,7 +80,7 @@ class MultiTeacherDistiller(SingleStudentDistiller):
         return self.models[1 + self._num_online_teachers:]
 
 
-@DistillerRegistry.register()
+@DistillerRegistry.register_()
 class SingleTeacherDistiller(SingleStudentDistiller):
 
     def __init__(
@@ -91,8 +91,8 @@ class SingleTeacherDistiller(SingleStudentDistiller):
         online: bool = False,
         **kwargs,
     ) -> None:
-        teachers = teacher,
-        teacher_hooks = teacher_hook,
+        teachers = (teacher, )
+        teacher_hooks = (teacher_hook, )
         super().__init__(
             *args,
             teachers=teachers,
@@ -110,7 +110,7 @@ class SingleTeacherDistiller(SingleStudentDistiller):
         return self.models[1]
 
 
-@DistillerRegistry.register()
+@DistillerRegistry.register_()
 class SelfDistiller(SingleStudentDistiller):
 
     def __init__(

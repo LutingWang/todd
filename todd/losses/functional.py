@@ -29,8 +29,8 @@ class FunctionalLoss(BaseLoss):
         self,
         pred: torch.Tensor,
         target: torch.Tensor,
-        mask: torch.Tensor | None = None,
         *args,
+        mask: torch.Tensor | None = None,
         **kwargs,
     ) -> torch.Tensor:
         if mask is None:
@@ -58,15 +58,16 @@ class NormMixin(FunctionalLoss):
         pred: torch.Tensor,
         target: torch.Tensor,
         *args,
+        mask: torch.Tensor | None = None,
         **kwargs,
     ) -> torch.Tensor:
         if self._norm:
             pred = F.normalize(pred)
             target = F.normalize(target)
-        return super().forward(pred, target, *args, **kwargs)
+        return super().forward(pred, target, *args, mask=mask, **kwargs)
 
 
-@LossRegistry.register()
+@LossRegistry.register_()
 class L1Loss(NormMixin, FunctionalLoss):
 
     @staticmethod
@@ -74,7 +75,7 @@ class L1Loss(NormMixin, FunctionalLoss):
         return F.l1_loss(*args, **kwargs)
 
 
-@LossRegistry.register()
+@LossRegistry.register_()
 class MSELoss(NormMixin, FunctionalLoss):
 
     @staticmethod
@@ -82,7 +83,7 @@ class MSELoss(NormMixin, FunctionalLoss):
         return F.mse_loss(*args, **kwargs)
 
 
-@LossRegistry.register()
+@LossRegistry.register_()
 class BCELoss(FunctionalLoss):
 
     @staticmethod
@@ -90,7 +91,7 @@ class BCELoss(FunctionalLoss):
         return F.binary_cross_entropy(*args, **kwargs)
 
 
-@LossRegistry.register()
+@LossRegistry.register_()
 class BCEWithLogitsLoss(FunctionalLoss):
 
     @staticmethod
@@ -98,7 +99,7 @@ class BCEWithLogitsLoss(FunctionalLoss):
         return F.binary_cross_entropy_with_logits(*args, **kwargs)
 
 
-@LossRegistry.register()
+@LossRegistry.register_()
 class CrossEntropyLoss(FunctionalLoss):
 
     @staticmethod
@@ -106,7 +107,7 @@ class CrossEntropyLoss(FunctionalLoss):
         return F.cross_entropy(*args, **kwargs)
 
 
-@LossRegistry.register()
+@LossRegistry.register_()
 class CosineEmbeddingLoss(FunctionalLoss):
 
     @staticmethod

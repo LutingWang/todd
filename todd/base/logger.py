@@ -36,9 +36,9 @@ class SGRFormatter(Formatter):
         return s
 
 
-# override logging settings from other packages
 try:
-    import lvis  # noqa: F401
+    # prevent lvis from overriding the logging config
+    import lvis  # noqa: F401 pylint: disable=unused-import
 except ImportError:
     pass
 logging.basicConfig(force=True)

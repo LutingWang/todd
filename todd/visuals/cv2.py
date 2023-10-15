@@ -12,7 +12,7 @@ from ..base import VisualRegistry
 from .base import BaseVisual, Color, XAnchor, YAnchor
 
 
-@VisualRegistry.register()
+@VisualRegistry.register_()
 class CV2Visual(BaseVisual):
 
     def __init__(self, width: int, height: int) -> None:

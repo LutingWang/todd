@@ -6,7 +6,7 @@ import pathlib
 from typing import Any, Mapping
 
 import torch
-import torch.nn as nn
+from torch import nn
 
 from ...base import (
     Config,
@@ -18,7 +18,7 @@ from ...base import (
 from ..utils import RunnerHolderMixin
 
 
-@StrategyRegistry.register()
+@StrategyRegistry.register_()
 class BaseStrategy(RunnerHolderMixin, StateDictMixin):
     _model: nn.Module
 
