@@ -405,7 +405,18 @@ class LossRegistry(Registry):
 
 
 class SchedulerRegistry(Registry):
-    pass
+
+    @classmethod
+    def _build(cls, config: Config) -> torch.optim.lr_scheduler.LRScheduler:
+        from ..losses.schedulers import ChainedScheduler, SequentialScheduler
+        if config.type in (
+            SequentialScheduler.__name__,
+            ChainedScheduler.__name__,
+        ):
+            config.schedulers = [
+                cls.build(scheduler) for scheduler in config.schedulers
+            ]
+        return RegistryMeta._build(cls, config)
 
 
 class VisualRegistry(Registry):

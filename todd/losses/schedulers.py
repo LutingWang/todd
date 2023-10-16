@@ -237,15 +237,25 @@ class CosineAnnealingScheduler(BaseScheduler):
         0.0
     """
 
-    def __init__(self, *args, duration: int, **kwargs) -> None:
+    def __init__(
+        self,
+        *args,
+        duration: int,
+        min_: float = 0.,
+        **kwargs,
+    ) -> None:
         super().__init__(*args, **kwargs)
         self._duration = duration
+        self._min = min_
 
     def forward(self) -> float:
         steps = self.steps - 1
         if steps >= self._duration:
             return 0
-        return (1 + math.cos(math.pi * steps / self._duration)) / 2
+        return (
+            self._min + (1 - self._min) *
+            (1 + math.cos(math.pi * steps / self._duration)) / 2
+        )
 
 
 @SchedulerRegistry.register()
@@ -283,3 +293,30 @@ class ChainedScheduler(BaseScheduler):
         super().step()
         for scheduler in self._schedulers:
             scheduler.step()
+
+
+@SchedulerRegistry.register()
+class SequentialScheduler(BaseScheduler):
+
+    def __init__(
+        self,
+        *args,
+        schedulers: Iterable[BaseScheduler],
+        milestones: Iterable[int],
+        **kwargs,
+    ) -> None:
+        super().__init__(*args, **kwargs)
+        self._schedulers = tuple(schedulers)
+        self._milestones = sorted(milestones)
+
+    @property
+    def scheduler(self) -> BaseScheduler:
+        i = bisect.bisect(self._milestones, self.steps)
+        return self._schedulers[i]
+
+    def forward(self) -> float:
+        return self.scheduler()
+
+    def step(self) -> None:
+        self.scheduler.step()
+        super().step()
