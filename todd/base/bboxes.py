@@ -23,7 +23,7 @@ BBox = tuple[float, float, float, float]
 T = TypeVar('T', bound='BBoxes')
 
 
-class BBoxes(ABC):
+class BBoxes(ABC):  # pylint: disable=too-many-public-methods
 
     def __init__(
         self,

@@ -1,6 +1,9 @@
+from typing import cast
+
 import pytest
 import torch
 from custom_types import CustomModule
+from torch import nn
 
 from todd import Config
 from todd.base.registries import OptimizerRegistry, Registry, RegistryMeta
@@ -18,7 +21,7 @@ class Registry3(Registry2):
     pass
 
 
-class Registry3_1(Registry2):
+class Registry3_1(Registry2):  # pylint: disable=invalid-name
     pass
 
 
@@ -31,7 +34,7 @@ class TestRegistryMeta:
     def test_missing(self) -> None:
         key = 'custom_key'
         with pytest.raises(KeyError, match=key):
-            Registry[key]
+            Registry[key]  # pylint: disable=pointless-statement
 
     def test_parse(self) -> None:
         registry, key = Registry1._parse('Registry2.Registry3.custom_key')
@@ -44,7 +47,9 @@ class TestRegistryMeta:
         with pytest.raises(ValueError):
             Registry1.child('Registry2.Registry2')
 
-        class Registry3_1(Registry2):
+        class Registry3_1(  # noqa: E501 pylint: disable=invalid-name,redefined-outer-name,unused-variable
+            Registry2,
+        ):
             pass
 
         with pytest.raises(ValueError):
@@ -64,7 +69,7 @@ class TestOptimizerRegistry:
         )
         assert len(config) == 1
         assert len(config['params']) == 1
-        assert config['params'][0] is model.conv.bias
+        assert config['params'][0] is cast(nn.Conv2d, model.conv).bias
 
     def test_build(self, model: CustomModule) -> None:
         optimizer = OptimizerRegistry._build(

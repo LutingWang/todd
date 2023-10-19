@@ -1,3 +1,5 @@
+# pylint: disable=invalid-name,pointless-statement
+
 import pytest
 import torch
 

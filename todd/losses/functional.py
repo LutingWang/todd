@@ -9,7 +9,7 @@ __all__ = [
     'CosineEmbeddingLoss',
 ]
 
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 
 import torch
 import torch.nn.functional as F
@@ -47,7 +47,7 @@ class FunctionalLoss(BaseLoss):
         return loss
 
 
-class NormMixin(FunctionalLoss):
+class NormMixin(FunctionalLoss, ABC):
 
     def __init__(self, *args, norm: bool = False, **kwargs) -> None:
         super().__init__(*args, **kwargs)

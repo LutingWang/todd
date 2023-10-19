@@ -6,7 +6,10 @@ import pytest
 from torch import nn
 
 sys.path.append(os.path.join(os.path.dirname(__file__), 'helpers'))
-from custom_types import CustomModule, CustomObject  # noqa: E402
+from custom_types import (  # noqa: E402 pylint: disable=wrong-import-position
+    CustomModule,
+    CustomObject,
+)
 
 
 @pytest.fixture

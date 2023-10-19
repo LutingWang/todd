@@ -45,6 +45,15 @@ repos:
     rev: v1.1.1
     hooks:
       - id: doc8
+  - repo: local
+    hooks:
+      - id: pylint
+        name: pylint
+        entry: pylint
+        language: system
+        types: [python]
+        args:
+          - -sn
   - repo: https://github.com/google/yapf
     rev: v0.40.0
     hooks:

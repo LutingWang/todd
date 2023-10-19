@@ -7,6 +7,7 @@ __all__ = [
     'StepScheduler',
     'CosineAnnealingScheduler',
     'ChainedScheduler',
+    'SequentialScheduler',
 ]
 
 import bisect
@@ -295,7 +296,7 @@ class ChainedScheduler(BaseScheduler):
             scheduler.step()
 
 
-@SchedulerRegistry.register()
+@SchedulerRegistry.register_()
 class SequentialScheduler(BaseScheduler):
 
     def __init__(

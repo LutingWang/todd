@@ -8,12 +8,18 @@
         "tests/helpers"
     ],
     "cSpell.words": [
+        "autoshape",
         "CXCY",
         "CXCYWH",
+        "docstrings",
         "FGFI",
+        "intersphinx",
         "metas",
         "SGFI",
         "shorthair",
+        "typehints",
+        "undoc",
+        "viewcode",
         "XYWH",
         "XYXY"
     ],

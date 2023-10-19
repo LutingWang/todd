@@ -42,12 +42,19 @@ class SGR(enum.IntEnum):
     BG_WHITE = enum.auto()
 
     @classmethod
-    def CSI(cls, parameters: Iterable[Self]) -> str:  # noqa: E501 pylint: disable=invalid-name
+    def CSI(  # pylint: disable=invalid-name
+        cls,
+        parameters: Iterable[Self],
+    ) -> str:
         """Control Sequence Introducer."""
         return f'\033[{";".join(str(p.value) for p in parameters)}m'
 
     @classmethod
-    def format(cls, text: str, *args: Self) -> str:
+    def format(
+        cls,
+        text: str,  # pylint: disable=redefined-outer-name
+        *args: Self,
+    ) -> str:
         return cls.CSI(args) + text + cls.CSI(tuple())
 
 
@@ -55,7 +62,7 @@ if __name__ == '__main__':
     import itertools
 
     for fg, bg in itertools.product(range(30, 38), range(40, 48)):
-        text = ' '.join(
+        text = ' '.join(  # pylint: disable=invalid-name
             SGR.format(f'{effect}:{fg};{bg}', SGR(effect), SGR(fg), SGR(bg))
             for effect in range(10)
         )

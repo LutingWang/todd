@@ -48,6 +48,7 @@ dev = [
     'mypy',
     'pandas-stubs',
     'pre-commit',
+    'pylint',
     'torch-tb-profiler',
     'types-Pillow',
     'types-toml',
@@ -181,31 +182,36 @@ version_files = [
     'todd/__init__.py:^__version__',
 ]
 
+[tool.pylint.main]
+init-hook = '''
+import os
+import sys
+from pylint.config import find_default_config_files
+default_config_file = next(find_default_config_files())
+path = os.path.join(os.path.dirname(default_config_file), 'tests/helpers')
+sys.path.append(path)
+'''
+
 [tool.pylint.'messages control']
 disable = [
-    'abstract-method',
-    'arguments-differ',
     'attribute-defined-outside-init',
     'cyclic-import',
     'eval-used',
     'exec-used',
     'fixme',
-    'invalid-name',
     'missing-module-docstring',
     'missing-class-docstring',
     'missing-function-docstring',
-    'no-member',
     'not-callable',
     'protected-access',
-    'redefined-outer-name',
     'too-few-public-methods',
+    'too-many-ancestors',
     'too-many-arguments',
-    'too-many-instance-attributes',
     'too-many-locals',
     'unspecified-encoding',
-    'unsupported-membership-test',
     'unused-argument',
     'use-dict-literal',
+    'use-list-literal',
 ]
 enable = [
     'useless-suppression',
@@ -214,6 +220,10 @@ enable = [
 [tool.pylint.typecheck]
 signature-mutators = [
     'all_gather_decorator',
+]
+generated-members = [
+    'cv2.*',
+    'torch.*',
 ]
 
 [tool.pylint.format]

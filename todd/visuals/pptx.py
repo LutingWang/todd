@@ -176,8 +176,9 @@ class PPTXVisual(BaseVisual):
         height: int,
         color: Color = Color(0, 0, 0),
     ) -> pptx.shapes.autoshape.Shape:
+        autoshape_type = pptx.enum.shapes.MSO_AUTO_SHAPE_TYPE
         rectangle: pptx.shapes.autoshape.Shape = self._shapes.add_shape(
-            pptx.enum.shapes.MSO_AUTO_SHAPE_TYPE.RECTANGLE,
+            autoshape_type.RECTANGLE,  # pylint: disable=no-member
             pptx.util.Pt(left),
             pptx.util.Pt(top),
             pptx.util.Pt(width),

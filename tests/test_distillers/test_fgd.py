@@ -48,7 +48,7 @@ class TestFGD:
 
     @torch.no_grad()
     def generate_result(self):
-        distiller = self.distiller()
+        distiller = self.distiller()  # pylint: disable=no-member
         inputs = self.tensors()
         losses, tensors = distiller.distill(inputs, debug=True)
         result = {

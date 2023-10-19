@@ -35,7 +35,9 @@ Memo = dict[str, Any]
 
 
 @RunnerRegistry.register_()
-class BaseRunner(StateDictMixin):
+class BaseRunner(  # pylint: disable=too-many-instance-attributes
+    StateDictMixin,
+):
 
     def __init__(
         self,
@@ -145,8 +147,9 @@ class BaseRunner(StateDictMixin):
         callbacks: Config | list[Config] | None = None,
         **kwargs,
     ) -> None:
-        # pylint: disable=import-outside-toplevel
-        from .callbacks import ComposedCallback
+        from .callbacks import (  # pylint: disable=import-outside-toplevel
+            ComposedCallback,
+        )
         if callbacks is None:
             callbacks = []
         if isinstance(callbacks, list):

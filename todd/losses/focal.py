@@ -3,13 +3,15 @@ __all__ = [
     'FocalWithLogitsLoss',
 ]
 
+from abc import ABC
+
 import torch
 
 from ..base import LossRegistry
 from .functional import BCELoss, BCEWithLogitsLoss, FunctionalLoss
 
 
-class FocalMixin(FunctionalLoss):
+class FocalMixin(FunctionalLoss, ABC):
 
     def __init__(
         self,

@@ -5,6 +5,7 @@ __all__ = [
 
 import inspect
 import itertools
+from abc import ABC
 
 import einops.layers.torch
 from torch import nn
@@ -12,7 +13,7 @@ from torch import nn
 from ..base import Registry
 
 
-class BaseAdapt(nn.Module):
+class BaseAdapt(nn.Module, ABC):
     pass
 
 

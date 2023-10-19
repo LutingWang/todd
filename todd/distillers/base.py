@@ -4,6 +4,7 @@ __all__ = [
 ]
 
 import warnings
+from abc import ABC
 from typing import Any, Callable, Iterable, Mapping
 from typing_extensions import Self
 
@@ -31,7 +32,7 @@ class DistillerStore(metaclass=StoreMeta):
     INTERMEDIATE_OUTPUTS: str
 
 
-class BaseDistiller(nn.Module):
+class BaseDistiller(nn.Module, ABC):
 
     def __init__(
         self,
@@ -92,7 +93,7 @@ class BaseDistiller(nn.Module):
             assert outputs.isdisjoint(spec.outputs)
             outputs |= spec.outputs
 
-    def __call__(self, message: Message | None = None) -> Message:
+    def forward(self, message: Message | None = None) -> Message:
         if message is None:
             message = dict()
 

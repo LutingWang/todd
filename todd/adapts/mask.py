@@ -1,5 +1,5 @@
 import math
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 
 import einops
 import torch
@@ -64,7 +64,7 @@ class MultiLevelMask:
         return masks
 
 
-class SingleLevelMask(MultiLevelMask):
+class SingleLevelMask(MultiLevelMask, ABC):
 
     def __init__(self, *args, stride: int, **kwargs) -> None:
         super().__init__(*args, strides=[stride], **kwargs)

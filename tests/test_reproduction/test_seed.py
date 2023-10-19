@@ -45,10 +45,10 @@ class TestSeed:
         seed42_tensor2: torch.Tensor,
     ) -> None:
         init_seed(42)
-        randint = torch.randint(0, 100, (10, ))
-        assert randint.eq(seed42_tensor1).all()
-        randint = torch.randint(0, 100, (10, ))
-        assert randint.eq(seed42_tensor2).all()
+        randint_ = torch.randint(0, 100, (10, ))
+        assert randint_.eq(seed42_tensor1).all()
+        randint_ = torch.randint(0, 100, (10, ))
+        assert randint_.eq(seed42_tensor2).all()
 
     def test_set_seed_temp(
         self,
@@ -58,18 +58,18 @@ class TestSeed:
         seed198276314_tensor: torch.Tensor,
     ) -> None:
         init_seed(42)
-        randint = torch.randint(0, 100, (10, ))
-        assert randint.eq(seed42_tensor1).all()
+        randint_ = torch.randint(0, 100, (10, ))
+        assert randint_.eq(seed42_tensor1).all()
         with set_seed_temp(3407):
-            randint = torch.randint(0, 100, (10, ))
-            assert randint.eq(seed3407_tensor).all()
-        randint = torch.randint(0, 100, (10, ))
-        assert randint.eq(seed42_tensor2).all()
+            randint_ = torch.randint(0, 100, (10, ))
+            assert randint_.eq(seed3407_tensor).all()
+        randint_ = torch.randint(0, 100, (10, ))
+        assert randint_.eq(seed42_tensor2).all()
 
         with set_seed_temp('seed'):
-            randint = torch.randint(0, 100, (10, ))
-            assert randint.eq(seed198276314_tensor).all()
+            randint_ = torch.randint(0, 100, (10, ))
+            assert randint_.eq(seed198276314_tensor).all()
 
         with set_seed_temp(b'seed'):
-            randint = torch.randint(0, 100, (10, ))
-            assert randint.eq(seed198276314_tensor).all()
+            randint_ = torch.randint(0, 100, (10, ))
+            assert randint_.eq(seed198276314_tensor).all()

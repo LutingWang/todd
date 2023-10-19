@@ -6,6 +6,7 @@ __all__ = [
     'StudentMixin',
 ]
 
+from abc import ABC
 from typing import Generic, Iterable, Mapping, TypeVar
 
 from torch import nn
@@ -16,7 +17,7 @@ from .base import BaseDistiller
 Pipelines = Iterable[Config] | Mapping[str, Config]
 
 
-class SingleStudentDistiller(BaseDistiller):
+class SingleStudentDistiller(BaseDistiller, ABC):
 
     def __init__(
         self,
@@ -37,7 +38,7 @@ class SingleStudentDistiller(BaseDistiller):
 
 
 @DistillerRegistry.register_()
-class MultiTeacherDistiller(SingleStudentDistiller):
+class MultiTeacherDistiller(SingleStudentDistiller, ABC):
 
     def __init__(
         self,
@@ -81,7 +82,7 @@ class MultiTeacherDistiller(SingleStudentDistiller):
 
 
 @DistillerRegistry.register_()
-class SingleTeacherDistiller(SingleStudentDistiller):
+class SingleTeacherDistiller(SingleStudentDistiller, ABC):
 
     def __init__(
         self,
@@ -111,7 +112,7 @@ class SingleTeacherDistiller(SingleStudentDistiller):
 
 
 @DistillerRegistry.register_()
-class SelfDistiller(SingleStudentDistiller):
+class SelfDistiller(SingleStudentDistiller, ABC):
 
     def __init__(
         self,

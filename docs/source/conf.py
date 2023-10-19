@@ -1,10 +1,12 @@
+# pylint: disable=invalid-name
+
 import os
 import sys
 
 sys.path.insert(0, os.path.abspath('../..'))
 
 project = 'todd'
-copyright = '2022, Luting Wang'
+project_copyright = '2022, Luting Wang'
 author = 'Luting Wang'
 
 release = '0.4.0'

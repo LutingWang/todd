@@ -217,7 +217,11 @@ class Config(AttrDict, dict):  # type: ignore[misc]
         for k, v in other.items():
             set_(self, k, v)
 
-    def update(self, *args, **kwargs) -> None:
+    def update(  # pylint: disable=arguments-differ
+        self,
+        *args,
+        **kwargs,
+    ) -> None:
         for m in args + (kwargs, ):
             for k, v in dict(m).items():
                 old_v = self.get(k)

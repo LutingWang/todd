@@ -2,6 +2,7 @@ __all__ = [
     'BaseLoss',
 ]
 
+from abc import ABC
 from typing import Literal
 
 import torch
@@ -13,7 +14,7 @@ from .schedulers import BaseScheduler, SchedulerRegistry
 Reduction = Literal['none', 'mean', 'sum', 'prod']
 
 
-class BaseLoss(nn.Module):
+class BaseLoss(nn.Module, ABC):
 
     def __init__(
         self,
@@ -63,6 +64,8 @@ class BaseLoss(nn.Module):
         else:
             raise NotImplementedError(self._reduction)
         return loss
+
+    # TODO: design forward signature
 
 
 def forward_hook(

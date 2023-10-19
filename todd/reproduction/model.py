@@ -9,7 +9,8 @@ __all__ = [
 ]
 
 import re
-import types
+from abc import ABC
+from types import EllipsisType
 from typing import Any, Generic, Iterable, MutableMapping, TypeVar
 from typing_extensions import Self
 
@@ -202,7 +203,7 @@ BatchNorm2d(16, ...)]
     def determine_modes(
         self,
         configs: Iterable[Config],
-    ) -> dict[T, bool | types.EllipsisType]:
+    ) -> dict[T, bool | EllipsisType]:
         """Determine modes of objects.
 
         Args:
@@ -229,7 +230,7 @@ containing:
             tensor([..., ...]): True, Parameter containing:
             tensor([0., 0., 0.]): Ellipsis}
         """
-        modes: dict[T, bool | types.EllipsisType] = dict()
+        modes: dict[T, bool | EllipsisType] = dict()
         for config in configs:
             config = config.copy()
             mode = config.pop('mode')
@@ -321,7 +322,7 @@ class ModuleFinder(Finder[nn.Module]):
         return modules
 
 
-class FrozenMixin(nn.Module):
+class FrozenMixin(nn.Module, ABC):
     """Freeze parameters."""
 
     def __init__(

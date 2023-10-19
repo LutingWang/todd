@@ -5,6 +5,8 @@ __all__ = [
     'FGFILoss',
 ]
 
+from abc import ABC
+
 import einops
 import torch
 import torch.nn.functional as F
@@ -13,7 +15,7 @@ from ..base import LossRegistry
 from .functional import FunctionalLoss, L1Loss, MSELoss
 
 
-class _2DMixin(FunctionalLoss):
+class _2DMixin(FunctionalLoss, ABC):
 
     def forward(
         self,

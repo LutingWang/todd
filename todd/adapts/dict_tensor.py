@@ -99,7 +99,7 @@ class DictTensor(Mapping):
 
 
 @AdaptRegistry.register_('Union')
-class Union_(BaseAdapt):
+class Union_(BaseAdapt):  # pylint: disable=invalid-name
 
     def forward(
         self,

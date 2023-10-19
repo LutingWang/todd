@@ -3,6 +3,7 @@ __all__ = [
 ]
 
 import pathlib
+from abc import ABC
 from typing import Iterator, TypeVar
 
 from ..base import Config
@@ -11,7 +12,7 @@ from .base import BaseAccessLayer
 VT = TypeVar('VT')
 
 
-class FolderAccessLayer(BaseAccessLayer[str, VT]):
+class FolderAccessLayer(BaseAccessLayer[str, VT], ABC):
 
     def __init__(
         self,

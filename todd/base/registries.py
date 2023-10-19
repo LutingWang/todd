@@ -61,7 +61,7 @@ class RegistryMeta(  # type: ignore[misc]
         >>> Cat['british shorthair']
         <class '...BritishShorthair'>
 
-    Users can also access registries via higher level APIs, i.e. `register`
+    Users can also access registries via higher level APIs, i.e. `register_`
     and `build`, for convenience.
 
     Registries can be subclassed.
@@ -135,7 +135,7 @@ class RegistryMeta(  # type: ignore[misc]
             >>> Cat['british shorthair']
             'BritishShorthair'
         """
-        if not forced and key in cls:
+        if not forced and key in cls:  # noqa: E501 pylint: disable=unsupported-membership-test
             logger.error("%s already exist in %s", key, cls.__name__)
             raise KeyError(key)
         return super().__setitem__(key, item)
@@ -204,7 +204,7 @@ class RegistryMeta(  # type: ignore[misc]
         Returns:
             Wrapper function.
 
-        `register` is designed to be an decorator for classes and functions:
+        `register_` is designed to be an decorator for classes and functions:
 
             >>> class Cat(metaclass=RegistryMeta): pass
             >>> @Cat.register_()
@@ -213,11 +213,11 @@ class RegistryMeta(  # type: ignore[misc]
             ... def munchkin() -> str:
             ...     return 'munchkin'
 
-        `register` has the following advantages:
+        `register_` has the following advantages:
 
         - default name
 
-          By default, `register` uses the name of the registered object as
+          By default, `register_` uses the name of the registered object as
           ``keys``:
 
           >>> Cat['Munchkin']
@@ -249,7 +249,10 @@ class RegistryMeta(  # type: ignore[misc]
             for key in keys:
                 registry, key = cls._parse(key)
                 registry.__setitem__(  # noqa: E501 pylint: disable=unnecessary-dunder-call
-                    key, obj, **kwargs,)
+                    key,
+                    obj,
+                    **kwargs,
+                )
             return obj
 
         return wrapper_func
@@ -412,7 +415,10 @@ class SchedulerRegistry(Registry):
 
     @classmethod
     def _build(cls, config: Config) -> torch.optim.lr_scheduler.LRScheduler:
-        from ..losses.schedulers import ChainedScheduler, SequentialScheduler
+        from ..losses.schedulers import (  # noqa: E501 pylint: disable=import-outside-toplevel
+            ChainedScheduler,
+            SequentialScheduler,
+        )
         if config.type in (
             SequentialScheduler.__name__,
             ChainedScheduler.__name__,
@@ -485,7 +491,10 @@ class ModelRegistry(Registry):
             if not recursive:
                 return
 
-        for name, child in model.named_children():  # noqa: E501 pylint: disable=redefined-outer-name
+        for (
+            name,  # noqa: E501 pylint: disable=redefined-outer-name
+            child,
+        ) in model.named_children():
             cls.init_weights(child, config, f'{prefix}.{name}')
 
     @classmethod
@@ -530,6 +539,7 @@ class CollateRegistry(PartialRegistry):
 c: type
 
 for c in torch.nn.Module.__subclasses__():
+    # pylint: disable=invalid-name
     module = c.__module__.replace('.', '_')
     name = c.__name__
     ModelRegistry.register_(f'{module}_{name}')(c)
