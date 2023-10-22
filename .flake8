@@ -1,5 +1,5 @@
 [flake8]
-ignore = E126,E201,E241,W503,W504
+ignore = D100,D101,D102,D103,D104,D105,D107,E126,E201,E241,N805,N812,N817,W503,W504
 extend-exclude =
     build/
 per-file-ignores =

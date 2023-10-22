@@ -54,7 +54,7 @@ class AttrDict(UserDict):
             raise AttributeError(e) from e
 
 
-class _import_:  # pylint: disable=invalid-name
+class _import_:  # noqa: N801 pylint: disable=invalid-name
 
     def __init__(self, name: str) -> None:
         self.__name = name
@@ -108,7 +108,7 @@ class Config(AttrDict, dict):  # type: ignore[misc]
 
     @classmethod
     def loads(cls, s: str) -> Self:
-        """Load config from string.
+        r"""Load config from string.
 
         Args:
             s: config string.
@@ -118,7 +118,7 @@ class Config(AttrDict, dict):  # type: ignore[misc]
 
         Config strings are valid python codes:
 
-            >>> Config.loads('a = 1\\nb = dict(c=3)')
+            >>> Config.loads('a = 1\nb = dict(c=3)')
             {'a': 1, 'b': {'c': 3}}
         """
         return cls(exec_(s))
@@ -174,17 +174,18 @@ class Config(AttrDict, dict):  # type: ignore[misc]
         return code
 
     def dump(self, file) -> None:
-        """Dump the config to a file.
+        r"""Dump the config to a file.
 
         Args:
             file: the file path.
 
-        Refer to `dumps` for more details:
+        Refer to `dumps` for more details.
 
+        Example:
             >>> with tempfile.NamedTemporaryFile('r') as f:
             ...     Config(a=1, b=dict(c=3)).dump(f.name)
             ...     f.readlines()
-            ['a = 1\\n', "b = {'c': 3}\\n"]
+            ['a = 1\n', "b = {'c': 3}\n"]
         """
         pathlib.Path(file).write_text(self.dumps())
 
@@ -288,6 +289,6 @@ class DictAction(argparse.Action):
         for value in values:
             k, v = value.split(':', 1)
             k = k.strip()
-            v = v[1:] if v.startswith(':') else eval(v)
+            v = v[1:] if v.startswith(':') else eval(v)  # nosec B307
             value_dict[k] = v
         setattr(namespace, self.dest, value_dict)

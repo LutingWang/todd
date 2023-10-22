@@ -24,7 +24,8 @@ class RoIAlign(BaseAdapt):
         feats: list[torch.Tensor],
         bboxes: list[torch.Tensor],
     ) -> list[torch.Tensor]:
-        """
+        """Perform RoI Align.
+
         Args:
             feats: l x n x c x h x w
             bboxes: n x r x 4

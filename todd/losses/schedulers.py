@@ -70,7 +70,7 @@ class BaseScheduler(torch.nn.Module):
         self._steps += 1
 
     def forward(self) -> float:
-        """The scheduler's function.
+        """Compute the current schedule weight.
 
         Returns:
             The scheduler's value for the current step, before multiplying

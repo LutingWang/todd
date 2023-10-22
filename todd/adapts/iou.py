@@ -23,7 +23,8 @@ class IoU(BaseAdapt):
         self,
         bboxes: torch.Tensor,
     ) -> tuple[torch.Tensor, torch.Size]:
-        """
+        """Reshape BBoxes.
+
         Args:
             bboxes: * x 4
 
@@ -42,13 +43,14 @@ class IoU(BaseAdapt):
         bboxes1: torch.Tensor,
         bboxes2: torch.Tensor,
     ) -> torch.Tensor:
-        """
+        r"""Compute IoU.
+
         Args:
-            bboxes1: \\*1 x 4
-            bboxes2: \\*2 x 4
+            bboxes1: \*1 x 4
+            bboxes2: \*2 x 4
 
         Returns:
-            ious: \\*1 x \\*2
+            ious: \*1 x \*2
         """
         bboxes1, shape1 = self._reshape(bboxes1)
         bboxes2, shape2 = self._reshape(bboxes2)
@@ -64,7 +66,8 @@ class IoU(BaseAdapt):
         bboxes1: list[torch.Tensor],
         bboxes2: list[torch.Tensor],
     ) -> list[list[torch.Tensor]]:
-        """
+        """Compute IoU.
+
         Args:
             bboxes1: n1 x m1 x 4
             bboxes2: n2 x m2 x 4

@@ -51,7 +51,7 @@ class BasePipeline(Generic[T], ABC):
 
     @abstractmethod
     def __call__(self, message: Message) -> Message:
-        """Executes the pipeline.
+        """Execute the pipeline.
 
         Args:
             message: inputs.
@@ -84,7 +84,8 @@ class IOMixin(BasePipeline[T]):
         """Initialize.
 
         Args:
-            inputs: names of the input fields.
+            args: names of the input fields.
+            kwargs: name mapping of the input fields.
             outputs: expression of the outputs.
 
         For convenience, ``outputs`` is designed to be an expression.

@@ -23,7 +23,7 @@ BBox = tuple[float, float, float, float]
 T = TypeVar('T', bound='BBoxes')
 
 
-class BBoxes(ABC):  # pylint: disable=too-many-public-methods
+class BBoxes(ABC):
 
     def __init__(
         self,
@@ -32,10 +32,10 @@ class BBoxes(ABC):  # pylint: disable=too-many-public-methods
         normalized: bool = False,
         image_wh: tuple[int, int] | None = None,
     ) -> None:
-        """Initialize.
+        r"""Initialize.
 
         Args:
-            bboxes: :math:`n \\times 4`.
+            bboxes: :math:`n \times 4`.
             normalized: whether the bboxes are normalized.
             image_wh: the size of the image.
 
@@ -93,13 +93,13 @@ class BBoxes(ABC):  # pylint: disable=too-many-public-methods
         return self._copy(bboxes)
 
     def __add__(self, other: Self) -> Self:
-        """Concatenate bboxes.
+        r"""Concatenate bboxes.
 
         Args:
-            other: :math:`n' \\times 4`.
+            other: :math:`n' \times 4`.
 
         Returns:
-            :math:`(n + n') \\times 4`, where `n` is the length of `self`.
+            :math:`(n + n') \times 4`, where `n` is the length of `self`.
         """
         assert self._normalized == other._normalized
         if self.has_image_wh:
@@ -276,13 +276,13 @@ class BBoxes(ABC):  # pylint: disable=too-many-public-methods
         return cls.from_(self)
 
     def intersections(self, other: 'BBoxes') -> torch.Tensor:
-        """Intersections.
+        r"""Intersections.
 
         Args:
-            other: :math:`n' \\times 4`.
+            other: :math:`n' \times 4`.
 
         Returns:
-            :math:`n \\times n'`.
+            :math:`n \times n'`.
         """
         lt = torch.maximum(  # [n, n', 2]
             einops.rearrange(self.lt, 'n1 lt -> n1 1 lt'),
@@ -304,38 +304,38 @@ class BBoxes(ABC):  # pylint: disable=too-many-public-methods
         other: 'BBoxes',
         intersections: torch.Tensor,
     ) -> torch.Tensor:
-        """Unions.
+        r"""Unions.
 
         Args:
-            other: :math:`n' \\times 4`.
-            intersections: :math:`n \\times n'`
+            other: :math:`n' \times 4`.
+            intersections: :math:`n \times n'`
 
         Returns:
-            :math:`n \\times n'`.
+            :math:`n \times n'`.
         """
         return self.area[:, None] + other.area[None, :] - intersections
 
     def __or__(self, other: 'BBoxes') -> torch.Tensor:
-        """Wraps `unions`.
+        r"""Wrap `unions`.
 
         Args:
-            other: :math:`n' \\times 4`.
+            other: :math:`n' \times 4`.
 
         Returns:
-            :math:`n \\times n'`.
+            :math:`n \times n'`.
         """
         intersections = self.intersections(other)
         return self.unions(other, intersections)
 
     def ious(self, other: 'BBoxes', eps: float = 1e-6) -> torch.Tensor:
-        """Intersections over unions.
+        r"""Intersections over unions.
 
         Args:
-            other: :math:`n' \\times 4`.
+            other: :math:`n' \times 4`.
             eps: avoid division by zero.
 
         Returns:
-            :math:`n \\times n'`.
+            :math:`n \times n'`.
         """
         intersections = self.intersections(other)
         unions = self.unions(other, intersections)
@@ -403,7 +403,7 @@ class BBoxesCXCY__(BBoxes):
         return bboxes.center
 
 
-class BBoxes__XY(BBoxes):
+class BBoxes__XY(BBoxes):  # noqa: N801
 
     @property
     def right(self) -> torch.Tensor:
@@ -422,7 +422,7 @@ class BBoxes__XY(BBoxes):
         return bboxes.rb
 
 
-class BBoxes__WH(BBoxes):
+class BBoxes__WH(BBoxes):  # noqa: N801
 
     @property
     def width(self) -> torch.Tensor:

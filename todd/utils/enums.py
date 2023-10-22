@@ -12,6 +12,7 @@ class SGR(enum.IntEnum):
 
     Refer to https://en.wikipedia.org/wiki/ANSI_escape_code.
     """
+
     NORMAL = 0
     BOLD = enum.auto()
     FAINT = enum.auto()
@@ -42,7 +43,7 @@ class SGR(enum.IntEnum):
     BG_WHITE = enum.auto()
 
     @classmethod
-    def CSI(  # pylint: disable=invalid-name
+    def CSI(  # noqa: N802 pylint: disable=invalid-name
         cls,
         parameters: Iterable[Self],
     ) -> str:

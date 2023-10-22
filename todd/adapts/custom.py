@@ -30,4 +30,4 @@ class Custom(BaseAdapt):
         if len(locals_.keys() & kwargs.keys()) != 0:
             raise RuntimeError(locals_.keys() & kwargs.keys())
         locals_.update(kwargs)
-        return eval(self._pattern, None, locals_)
+        return eval(self._pattern, None, locals_)  # nosec B307

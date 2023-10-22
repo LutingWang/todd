@@ -25,6 +25,27 @@ repos:
         files: \.bat$
       - id: trailing-whitespace
         exclude: ^tests/test_base/configs/diff\.html$
+  - repo: https://github.com/PyCQA/autoflake
+    rev: v2.2.1
+    hooks:
+      - id: autoflake
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.5
+    hooks:
+      - id: bandit
+        args:
+          - -c
+          - pyproject.toml
+        additional_dependencies:
+          - bandit[toml]
+  - repo: https://github.com/PyCQA/doc8
+    rev: v1.1.1
+    hooks:
+      - id: doc8
+  - repo: https://github.com/pycqa/docformatter
+    rev: v1.7.5
+    hooks:
+      - id: docformatter
   - repo: https://github.com/pycqa/flake8
     rev: 6.1.0
     hooks:
@@ -33,18 +54,12 @@ repos:
     rev: 5.12.0
     hooks:
       - id: isort
-  - repo: https://github.com/pycqa/docformatter
-    rev: v1.7.5
+  - repo: https://github.com/pycqa/pydocstyle
+    rev: 6.1.1
     hooks:
-      - id: docformatter
-  # - repo: https://github.com/pycqa/pydocstyle
-  #   rev: 6.1.1
-  #   hooks:
-  #   - id: pydocstyle
-  - repo: https://github.com/pycqa/doc8
-    rev: v1.1.1
-    hooks:
-      - id: doc8
+      - id: pydocstyle
+        additional_dependencies:
+          - pydocstyle[toml]
   - repo: local
     hooks:
       - id: pylint
@@ -58,8 +73,7 @@ repos:
     rev: v0.40.0
     hooks:
       - id: yapf
-        additional_dependencies:
-          - toml
+        require_serial: true
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.5.1
     hooks:
@@ -67,6 +81,7 @@ repos:
         exclude: docs
         additional_dependencies:
           - numpy
+          - pandas-stubs
           - types-Pillow
           - types-toml
   - repo: https://github.com/codespell-project/codespell

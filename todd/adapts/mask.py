@@ -46,7 +46,8 @@ class MultiLevelMask:
         *args,
         **kwargs,
     ) -> list[torch.Tensor]:
-        """
+        """Compute Multilevel Mask.
+
         Args:
             shape: (h, w)
             bboxes: n x m x 4
@@ -102,7 +103,8 @@ class LabelEncMask(BaseAdapt):
         bboxes: torch.Tensor,
         labels: torch.Tensor,
     ) -> torch.Tensor:
-        """
+        """Compute LabelEnc Mask.
+
         Args:
             shape: (h, w)
             bboxes: m x 4
@@ -141,7 +143,8 @@ class LabelEncMask(BaseAdapt):
         bboxes: list[torch.Tensor],
         labels: list[torch.Tensor],
     ) -> torch.Tensor:
-        """
+        """Compute LabelEnc Mask.
+
         Args:
             shape: (h, w)
             bboxes: n x m x 4
@@ -171,7 +174,8 @@ class DeFeatMask(MultiLevelMask, BaseAdapt):
 
     @staticmethod
     def _normalize(masks: torch.Tensor) -> torch.Tensor:
-        """
+        """Normalize masks.
+
         Args:
             masks: n x 1 x h x w
 
@@ -197,7 +201,8 @@ class DeFeatMask(MultiLevelMask, BaseAdapt):
         shape: tuple[int, int],
         bboxes: torch.Tensor,
     ) -> torch.Tensor:
-        """
+        """Compute DeFeat Mask.
+
         Args:
             shape: (h, w)
             bboxes: m x 4
@@ -217,7 +222,8 @@ class DeFeatMask(MultiLevelMask, BaseAdapt):
         *args,
         **kwargs,
     ) -> torch.Tensor:
-        """
+        """Compute DeFeat Mask.
+
         Args:
             shape: (h, w)
             bboxes: n x m x 4
@@ -244,7 +250,8 @@ class FGDMask(DeFeatMask):
         shape: tuple[int, int],
         bboxes: torch.Tensor,
     ) -> torch.Tensor:
-        """
+        """Compute FGD Mask.
+
         Args:
             shape: (h, w)
             bboxes: m x 4
@@ -272,7 +279,8 @@ class FGFIMask(BaseAdapt):
         self._thresh = thresh
 
     def _instance(self, ious: torch.Tensor) -> torch.Tensor:
-        """
+        """Compute FGFI Mask for an instance.
+
         Args:
             ious: h x w x k x m
 
@@ -288,7 +296,8 @@ class FGFIMask(BaseAdapt):
         return mask
 
     def _batch(self, ious: list[torch.Tensor]) -> torch.Tensor:
-        """
+        """Compute FGFI Mask for a batch.
+
         Args:
             ious: n x h x w x k x m
 
@@ -300,7 +309,8 @@ class FGFIMask(BaseAdapt):
         return masks
 
     def forward(self, ious: list[list[torch.Tensor]]) -> list[torch.Tensor]:
-        """
+        """Compute FGFI Mask.
+
         Args:
             ious: l x n x h x w x k x m
 
@@ -339,7 +349,8 @@ class FRSMask(BaseAdapt):
         self._with_logits = with_logits
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """
+        """Compute FRS Mask.
+
         Args:
             x: n x c x h x w
 

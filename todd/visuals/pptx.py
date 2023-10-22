@@ -34,7 +34,7 @@ class PPTXVisual(BaseVisual):
     """
 
     def __init__(self, width: int, height: int) -> None:
-        """Initializes the PowerPoint with a single slide.
+        """Initialize the PowerPoint with a single slide.
 
         To initialize a PowerPoint with width 640pt and height 426pt, use the
         following code::

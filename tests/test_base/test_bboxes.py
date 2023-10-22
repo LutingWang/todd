@@ -446,11 +446,11 @@ class TestBBoxesCXCY__:
         assert PseudoBBoxesCXCY__._from1(bboxes_).tolist() == [[10.0, 20.0]]
 
 
-class PseudoBBoxes__XY(BBoxes__XY, PseudoBBoxes):
+class PseudoBBoxes__XY(BBoxes__XY, PseudoBBoxes):  # noqa: N801
     pass
 
 
-class TestBBoxes__XY:
+class TestBBoxes__XY:  # noqa: N801
 
     @pytest.fixture(scope='class')
     def bboxes_(self) -> PseudoBBoxes__XY:
@@ -471,11 +471,11 @@ class TestBBoxes__XY:
         assert PseudoBBoxes__XY._from2(bboxes_).tolist() == [[30.0, 50.0]]
 
 
-class PseudoBBoxes__WH(BBoxes__WH, PseudoBBoxes):
+class PseudoBBoxes__WH(BBoxes__WH, PseudoBBoxes):  # noqa: N801
     pass
 
 
-class TestBBoxes__WH:
+class TestBBoxes__WH:  # noqa: N801
 
     @pytest.fixture(scope='class')
     def bboxes_(self) -> PseudoBBoxes__WH:

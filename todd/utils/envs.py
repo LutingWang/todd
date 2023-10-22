@@ -15,7 +15,7 @@ __all__ = [
 
 import importlib.util
 import os
-import subprocess
+import subprocess  # nosec B404
 
 
 def platform(verbose: bool = False) -> str | None:
@@ -31,7 +31,7 @@ def nvidia_smi(verbose: bool = False) -> str | None:
             check=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            shell=True,
+            shell=True,  # nosec B602
             text=True,
         ).stdout
     except subprocess.CalledProcessError:
@@ -80,7 +80,7 @@ def git_commit_id(verbose: bool = False) -> str | None:
             check=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            shell=True,
+            shell=True,  # nosec B602
             text=True,
         ).stdout
     except subprocess.CalledProcessError:
@@ -97,7 +97,7 @@ def git_status(verbose: bool = False) -> str | None:
             check=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            shell=True,
+            shell=True,  # nosec B602
             text=True,
         ).stdout
     except subprocess.CalledProcessError:

@@ -21,7 +21,7 @@ class Registry3(Registry2):
     pass
 
 
-class Registry3_1(Registry2):  # pylint: disable=invalid-name
+class Registry3_1(Registry2):  # noqa: N801 pylint: disable=invalid-name
     pass
 
 
@@ -47,7 +47,7 @@ class TestRegistryMeta:
         with pytest.raises(ValueError):
             Registry1.child('Registry2.Registry2')
 
-        class Registry3_1(  # noqa: E501 pylint: disable=invalid-name,redefined-outer-name,unused-variable
+        class Registry3_1(  # noqa: E501,N801 pylint: disable=invalid-name,redefined-outer-name,unused-variable
             Registry2,
         ):
             pass

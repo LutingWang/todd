@@ -15,7 +15,7 @@ from ..base import LossRegistry
 from .functional import FunctionalLoss, L1Loss, MSELoss
 
 
-class _2DMixin(FunctionalLoss, ABC):
+class _2DMixin(FunctionalLoss, ABC):  # noqa: N801
 
     def forward(
         self,

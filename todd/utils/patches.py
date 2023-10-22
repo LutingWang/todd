@@ -14,7 +14,7 @@ from typing import Any, Callable, Generator
 
 def get_(obj, attr: str, default=...):
     try:
-        return eval('__o' + attr, dict(__o=obj))
+        return eval('__o' + attr, dict(__o=obj))  # nosec B307
     except Exception:
         if default is not ...:
             return default
@@ -28,18 +28,18 @@ def has_(obj, name: str) -> bool:
 
 def set_(obj, attr: str, value) -> None:
     locals_: dict[str, Any] = dict()
-    exec(f'__o{attr} = __v', dict(__o=obj, __v=value), locals_)
+    exec(f'__o{attr} = __v', dict(__o=obj, __v=value), locals_)  # nosec B102
     if len(locals_) != 0:
         raise ValueError(f"{attr} is invalid. Consider prepending a dot.")
 
 
 def del_(obj, attr: str) -> None:
-    exec(f'del __o{attr}', dict(__o=obj))
+    exec(f'del __o{attr}', dict(__o=obj))  # nosec B102
 
 
 def exec_(source: str, **kwargs) -> dict[str, Any]:
     locals_: dict[str, Any] = dict()
-    exec(source, kwargs, locals_)
+    exec(source, kwargs, locals_)  # nosec B102
     return locals_
 
 

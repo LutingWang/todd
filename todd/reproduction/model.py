@@ -389,7 +389,7 @@ def state_dict_hook(
     *args,
     **kwargs,
 ) -> None:
-    """Hook for `torch.nn.Module.load_state_dict`.
+    """Remove frozen parameters from `torch.nn.Module.load_state_dict`.
 
     Args:
         model: the model to load state dict.
@@ -399,7 +399,6 @@ def state_dict_hook(
         **kwargs: other kwargs.
 
     Example:
-
         >>> class Model(FrozenMixin):
         ...     def __init__(self, *args, **kwargs) -> None:
         ...         super().__init__(

@@ -40,14 +40,18 @@ Documentation = 'https://toddai.readthedocs.io/en/latest/'
 
 [project.optional-dependencies]
 dev = [
+    'autoflake',
     'commitizen',
+    'flake8-docstrings',
     'ipdb',
     'ipykernel',
     'jupyter',
     'matplotlib',
     'mypy',
     'pandas-stubs',
+    'pep8-naming',
     'pre-commit',
+    'pydocstyle',
     'pylint',
     'torch-tb-profiler',
     'types-Pillow',
@@ -78,6 +82,9 @@ todd = [
     'py.typed',
 ]
 
+[tool.autoflake]
+in-place = true
+
 [tool.yapf]
 allow_split_before_dict_value = false
 coalesce_brackets = true
@@ -100,6 +107,7 @@ multi_line_output = 3
 
 [tool.pydocstyle]
 convention = 'google'
+add-ignore = 'D100,D101,D102,D103,D104,D105,D107'
 
 [tool.mypy]
 files = [
@@ -196,6 +204,7 @@ sys.path.append(path)
 disable = [
     'attribute-defined-outside-init',
     'cyclic-import',
+    'design',
     'eval-used',
     'exec-used',
     'fixme',
@@ -204,10 +213,6 @@ disable = [
     'missing-function-docstring',
     'not-callable',
     'protected-access',
-    'too-few-public-methods',
-    'too-many-ancestors',
-    'too-many-arguments',
-    'too-many-locals',
     'unspecified-encoding',
     'unused-argument',
     'use-dict-literal',
@@ -229,3 +234,8 @@ generated-members = [
 [tool.pylint.format]
 expected-line-ending-format = 'LF'
 max-line-length = 80
+
+[tool.bandit]
+skips = [
+    'B101',
+]

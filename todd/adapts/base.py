@@ -36,5 +36,5 @@ try:
         mmcv.cnn.PLUGIN_LAYERS.module_dict.items(),
     ):
         AdaptRegistry.register_(f'mmcv_{k}')(v)
-except Exception:  # pylint: disable=broad-exception-caught
+except Exception:  # nosec B110 pylint: disable=broad-exception-caught
     pass

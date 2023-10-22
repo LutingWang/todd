@@ -35,9 +35,7 @@ Memo = dict[str, Any]
 
 
 @RunnerRegistry.register_()
-class BaseRunner(  # pylint: disable=too-many-instance-attributes
-    StateDictMixin,
-):
+class BaseRunner(StateDictMixin):
 
     def __init__(
         self,
@@ -116,7 +114,7 @@ class BaseRunner(  # pylint: disable=too-many-instance-attributes
         """Build the dataloader.
 
         Args:
-            config: dataloader config.
+            dataloader: dataloader config.
         """
         dataloader = dataloader.copy()
         dataloader.dataset = DatasetRegistry.build(dataloader.dataset)

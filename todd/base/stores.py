@@ -68,6 +68,7 @@ class StoreMeta(NonInstantiableMeta):
         >>> EnvStore.ENV_INT
         2
     """
+
     _read_only: dict[str, bool] = dict()
 
     def __init__(cls, *args, **kwargs) -> None:
@@ -80,7 +81,7 @@ class StoreMeta(NonInstantiableMeta):
             variable = os.environ.get(k, '')
             if read_only := variable != '':
                 if v is not str:
-                    variable = eval(variable)
+                    variable = eval(variable)  # nosec B307
                     assert isinstance(variable, v)
                 super().__setattr__(k, variable)
             cls._read_only[k] = read_only

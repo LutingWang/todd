@@ -147,8 +147,7 @@ class Intersect(BaseAdapt):
         feats: list[torch.Tensor],
         ids: list[torch.Tensor],
     ) -> list[torch.Tensor]:
-        """Match positions that show up both in `pred_poses` and
-        `target_poses`.
+        """Match positions.
 
         Args:
             feats: [n_s x d_1 x d_2 x ... x d_m]
