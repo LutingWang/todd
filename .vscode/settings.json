@@ -1,28 +1,29 @@
 {
-    "python.testing.pytestArgs": [
-        "tests",
-        "todd",
-        "--doctest-modules"
-    ],
-    "python.analysis.extraPaths": [
-        "tests/helpers"
-    ],
-    "cSpell.words": [
-        "autoshape",
-        "CXCY",
-        "CXCYWH",
-        "docstrings",
-        "FGFI",
-        "intersphinx",
-        "metas",
-        "SGFI",
-        "shorthair",
-        "typehints",
-        "undoc",
-        "viewcode",
-        "XYWH",
-        "XYXY"
-    ],
-    "python.testing.unittestEnabled": true,
-    "python.testing.pytestEnabled": true
+  "cSpell.words": [
+    "autofix",
+    "autoshape",
+    "CXCY",
+    "CXCYWH",
+    "docstrings",
+    "FGFI",
+    "intersphinx",
+    "metas",
+    "SGFI",
+    "shorthair",
+    "typehints",
+    "undoc",
+    "viewcode",
+    "XYWH",
+    "XYXY"
+  ],
+  "python.analysis.extraPaths": [
+    "tests/helpers"
+  ],
+  "python.testing.pytestArgs": [
+    "tests",
+    "todd",
+    "--doctest-modules"
+  ],
+  "python.testing.pytestEnabled": true,
+  "python.testing.unittestEnabled": true
 }

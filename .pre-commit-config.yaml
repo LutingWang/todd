@@ -6,15 +6,25 @@ repos:
     hooks:
       - id: check-added-large-files
       - id: check-ast
+      - id: check-case-conflict
+      - id: check-docstring-first
+      - id: check-executables-have-shebangs
+      - id: check-json
       - id: check-merge-conflict
+      - id: check-shebang-scripts-are-executable
+      - id: check-toml
+      - id: check-vcs-permalinks
       - id: check-yaml
       - id: debug-statements
         exclude: ^todd/base/patches\.py$
+      - id: destroyed-symlinks
+      - id: detect-private-key
       - id: end-of-file-fixer
         exclude: ^tests/test_base/configs/diff\.html$
       - id: fix-encoding-pragma
         args:
           - --remove
+      - id: forbid-submodules
       - id: mixed-line-ending
         args:
           - --fix=lf
@@ -23,8 +33,19 @@ repos:
         args:
           - --fix=crlf
         files: \.bat$
+      - id: name-tests-test
+        args:
+          - --pytest-test-first
+        exclude: ^tests/(helpers|.*/configs/.*\.py$|test_distillers/fgd/fgd.py$|test_losses/ckd/ckd.py$)
+      - id: pretty-format-json
+        args:
+          - --autofix
       - id: trailing-whitespace
         exclude: ^tests/test_base/configs/diff\.html$
+  - repo: meta
+    hooks:
+      - id: check-hooks-apply
+      - id: check-useless-excludes
   - repo: https://github.com/PyCQA/autoflake
     rev: v2.2.1
     hooks:
