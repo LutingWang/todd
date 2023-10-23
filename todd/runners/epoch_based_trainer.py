@@ -44,13 +44,13 @@ class EpochBasedTrainer(Trainer):
         batch_sampler = self._dataloader.batch_sampler
         samplers.append(batch_sampler)
         if hasattr(batch_sampler, 'sampler'):
-            sampler = getattr(batch_sampler, 'sampler')
+            sampler = batch_sampler.sampler  # type: ignore[union-attr]
             samplers.append(sampler)
         sampler = self._dataloader.sampler
         samplers.append(sampler)
         for sampler in samplers:
             if hasattr(sampler, 'set_epoch'):
-                set_epoch = getattr(sampler, 'set_epoch')
+                set_epoch = sampler.set_epoch  # type: ignore[union-attr]
                 set_epoch(self._epoch)
         return super()._setup()
 

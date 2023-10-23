@@ -152,7 +152,7 @@ class BaseVisual(ABC):
         top: int,
         width: int,
         height: int,
-        color: Color = Color(0, 0, 0),
+        color: Color = Color(0, 0, 0),  # noqa: B008
     ):
         pass
 
@@ -164,7 +164,7 @@ class BaseVisual(ABC):
         y: int,
         x_anchor: XAnchor = XAnchor.LEFT,
         y_anchor: YAnchor = YAnchor.BOTTOM,
-        color: Color = Color(0, 0, 0),
+        color: Color = Color(0, 0, 0),  # noqa: B008
     ):
         pass
 
@@ -175,7 +175,7 @@ class BaseVisual(ABC):
         top: int,
         width: int,
         height: int,
-        color: Color = Color(0, 0, 0),
+        color: Color = Color(0, 0, 0),  # noqa: B008
     ) -> tuple[Any, Any]:
         """Draw an annotation bbox.
 

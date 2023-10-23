@@ -41,12 +41,18 @@ Documentation = 'https://toddai.readthedocs.io/en/latest/'
 [project.optional-dependencies]
 dev = [
     'autoflake',
+    'bandit[toml]',
     'commitizen',
+    'doc8',
+    'docformatter[tomli]',
+    'flake8',
+    'flake8-bugbear',
     'flake8-docstrings',
     'ipdb',
     'ipykernel',
     'jupyter',
     'matplotlib',
+    'mccabe',
     'mypy',
     'pandas-stubs',
     'pep8-naming',

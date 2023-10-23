@@ -110,7 +110,8 @@ class BaseDistiller(nn.Module, ABC):
             if len(spec.inputs ^ inputs):
                 warnings.warn(
                     f"Missing inputs {spec.inputs - inputs}\n"
-                    f"Unexpected inputs {inputs - spec.inputs}\n"
+                    f"Unexpected inputs {inputs - spec.inputs}\n",
+                    stacklevel=2,
                 )
 
         tensors = self.tensors()

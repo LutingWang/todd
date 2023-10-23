@@ -472,7 +472,7 @@ class ModelRegistry(Registry):
             if get_rank() == 0:
                 logger.debug("Skip re-initializing %s", weights)
             return
-        setattr(model, '__initialized', True)
+        setattr(model, '__initialized', True)  # noqa: B010
 
         if config is None:
             if get_rank() == 0:

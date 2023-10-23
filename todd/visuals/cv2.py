@@ -61,7 +61,7 @@ class CV2Visual(BaseVisual):
         top: int,
         width: int,
         height: int,
-        color: Color = Color(0, 0, 0),
+        color: Color = Color(0, 0, 0),  # noqa: B008
     ) -> npt.NDArray[np.uint8]:
         cv2.rectangle(
             self._image,
@@ -79,7 +79,7 @@ class CV2Visual(BaseVisual):
         y: int,
         x_anchor: XAnchor = XAnchor.LEFT,
         y_anchor: YAnchor = YAnchor.BOTTOM,
-        color: Color = Color(0, 0, 0),
+        color: Color = Color(0, 0, 0),  # noqa: B008
     ) -> npt.NDArray[np.uint8]:
         assert x_anchor is XAnchor.LEFT
         assert y_anchor is YAnchor.BOTTOM
