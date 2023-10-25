@@ -6,7 +6,7 @@ __all__ = [
     'Registry',
     'PartialRegistry',
     'NormRegistry',
-    'LrSchedulerRegistry',
+    'LRSchedulerRegistry',
     'OptimizerRegistry',
     'RunnerRegistry',
     'CallbackRegistry',
@@ -387,7 +387,7 @@ class OptimizerRegistry(Registry):
         return RegistryMeta._build(cls, config)
 
 
-class LrSchedulerRegistry(Registry):  # TODO: rename to LR...
+class LRSchedulerRegistry(Registry):
 
     @classmethod
     def _build(cls, config: Config) -> torch.optim.lr_scheduler.LRScheduler:
@@ -551,7 +551,7 @@ for c in torch.optim.Optimizer.__subclasses__():
     OptimizerRegistry.register_()(c)
 
 for c in torch.optim.lr_scheduler.LRScheduler.__subclasses__():
-    LrSchedulerRegistry.register_()(c)
+    LRSchedulerRegistry.register_()(c)
 
 NormRegistry['BN1d'] = nn.BatchNorm1d
 NormRegistry['BN2d'] = NormRegistry['BN'] = nn.BatchNorm2d

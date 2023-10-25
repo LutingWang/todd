@@ -7,7 +7,7 @@ from typing import Any, Mapping, cast
 
 import torch
 
-from ...base import CallbackRegistry, Config, LrSchedulerRegistry
+from ...base import CallbackRegistry, Config, LRSchedulerRegistry
 from ...utils import get_world_size
 from ..trainer import Trainer
 from .base import BaseCallback
@@ -37,7 +37,7 @@ class LRScheduleCallback(IntervalMixin, BaseCallback):
     def _build_lr_scheduler(self) -> None:
         runner = cast(Trainer, self._runner)
         self._lr_scheduler: torch.optim.lr_scheduler.LRScheduler = \
-            LrSchedulerRegistry.build(
+            LRSchedulerRegistry.build(
                 self._lr_scheduler_config,
                 optimizer=runner.optimizer,
             )
