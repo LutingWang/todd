@@ -10,8 +10,7 @@ import torch.utils.data
 
 from ..base import Config, RunnerRegistry
 from .base import BaseRunner
-
-Memo = dict[str, Any]
+from .types import Memo
 
 
 @RunnerRegistry.register_()

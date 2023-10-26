@@ -3,12 +3,11 @@ __all__ = [
 ]
 
 import contextlib
-from typing import Any, Mapping
+import itertools
 
 from ..base import RunnerRegistry
 from .trainer import Trainer
-
-Memo = dict[str, Any]
+from .types import Memo
 
 # FIXME: resume from specific iter causes total iters mismatch
 
@@ -17,16 +16,16 @@ Memo = dict[str, Any]
 class EpochBasedTrainer(Trainer):
 
     def __init__(self, *args, epochs: int, **kwargs) -> None:
-        self._epochs = epochs
-
-        # must be set before _callbacks.connect() to allow loading state dict
-        self._epoch = 0
-
         super().__init__(*args, **kwargs)
+        self._epochs = epochs
 
     @property
     def epoch(self) -> int:
-        return self._epoch
+        return self._iter // super().iters
+
+    @property
+    def inner_iter(self) -> int:
+        return self._iter % super().iters
 
     @property
     def iters(self) -> int:
@@ -40,27 +39,29 @@ class EpochBasedTrainer(Trainer):
         return super()._run(epoch_memo)
 
     def _setup_epoch(self, memo: Memo) -> Memo:
-        samplers = []
-        batch_sampler = self._dataloader.batch_sampler
-        samplers.append(batch_sampler)
-        if hasattr(batch_sampler, 'sampler'):
-            sampler = batch_sampler.sampler  # type: ignore[union-attr]
-            samplers.append(sampler)
-        sampler = self._dataloader.sampler
-        samplers.append(sampler)
+        samplers = [
+            self._dataloader.sampler,
+            self._dataloader.batch_sampler,
+            getattr(self._dataloader.batch_sampler, 'sampler', None),
+        ]
         for sampler in samplers:
-            if hasattr(sampler, 'set_epoch'):
-                set_epoch = sampler.set_epoch  # type: ignore[union-attr]
-                set_epoch(self._epoch)
-        return super()._setup()
+            if (set_epoch := getattr(sampler, 'set_epoch', None)) is not None:
+                set_epoch(self.epoch)
+        epoch_memo = super()._setup()
+        dataloader = epoch_memo['dataloader']
+        dataloader = itertools.islice(
+            dataloader,
+            super().iters - self.inner_iter,
+        )
+        epoch_memo['dataloader'] = dataloader
+        return epoch_memo
 
     def _teardown_epoch(self, epoch_memo: Memo, memo: Memo) -> None:
         super()._teardown(epoch_memo)
-        memo['epoch_memos'][self._epoch] = epoch_memo
+        memo['epoch_memos'][self.epoch] = epoch_memo
 
     def _run(self, memo: Memo) -> Memo:
-        while self._epoch < self._epochs:
-            self._epoch += 1
+        while self.epoch < self._epochs:
             epoch_memo = self._setup_epoch(memo)
 
             if self._callbacks.should_break_epoch(epoch_memo, memo):
@@ -86,17 +87,3 @@ class EpochBasedTrainer(Trainer):
 
     def _teardown(self, memo: Memo) -> None:
         pass
-
-    def load_state_dict(
-        self,
-        state_dict: Mapping[str, Any],
-        *args,
-        **kwargs,
-    ) -> None:
-        super().load_state_dict(state_dict, *args, **kwargs)
-        self._epoch = state_dict['meta']['epoch']
-
-    def state_dict(self, *args, **kwargs) -> dict[str, Any]:
-        state_dict = super().state_dict(*args, **kwargs)
-        state_dict['meta']['epoch'] = self._epoch
-        return state_dict

@@ -1,4 +1,6 @@
-__all__ = ['StateDictMixin']
+__all__ = [
+    'StateDictMixin',
+]
 
 from typing import Any, Mapping
 

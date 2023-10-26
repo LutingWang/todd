@@ -2,15 +2,12 @@ __all__ = [
     'Validator',
 ]
 
-from typing import Any
-
 import torch
 import torch.distributed
 import torch.utils.data
 
 from .base import BaseRunner, RunnerRegistry
-
-Memo = dict[str, Any]
+from .types import Memo
 
 
 @RunnerRegistry.register_()

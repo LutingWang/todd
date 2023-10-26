@@ -21,17 +21,15 @@ from ..base import (
     DatasetRegistry,
     RunnerRegistry,
     SamplerRegistry,
-    StateDictMixin,
     StrategyRegistry,
 )
 from ..base import logger as base_logger
-from ..utils import get_rank
+from ..utils import StateDictMixin, get_rank
+from .types import Memo
 
 if TYPE_CHECKING:
     from .callbacks import ComposedCallback
     from .strategies import BaseStrategy
-
-Memo = dict[str, Any]
 
 
 @RunnerRegistry.register_()
@@ -225,7 +223,7 @@ class BaseRunner(StateDictMixin):
         return memo
 
     def _setup(self) -> Memo:
-        return dict(dataloader=self._dataloader)
+        return dict(dataloader=iter(self._dataloader))
 
     def _teardown(self, memo: Memo) -> None:
         pass

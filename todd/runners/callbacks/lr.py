@@ -10,10 +10,9 @@ import torch
 from ...base import CallbackRegistry, Config, LRSchedulerRegistry
 from ...utils import get_world_size
 from ..trainer import Trainer
+from ..types import Memo
 from .base import BaseCallback
 from .interval import IntervalMixin
-
-Memo = dict[str, Any]
 
 
 @CallbackRegistry.register_()
@@ -44,12 +43,12 @@ class LRScheduleCallback(IntervalMixin, BaseCallback):
 
     def after_run_iter(self, batch, memo: Memo) -> None:
         super().after_run_iter(batch, memo)
-        if self._should_run_iter():
-            self._lr_scheduler.step()
         if 'log' in memo:
             memo['log']['lr'] = [
                 f'{lr:.3e}' for lr in self._lr_scheduler.get_last_lr()
             ]
+        if self._should_run_iter():
+            self._lr_scheduler.step()
 
     def after_run_epoch(self, epoch_memo: Memo, memo: Memo) -> None:
         super().after_run_epoch(epoch_memo, memo)

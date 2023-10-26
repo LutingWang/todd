@@ -4,12 +4,10 @@ __all__ = [
 
 import contextlib
 import logging
-from typing import Any
 
 from ...base import CallbackRegistry
+from ..types import Memo
 from .base import BaseCallback
-
-Memo = dict[str, Any]
 
 
 class Context:

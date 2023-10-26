@@ -13,14 +13,8 @@ from .logger import logger
 
 def transfer_weight(target: nn.Module, source: nn.Module) -> None:
     state_dict = source.state_dict()
-    missing_keys, unexpected_keys = target.load_state_dict(
-        state_dict,
-        strict=False,
-    )
-    if missing_keys:
-        logger.warning("missing_keys: %s", missing_keys)
-    if unexpected_keys:
-        logger.warning("unexpected_keys: %s", unexpected_keys)
+    incompatible_keys = target.load_state_dict(state_dict, strict=False)
+    logger.info(incompatible_keys)
 
 
 def transfer_weights(models, weight_prefixes: Mapping[str, str]) -> None:

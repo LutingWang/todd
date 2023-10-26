@@ -5,16 +5,14 @@ __all__ = [
 ]
 
 import pathlib
-from typing import Any
 
 import torch
 
 from ...base import CallbackRegistry, Config
 from ...utils import get_rank
+from ..types import Memo
 from .base import BaseCallback
 from .interval import IntervalMixin
-
-Memo = dict[str, Any]
 
 
 @CallbackRegistry.register_()
@@ -45,7 +43,7 @@ class CheckpointCallback(IntervalMixin, BaseCallback):
         if self._runner.load_from is not None:
             load_from = pathlib.Path(self._runner.load_from)
             assert load_from.exists()
-            self._runner._logger.info(f"Loading from {load_from}")
+            self._runner.logger.info("Loading from %s", load_from)
             state_dict = {
                 f.stem: torch.load(f, 'cpu')
                 for f in load_from.glob('*.pth')
@@ -71,7 +69,7 @@ class CheckpointCallback(IntervalMixin, BaseCallback):
             return
         work_dir = self._work_dir(name)
         work_dir.mkdir(parents=True, exist_ok=True)
-        self._runner.logger.info(f"Saving state dict to {work_dir}")
+        self._runner.logger.info("Saving state dict to %s", work_dir)
         for k, v in state_dict.items():
             torch.save(v, work_dir / f'{k}.pth')
 

@@ -5,12 +5,11 @@ __all__ = [
 ]
 
 import contextlib
-from typing import Any
 
-from ...base import CallbackRegistry, StateDictMixin
+from ...base import CallbackRegistry
+from ...utils import StateDictMixin
+from ..types import Memo
 from ..utils import RunnerHolderMixin
-
-Memo = dict[str, Any]
 
 
 @CallbackRegistry.register_()

@@ -2,16 +2,13 @@ __all__ = [
     'TensorBoardCallback',
 ]
 
-from typing import Any
-
 from torch.utils.tensorboard import SummaryWriter
 
 from ...base import CallbackRegistry, Config
 from ...utils import get_rank
+from ..types import Memo
 from .base import BaseCallback
 from .interval import IntervalMixin
-
-Memo = dict[str, Any]
 
 
 @CallbackRegistry.register_()

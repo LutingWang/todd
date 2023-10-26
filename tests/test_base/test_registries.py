@@ -65,7 +65,9 @@ class TestOptimizerRegistry:
     def test_params(self, model: CustomModule) -> None:
         config = OptimizerRegistry.params(
             model,
-            Config(params='conv.[^w]'),
+            Config(
+                params=dict(type='NamedParametersFilter', regex='conv.[^w]'),
+            ),
         )
         assert len(config) == 1
         assert len(config['params']) == 1

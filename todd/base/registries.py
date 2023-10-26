@@ -23,13 +23,14 @@ __all__ = [
     'TransformRegistry',
     'EnvRegistry',
     'PipelineRegistry',
+    'FilterRegistry',
+    'ETARegistry',
     'ClipGradRegistry',
     'InitRegistry',
     'CollateRegistry',
 ]
 
 import inspect
-import re
 from collections import UserDict
 from functools import partial
 from typing import Any, Callable, NoReturn, TypeVar, no_type_check
@@ -368,12 +369,12 @@ class OptimizerRegistry(Registry):
 
     @staticmethod
     def params(model: nn.Module, config: Config) -> Config:
-        # TODO: add more matchers except re
         config = config.copy()
-        config.params = [
-            p for n, p in model.named_parameters()
-            if re.match(config.params, n) and p.requires_grad
-        ]
+        params = config.pop('params')
+        filter_ = FilterRegistry.build(params)
+        filtered_params = [p for _, p in filter_(model)]
+        assert all(p.requires_grad for p in filtered_params)
+        config.params = filtered_params
         return config
 
     @classmethod
@@ -521,6 +522,14 @@ class EnvRegistry(Registry):
 
 
 class PipelineRegistry(Registry):
+    pass
+
+
+class FilterRegistry(Registry):
+    pass
+
+
+class ETARegistry(Registry):
     pass
 
 

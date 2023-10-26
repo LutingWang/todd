@@ -54,6 +54,9 @@ class AttrDict(UserDict):
             raise AttributeError(e) from e
 
 
+# TODO: refactor this proxy
+
+
 class _import_:  # noqa: N801 pylint: disable=invalid-name
 
     def __init__(self, name: str) -> None:

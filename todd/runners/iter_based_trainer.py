@@ -3,12 +3,10 @@ __all__ = [
 ]
 
 import itertools
-from typing import Any
 
 from ..base import RunnerRegistry
 from .trainer import Trainer
-
-Memo = dict[str, Any]
+from .types import Memo
 
 
 @RunnerRegistry.register_()
@@ -26,6 +24,6 @@ class IterBasedTrainer(Trainer):
         memo = super()._setup()
         dataloader = memo['dataloader']
         dataloader = itertools.cycle(dataloader)
-        dataloader = itertools.islice(dataloader, self._iters)
+        dataloader = itertools.islice(dataloader, self._iters - self._iter)
         memo['dataloader'] = dataloader
         return memo

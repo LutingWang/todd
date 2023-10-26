@@ -2,19 +2,13 @@ __all__ = [
     'BaseStrategy',
 ]
 
-import pathlib
 from typing import Any, Mapping
 
 import torch
 from torch import nn
 
-from ...base import (
-    Config,
-    ModelRegistry,
-    OptimizerRegistry,
-    StateDictMixin,
-    StrategyRegistry,
-)
+from ...base import Config, ModelRegistry, OptimizerRegistry, StrategyRegistry
+from ...utils import StateDictMixin
 from ..utils import RunnerHolderMixin
 
 
@@ -61,9 +55,20 @@ class BaseStrategy(RunnerHolderMixin, StateDictMixin):
         )
         self._runner.logger.info(incompatible_keys)
 
-    def load_model_from(self, f: pathlib.Path, *args, **kwargs) -> None:
-        self._runner.logger.info(f"Loading model from {f}")
-        model_state_dict = torch.load(f, 'cpu')
+    def load_model_from(
+        self,
+        f: (
+            torch.serialization.FILE_LIKE
+            | list[torch.serialization.FILE_LIKE]
+        ),
+        *args,
+        **kwargs,
+    ) -> None:
+        f_list = f if isinstance(f, list) else [f]
+        model_state_dict = dict()
+        for f_ in f_list:
+            self._runner.logger.info("Loading model from %s", f_)
+            model_state_dict.update(torch.load(f_, 'cpu'))
         self.load_model_state_dict(model_state_dict, *args, **kwargs)
 
     def optim_state_dict(self, *args, **kwargs) -> dict[str, Any]:

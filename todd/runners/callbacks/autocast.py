@@ -3,14 +3,12 @@ __all__ = [
 ]
 
 import contextlib
-from typing import Any
 
 import torch
 
 from ...base import CallbackRegistry, Config
+from ..types import Memo
 from .base import BaseCallback
-
-Memo = dict[str, Any]
 
 
 @CallbackRegistry.register_()

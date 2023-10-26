@@ -8,8 +8,6 @@ from typing import Any, Iterable, Literal, Mapping, TypedDict
 from ...base import CallbackRegistry, Config
 from .base import BaseCallback
 
-Memo = dict[str, Any]
-
 
 class Priority(TypedDict, total=False):
     init: int
@@ -53,6 +51,8 @@ class ComposedCallback(BaseCallback, UserList[BaseCallback]):
 
     def _callbacks(self, name: CallbackNames) -> list[BaseCallback]:
         assert len(self) == len(self._priorities)
+        if len(self) == 0:
+            return []
         priorities = [p.get(name, 0) for p in self._priorities]
         priority_index = [(p, i) for i, p in enumerate(priorities)]
         priority_index = sorted(priority_index)

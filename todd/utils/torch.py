@@ -68,8 +68,8 @@ def all_gather_(
     shapes = [shape] * world_size
     dist.all_gather_object(shapes, shape)
 
-    numels = [functools.reduce(operator.mul, s, 1) for s in shapes]
-    max_numel = max(numels)
+    numel_list = [functools.reduce(operator.mul, s, 1) for s in shapes]
+    max_numel = max(numel_list)
 
     container = tensor.new_empty(max_numel)
     containers = [torch.empty_like(container) for _ in range(world_size)]
@@ -79,6 +79,6 @@ def all_gather_(
 
     tensors = [
         container[:numel].view(shape)
-        for shape, numel, container in zip(shapes, numels, containers)
+        for shape, numel, container in zip(shapes, numel_list, containers)
     ]
     return tensors

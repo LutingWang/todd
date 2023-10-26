@@ -209,7 +209,7 @@ class ParallelIOMixin(IOMixin[T]):
     def outputs(self, outputs) -> Message:
         outputs = cast(tuple[Message, ...], outputs)
         data_frame = pd.DataFrame(outputs)
-        return cast(Message, data_frame.to_dict(orient="list"))
+        return cast(Message, data_frame.to_dict(orient='list'))
 
 
 @PipelineRegistry.register_()
