@@ -2,7 +2,7 @@ __all__ = [
     'BaseStrategy',
 ]
 
-from typing import Any, Mapping
+from typing import TYPE_CHECKING, Any, Callable, Mapping
 
 import torch
 from torch import nn
@@ -10,6 +10,9 @@ from torch import nn
 from ...base import Config, ModelRegistry, OptimizerRegistry, StrategyRegistry
 from ...utils import StateDictMixin
 from ..utils import RunnerHolderMixin
+
+if TYPE_CHECKING:
+    from ..base import BaseRunner
 
 
 @StrategyRegistry.register_()
@@ -26,7 +29,12 @@ class BaseStrategy(RunnerHolderMixin, StateDictMixin):
         self._build_model(model)
 
     def _build_model(self, config: Config) -> None:
-        self._model = ModelRegistry.build(config)
+        model = ModelRegistry.build(config)
+        with_runner: Callable[[BaseRunner], None] | None = \
+            getattr(model, 'with_runner', None)
+        if with_runner is not None:
+            with_runner(self._runner)
+        self._model = model
 
     def build_optimizer(self, config: Config) -> torch.optim.Optimizer:
         return OptimizerRegistry.build(config, model=self.module)
