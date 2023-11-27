@@ -8,7 +8,7 @@ from typing import Any, Mapping, cast
 import torch
 
 from ...base import CallbackRegistry, Config, LRSchedulerRegistry
-from ...utils import get_world_size
+from ...utils import get_rank, get_world_size
 from ..trainer import Trainer
 from ..types import Memo
 from .base import BaseCallback
@@ -89,9 +89,10 @@ class LRScaleCallback(BaseCallback):
         for param_group in runner.optimizer.param_groups:
             if 'lr' in param_group:
                 param_group['lr'] *= lr_scaler
-        runner.logger.info(
-            f"{base_batch_size=} {batch_size=} {lr_scaler=:.3f}"
-        )
+        if get_rank() == 0:
+            runner.logger.info(
+                f"{base_batch_size=} {batch_size=} {lr_scaler=:.3f}"
+            )
 
     def init(self) -> None:
         super().init()

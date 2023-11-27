@@ -43,7 +43,8 @@ class CheckpointCallback(IntervalMixin, BaseCallback):
         if self._runner.load_from is not None:
             load_from = pathlib.Path(self._runner.load_from)
             assert load_from.exists()
-            self._runner.logger.info("Loading from %s", load_from)
+            if get_rank() == 0:
+                self._runner.logger.info("Loading from %s", load_from)
             state_dict = {
                 f.stem: torch.load(f, 'cpu')
                 for f in load_from.glob('*.pth')

@@ -8,7 +8,7 @@ import torch
 from torch import nn
 
 from ...base import Config, ModelRegistry, OptimizerRegistry, StrategyRegistry
-from ...utils import StateDictMixin
+from ...utils import StateDictMixin, get_rank
 from ..utils import RunnerHolderMixin
 
 if TYPE_CHECKING:
@@ -61,7 +61,8 @@ class BaseStrategy(RunnerHolderMixin, StateDictMixin):
             *args,
             **kwargs,
         )
-        self._runner.logger.info(incompatible_keys)
+        if get_rank() == 0:
+            self._runner.logger.info(incompatible_keys)
 
     def load_model_from(
         self,
@@ -75,7 +76,8 @@ class BaseStrategy(RunnerHolderMixin, StateDictMixin):
         f_list = f if isinstance(f, list) else [f]
         model_state_dict = dict()
         for f_ in f_list:
-            self._runner.logger.info("Loading model from %s", f_)
+            if get_rank() == 0:
+                self._runner.logger.info("Loading model from %s", f_)
             model_state_dict.update(torch.load(f_, 'cpu'))
         self.load_model_state_dict(model_state_dict, *args, **kwargs)
 

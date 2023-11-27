@@ -7,14 +7,15 @@ from typing import Mapping
 
 from torch import nn
 
-from ..utils import get_
+from ..utils import get_, get_rank
 from .logger import logger
 
 
 def transfer_weight(target: nn.Module, source: nn.Module) -> None:
     state_dict = source.state_dict()
     incompatible_keys = target.load_state_dict(state_dict, strict=False)
-    logger.info(incompatible_keys)
+    if get_rank() == 0:
+        logger.info(incompatible_keys)
 
 
 def transfer_weights(models, weight_prefixes: Mapping[str, str]) -> None:
