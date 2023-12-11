@@ -445,7 +445,12 @@ class DistillerRegistry(Registry):
 
 
 class DatasetRegistry(Registry):
-    pass
+
+    @classmethod
+    def _build(cls, config: Config):
+        if config.type == torch.utils.data.ConcatDataset:
+            config.datasets = list(map(cls.build, config.datasets))
+        return RegistryMeta._build(cls, config)
 
 
 class AccessLayerRegistry(Registry):
