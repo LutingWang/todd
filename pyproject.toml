@@ -22,7 +22,6 @@ dependencies = [
     'tensorboard',
     'timm',
     'toml',
-    'tqdm',
     'typing_extensions',
     'yapf',
 ]
@@ -60,8 +59,10 @@ dev = [
     'pydocstyle',
     'pylint',
     'torch-tb-profiler',
+    'tqdm',
     'types-Pillow',
     'types-toml',
+    'types-tqdm',
 ]
 doc = [
     'mmcv<2.0',

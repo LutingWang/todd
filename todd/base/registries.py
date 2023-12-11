@@ -37,6 +37,7 @@ from typing import Any, Callable, NoReturn, TypeVar, no_type_check
 
 import torch
 import torch.utils.data
+import torch.utils.data.dataset
 import torchvision.transforms as tf
 from torch import nn
 
@@ -45,7 +46,8 @@ from ..utils import NonInstantiableMeta, get_rank
 from .configs import Config
 from .logger import logger
 
-T = TypeVar('T', bound=Callable)
+T = TypeVar('T')
+CallableTypeVar = TypeVar('CallableTypeVar', bound=Callable)
 
 
 class RegistryMeta(  # type: ignore[misc]
@@ -195,7 +197,7 @@ class RegistryMeta(  # type: ignore[misc]
         cls,
         *args: str,
         **kwargs,
-    ) -> Callable[[T], T]:
+    ) -> Callable[[CallableTypeVar], CallableTypeVar]:
         """Register decorator.
 
         Args:
@@ -245,7 +247,7 @@ class RegistryMeta(  # type: ignore[misc]
           <HairlessCat CanadianHairless=<function canadian_hairless at ...>>
         """
 
-        def wrapper_func(obj: T) -> T:
+        def wrapper_func(obj: CallableTypeVar) -> CallableTypeVar:
             keys = [obj.__name__] if len(args) == 0 else args
             for key in keys:
                 registry, key = cls._parse(key)
@@ -545,46 +547,65 @@ class CollateRegistry(PartialRegistry):
     pass
 
 
+def descendant_classes(cls: type[T]) -> list[type[T]]:
+    classes = []
+    for subclass in cls.__subclasses__():
+        classes.append(subclass)
+        classes.extend(descendant_classes(subclass))
+    return classes
+
+
 c: type
 
-for c in torch.nn.Module.__subclasses__():
+for c in descendant_classes(nn.Module):
     # pylint: disable=invalid-name
-    module = c.__module__.replace('.', '_')
-    name = c.__name__
-    ModelRegistry.register_(f'{module}_{name}')(c)
+    name = '_'.join(c.__module__.split('.') + [c.__name__])
+    if name not in ModelRegistry:
+        ModelRegistry.register_(name)(c)
 
-for c in torch.utils.data.Sampler.__subclasses__():
+for _, c in inspect.getmembers(torch.utils.data.dataset, inspect.isclass):
+    if issubclass(c, torch.utils.data.Dataset):
+        DatasetRegistry.register_()(c)
+
+for c in descendant_classes(torch.utils.data.Sampler):
     SamplerRegistry.register_()(c)
 
-for c in torch.optim.Optimizer.__subclasses__():
-    OptimizerRegistry.register_()(c)
+for c in descendant_classes(torch.optim.Optimizer):
+    if '<locals>' not in c.__qualname__:
+        OptimizerRegistry.register_()(c)
 
-for c in torch.optim.lr_scheduler.LRScheduler.__subclasses__():
+for c in descendant_classes(torch.optim.lr_scheduler.LRScheduler):
     LRSchedulerRegistry.register_()(c)
 
-NormRegistry['BN1d'] = nn.BatchNorm1d
-NormRegistry['BN2d'] = NormRegistry['BN'] = nn.BatchNorm2d
-NormRegistry['BN3d'] = nn.BatchNorm3d
-NormRegistry['SyncBN'] = nn.SyncBatchNorm
-NormRegistry['GN'] = nn.GroupNorm
-NormRegistry['LN'] = nn.LayerNorm
-NormRegistry['IN1d'] = nn.InstanceNorm1d
-NormRegistry['IN2d'] = NormRegistry['IN'] = nn.InstanceNorm2d
-NormRegistry['IN3d'] = nn.InstanceNorm3d
+NormRegistry.update(
+    BN1d=nn.BatchNorm1d,
+    BN2d=nn.BatchNorm2d,
+    BN=nn.BatchNorm2d,
+    BN3d=nn.BatchNorm3d,
+    SyncBN=nn.SyncBatchNorm,
+    GN=nn.GroupNorm,
+    LN=nn.LayerNorm,
+    IN1d=nn.InstanceNorm1d,
+    IN2d=nn.InstanceNorm2d,
+    IN=nn.InstanceNorm2d,
+    IN3d=nn.InstanceNorm3d,
+)
 
 for _, c in inspect.getmembers(tf, inspect.isclass):
     TransformRegistry.register_()(c)
 
-EnvRegistry.register_('Platform')(utils.platform)
-EnvRegistry.register_('NVIDIA SMI')(utils.nvidia_smi)
-EnvRegistry.register_('Python version')(utils.python_version)
-EnvRegistry.register_('PyTorch version')(utils.pytorch_version)
-EnvRegistry.register_('TorchVision version')(utils.torchvision_version)
-EnvRegistry.register_('OpenCV version')(utils.opencv_version)
-EnvRegistry.register_('Todd version')(utils.todd_version)
-EnvRegistry.register_('CUDA_HOME')(utils.cuda_home)
-EnvRegistry.register_('Git commit ID')(utils.git_commit_id)
-EnvRegistry.register_('Git status')(utils.git_status)
+EnvRegistry.update({
+    'Platform': utils.platform,
+    'NVIDIA SMI': utils.nvidia_smi,
+    'Python version': utils.python_version,
+    'PyTorch version': utils.pytorch_version,
+    'TorchVision version': utils.torchvision_version,
+    'OpenCV version': utils.opencv_version,
+    'Todd version': utils.todd_version,
+    'CUDA_HOME': utils.cuda_home,
+    'Git commit ID': utils.git_commit_id,
+    'Git status': utils.git_status,
+})
 
 ClipGradRegistry.register_()(nn.utils.clip_grad_norm_)
 ClipGradRegistry.register_()(nn.utils.clip_grad_value_)
