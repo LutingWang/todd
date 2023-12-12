@@ -12,6 +12,7 @@ KT = TypeVar('KT')
 VT = TypeVar('VT')
 
 
+@AccessLayerRegistry.register_()
 class ConcatAccessLayer(BaseAccessLayer[KT, VT], ABC):
 
     def __init__(
