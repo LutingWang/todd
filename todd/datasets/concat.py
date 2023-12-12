@@ -29,6 +29,14 @@ class ConcatAccessLayer(BaseAccessLayer[KT, VT], ABC):
         )
         super().__init__(data_root, *args, **kwargs)
 
+    def _access_layer_with_key(self, key: KT) -> BaseAccessLayer[KT, VT]:
+        access_layers = [
+            access_layer for access_layer in self._access_layers
+            if key in access_layer
+        ]
+        assert len(access_layers) == 1
+        return access_layers[0]
+
     @property
     def exists(self) -> bool:
         return all(access_layer.exists for access_layer in self._access_layers)
@@ -42,9 +50,16 @@ class ConcatAccessLayer(BaseAccessLayer[KT, VT], ABC):
             yield from access_layer
 
     def __len__(self) -> int:
-        return sum(len(access_layer) for access_layer in self._access_layers)
+        return sum(map(len, self._access_layers))
+
+    def __getitem__(self, key: KT) -> VT:
+        access_layer = self._access_layer_with_key(key)
+        return access_layer.__getitem__(key)
+
+    def __setitem__(self, key: KT, value: VT) -> None:
+        access_layer = self._access_layer_with_key(key)
+        access_layer.__setitem__(key, value)
 
     def __delitem__(self, key: KT) -> None:
-        for access_layer in self._access_layers:
-            if key in access_layer:
-                del access_layer[key]
+        access_layer = self._access_layer_with_key(key)
+        access_layer.__delitem__(key)
