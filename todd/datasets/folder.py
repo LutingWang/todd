@@ -2,6 +2,7 @@ __all__ = [
     'FolderAccessLayer',
 ]
 
+import itertools
 import pathlib
 from abc import ABC
 from typing import Iterator, TypeVar
@@ -18,12 +19,15 @@ class FolderAccessLayer(BaseAccessLayer[str, VT], ABC):
         self,
         *args,
         folder_root: Config | None = None,
+        filter_directories: bool = False,
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
         if folder_root is None:
             folder_root = Config()
         self._build_folder_root(folder_root)
+
+        self._filter_directories = filter_directories
 
     def _build_folder_root(self, config: Config) -> None:
         self._folder_root = pathlib.Path(self._data_root) / self._task_name
@@ -36,13 +40,19 @@ class FolderAccessLayer(BaseAccessLayer[str, VT], ABC):
         self._folder_root.mkdir(parents=True, exist_ok=True)
 
     def _files(self) -> Iterator[pathlib.Path]:
-        return (path for path in self._folder_root.iterdir() if path.is_file())
+        files: Iterator[pathlib.Path] = self._folder_root.iterdir()
+        if self._filter_directories:
+            files = itertools.filterfalse(
+                lambda path: path.is_dir(),
+                files,
+            )
+        return files
 
     def _file(self, key: str) -> pathlib.Path:
         return self._folder_root / key
 
     def __iter__(self) -> Iterator[str]:
-        return (path.name for path in self._files())
+        return map(lambda path: path.name, self._files())
 
     def __len__(self) -> int:
         return len(list(self._files()))

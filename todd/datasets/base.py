@@ -63,7 +63,7 @@ class BaseDataset(Dataset[T], Generic[T, KT, VT], ABC):
 
     def _build_keys(self, config: Config) -> None:
         logger.debug("Initializing keys.")
-        self._keys = list(self._access_layer.keys())
+        self._keys = list(self._access_layer)
         logger.debug(
             "Keys %s initialized with length %d",
             reprlib.repr(self._keys),
