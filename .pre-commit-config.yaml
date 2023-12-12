@@ -121,6 +121,6 @@ repos:
           - tests
           - todd
   - repo: https://github.com/commitizen-tools/commitizen
-    rev: 3.6.0
+    rev: v3.6.0
     hooks:
       - id: commitizen
