@@ -4,12 +4,11 @@ __all__ = [
 
 import contextlib
 import itertools
+from collections import defaultdict
 
 from ..base import RunnerRegistry
 from .trainer import Trainer
 from .types import Memo
-
-# FIXME: resume from specific iter causes total iters mismatch
 
 
 @RunnerRegistry.register_()
@@ -53,12 +52,15 @@ class EpochBasedTrainer(Trainer):
             dataloader,
             super().iters - self.inner_iter,
         )
-        epoch_memo['dataloader'] = dataloader
+        epoch_memo.update(
+            dataloader=dataloader,
+            epoch=defaultdict(list),
+        )
         return epoch_memo
 
     def _teardown_epoch(self, epoch_memo: Memo, memo: Memo) -> None:
         super()._teardown(epoch_memo)
-        memo['epoch_memos'][self.epoch] = epoch_memo
+        memo['epoch_memos'][self.epoch] = epoch_memo['epoch']
 
     def _run(self, memo: Memo) -> Memo:
         while self.epoch < self._epochs:
