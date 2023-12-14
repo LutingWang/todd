@@ -125,7 +125,13 @@ class SelfDistiller(SingleStudentDistiller, ABC):
                 '.student' + k: '.student' + v
                 for k, v in weight_transfer.items()
             }
-        super().__init__(*args, weight_transfer=weight_transfer, **kwargs)
+        super().__init__(
+            *args,
+            teachers=tuple(),
+            teacher_hooks=tuple(),
+            weight_transfer=weight_transfer,
+            **kwargs,
+        )
 
 
 T = TypeVar('T', bound=SingleStudentDistiller)
