@@ -40,9 +40,16 @@ class CheckpointCallback(IntervalMixin, BaseCallback):
         self._latest_checkpoint_dir = self._checkpoint_dir / 'latest'
 
         self._checkpoint_dir.mkdir(parents=True, exist_ok=True)
-        if self._runner.load_from is not None:
+
+        if self._runner._auto_resume and self._latest_checkpoint_dir.exists():
+            load_from = self._latest_checkpoint_dir
+        elif self._runner.load_from is not None:
             load_from = pathlib.Path(self._runner.load_from)
             assert load_from.exists()
+        else:
+            load_from = None
+
+        if load_from is not None:
             if get_rank() == 0:
                 self._runner.logger.info("Loading from %s", load_from)
             state_dict = {

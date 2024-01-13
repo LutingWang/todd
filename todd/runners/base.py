@@ -40,10 +40,12 @@ class BaseRunner(StateDictMixin):
         name: str,
         *args,
         load_from: str | None = None,
+        auto_resume: bool = False,
         **kwargs,
     ) -> None:
         self._name = name
         self._load_from = load_from
+        self._auto_resume = auto_resume
 
         self._iter = 0
         self._build(*args, **kwargs)
