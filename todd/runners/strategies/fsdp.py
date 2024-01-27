@@ -2,23 +2,33 @@ __all__ = [
     'FSDPStrategy',
 ]
 
-from typing import TYPE_CHECKING, Any, Mapping
+from typing import Any, Mapping, TypeVar, cast
 
 import torch
+from torch import nn
 from torch.distributed.fsdp import FullyShardedDataParallel as FSDP
 
 from ...base import Config, OptimizerRegistry, StrategyRegistry
-from .ddp import DDPStrategy
+from .cuda import CUDAStrategy
 
 # TODO: update when pytorch updates
 
+T = TypeVar('T', bound=FSDP)
+
 
 @StrategyRegistry.register_()
-class FSDPStrategy(DDPStrategy):
-    _model: FSDP  # type: ignore[assignment]
+class FSDPStrategy(CUDAStrategy[T]):
 
-    def _wrap_model(self, config: Config) -> None:
-        self._model = FSDP(self._model, **config)
+    def wrap_model(self, model: nn.Module, config: Config | None = None) -> T:
+        if config is None:
+            config = Config()
+        model = super().wrap_model(model, config)
+        model = FSDP(model, **config)
+        return cast(T, model)
+
+    @property
+    def module(self) -> nn.Module:
+        return self._model.module
 
     def build_optimizer(self, config: Config) -> torch.optim.Optimizer:
         return OptimizerRegistry.build(config, model=self._model)
@@ -53,9 +63,3 @@ class FSDPStrategy(DDPStrategy):
             self._model,
         )
         self.trainer.optimizer.load_state_dict(sharded_state_dict)
-
-    if TYPE_CHECKING:
-
-        @property
-        def model(self) -> FSDP:  # type: ignore[override]
-            ...

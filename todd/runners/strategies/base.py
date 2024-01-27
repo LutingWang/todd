@@ -2,7 +2,7 @@ __all__ = [
     'BaseStrategy',
 ]
 
-from typing import Any, Mapping
+from typing import Any, Generic, Mapping, TypeVar, cast
 
 import torch
 from torch import nn
@@ -11,28 +11,53 @@ from ...base import Config, ModelRegistry, OptimizerRegistry, StrategyRegistry
 from ...utils import StateDictMixin, get_rank
 from ..utils import RunnerHolderMixin
 
+T = TypeVar('T', bound=nn.Module)
+
 
 @StrategyRegistry.register_()
-class BaseStrategy(RunnerHolderMixin, StateDictMixin):
-    _model: nn.Module
+class BaseStrategy(RunnerHolderMixin, StateDictMixin, Generic[T]):
 
     def __init__(
         self,
         *args,
         model: Config,
+        map_model: Config | None = None,
+        wrap_model: Config | None = None,
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
-        self._build_model(model)
+        self._build_model(model, map_model, wrap_model)
 
-    def _build_model(self, config: Config) -> None:
-        self._model = ModelRegistry.build(config)
+    def _build_model(
+        self,
+        config: Config,
+        map_config: Config | None,
+        wrap_config: Config | None,
+    ) -> None:
+        model = ModelRegistry.build(config)
+        model = self.map_model(model, map_config)
+        model = self.wrap_model(model, wrap_config)
+        self._model = model
+
+    def map_model(
+        self,
+        model: nn.Module,
+        config: Config | None = None,
+    ) -> nn.Module:
+        if config is None:
+            config = Config()
+        return model
+
+    def wrap_model(self, model: nn.Module, config: Config | None = None) -> T:
+        if config is None:
+            config = Config()
+        return cast(T, model)
 
     def build_optimizer(self, config: Config) -> torch.optim.Optimizer:
         return OptimizerRegistry.build(config, model=self.module)
 
     @property
-    def model(self) -> nn.Module:
+    def model(self) -> T:
         return self._model
 
     @property

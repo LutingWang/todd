@@ -2,7 +2,7 @@ __all__ = [
     'DDPStrategy',
 ]
 
-from typing import TYPE_CHECKING
+from typing import TypeVar, cast
 
 from torch import nn
 from torch.nn.parallel import DistributedDataParallel as DDP
@@ -10,31 +10,19 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 from ...base import Config, StrategyRegistry
 from .cuda import CUDAStrategy
 
+T = TypeVar('T', bound=DDP)
+
 
 @StrategyRegistry.register_()
-class DDPStrategy(CUDAStrategy):
-    _model: DDP
+class DDPStrategy(CUDAStrategy[T]):
 
-    def __init__(
-        self,
-        *args,
-        wrap_model: Config | None = None,
-        **kwargs,
-    ) -> None:
-        super().__init__(*args, **kwargs)
-        if wrap_model is None:
-            wrap_model = Config()
-        self._wrap_model(wrap_model)
-
-    def _wrap_model(self, config: Config) -> None:
-        self._model = DDP(self._model, **config)
+    def wrap_model(self, model: nn.Module, config: Config | None = None) -> T:
+        if config is None:
+            config = Config()
+        model = super().wrap_model(model, config)
+        model = DDP(model, **config)
+        return cast(T, model)
 
     @property
     def module(self) -> nn.Module:
         return self._model.module
-
-    if TYPE_CHECKING:
-
-        @property
-        def model(self) -> DDP:
-            ...
