@@ -4,4 +4,4 @@ __all__ = [
 
 from typing import Any
 
-Memo = dict[str, Any]
+Memo = dict[str, Any]  # TODO: refine

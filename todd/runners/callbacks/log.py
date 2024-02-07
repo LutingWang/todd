@@ -12,7 +12,6 @@ from ...base import (
     BaseETA,
     CallbackRegistry,
     Config,
-    EnvRegistry,
     ETARegistry,
     Formatter,
     Store,
@@ -21,8 +20,6 @@ from ...utils import get_rank, get_timestamp
 from ..types import Memo
 from .base import BaseCallback
 from .interval import IntervalMixin
-
-# TODO: save git diff
 
 
 @CallbackRegistry.register_()
@@ -51,14 +48,11 @@ class LogCallback(IntervalMixin, BaseCallback):
             handler.setFormatter(Formatter())
             self._runner.logger.addHandler(handler)
         if self._collect_env is not None:
-            envs = ['']
-            for k, v in EnvRegistry.items():
-                env = str(v(**self._collect_env))
-                env = env.strip()
-                if '\n' in env:
-                    env = '\n' + env
-                envs.append(f'{k}: {env}')
-            self._runner.logger.info('\n'.join(envs))
+            from ...base import (  # noqa: E501 pylint: disable=import-outside-toplevel
+                collect_env,
+            )
+            env = collect_env(**self._collect_env)
+            self._runner.logger.info(env)
 
     def before_run(self, memo: Memo) -> None:
         super().before_run(memo)

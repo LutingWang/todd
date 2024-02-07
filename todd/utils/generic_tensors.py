@@ -8,6 +8,8 @@ from typing import Callable, Generic, Iterable, Literal, TypeVar
 
 import torch
 
+# TODO: refactor
+
 T = TypeVar('T', torch.Tensor, list, tuple, dict)
 
 

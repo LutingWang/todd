@@ -78,6 +78,7 @@ test = [
 
 [project.scripts]
 configs_diff = 'todd.base.configs:diff_cli'
+collect_env = 'todd.base.envs:collect_env_cli'
 
 [tool.setuptools.packages.find]
 include = [

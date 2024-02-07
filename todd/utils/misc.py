@@ -1,9 +1,11 @@
 __all__ = [
     'get_timestamp',
     'Status',
+    'subprocess_run',
 ]
 
 import enum
+import subprocess  # nosec B404
 from datetime import datetime
 from typing import Generic, Mapping, TypeVar
 
@@ -31,3 +33,14 @@ class Status(Generic[T]):
         if self._status not in transitions:
             raise RuntimeError(f"{self._status} is not in {transitions}.")
         self._status = transitions[self._status]
+
+
+def subprocess_run(args: str) -> str:
+    return subprocess.run(
+        args,
+        check=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        shell=True,  # nosec B602
+        text=True,
+    ).stdout

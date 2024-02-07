@@ -41,7 +41,6 @@ import torch.utils.data.dataset
 import torchvision.transforms as tf
 from torch import nn
 
-from .. import utils
 from ..utils import NonInstantiableMeta, get_rank
 from .configs import Config
 from .logger import logger
@@ -139,7 +138,11 @@ class RegistryMeta(  # type: ignore[misc]
             'BritishShorthair'
         """
         if not forced and key in cls:  # noqa: E501 pylint: disable=unsupported-membership-test
-            logger.error("%s already exist in %s", key, cls.__name__)
+            logger.error(
+                "%s already exist in %s",  # add more info
+                key,
+                cls.__name__,
+            )
             raise KeyError(key)
         return super().__setitem__(key, item)
 
@@ -598,19 +601,6 @@ NormRegistry.update(
 
 for _, c in inspect.getmembers(tf, inspect.isclass):
     TransformRegistry.register_()(c)
-
-EnvRegistry.update({
-    'Platform': utils.platform,
-    'NVIDIA SMI': utils.nvidia_smi,
-    'Python version': utils.python_version,
-    'PyTorch version': utils.pytorch_version,
-    'TorchVision version': utils.torchvision_version,
-    'OpenCV version': utils.opencv_version,
-    'Todd version': utils.todd_version,
-    'CUDA_HOME': utils.cuda_home,
-    'Git commit ID': utils.git_commit_id,
-    'Git status': utils.git_status,
-})
 
 ClipGradRegistry.register_()(nn.utils.clip_grad_norm_)
 ClipGradRegistry.register_()(nn.utils.clip_grad_value_)
