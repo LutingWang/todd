@@ -5,12 +5,15 @@ __all__ = [
     'all_gather',
     'all_gather_',
     'Shape',
+    'ModuleList',
+    'ModuleDict',
 ]
 
 import functools
 import itertools
 import operator
 import os
+from typing import Any
 
 import torch
 import torch.distributed as dist
@@ -127,3 +130,15 @@ class Shape:
                 module.stride,
             ),
         )
+
+
+class ModuleList(nn.ModuleList):
+
+    def forward(self, *args, **kwargs) -> list:
+        return [m(*args, **kwargs) for m in self]
+
+
+class ModuleDict(nn.ModuleDict):
+
+    def forward(self, *args, **kwargs) -> dict[str, Any]:
+        return {k: m(*args, **kwargs) for k, m in self.items()}
