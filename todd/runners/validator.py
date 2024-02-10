@@ -3,7 +3,6 @@ __all__ = [
 ]
 
 import torch
-import torch.distributed
 import torch.utils.data
 
 from .base import BaseRunner, RunnerRegistry

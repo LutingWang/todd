@@ -5,7 +5,6 @@ __all__ = [
 from typing import Any, Mapping
 
 import torch
-import torch.distributed
 import torch.utils.data
 
 from ..base import Config, RunnerRegistry

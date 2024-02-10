@@ -5,7 +5,7 @@ __all__ = [
 from typing import TypeVar
 
 import torch
-import torch.distributed
+import torch.distributed as dist
 from torch import nn
 
 from ...base import Config, Store, StrategyRegistry
@@ -31,12 +31,12 @@ class CUDAStrategy(BaseStrategy[T]):
         super().__init__(*args, **kwargs)
 
     def _setup(self, config: Config) -> None:
-        if not torch.distributed.is_initialized():
+        if not dist.is_initialized():
             init_process_group = config.get(
                 'init_process_group',
                 Config(backend='nccl'),
             )
-            torch.distributed.init_process_group(**init_process_group)
+            dist.init_process_group(**init_process_group)
         torch.cuda.set_device(get_local_rank() % torch.cuda.device_count())
 
     def map_model(

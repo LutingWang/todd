@@ -6,7 +6,6 @@ __all__ = [
 import os
 
 import torch
-import torch.distributed
 from packaging.version import parse
 
 from ..utils import NonInstantiableMeta

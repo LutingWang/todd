@@ -9,6 +9,8 @@ import datetime
 from abc import ABC, abstractmethod
 from typing import NamedTuple
 
+from ..utils import ExponentialMovingAverage as EMA
+from .configs import Config
 from .registries import ETARegistry
 
 
@@ -28,19 +30,19 @@ class BaseETA(ABC):
         return Datum(x, t)
 
     @abstractmethod
-    def _pace(self, datum: Datum) -> float:
+    def pace(self, datum: Datum) -> float:
         pass
 
     def __call__(self, x: int) -> float:
         datum = self._datum(x)
-        pace = self._pace(datum)
+        pace = self.pace(datum)
         return pace * (self._end - x) / 1000
 
 
 @ETARegistry.register_()
 class AverageETA(BaseETA):
 
-    def _pace(self, datum: Datum) -> float:
+    def pace(self, datum: Datum) -> float:
         t = datum.t - self._start.t
         x = datum.x - self._start.x
         return t.total_seconds() * 1000 / x
@@ -49,14 +51,13 @@ class AverageETA(BaseETA):
 @ETARegistry.register_()
 class EMA_ETA(AverageETA):  # noqa: N801 pylint: disable=invalid-name
 
-    def __init__(self, *args, decay: float, **kwargs) -> None:
-        assert 0 <= decay <= 1
+    def __init__(self, *args, ema: Config, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self._decay = decay
-        self._ema_pace = 0.
+        self._ema = EMA(**ema)
+        self._pace: float | None = None
 
-    def _pace(self, datum: Datum) -> float:
-        pace = super()._pace(datum)
-        pace = self._decay * self._ema_pace + (1 - self._decay) * pace
-        self._ema_pace = pace
+    def pace(self, datum: Datum) -> float:
+        pace = super().pace(datum)
+        pace = self._ema(self._pace, pace)
+        self._pace = pace
         return pace

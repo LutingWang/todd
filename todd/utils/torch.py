@@ -4,16 +4,18 @@ __all__ = [
     'get_world_size',
     'all_gather',
     'all_gather_',
+    'all_sync',
     'Shape',
     'ModuleList',
     'ModuleDict',
+    'ExponentialMovingAverage',
 ]
 
 import functools
 import itertools
 import operator
 import os
-from typing import Any
+from typing import TYPE_CHECKING
 
 import torch
 import torch.distributed as dist
@@ -90,6 +92,15 @@ def all_gather_(
     return tensors
 
 
+def all_sync(x: torch.Tensor) -> bool:
+    if get_world_size() <= 1:
+        return True
+    x_prime = x.clone()
+    dist.all_reduce(x)
+    x /= get_world_size()
+    return torch.allclose(x, x_prime)
+
+
 class Shape:
 
     @classmethod
@@ -134,11 +145,50 @@ class Shape:
 
 class ModuleList(nn.ModuleList):
 
-    def forward(self, *args, **kwargs) -> list:
+    def forward(self, *args, **kwargs) -> list[nn.Module]:
         return [m(*args, **kwargs) for m in self]
 
 
 class ModuleDict(nn.ModuleDict):
 
-    def forward(self, *args, **kwargs) -> dict[str, Any]:
+    def forward(self, *args, **kwargs) -> dict[str, nn.Module]:
         return {k: m(*args, **kwargs) for k, m in self.items()}
+
+
+class ExponentialMovingAverage(nn.Module):
+
+    def __init__(
+        self,
+        *args,
+        decay=0.99,
+        **kwargs,
+    ) -> None:
+        self.check_decay(decay)
+        super().__init__(*args, **kwargs)
+        self._decay = decay
+
+    @staticmethod
+    def check_decay(decay) -> None:
+        if isinstance(decay, torch.Tensor):
+            assert decay.ge(0).all() and decay.le(1).all()
+        else:
+            assert 0 <= decay <= 1
+
+    @property
+    def decay(self):
+        return self._decay
+
+    def forward(self, x, y, decay=None):
+        assert x is not None or y is not None
+        if x is None:
+            return y
+        if y is None:
+            return x
+        if decay is None:
+            decay = self._decay
+        else:
+            self.check_decay(decay)
+        return x * decay + y * (1 - decay)
+
+    if TYPE_CHECKING:
+        __call__ = forward
