@@ -15,7 +15,7 @@ from ..utils import RunnerHolderMixin
 @CallbackRegistry.register_()
 class BaseCallback(RunnerHolderMixin, StateDictMixin):
 
-    def init(self) -> None:
+    def init(self, *args, **kwargs) -> None:
         pass
 
     def should_break(self, batch, memo: Memo) -> bool:

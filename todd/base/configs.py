@@ -136,6 +136,8 @@ class Config(AttrDict, dict):  # type: ignore[misc]
         base_config = cls()
         for base in config.pop('_base_', []):
             base_config.update(cls.load(file.parent / base))
+        override = config.pop('_override_', dict())
+        base_config.override(override)
         base_config.update(config)
         return base_config
 

@@ -13,15 +13,18 @@ class TestConfigs:
     def config(self) -> Config:
         return Config(a=1, b=dict(c=3))
 
-    @pytest.fixture
-    def config1(self) -> Config:
-        return Config(a=dict(c=3))
-
     def test_load(self, config: Config, data_dir: pathlib.Path) -> None:
         assert Config.load(data_dir / 'config.py') == config
 
-    def test_load1(self, config1: Config, data_dir: pathlib.Path) -> None:
-        assert Config.load(data_dir / 'config1.py') == config1
+    def test_load1(self, data_dir: pathlib.Path) -> None:
+        assert Config.load(data_dir / 'config1.py') == Config(a=dict(c=3))
+
+    def test_load2(self, data_dir: pathlib.Path) -> None:
+        assert Config.load(data_dir / 'config2.py') == Config(a=[dict(b=3)])
+
+    def test_load2_1(self, data_dir: pathlib.Path) -> None:
+        assert Config.load(data_dir / 'config2_1.py') == \
+            Config(a=[dict(b=2), dict(c=3)])
 
     def test_diff_html(self, config: Config, data_dir: pathlib.Path) -> None:
         diff = Config(a=1).diff(config, True)

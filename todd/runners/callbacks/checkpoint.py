@@ -34,8 +34,8 @@ class CheckpointCallback(IntervalMixin, BaseCallback):
             load_state_dict = Config()
         self._load_state_dict = load_state_dict
 
-    def init(self) -> None:
-        super().init()
+    def init(self, *args, **kwargs) -> None:
+        super().init(*args, **kwargs)
         self._checkpoint_dir = self._runner.work_dir / 'checkpoints'
         self._latest_checkpoint_dir = self._checkpoint_dir / 'latest'
 

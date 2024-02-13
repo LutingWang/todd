@@ -21,16 +21,16 @@ class GitCallback(BaseCallback):
         super().__init__(*args, **kwargs)
         self._diff = diff
 
-    def init(self) -> None:
-        super().init()
+    def init(self, *args, **kwargs) -> None:
+        super().init(*args, **kwargs)
         if get_rank() > 0:
             return
         if self._diff is not None:
-            args = 'git diff'
+            args_ = 'git diff'
             if self._diff:
-                args += f' {self._diff}'
+                args_ += f' {self._diff}'
             try:
-                diff = subprocess_run(args)
+                diff = subprocess_run(args_)
             except subprocess.CalledProcessError as e:
                 diff = str(e)
                 self._runner.logger.error(e)

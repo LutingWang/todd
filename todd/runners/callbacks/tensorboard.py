@@ -27,8 +27,8 @@ class TensorBoardCallback(IntervalMixin, BaseCallback):
         self._summary_writer_config = summary_writer
         self._main_tag = main_tag
 
-    def init(self) -> None:
-        super().init()
+    def init(self, *args, **kwargs) -> None:
+        super().init(*args, **kwargs)
         if get_rank() > 0:
             return
         log_dir = self._runner.work_dir / 'tensorboard'

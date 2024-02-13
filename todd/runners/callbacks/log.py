@@ -38,8 +38,8 @@ class LogCallback(IntervalMixin, BaseCallback):
         self._with_file_handler = with_file_handler
         self._eta_config = eta
 
-    def init(self) -> None:
-        super().init()
+    def init(self, *args, **kwargs) -> None:
+        super().init(*args, **kwargs)
         if get_rank() > 0:
             return
         if self._with_file_handler:

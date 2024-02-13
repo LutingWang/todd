@@ -26,10 +26,10 @@ class ComposedCallback(BaseCallback):
         self._priority_queue: PriorityQueue[KT, BaseCallback] = \
             PriorityQueue(priorities, queue)
 
-    def init(self) -> None:
-        super().init()
+    def init(self, *args, **kwargs) -> None:
+        super().init(*args, **kwargs)
         for c in self._priority_queue('init'):
-            c.init()
+            c.init(*args, **kwargs)
 
     def should_break(self, *args, **kwargs) -> bool:
         super().should_break(*args, **kwargs)
