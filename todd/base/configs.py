@@ -54,9 +54,6 @@ class AttrDict(UserDict):
             raise AttributeError(e) from e
 
 
-# TODO: refactor this proxy
-
-
 class _import_:  # noqa: N801 pylint: disable=invalid-name
 
     def __init__(self, name: str) -> None:
@@ -76,8 +73,23 @@ class Config(AttrDict, dict):  # type: ignore[misc]
         """Set item.
 
         Args:
-            name: item name or ``_delete_``.
+            name: item name, ``_delete_``, or ``__override__``.
             value: item value.
+
+        The default behavior is same as `AttrDict.__setitem__`:
+
+            >>> config = Config(a=1)
+            >>> config['b'] = 2
+            >>> config
+            {'a': 1, 'b': 2}
+
+        If ``name`` is ``_delete_`` and ``value`` evaluates to `False`, nothing
+        happens:
+
+            >>> config = Config(a=1)
+            >>> config['_delete_'] = False
+            >>> config
+            {'a': 1}
 
         If ``name`` is ``_delete_`` and ``value`` evaluates to `True`, the
         current config is cleared:
@@ -87,27 +99,38 @@ class Config(AttrDict, dict):  # type: ignore[misc]
             >>> config
             {}
 
-        If ``name`` exists in the current config and the value is a `Sequence`,
-        setting the value to a `Mapping` will recursively update the value:
+        If ``name`` is ``_override_`` and the current config is not empty, the
+        current config is updated with ``value``:
 
-            >>> config = Config(a=[1, 2, 3])
-            >>> config['a'] = {1: 20, 3: 40}
+            >>> config = Config(a=1, b=[2, 3, 4])
+            >>> config['_override_'] = {'.a': 2, '.b[0]': 5, '.c': 6}
             >>> config
-            {'a': [1, 20, 3, 40]}
+            {'a': 2, 'b': [5, 3, 4], 'c': 6}
+
+        If the current config is empty, all items are set as usual:
+
+            >>> config = Config()
+            >>> config['_delete_'] = True
+            >>> config
+            {'_delete_': True}
+            >>> config = Config()
+            >>> config['_override_'] = {'.a': 1}
+            >>> config
+            {'_override_': {'.a': 1}}
         """
-        if name == '_delete_':
-            if value:
-                self.clear()
-            return
-
-        if isinstance(self.get(name), Sequence) and isinstance(value, Mapping):
-            old_value = self.__class__(enumerate(self[name]))
-            old_value.update(value)
-            value = self[name].__class__(
-                old_value[k] for k in range(len(old_value))
-            )
-
+        if self:
+            if name == '_delete_':
+                if value:
+                    self.clear()
+                return
+            if name == '_override_':
+                self.override(value)
+                return
         super().__setitem__(name, value)
+
+    @staticmethod
+    def _loads(s: str) -> dict:
+        return exec_(s, _import_=_import_)
 
     @classmethod
     def loads(cls, s: str) -> Self:
@@ -124,20 +147,16 @@ class Config(AttrDict, dict):  # type: ignore[misc]
             >>> Config.loads('a = 1\nb = dict(c=3)')
             {'a': 1, 'b': {'c': 3}}
         """
-        return cls(exec_(s))
+        return cls(cls._loads(s))
 
     @classmethod
     def load(cls, file) -> Self:
         file = pathlib.Path(file)
-        config = exec_(  # do not use `loads`
-            file.read_text(),
-            _import_=_import_,
-        )
+        # `loads` does not support `_delete_` with `_base_`
+        config = cls._loads(file.read_text())
         base_config = cls()
         for base in config.pop('_base_', []):
             base_config.update(cls.load(file.parent / base))
-        override = config.pop('_override_', dict())
-        base_config.override(override)
         base_config.update(config)
         return base_config
 

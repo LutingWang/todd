@@ -89,7 +89,7 @@ class LogCallback(IntervalMixin, BaseCallback):
             prefix += f"Memory {max_memory_allocated / 1024 ** 2:.2f}M "
 
         log: dict[str, Any] = memo.pop('log')
-        message = ' '.join(f'{k}={v}' for k, v in log.items())
+        message = ' '.join(f'{k}={v}' for k, v in log.items() if v is not None)
         self._runner.logger.info(prefix + message)
 
     def before_run_epoch(self, epoch_memo: Memo, memo: Memo) -> None:

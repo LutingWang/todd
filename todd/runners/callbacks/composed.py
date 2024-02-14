@@ -26,6 +26,10 @@ class ComposedCallback(BaseCallback):
         self._priority_queue: PriorityQueue[KT, BaseCallback] = \
             PriorityQueue(priorities, queue)
 
+    @property
+    def priority_queue(self) -> PriorityQueue[KT, BaseCallback]:
+        return self._priority_queue
+
     def init(self, *args, **kwargs) -> None:
         super().init(*args, **kwargs)
         for c in self._priority_queue('init'):

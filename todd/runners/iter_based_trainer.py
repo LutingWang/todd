@@ -14,7 +14,8 @@ class IterBasedTrainer(Trainer):
 
     def __init__(self, *args, iters: int, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self._iters = iters
+        # python interprets numbers like 2e3 as floats
+        self._iters = int(iters)
 
     @property
     def iters(self) -> int:
