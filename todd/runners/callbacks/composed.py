@@ -2,7 +2,7 @@ __all__ = [
     'ComposedCallback',
 ]
 
-from typing import Any, Iterable, Literal, Mapping
+from typing import Any, Iterable, Iterator, Literal, Mapping
 
 from ...base import CallbackRegistry, Config
 from ...utils import PriorityQueue
@@ -29,6 +29,9 @@ class ComposedCallback(BaseCallback):
     @property
     def priority_queue(self) -> PriorityQueue[KT, BaseCallback]:
         return self._priority_queue
+
+    def __iter__(self) -> Iterator[BaseCallback]:
+        return iter(self._priority_queue.queue)
 
     def init(self, *args, **kwargs) -> None:
         super().init(*args, **kwargs)
