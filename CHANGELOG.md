@@ -277,7 +277,7 @@
 - freeze offline teachers
 - visualize
 - mixin distiller
-- hooks.__init__
+- hooks.**init**
 - remove closure of hooks
 - trackings register tensor
 - import
@@ -335,8 +335,8 @@
 - distiller.reset
 - compare configs
 - compare configs
-- move schedualer to top level
-- schedualers
+- move scheduler to top level
+- schedulers
 - enable dict ids
 - visualize
 - rename decorator mixin
