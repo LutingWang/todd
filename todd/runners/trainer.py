@@ -2,18 +2,20 @@ __all__ = [
     'Trainer',
 ]
 
-from typing import Any, Mapping
+from typing import Any, Mapping, TypeVar
 
 import torch
-import torch.utils.data
+from torch import nn
 
 from ..base import Config, RunnerRegistry
 from .base import BaseRunner
 from .types import Memo
 
+T = TypeVar('T', bound=nn.Module)
+
 
 @RunnerRegistry.register_()
-class Trainer(BaseRunner):
+class Trainer(BaseRunner[T]):
 
     @property
     def optimizer(self) -> torch.optim.Optimizer:
@@ -32,7 +34,7 @@ class Trainer(BaseRunner):
         self._build_optimizer(*args, **kwargs)
 
     def _setup(self) -> Memo:
-        self._strategy.model.train()
+        self._model.train()
         return super()._setup()
 
     def state_dict(self, *args, **kwargs) -> dict[str, Any]:

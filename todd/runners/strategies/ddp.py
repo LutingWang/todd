@@ -16,13 +16,11 @@ T = TypeVar('T', bound=DDP)
 @StrategyRegistry.register_()
 class DDPStrategy(CUDAStrategy[T]):
 
-    def wrap_model(self, model: nn.Module, config: Config | None = None) -> T:
-        if config is None:
-            config = Config()
+    def wrap_model(self, model: nn.Module, config: Config) -> T:
         model = super().wrap_model(model, config)
         model = DDP(model, **config)
         return cast(T, model)
 
     @property
     def module(self) -> nn.Module:
-        return self._model.module
+        return self._runner.model.module

@@ -2,18 +2,22 @@ __all__ = [
     'Validator',
 ]
 
+from typing import TypeVar
+
 import torch
-import torch.utils.data
+from torch import nn
 
 from .base import BaseRunner, RunnerRegistry
 from .types import Memo
 
+T = TypeVar('T', bound=nn.Module)
+
 
 @RunnerRegistry.register_()
-class Validator(BaseRunner):
+class Validator(BaseRunner[T]):
 
     def _setup(self) -> Memo:
-        self._strategy.model.eval()
+        self._model.eval()
         return super()._setup()
 
     @torch.no_grad()

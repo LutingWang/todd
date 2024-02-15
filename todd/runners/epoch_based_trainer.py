@@ -5,10 +5,15 @@ __all__ = [
 import contextlib
 import itertools
 from collections import defaultdict
+from typing import TypeVar
+
+from torch import nn
 
 from ..base import RunnerRegistry
 from .trainer import Trainer
 from .types import Memo
+
+T = TypeVar('T', bound=nn.Module)
 
 
 @RunnerRegistry.register_()

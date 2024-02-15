@@ -20,49 +20,32 @@ class BaseStrategy(RunnerHolderMixin, StateDictMixin, Generic[T]):
     def __init__(
         self,
         *args,
-        model: Config,
-        map_model: Config | None = None,
-        wrap_model: Config | None = None,
+        setup: Config | None = None,
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
-        self._build_model(model, map_model, wrap_model)
+        if setup is None:
+            setup = Config()
+        self.setup(setup)
 
-    def _build_model(
-        self,
-        config: Config,
-        map_config: Config | None,
-        wrap_config: Config | None,
-    ) -> None:
-        model = ModelRegistry.build(config)
-        model = self.map_model(model, map_config)
-        model = self.wrap_model(model, wrap_config)
-        self._model = model
+    def setup(self, config: Config) -> None:
+        pass
 
-    def map_model(
-        self,
-        model: nn.Module,
-        config: Config | None = None,
-    ) -> nn.Module:
-        if config is None:
-            config = Config()
+    def build_model(self, config: Config) -> nn.Module:
+        return ModelRegistry.build(config)
+
+    def map_model(self, model: nn.Module, config: Config) -> nn.Module:
         return model
 
-    def wrap_model(self, model: nn.Module, config: Config | None = None) -> T:
-        if config is None:
-            config = Config()
+    def wrap_model(self, model: nn.Module, config: Config) -> T:
         return cast(T, model)
 
     def build_optimizer(self, config: Config) -> torch.optim.Optimizer:
         return OptimizerRegistry.build(config, model=self.module)
 
     @property
-    def model(self) -> T:
-        return self._model
-
-    @property
     def module(self) -> nn.Module:
-        return self._model
+        return self._runner.model
 
     def model_state_dict(self, *args, **kwargs) -> dict[str, Any]:
         return self.module.state_dict(*args, **kwargs)

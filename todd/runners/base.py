@@ -8,10 +8,10 @@ import logging
 import os
 import pathlib
 import socket
-from typing import TYPE_CHECKING, Any, Mapping
+from typing import TYPE_CHECKING, Any, Generic, Mapping, TypeVar
 
-import torch
-import torch.utils.data
+from torch import nn
+from torch.utils.data import DataLoader, Dataset
 
 from ..base import (
     CallbackRegistry,
@@ -30,9 +30,11 @@ if TYPE_CHECKING:
     from .callbacks import ComposedCallback
     from .strategies import BaseStrategy
 
+T = TypeVar('T', bound=nn.Module)
+
 
 @RunnerRegistry.register_()
-class BaseRunner(StateDictMixin):
+class BaseRunner(StateDictMixin, Generic[T]):
 
     def __init__(
         self,
@@ -75,11 +77,19 @@ class BaseRunner(StateDictMixin):
         return self._iter
 
     @property
-    def strategy(self) -> 'BaseStrategy':
+    def strategy(self) -> 'BaseStrategy[T]':
         return self._strategy
 
     @property
-    def dataloader(self) -> torch.utils.data.DataLoader:
+    def dataset(self) -> Dataset:
+        return self._dataset
+
+    @property
+    def model(self) -> T:
+        return self._model
+
+    @property
+    def dataloader(self) -> DataLoader:
         return self._dataloader
 
     @property
@@ -104,10 +114,30 @@ class BaseRunner(StateDictMixin):
         strategy: Config,
         **kwargs,
     ) -> None:
-        self._strategy: 'BaseStrategy' = StrategyRegistry.build(
+        self._strategy: 'BaseStrategy[T]' = StrategyRegistry.build(
             strategy,
             runner=self,
         )
+
+    def _build_dataset(self, *args, dataset: Config, **kwargs) -> None:
+        self._dataset: Dataset = DatasetRegistry.build(dataset)
+
+    def _build_model(
+        self,
+        *args,
+        model: Config,
+        map_model: Config | None = None,
+        wrap_model: Config | None = None,
+        **kwargs,
+    ) -> None:
+        if map_model is None:
+            map_model = Config()
+        if wrap_model is None:
+            wrap_model = Config()
+        model_ = self._strategy.build_model(model)
+        model_ = self._strategy.map_model(model_, map_model)
+        model_ = self._strategy.wrap_model(model_, wrap_model)
+        self._model = model_
 
     def _build_dataloader(self, *args, dataloader: Config, **kwargs) -> None:
         """Build the dataloader.
@@ -116,13 +146,12 @@ class BaseRunner(StateDictMixin):
             dataloader: dataloader config.
         """
         dataloader = dataloader.copy()
-        dataloader.dataset = DatasetRegistry.build(dataloader.dataset)
 
         sampler = dataloader.pop('sampler', None)
         if sampler is not None:
             dataloader.sampler = SamplerRegistry.build(
                 sampler,
-                dataset=dataloader.dataset,
+                dataset=self._dataset,
             )
 
         batch_sampler = dataloader.pop('batch_sampler', None)
@@ -136,7 +165,7 @@ class BaseRunner(StateDictMixin):
         if collate_fn is not None:
             dataloader.collate_fn = CollateRegistry.build(collate_fn)
 
-        self._dataloader = torch.utils.data.DataLoader(**dataloader)
+        self._dataloader = DataLoader(self._dataset, **dataloader)
 
     def _build_callbacks(
         self,
@@ -189,6 +218,8 @@ class BaseRunner(StateDictMixin):
 
     def _build(self, *args, **kwargs) -> None:
         self._build_strategy(*args, **kwargs)
+        self._build_dataset(*args, **kwargs)
+        self._build_model(*args, **kwargs)
         self._build_dataloader(*args, **kwargs)
         self._build_callbacks(*args, **kwargs)
         self._build_work_dir(*args, **kwargs)
@@ -204,7 +235,7 @@ class BaseRunner(StateDictMixin):
         Returns:
             Updated runtime memory.
         """
-        return self._strategy.model(self, batch, memo, *args, **kwargs)
+        return self._model(self, batch, memo, *args, **kwargs)
 
     def _run(self, memo: Memo) -> Memo:
         dataloader = memo['dataloader']
