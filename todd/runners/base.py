@@ -8,6 +8,7 @@ import logging
 import os
 import pathlib
 import socket
+from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Generic, Mapping, TypeVar
 
 from torch import nn
@@ -105,8 +106,9 @@ class BaseRunner(StateDictMixin, Generic[T]):
         return self._logger
 
     @property
+    @abstractmethod
     def iters(self) -> int:
-        return len(self._dataloader)
+        pass
 
     def _build_strategy(
         self,
@@ -255,7 +257,7 @@ class BaseRunner(StateDictMixin, Generic[T]):
         return memo
 
     def _setup(self) -> Memo:
-        return dict(dataloader=iter(self._dataloader))
+        return dict()
 
     def _teardown(self, memo: Memo) -> None:
         pass

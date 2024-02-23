@@ -5,6 +5,7 @@ __all__ = [
     'all_gather',
     'all_gather_',
     'all_sync',
+    'set_epoch',
     'Shape',
     'ModuleList',
     'ModuleDict',
@@ -20,6 +21,7 @@ from typing import TYPE_CHECKING
 import torch
 import torch.distributed as dist
 from torch import nn
+from torch.utils.data import DataLoader
 
 
 def get_rank(*args, **kwargs) -> int:
@@ -99,6 +101,18 @@ def all_sync(x: torch.Tensor) -> bool:
     dist.all_reduce(x)
     x /= get_world_size()
     return torch.allclose(x, x_prime)
+
+
+def set_epoch(dataloader: DataLoader, epoch: int) -> None:
+    samplers = [
+        dataloader.sampler,
+        dataloader.batch_sampler,
+        getattr(dataloader.batch_sampler, 'sampler', None),
+    ]
+    for sampler in samplers:
+        set_epoch_ = getattr(sampler, 'set_epoch', None)
+        if set_epoch_ is not None:
+            set_epoch_(epoch)
 
 
 class Shape:

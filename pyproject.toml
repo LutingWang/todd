@@ -133,6 +133,7 @@ module = [
     'ipdb.*',
     'mmcv.*',
     'pptx.*',
+    'setuptools.*',
     'torchvision.*',
     'yapf.*',
 ]

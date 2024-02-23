@@ -2,6 +2,7 @@ __all__ = [
     'Trainer',
 ]
 
+from abc import ABC
 from typing import Any, Mapping, TypeVar
 
 import torch
@@ -15,7 +16,19 @@ T = TypeVar('T', bound=nn.Module)
 
 
 @RunnerRegistry.register_()
-class Trainer(BaseRunner[T]):
+class Trainer(BaseRunner[T], ABC):
+
+    @property
+    def iters_per_epoch(self) -> int:
+        return len(self._dataloader)
+
+    @property
+    def inner_iter(self) -> int:
+        return self._iter % self.iters_per_epoch
+
+    @property
+    def epoch(self) -> int:
+        return self._iter // self.iters_per_epoch
 
     @property
     def optimizer(self) -> torch.optim.Optimizer:

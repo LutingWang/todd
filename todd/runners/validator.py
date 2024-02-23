@@ -16,9 +16,15 @@ T = TypeVar('T', bound=nn.Module)
 @RunnerRegistry.register_()
 class Validator(BaseRunner[T]):
 
+    @property
+    def iters(self) -> int:
+        return len(self._dataloader)
+
     def _setup(self) -> Memo:
         self._model.eval()
-        return super()._setup()
+        memo = super()._setup()
+        memo['dataloader'] = self._dataloader
+        return memo
 
     @torch.no_grad()
     def run(self) -> Memo:

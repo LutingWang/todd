@@ -10,6 +10,7 @@ from typing import TypeVar
 from torch import nn
 
 from ..base import RunnerRegistry
+from ..utils import set_epoch
 from .trainer import Trainer
 from .types import Memo
 
@@ -24,16 +25,8 @@ class EpochBasedTrainer(Trainer):
         self._epochs = epochs
 
     @property
-    def epoch(self) -> int:
-        return self._iter // super().iters
-
-    @property
-    def inner_iter(self) -> int:
-        return self._iter % super().iters
-
-    @property
     def iters(self) -> int:
-        return super().iters * self._epochs
+        return self.iters_per_epoch * self._epochs
 
     @property
     def epochs(self) -> int:
@@ -43,22 +36,13 @@ class EpochBasedTrainer(Trainer):
         return super()._run(epoch_memo)
 
     def _setup_epoch(self, memo: Memo) -> Memo:
-        samplers = [
-            self._dataloader.sampler,
-            self._dataloader.batch_sampler,
-            getattr(self._dataloader.batch_sampler, 'sampler', None),
-        ]
-        for sampler in samplers:
-            if (set_epoch := getattr(sampler, 'set_epoch', None)) is not None:
-                set_epoch(self.epoch)
         epoch_memo = super()._setup()
-        dataloader = epoch_memo['dataloader']
-        dataloader = itertools.islice(
-            dataloader,
-            super().iters - self.inner_iter,
-        )
+        set_epoch(self._dataloader, self.epoch)
         epoch_memo.update(
-            dataloader=dataloader,
+            dataloader=(
+                itertools.islice(self._dataloader, self.inner_iter, None)
+                if self.inner_iter > 0 else self._dataloader
+            ),
             epoch=defaultdict(list),
         )
         return epoch_memo
