@@ -41,6 +41,7 @@ Documentation = 'https://toddai.readthedocs.io/en/latest/'
 dev = [
     'autoflake',
     'bandit[toml]',
+    'codespell',
     'commitizen',
     'doc8',
     'docformatter[tomli]',

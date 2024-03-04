@@ -9,13 +9,12 @@ import os
 import pathlib
 import socket
 from abc import abstractmethod
-from typing import TYPE_CHECKING, Any, Generic, Mapping, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, Iterable, Mapping, TypeVar
 
 from torch import nn
 from torch.utils.data import DataLoader, Dataset
 
 from ..base import (
-    CallbackRegistry,
     CollateRegistry,
     Config,
     DatasetRegistry,
@@ -172,7 +171,7 @@ class BaseRunner(StateDictMixin, Generic[T]):
     def _build_callbacks(
         self,
         *args,
-        callbacks: Config | list[Config] | None = None,
+        callbacks: Iterable[Config] | None = None,
         **kwargs,
     ) -> None:
         from .callbacks import (  # pylint: disable=import-outside-toplevel
@@ -180,15 +179,7 @@ class BaseRunner(StateDictMixin, Generic[T]):
         )
         if callbacks is None:
             callbacks = []
-        if isinstance(callbacks, list):
-            callbacks = Config(
-                type=ComposedCallback.__name__,
-                callbacks=callbacks,
-            )
-        callback = CallbackRegistry.build(callbacks, runner=self)
-        if not isinstance(callback, ComposedCallback):
-            callback = ComposedCallback(runner=self, callbacks=[callback])
-        self._callbacks = callback
+        self._callbacks = ComposedCallback(runner=self, callbacks=callbacks)
 
     def _build_work_dir(
         self,

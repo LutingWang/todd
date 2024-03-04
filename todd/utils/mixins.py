@@ -17,3 +17,6 @@ class StateDictMixin:
         **kwargs,
     ) -> None:
         pass
+
+
+# TODO: define holder mixin
