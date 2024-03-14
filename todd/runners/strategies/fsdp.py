@@ -26,13 +26,13 @@ class FSDPStrategy(CUDAStrategy[T]):
 
     @property
     def module(self) -> nn.Module:
-        return self._runner.model.module
+        return self.runner.model.module
 
     def build_optimizer(self, config: Config) -> torch.optim.Optimizer:
-        return OptimizerRegistry.build(config, model=self._runner.model)
+        return OptimizerRegistry.build(config, model=self.runner.model)
 
     def model_state_dict(self, *args, **kwargs) -> dict[str, Any]:
-        return self._runner.model.state_dict(*args, **kwargs)
+        return self.runner.model.state_dict(*args, **kwargs)
 
     def load_model_state_dict(
         self,
@@ -40,7 +40,7 @@ class FSDPStrategy(CUDAStrategy[T]):
         *args,
         **kwargs,
     ) -> None:
-        self._runner.model.load_state_dict(state_dict, *args, **kwargs)
+        self.runner.model.load_state_dict(state_dict, *args, **kwargs)
 
     def optim_state_dict(
         self,

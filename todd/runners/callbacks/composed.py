@@ -21,7 +21,7 @@ class ComposedCallback(BaseCallback):
         super().__init__(*args, **kwargs)
         priorities = [c.pop('priority', dict()) for c in callbacks]
         queue = [
-            CallbackRegistry.build(c, runner=self._runner) for c in callbacks
+            CallbackRegistry.build(c, runner=self.runner) for c in callbacks
         ]
         self._priority_queue: PriorityQueue[KT, BaseCallback] = \
             PriorityQueue(priorities, queue)

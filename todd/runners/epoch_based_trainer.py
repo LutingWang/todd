@@ -18,7 +18,7 @@ T = TypeVar('T', bound=nn.Module)
 
 
 @RunnerRegistry.register_()
-class EpochBasedTrainer(Trainer):
+class EpochBasedTrainer(Trainer[T]):
 
     def __init__(self, *args, epochs: int, **kwargs) -> None:
         super().__init__(*args, **kwargs)

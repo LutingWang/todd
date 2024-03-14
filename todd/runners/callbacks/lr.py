@@ -26,7 +26,7 @@ class LRScheduleCallback(IntervalMixin, BaseCallback):
         **kwargs,
     ) -> None:
         super().__init__(*args, interval=interval, **kwargs)
-        assert isinstance(self._runner, Trainer)
+        assert isinstance(self.runner, Trainer)
         self._lr_scheduler_config = lr_scheduler
 
     def init(self, *args, **kwargs) -> None:
@@ -34,7 +34,7 @@ class LRScheduleCallback(IntervalMixin, BaseCallback):
         self._build_lr_scheduler()
 
     def _build_lr_scheduler(self) -> None:
-        runner = cast(Trainer, self._runner)
+        runner = cast(Trainer, self.runner)
         self._lr_scheduler: torch.optim.lr_scheduler.LRScheduler = \
             LRSchedulerRegistry.build(
                 self._lr_scheduler_config,
@@ -75,11 +75,11 @@ class LRScaleCallback(BaseCallback):
 
     def __init__(self, *args, lr_scaler: Config, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        assert isinstance(self._runner, Trainer)
+        assert isinstance(self.runner, Trainer)
         self._lr_scaler_config = lr_scaler
 
     def _scale_lr(self, config: Config) -> None:
-        runner = cast(Trainer, self._runner)
+        runner = cast(Trainer, self.runner)
         assert runner.dataloader.batch_size is not None
         base_batch_size = config.base_batch_size
         batch_size = get_world_size() * runner.dataloader.batch_size

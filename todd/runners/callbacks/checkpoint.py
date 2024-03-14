@@ -36,27 +36,27 @@ class CheckpointCallback(IntervalMixin, BaseCallback):
 
     def init(self, *args, **kwargs) -> None:
         super().init(*args, **kwargs)
-        self._checkpoint_dir = self._runner.work_dir / 'checkpoints'
+        self._checkpoint_dir = self.runner.work_dir / 'checkpoints'
         self._latest_checkpoint_dir = self._checkpoint_dir / 'latest'
 
         self._checkpoint_dir.mkdir(parents=True, exist_ok=True)
 
-        if self._runner._auto_resume and self._latest_checkpoint_dir.exists():
+        if self.runner._auto_resume and self._latest_checkpoint_dir.exists():
             load_from = self._latest_checkpoint_dir
-        elif self._runner.load_from is not None:
-            load_from = pathlib.Path(self._runner.load_from)
+        elif self.runner.load_from is not None:
+            load_from = pathlib.Path(self.runner.load_from)
             assert load_from.exists()
         else:
             load_from = None
 
         if load_from is not None:
             if get_rank() == 0:
-                self._runner.logger.info("Loading from %s", load_from)
+                self.runner.logger.info("Loading from %s", load_from)
             state_dict = {
                 f.stem: torch.load(f, 'cpu')
                 for f in load_from.glob('*.pth')
             }
-            self._runner.load_state_dict(state_dict, **self._load_state_dict)
+            self.runner.load_state_dict(state_dict, **self._load_state_dict)
 
     @property
     def checkpoint_dir(self) -> pathlib.Path:
@@ -71,13 +71,13 @@ class CheckpointCallback(IntervalMixin, BaseCallback):
 
     def _save(self, name: str) -> None:
         # for FSDP, all ranks should call state dict
-        state_dict = self._runner.state_dict(**self._state_dict)
+        state_dict = self.runner.state_dict(**self._state_dict)
 
         if get_rank() != 0:
             return
         work_dir = self._work_dir(name)
         work_dir.mkdir(parents=True, exist_ok=True)
-        self._runner.logger.info("Saving state dict to %s", work_dir)
+        self.runner.logger.info("Saving state dict to %s", work_dir)
         for k, v in state_dict.items():
             torch.save(v, work_dir / f'{k}.pth')
 
@@ -88,7 +88,7 @@ class CheckpointCallback(IntervalMixin, BaseCallback):
     def after_run_iter(self, batch, memo: Memo) -> None:
         super().after_run_iter(batch, memo)
         if self._should_run_iter():
-            self._save(f'iter_{self._runner.iter_}')
+            self._save(f'iter_{self.runner.iter_}')
 
     def after_run_epoch(self, epoch_memo: Memo, memo: Memo) -> None:
         super().after_run_epoch(epoch_memo, memo)

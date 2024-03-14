@@ -43,24 +43,24 @@ class LogCallback(IntervalMixin, BaseCallback):
         if get_rank() > 0:
             return
         if self._with_file_handler:
-            file = self._runner.work_dir / f'{get_timestamp()}.log'
+            file = self.runner.work_dir / f'{get_timestamp()}.log'
             handler = logging.FileHandler(file)
             handler.setFormatter(Formatter())
-            self._runner.logger.addHandler(handler)
+            self.runner.logger.addHandler(handler)
         if self._collect_env is not None:
             from ...base import (  # noqa: E501 pylint: disable=import-outside-toplevel
                 collect_env,
             )
             env = collect_env(**self._collect_env)
-            self._runner.logger.info(env)
+            self.runner.logger.info(env)
 
     def before_run(self, memo: Memo) -> None:
         super().before_run(memo)
         self._eta: BaseETA | None = (
             None if self._eta_config is None else ETARegistry.build(
                 self._eta_config,
-                start=self._runner.iter_ - 1,
-                end=self._runner.iters,
+                start=self.runner.iter_ - 1,
+                end=self.runner.iters,
             )
         )
 
@@ -73,10 +73,10 @@ class LogCallback(IntervalMixin, BaseCallback):
         super().after_run_iter(batch, memo)
         if 'log' not in memo:
             return
-        prefix = f"Iter [{self._runner.iter_}/{self._runner.iters}] "
+        prefix = f"Iter [{self.runner.iter_}/{self.runner.iters}] "
 
         if self._eta is not None:
-            eta = self._eta(self._runner.iter_)
+            eta = self._eta(self.runner.iter_)
             eta = round(eta)
             prefix += f"ETA {str(datetime.timedelta(seconds=eta))} "
 
@@ -90,7 +90,7 @@ class LogCallback(IntervalMixin, BaseCallback):
 
         log: dict[str, Any] = memo.pop('log')
         message = ' '.join(f'{k}={v}' for k, v in log.items() if v is not None)
-        self._runner.logger.info(prefix + message)
+        self.runner.logger.info(prefix + message)
 
     def before_run_epoch(self, epoch_memo: Memo, memo: Memo) -> None:
         super().before_run_epoch(epoch_memo, memo)

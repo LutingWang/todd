@@ -1,8 +1,12 @@
 __all__ = [
     'StateDictMixin',
+    'HolderMixin',
 ]
 
-from typing import Any, Mapping
+import weakref
+from typing import Any, Generic, Mapping, TypeVar, cast
+
+T = TypeVar('T')
 
 
 class StateDictMixin:
@@ -19,4 +23,12 @@ class StateDictMixin:
         pass
 
 
-# TODO: define holder mixin
+class HolderMixin(Generic[T]):
+
+    def __init__(self, *args, instance: T, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        instance_proxy = (
+            instance if isinstance(instance, weakref.ProxyTypes) else
+            weakref.proxy(instance)
+        )
+        self._instance = cast(T, instance_proxy)

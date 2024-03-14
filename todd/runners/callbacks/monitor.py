@@ -37,8 +37,8 @@ class MonitorCallback(BaseCallback):
     ) -> None:
         super().run_iter_context(exit_stack, batch, memo)
         context = Context(
-            self._runner.logger,
-            iter_=self._runner.iter_,
+            self.runner.logger,
+            iter_=self.runner.iter_,
             batch=batch,
             memo=memo,
         )

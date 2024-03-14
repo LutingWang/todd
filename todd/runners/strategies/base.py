@@ -2,7 +2,7 @@ __all__ = [
     'BaseStrategy',
 ]
 
-from typing import Any, Generic, Mapping, TypeVar, cast
+from typing import Any, Mapping, TypeVar, cast
 
 import torch
 from torch import nn
@@ -15,7 +15,7 @@ T = TypeVar('T', bound=nn.Module)
 
 
 @StrategyRegistry.register_()
-class BaseStrategy(RunnerHolderMixin, StateDictMixin, Generic[T]):
+class BaseStrategy(RunnerHolderMixin[T], StateDictMixin):
 
     def __init__(
         self,
@@ -45,7 +45,7 @@ class BaseStrategy(RunnerHolderMixin, StateDictMixin, Generic[T]):
 
     @property
     def module(self) -> nn.Module:
-        return self._runner.model
+        return self.runner.model
 
     def model_state_dict(self, *args, **kwargs) -> dict[str, Any]:
         return self.module.state_dict(*args, **kwargs)
@@ -62,7 +62,7 @@ class BaseStrategy(RunnerHolderMixin, StateDictMixin, Generic[T]):
             **kwargs,
         )
         if get_rank() == 0:
-            self._runner.logger.info(incompatible_keys)
+            self.runner.logger.info(incompatible_keys)
 
     def load_model_from(
         self,
@@ -77,7 +77,7 @@ class BaseStrategy(RunnerHolderMixin, StateDictMixin, Generic[T]):
         model_state_dict = dict()
         for f_ in f_list:
             if get_rank() == 0:
-                self._runner.logger.info("Loading model from %s", f_)
+                self.runner.logger.info("Loading model from %s", f_)
             model_state_dict.update(torch.load(f_, 'cpu'))
         self.load_model_state_dict(model_state_dict, *args, **kwargs)
 

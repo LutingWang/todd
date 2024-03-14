@@ -2,42 +2,45 @@ __all__ = [
     'RunnerHolderMixin',
 ]
 
-import weakref
-from typing import cast
+from typing import TypeVar
 
+from torch import nn
+
+from ..utils import HolderMixin
 from .base import BaseRunner
 from .epoch_based_trainer import EpochBasedTrainer
 from .iter_based_trainer import IterBasedTrainer
 from .trainer import Trainer
 from .validator import Validator
 
+T = TypeVar('T', bound=nn.Module)
 
-class RunnerHolderMixin:
 
-    def __init__(self, *args, runner: BaseRunner, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        runner_proxy = (
-            runner if isinstance(runner, weakref.ProxyTypes) else
-            weakref.proxy(runner)
-        )
-        self._runner = cast(BaseRunner, runner_proxy)
+class RunnerHolderMixin(HolderMixin[BaseRunner[T]]):
+
+    def __init__(self, *args, runner: BaseRunner[T], **kwargs) -> None:
+        super().__init__(*args, instance=runner, **kwargs)
 
     @property
-    def trainer(self) -> Trainer:
-        assert isinstance(self._runner, Trainer)
-        return self._runner
+    def runner(self) -> BaseRunner[T]:
+        return self._instance
 
     @property
-    def validator(self) -> Validator:
-        assert isinstance(self._runner, Validator)
-        return self._runner
+    def trainer(self) -> Trainer[T]:
+        assert isinstance(self._instance, Trainer)
+        return self._instance
 
     @property
-    def iter_based_trainer(self) -> IterBasedTrainer:
-        assert isinstance(self._runner, IterBasedTrainer)
-        return self._runner
+    def validator(self) -> Validator[T]:
+        assert isinstance(self._instance, Validator)
+        return self._instance
 
     @property
-    def epoch_based_trainer(self) -> EpochBasedTrainer:
-        assert isinstance(self._runner, EpochBasedTrainer)
-        return self._runner
+    def iter_based_trainer(self) -> IterBasedTrainer[T]:
+        assert isinstance(self._instance, IterBasedTrainer)
+        return self._instance
+
+    @property
+    def epoch_based_trainer(self) -> EpochBasedTrainer[T]:
+        assert isinstance(self._instance, EpochBasedTrainer)
+        return self._instance

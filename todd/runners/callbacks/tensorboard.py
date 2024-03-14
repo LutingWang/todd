@@ -31,7 +31,7 @@ class TensorBoardCallback(IntervalMixin, BaseCallback):
         super().init(*args, **kwargs)
         if get_rank() > 0:
             return
-        log_dir = self._runner.work_dir / 'tensorboard'
+        log_dir = self.runner.work_dir / 'tensorboard'
         self._summary_writer = SummaryWriter(
             log_dir,
             **self._summary_writer_config,

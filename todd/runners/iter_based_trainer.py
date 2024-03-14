@@ -16,7 +16,7 @@ T = TypeVar('T', bound=nn.Module)
 
 
 @RunnerRegistry.register_()
-class IterBasedTrainer(Trainer):
+class IterBasedTrainer(Trainer[T]):
 
     def __init__(self, *args, iters: int, **kwargs) -> None:
         super().__init__(*args, **kwargs)

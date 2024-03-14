@@ -23,4 +23,4 @@ class DDPStrategy(CUDAStrategy[T]):
 
     @property
     def module(self) -> nn.Module:
-        return self._runner.model.module
+        return self.runner.model.module

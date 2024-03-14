@@ -22,7 +22,7 @@ class IntervalMixin(BaseCallback):
         return self._interval > 0 and step % self._interval == 0
 
     def _should_run_iter(self) -> bool:
-        return not self._by_epoch and self.__should_run(self._runner.iter_)
+        return not self._by_epoch and self.__should_run(self.runner.iter_)
 
     def _should_run_epoch(self) -> bool:
         return (

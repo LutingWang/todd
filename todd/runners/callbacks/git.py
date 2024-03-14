@@ -33,10 +33,10 @@ class GitCallback(BaseCallback):
                 diff = subprocess_run(args_)
             except subprocess.CalledProcessError as e:
                 diff = str(e)
-                self._runner.logger.error(e)
+                self.runner.logger.error(e)
             else:
                 file = (
-                    self._runner.work_dir / f'git_diff_{get_timestamp()}.log'
+                    self.runner.work_dir / f'git_diff_{get_timestamp()}.log'
                 )
-                self._runner.logger.info('Saving git diff to %s', file)
+                self.runner.logger.info('Saving git diff to %s', file)
                 file.write_text(diff)
