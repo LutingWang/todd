@@ -103,22 +103,18 @@ class RegistryMeta(  # type: ignore[misc]
         items = ' '.join(f'{k}={v}' for k, v in cls.items())
         return f"<{cls.__name__} {items}>"
 
-    def __setitem__(cls, key: str, item, forced: bool = False) -> None:
+    def __setitem__(cls, key: str, item) -> None:
         """Register ``item`` with name ``key``.
 
         Args:
             key: name to be registered as.
             item: object to be registered.
-            forced: if set, ``item`` will always be registered.
-                By default, ``item`` will only be registered if ``key`` is
-                not registered yet.
 
         Raises:
-            KeyError: if ``key`` is already registered and ``forced`` is not
-                set.
+            KeyError: if ``key`` is already registered.
 
-        By default, registries refuse to alter the registered object, in order
-        to prevent unintended name clashes:
+        `RegistryMeta` refuses to alter the registered object, in order to
+        prevent unintended name clashes:
 
             >>> class Cat(metaclass=RegistryMeta): pass
             >>> Cat['british shorthair'] = 'british shorthair'
@@ -126,10 +122,35 @@ class RegistryMeta(  # type: ignore[misc]
             Traceback (most recent call last):
                 ...
             KeyError: 'british shorthair'
+        """
+        if key in cls:  # noqa: E501 pylint: disable=unsupported-membership-test
+            logger.error("%s already exist in %s", key, cls)
+            raise KeyError(key)
+        super().__setitem__(key, item)
+
+    def setitem(cls, key: str, item, forced: bool = False) -> None:
+        """Optionally force registration.
+
+        Args:
+            key: name to be registered as.
+            item: object to be registered.
+            forced: if set, registration will always happen.
+
+        By default, `setitem` behaves like `__setitem__`:
+
+            >>> class Cat(metaclass=RegistryMeta): pass
+            >>> Cat['british shorthair'] = 'british shorthair'
+            >>> Cat.setitem(
+            ...     'british shorthair',
+            ...     'BritishShorthair',
+            ... )
+            Traceback (most recent call last):
+                ...
+            KeyError: 'british shorthair'
 
         Specify the ``forced`` option to force registration:
 
-            >>> Cat.__setitem__(
+            >>> Cat.setitem(
             ...     'british shorthair',
             ...     'BritishShorthair',
             ...     forced=True,
@@ -137,14 +158,9 @@ class RegistryMeta(  # type: ignore[misc]
             >>> Cat['british shorthair']
             'BritishShorthair'
         """
-        if not forced and key in cls:  # noqa: E501 pylint: disable=unsupported-membership-test
-            logger.error(
-                "%s already exist in %s",  # add more info
-                key,
-                cls.__name__,
-            )
-            raise KeyError(key)
-        return super().__setitem__(key, item)
+        if forced:
+            cls.pop(key, None)
+        cls[key] = item  # pylint: disable=unsupported-assignment-operation
 
     @no_type_check
     def __subclasses__(cls=...):
@@ -205,7 +221,7 @@ class RegistryMeta(  # type: ignore[misc]
 
         Args:
             args: names to be registered as.
-            kwargs: refer to `__setitem__`.
+            kwargs: refer to `setitem`.
 
         Returns:
             Wrapper function.
@@ -254,11 +270,7 @@ class RegistryMeta(  # type: ignore[misc]
             keys = [obj.__name__] if len(args) == 0 else args
             for key in keys:
                 registry, key = cls._parse(key)
-                registry.__setitem__(  # noqa: E501 pylint: disable=unnecessary-dunder-call
-                    key,
-                    obj,
-                    **kwargs,
-                )
+                registry.setitem(key, obj, **kwargs)
             return obj
 
         return wrapper_func
