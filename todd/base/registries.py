@@ -1,6 +1,7 @@
 # pylint: disable=no-value-for-parameter
 
 __all__ = [
+    'Item',
     'RegistryMeta',
     'PartialRegistryMeta',
     'Registry',
@@ -33,7 +34,7 @@ __all__ = [
 import inspect
 from collections import UserDict
 from functools import partial
-from typing import Any, Callable, NoReturn, TypeVar, no_type_check
+from typing import Callable, NoReturn, Protocol, cast, no_type_check
 
 import torch
 import torch.utils.data
@@ -45,12 +46,17 @@ from ..utils import NonInstantiableMeta, get_rank
 from .configs import Config
 from .logger import logger
 
-T = TypeVar('T')
-CallableTypeVar = TypeVar('CallableTypeVar', bound=Callable)
+
+class Item(Protocol):
+    __name__: str
+    __qualname__: str
+
+    def __call__(self, *args, **kwargs):
+        ...
 
 
 class RegistryMeta(  # type: ignore[misc]
-    UserDict[str, Any],
+    UserDict[str, Item],
     NonInstantiableMeta,
 ):
     """Meta class for registries.
@@ -103,7 +109,7 @@ class RegistryMeta(  # type: ignore[misc]
         items = ' '.join(f'{k}={v}' for k, v in cls.items())
         return f"<{cls.__name__} {items}>"
 
-    def __setitem__(cls, key: str, item) -> None:
+    def __setitem__(cls, key: str, item: Item) -> None:
         """Register ``item`` with name ``key``.
 
         Args:
@@ -128,7 +134,7 @@ class RegistryMeta(  # type: ignore[misc]
             raise KeyError(key)
         super().__setitem__(key, item)
 
-    def setitem(cls, key: str, item, forced: bool = False) -> None:
+    def setitem(cls, key: str, item: Item, forced: bool = False) -> None:
         """Optionally force registration.
 
         Args:
@@ -188,35 +194,44 @@ class RegistryMeta(  # type: ignore[misc]
         Returns:
             The derived registry.
         """
+        child = cls
         for child_name in key.split('.'):
             subclasses = tuple(
-                subclass
-                for subclass in cls.__subclasses__()  # type: ignore[misc]
+                subclass for subclass in child.__subclasses__()
                 if subclass.__name__ == child_name
             )
             if len(subclasses) == 0:
                 raise ValueError(f"{key} is not a child of {cls}")
             if len(subclasses) > 1:
                 raise ValueError(f"{key} matches multiple children of {cls}")
-            cls, = subclasses  # pylint: disable=self-cls-assignment
-        return cls
+            child, = subclasses
+        return child
 
     def _parse(cls, key: str) -> tuple['RegistryMeta', str]:
-        """Parse the child name from the ``key``.
+        """Parse ``key``.
 
         Returns:
-            The child registry and the name to be registered.
+            The child registry and the updated key.
         """
         if '.' not in key:
             return cls, key
         child_name, key = key.rsplit('.', 1)
         return cls.child(child_name), key
 
-    def register_(
-        cls,
-        *args: str,
-        **kwargs,
-    ) -> Callable[[CallableTypeVar], CallableTypeVar]:
+    def parse(cls, key: str) -> tuple['RegistryMeta', Item]:
+        """Parse ``key``.
+
+        Returns:
+            The child registry and the corresponding type.
+        """
+        child, key = cls._parse(key)
+        return child, child[key]
+
+    def getitem(cls, key: str) -> Item:
+        _, type_ = cls.parse(key)
+        return type_
+
+    def register_(cls, *args: str, **kwargs) -> Callable[[Item], Item]:
         """Register decorator.
 
         Args:
@@ -266,7 +281,7 @@ class RegistryMeta(  # type: ignore[misc]
           <HairlessCat CanadianHairless=<function canadian_hairless at ...>>
         """
 
-        def wrapper_func(obj: CallableTypeVar) -> CallableTypeVar:
+        def wrapper_func(obj: Item) -> Item:
             keys = [obj.__name__] if len(args) == 0 else args
             for key in keys:
                 registry, key = cls._parse(key)
@@ -275,10 +290,11 @@ class RegistryMeta(  # type: ignore[misc]
 
         return wrapper_func
 
-    def _build(cls, config: Config):
+    def _build(cls, type_: Item, config: Config):
         """Build an instance according to the given config.
 
         Args:
+            type_: instance type.
             config: instance specification.
 
         Returns:
@@ -289,15 +305,19 @@ class RegistryMeta(  # type: ignore[misc]
 
             >>> class Cat(metaclass=RegistryMeta):
             ...     @classmethod
-            ...     def _build(cls, config: Config) -> str:
-            ...         obj = RegistryMeta._build(cls, config)
-            ...         return obj.__class__.__name__.upper()
+            ...     def _build(cls, type_: Item, config: Config):
+            ...         obj = RegistryMeta._build(cls, type_, config)
+            ...         obj.name = obj.name.upper()
+            ...         return obj
             >>> @Cat.register_()
-            ... class Munchkin: pass
-            >>> Cat.build(Config(type='Munchkin'))
-            'MUNCHKIN'
+            ... class Munchkin:
+            ...     def __init__(self, name: str) -> None:
+            ...         self.name = name
+            >>> config = Config(type='Munchkin', name='Garfield')
+            >>> cat = Cat.build(config)
+            >>> cat.name
+            'GARFIELD'
         """
-        type_ = cls[config.pop('type')]
         return type_(**config)
 
     def build(cls, config: Config, **kwargs):
@@ -338,15 +358,17 @@ class RegistryMeta(  # type: ignore[misc]
         """
         default_config = Config(kwargs)
         default_config.update(config)
-
+        backup_config = default_config.copy()
         config = default_config.copy()
-        registry, config.type = cls._parse(config.type)
+
+        config_type = config.pop('type')
+        registry, type_ = cls.parse(config_type)
 
         try:
-            return registry._build(config)
+            return registry._build(type_, config)
         except Exception as e:
             # config may be altered
-            logger.error("Failed to build\n%s", default_config.dumps())
+            logger.error("Failed to build\n%s", backup_config.dumps())
             raise e
 
 
@@ -358,10 +380,7 @@ class PartialRegistryMeta(RegistryMeta):
             return NonInstantiableMeta.__subclasses__(PartialRegistryMeta)
         return super().__subclasses__()
 
-    def _build(cls, config: Config) -> partial:
-        type_ = cls[config.pop('type')]
-        if inspect.isclass(type_):
-            return type_(**config)
+    def _build(cls, type_: Item, config: Config):
         return partial(type_, **config)
 
 
@@ -395,26 +414,26 @@ class OptimizerRegistry(Registry):
         return config
 
     @classmethod
-    def _build(cls, config: Config) -> torch.optim.Optimizer:
+    def _build(cls, type_: Item, config: Config):
         model: nn.Module = config.pop('model')
         params = config.pop('params', None)
         if params is None:
             config.params = [p for p in model.parameters() if p.requires_grad]
         else:
             config.params = [cls.params(model, p) for p in params]
-        return RegistryMeta._build(cls, config)
+        return RegistryMeta._build(cls, type_, config)
 
 
 class LRSchedulerRegistry(Registry):
 
     @classmethod
-    def _build(cls, config: Config) -> torch.optim.lr_scheduler.LRScheduler:
-        if config.type == torch.optim.lr_scheduler.SequentialLR.__name__:
+    def _build(cls, type_: Item, config: Config):
+        if type_ is torch.optim.lr_scheduler.SequentialLR:
             config.schedulers = [
                 cls.build(scheduler, optimizer=config.optimizer)
                 for scheduler in config.schedulers
             ]
-        return RegistryMeta._build(cls, config)
+        return RegistryMeta._build(cls, type_, config)
 
 
 class RunnerRegistry(Registry):
@@ -432,19 +451,16 @@ class LossRegistry(Registry):
 class SchedulerRegistry(Registry):
 
     @classmethod
-    def _build(cls, config: Config) -> torch.optim.lr_scheduler.LRScheduler:
+    def _build(cls, type_: Item, config: Config):
         from ..losses.schedulers import (  # noqa: E501 pylint: disable=import-outside-toplevel
             ChainedScheduler,
             SequentialScheduler,
         )
-        if config.type in (
-            SequentialScheduler.__name__,
-            ChainedScheduler.__name__,
-        ):
+        if type_ in (SequentialScheduler, ChainedScheduler):
             config.schedulers = [
                 cls.build(scheduler) for scheduler in config.schedulers
             ]
-        return RegistryMeta._build(cls, config)
+        return RegistryMeta._build(cls, type_, config)
 
 
 class VisualRegistry(Registry):
@@ -462,10 +478,10 @@ class DistillerRegistry(Registry):
 class DatasetRegistry(Registry):
 
     @classmethod
-    def _build(cls, config: Config):
-        if config.type == torch.utils.data.ConcatDataset:
+    def _build(cls, type_: Item, config: Config):
+        if type_ is torch.utils.data.ConcatDataset:
             config.datasets = list(map(cls.build, config.datasets))
-        return RegistryMeta._build(cls, config)
+        return RegistryMeta._build(cls, type_, config)
 
 
 class AccessLayerRegistry(Registry):
@@ -521,10 +537,10 @@ class ModelRegistry(Registry):
             cls.init_weights(child, config, f'{prefix}.{name}')
 
     @classmethod
-    def _build(cls, config: Config):
+    def _build(cls, type_: Item, config: Config):
         config = config.copy()
         init_weights = config.pop('init_weights', Config())
-        model = RegistryMeta._build(cls, config)
+        model = RegistryMeta._build(cls, type_, config)
         if isinstance(model, nn.Module):
             cls.init_weights(model, init_weights)
         return model
@@ -533,10 +549,10 @@ class ModelRegistry(Registry):
 class TransformRegistry(Registry):
 
     @classmethod
-    def _build(cls, config: Config):
-        if config.type == tf.Compose.__name__:
+    def _build(cls, type_: Item, config: Config):
+        if type_ is tf.Compose:
             config.transforms = list(map(cls.build, config.transforms))
-        return RegistryMeta._build(cls, config)
+        return RegistryMeta._build(cls, type_, config)
 
 
 class EnvRegistry(Registry):
@@ -567,7 +583,7 @@ class CollateRegistry(PartialRegistry):
     pass
 
 
-def descendant_classes(cls: type[T]) -> list[type[T]]:
+def descendant_classes(cls: type) -> list[type]:
     classes = []
     for subclass in cls.__subclasses__():
         classes.append(subclass)
@@ -581,21 +597,21 @@ for c in descendant_classes(nn.Module):
     # pylint: disable=invalid-name
     name = '_'.join(c.__module__.split('.') + [c.__name__])
     if name not in ModelRegistry:
-        ModelRegistry.register_(name)(c)
+        ModelRegistry.register_(name)(cast(Item, c))
 
 for _, c in inspect.getmembers(torch.utils.data.dataset, inspect.isclass):
     if issubclass(c, torch.utils.data.Dataset):
-        DatasetRegistry.register_()(c)
+        DatasetRegistry.register_()(cast(Item, c))
 
 for c in descendant_classes(torch.utils.data.Sampler):
-    SamplerRegistry.register_()(c)
+    SamplerRegistry.register_()(cast(Item, c))
 
 for c in descendant_classes(torch.optim.Optimizer):
     if '<locals>' not in c.__qualname__:
-        OptimizerRegistry.register_()(c)
+        OptimizerRegistry.register_()(cast(Item, c))
 
 for c in descendant_classes(torch.optim.lr_scheduler.LRScheduler):
-    LRSchedulerRegistry.register_()(c)
+    LRSchedulerRegistry.register_()(cast(Item, c))
 
 NormRegistry.update(
     BN1d=nn.BatchNorm1d,
@@ -612,7 +628,7 @@ NormRegistry.update(
 )
 
 for _, c in inspect.getmembers(tf, inspect.isclass):
-    TransformRegistry.register_()(c)
+    TransformRegistry.register_()(cast(Item, c))
 
 ClipGradRegistry.register_()(nn.utils.clip_grad_norm_)
 ClipGradRegistry.register_()(nn.utils.clip_grad_value_)

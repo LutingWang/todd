@@ -75,10 +75,8 @@ class TestOptimizerRegistry:
 
     def test_build(self, model: CustomModule) -> None:
         optimizer = OptimizerRegistry._build(
-            Config(
-                type='Adam',
-                model=model,
-            ),
+            torch.optim.Adam,
+            Config(model=model),
         )
         assert isinstance(optimizer, torch.optim.Adam)
         assert set(optimizer.param_groups[0]['params']) == \

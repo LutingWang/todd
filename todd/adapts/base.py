@@ -6,11 +6,12 @@ __all__ = [
 import inspect
 import itertools
 from abc import ABC
+from typing import cast
 
 import einops.layers.torch
 from torch import nn
 
-from ..base import Registry
+from ..base import Item, Registry
 
 
 class BaseAdapt(nn.Module, ABC):
@@ -26,7 +27,7 @@ for _, class_ in itertools.chain(
     inspect.getmembers(einops.layers.torch, inspect.isclass),
 ):
     if issubclass(class_, nn.Module):
-        AdaptRegistry.register_()(class_)
+        AdaptRegistry.register_()(cast(Item, class_))
 
 try:
     import mmcv.cnn
