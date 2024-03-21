@@ -28,7 +28,7 @@ class Registry3_1(Registry2):  # noqa: N801 pylint: disable=invalid-name
 class TestRegistryMeta:
 
     def test_call(self) -> None:
-        with pytest.raises(TypeError):
+        with pytest.raises(RuntimeError):
             Registry()
 
     def test_missing(self) -> None:

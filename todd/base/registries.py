@@ -85,14 +85,6 @@ class RegistryMeta(  # type: ignore[misc]
         UserDict.__init__(cls)
         NonInstantiableMeta.__init__(cls, *args, **kwargs)
 
-    def __call__(cls, *args, **kwargs) -> NoReturn:
-        """Prevent `Registry` classes from being initialized.
-
-        Raises:
-            TypeError: always.
-        """
-        raise TypeError("Registry cannot be initialized")
-
     def __missing__(cls, key: str) -> NoReturn:
         """Missing key.
 
@@ -105,9 +97,9 @@ class RegistryMeta(  # type: ignore[misc]
         logger.error("%s does not exist in %s", key, cls.__name__)
         raise KeyError(key)
 
-    def __repr__(cls) -> str:
-        items = ' '.join(f'{k}={v}' for k, v in cls.items())
-        return f"<{cls.__name__} {items}>"
+    def __getitem__(cls, key: str) -> Item:
+        _, type_ = cls.parse(key)
+        return type_
 
     def __setitem__(cls, key: str, item: Item) -> None:
         """Register ``item`` with name ``key``.
@@ -132,41 +124,22 @@ class RegistryMeta(  # type: ignore[misc]
         if key in cls:  # noqa: E501 pylint: disable=unsupported-membership-test
             logger.error("%s already exist in %s", key, cls)
             raise KeyError(key)
-        super().__setitem__(key, item)
+        child, key = cls._parse(key)
+        super(RegistryMeta, child).__setitem__(key, item)
 
-    def setitem(cls, key: str, item: Item, forced: bool = False) -> None:
-        """Optionally force registration.
+    def __delitem__(cls, key: str) -> None:
+        child, key = cls._parse(key)
+        return super(RegistryMeta, child).__delitem__(key)
 
-        Args:
-            key: name to be registered as.
-            item: object to be registered.
-            forced: if set, registration will always happen.
+    def __contains__(cls, key) -> bool:
+        if not isinstance(key, str):
+            return False
+        child, key = cls._parse(key)
+        return super(RegistryMeta, child).__contains__(key)
 
-        By default, `setitem` behaves like `__setitem__`:
-
-            >>> class Cat(metaclass=RegistryMeta): pass
-            >>> Cat['british shorthair'] = 'british shorthair'
-            >>> Cat.setitem(
-            ...     'british shorthair',
-            ...     'BritishShorthair',
-            ... )
-            Traceback (most recent call last):
-                ...
-            KeyError: 'british shorthair'
-
-        Specify the ``forced`` option to force registration:
-
-            >>> Cat.setitem(
-            ...     'british shorthair',
-            ...     'BritishShorthair',
-            ...     forced=True,
-            ... )
-            >>> Cat['british shorthair']
-            'BritishShorthair'
-        """
-        if forced:
-            cls.pop(key, None)
-        cls[key] = item  # pylint: disable=unsupported-assignment-operation
+    def __repr__(cls) -> str:
+        items = ' '.join(f'{k}={v}' for k, v in cls.items())
+        return f"<{cls.__name__} {items}>"
 
     @no_type_check
     def __subclasses__(cls=...):
@@ -182,6 +155,18 @@ class RegistryMeta(  # type: ignore[misc]
             return NonInstantiableMeta.__subclasses__(RegistryMeta)
         return super().__subclasses__()
 
+    def _parse(cls, key: str) -> tuple['RegistryMeta', str]:
+        """Parse ``key``.
+
+        Returns:
+            The child registry and the updated key.
+        """
+        if '.' not in key:
+            return cls, key
+        child_name, key = key.rsplit('.', 1)
+        child = cls.child(child_name)
+        return child, key
+
     def child(cls, key: str) -> 'RegistryMeta':
         """Get a direct or indirect derived child registry.
 
@@ -196,8 +181,9 @@ class RegistryMeta(  # type: ignore[misc]
         """
         child = cls
         for child_name in key.split('.'):
+            subclasses = tuple(child.__subclasses__())  # type: ignore[misc]
             subclasses = tuple(
-                subclass for subclass in child.__subclasses__()
+                subclass for subclass in subclasses
                 if subclass.__name__ == child_name
             )
             if len(subclasses) == 0:
@@ -207,17 +193,6 @@ class RegistryMeta(  # type: ignore[misc]
             child, = subclasses
         return child
 
-    def _parse(cls, key: str) -> tuple['RegistryMeta', str]:
-        """Parse ``key``.
-
-        Returns:
-            The child registry and the updated key.
-        """
-        if '.' not in key:
-            return cls, key
-        child_name, key = key.rsplit('.', 1)
-        return cls.child(child_name), key
-
     def parse(cls, key: str) -> tuple['RegistryMeta', Item]:
         """Parse ``key``.
 
@@ -225,18 +200,19 @@ class RegistryMeta(  # type: ignore[misc]
             The child registry and the corresponding type.
         """
         child, key = cls._parse(key)
-        return child, child[key]
+        item = super(RegistryMeta, child).__getitem__(key)
+        return child, item
 
-    def getitem(cls, key: str) -> Item:
-        _, type_ = cls.parse(key)
-        return type_
-
-    def register_(cls, *args: str, **kwargs) -> Callable[[Item], Item]:
+    def register_(
+        cls,
+        *args: str,
+        forced: bool = False,
+    ) -> Callable[[Item], Item]:
         """Register decorator.
 
         Args:
             args: names to be registered as.
-            kwargs: refer to `setitem`.
+            forced: if set, registration will always happen.
 
         Returns:
             Wrapper function.
@@ -279,13 +255,26 @@ class RegistryMeta(  # type: ignore[misc]
           ...     return 'canadian hairless'
           >>> HairlessCat
           <HairlessCat CanadianHairless=<function canadian_hairless at ...>>
+
+        - forced registration
+
+          >>> class AnotherMunchkin: pass
+          >>> Cat.register_('Munchkin')(AnotherMunchkin)
+          Traceback (most recent call last):
+              ...
+          KeyError: 'Munchkin'
+          >>> Cat.register_('Munchkin', forced=True)(AnotherMunchkin)
+          <class '...AnotherMunchkin'>
+          >>> Cat['Munchkin']
+          <class '...AnotherMunchkin'>
         """
 
         def wrapper_func(obj: Item) -> Item:
             keys = [obj.__name__] if len(args) == 0 else args
             for key in keys:
-                registry, key = cls._parse(key)
-                registry.setitem(key, obj, **kwargs)
+                if forced:
+                    cls.pop(key, None)
+                cls[key] = obj  # noqa: E501 pylint: disable=unsupported-assignment-operation
             return obj
 
         return wrapper_func
