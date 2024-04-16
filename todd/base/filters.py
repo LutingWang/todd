@@ -14,6 +14,8 @@ from torch import nn
 from .configs import Config
 from .registries import FilterRegistry
 
+# TODO: make this a separate folder in reproduction
+
 T = TypeVar('T')
 
 

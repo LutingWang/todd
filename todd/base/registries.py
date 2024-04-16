@@ -34,7 +34,7 @@ __all__ = [
 import inspect
 from collections import UserDict
 from functools import partial
-from typing import Callable, NoReturn, Protocol, cast, no_type_check
+from typing import Callable, NoReturn, Protocol, TypeVar, cast, no_type_check
 
 import torch
 import torch.utils.data
@@ -53,6 +53,9 @@ class Item(Protocol):
 
     def __call__(self, *args, **kwargs):
         ...
+
+
+T = TypeVar('T', bound=Item)
 
 
 class RegistryMeta(  # type: ignore[misc]
@@ -98,8 +101,8 @@ class RegistryMeta(  # type: ignore[misc]
         raise KeyError(key)
 
     def __getitem__(cls, key: str) -> Item:
-        _, type_ = cls.parse(key)
-        return type_
+        _, item = cls.parse(key)
+        return item
 
     def __setitem__(cls, key: str, item: Item) -> None:
         """Register ``item`` with name ``key``.
@@ -187,9 +190,11 @@ class RegistryMeta(  # type: ignore[misc]
                 if subclass.__name__ == child_name
             )
             if len(subclasses) == 0:
-                raise ValueError(f"{key} is not a child of {cls}")
+                raise ValueError(f"{child_name} is not a child of {child}")
             if len(subclasses) > 1:
-                raise ValueError(f"{key} matches multiple children of {cls}")
+                raise ValueError(
+                    f"{child_name} matches multiple children of {child}"
+                )
             child, = subclasses
         return child
 
@@ -207,7 +212,7 @@ class RegistryMeta(  # type: ignore[misc]
         cls,
         *args: str,
         forced: bool = False,
-    ) -> Callable[[Item], Item]:
+    ) -> Callable[[T], T]:
         """Register decorator.
 
         Args:
@@ -269,21 +274,21 @@ class RegistryMeta(  # type: ignore[misc]
           <class '...AnotherMunchkin'>
         """
 
-        def wrapper_func(obj: Item) -> Item:
-            keys = [obj.__name__] if len(args) == 0 else args
+        def wrapper_func(item: T) -> T:
+            keys = [item.__name__] if len(args) == 0 else args
             for key in keys:
                 if forced:
                     cls.pop(key, None)
-                cls[key] = obj  # noqa: E501 pylint: disable=unsupported-assignment-operation
-            return obj
+                cls[key] = item  # noqa: E501 pylint: disable=unsupported-assignment-operation
+            return item
 
         return wrapper_func
 
-    def _build(cls, type_: Item, config: Config):
+    def _build(cls, item: Item, config: Config):
         """Build an instance according to the given config.
 
         Args:
-            type_: instance type.
+            item: instance type.
             config: instance specification.
 
         Returns:
@@ -294,8 +299,8 @@ class RegistryMeta(  # type: ignore[misc]
 
             >>> class Cat(metaclass=RegistryMeta):
             ...     @classmethod
-            ...     def _build(cls, type_: Item, config: Config):
-            ...         obj = RegistryMeta._build(cls, type_, config)
+            ...     def _build(cls, item: Item, config: Config):
+            ...         obj = RegistryMeta._build(cls, item, config)
             ...         obj.name = obj.name.upper()
             ...         return obj
             >>> @Cat.register_()
@@ -307,7 +312,7 @@ class RegistryMeta(  # type: ignore[misc]
             >>> cat.name
             'GARFIELD'
         """
-        return type_(**config)
+        return item(**config)
 
     def build(cls, config: Config, **kwargs):
         """Call the registered object to construct a new instance.
@@ -351,10 +356,10 @@ class RegistryMeta(  # type: ignore[misc]
         config = default_config.copy()
 
         config_type = config.pop('type')
-        registry, type_ = cls.parse(config_type)
+        registry, item = cls.parse(config_type)
 
         try:
-            return registry._build(type_, config)
+            return registry._build(item, config)
         except Exception as e:
             # config may be altered
             logger.error("Failed to build\n%s", backup_config.dumps())
@@ -369,8 +374,8 @@ class PartialRegistryMeta(RegistryMeta):
             return NonInstantiableMeta.__subclasses__(PartialRegistryMeta)
         return super().__subclasses__()
 
-    def _build(cls, type_: Item, config: Config):
-        return partial(type_, **config)
+    def _build(cls, item: Item, config: Config):
+        return partial(item, **config)
 
 
 class Registry(metaclass=RegistryMeta):
@@ -403,26 +408,26 @@ class OptimizerRegistry(Registry):
         return config
 
     @classmethod
-    def _build(cls, type_: Item, config: Config):
+    def _build(cls, item: Item, config: Config):
         model: nn.Module = config.pop('model')
         params = config.pop('params', None)
         if params is None:
             config.params = [p for p in model.parameters() if p.requires_grad]
         else:
             config.params = [cls.params(model, p) for p in params]
-        return RegistryMeta._build(cls, type_, config)
+        return RegistryMeta._build(cls, item, config)
 
 
 class LRSchedulerRegistry(Registry):
 
     @classmethod
-    def _build(cls, type_: Item, config: Config):
-        if type_ is torch.optim.lr_scheduler.SequentialLR:
+    def _build(cls, item: Item, config: Config):
+        if item is torch.optim.lr_scheduler.SequentialLR:
             config.schedulers = [
                 cls.build(scheduler, optimizer=config.optimizer)
                 for scheduler in config.schedulers
             ]
-        return RegistryMeta._build(cls, type_, config)
+        return RegistryMeta._build(cls, item, config)
 
 
 class RunnerRegistry(Registry):
@@ -440,16 +445,16 @@ class LossRegistry(Registry):
 class SchedulerRegistry(Registry):
 
     @classmethod
-    def _build(cls, type_: Item, config: Config):
+    def _build(cls, item: Item, config: Config):
         from ..losses.schedulers import (  # noqa: E501 pylint: disable=import-outside-toplevel
             ChainedScheduler,
             SequentialScheduler,
         )
-        if type_ in (SequentialScheduler, ChainedScheduler):
+        if item in (SequentialScheduler, ChainedScheduler):
             config.schedulers = [
                 cls.build(scheduler) for scheduler in config.schedulers
             ]
-        return RegistryMeta._build(cls, type_, config)
+        return RegistryMeta._build(cls, item, config)
 
 
 class VisualRegistry(Registry):
@@ -467,10 +472,10 @@ class DistillerRegistry(Registry):
 class DatasetRegistry(Registry):
 
     @classmethod
-    def _build(cls, type_: Item, config: Config):
-        if type_ is torch.utils.data.ConcatDataset:
+    def _build(cls, item: Item, config: Config):
+        if item is torch.utils.data.ConcatDataset:
             config.datasets = list(map(cls.build, config.datasets))
-        return RegistryMeta._build(cls, type_, config)
+        return RegistryMeta._build(cls, item, config)
 
 
 class AccessLayerRegistry(Registry):
@@ -526,10 +531,10 @@ class ModelRegistry(Registry):
             cls.init_weights(child, config, f'{prefix}.{name}')
 
     @classmethod
-    def _build(cls, type_: Item, config: Config):
+    def _build(cls, item: Item, config: Config):
         config = config.copy()
         init_weights = config.pop('init_weights', Config())
-        model = RegistryMeta._build(cls, type_, config)
+        model = RegistryMeta._build(cls, item, config)
         if isinstance(model, nn.Module):
             cls.init_weights(model, init_weights)
         return model
@@ -538,10 +543,10 @@ class ModelRegistry(Registry):
 class TransformRegistry(Registry):
 
     @classmethod
-    def _build(cls, type_: Item, config: Config):
-        if type_ is tf.Compose:
+    def _build(cls, item: Item, config: Config):
+        if item is tf.Compose:
             config.transforms = list(map(cls.build, config.transforms))
-        return RegistryMeta._build(cls, type_, config)
+        return RegistryMeta._build(cls, item, config)
 
 
 class EnvRegistry(Registry):

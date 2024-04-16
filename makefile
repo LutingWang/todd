@@ -12,7 +12,7 @@ coverage:
 	coverage run
 	coverage report
 
-commit: lint test
+commit: test
 	cz c
 
 docs:

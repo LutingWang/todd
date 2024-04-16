@@ -89,7 +89,7 @@ class FrozenMixin(nn.Module, ABC):
     def train(self, mode: bool = True) -> Self:
         super().train(mode)
         for _, module in self._eval_modules():
-            module.eval()
+            module.eval()  # FIXME: recursion error if eval_filter is name=''
         return self
 
     @staticmethod
