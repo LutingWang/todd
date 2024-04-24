@@ -6,10 +6,14 @@ __all__ = [
     'exec_',
     'map_',
     'set_temp',
+    'classproperty',
 ]
 
 import contextlib
-from typing import Any, Callable, Generator
+from typing import Any, Callable, Generator, Generic, TypeVar
+
+T = TypeVar('T')
+PropertyType = TypeVar('PropertyType')  # pylint: disable=invalid-name
 
 
 def get_(obj, attr: str, default=...):
@@ -62,3 +66,12 @@ def set_temp(obj, name: str, value) -> Generator[None, None, None]:
         set_(obj, name, value)
         yield
         del_(obj, name)
+
+
+class classproperty(Generic[T, PropertyType]):  # noqa: E501 N801 pylint: disable=invalid-name
+
+    def __init__(self, method: Callable[[T], PropertyType]) -> None:
+        self._method = method
+
+    def __get__(self, instance, cls: T) -> PropertyType:
+        return self._method(cls)

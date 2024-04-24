@@ -47,6 +47,16 @@ from .configs import Config
 from .logger import logger
 
 
+class BuildSpec(UserDict[str, Callable[[Config], Config]]):
+
+    def __call__(self, config: Config) -> Config:
+        return config | {
+            k: build_spec(v)
+            for k, build_spec in self.items()
+            if isinstance(v := config.get(k), Config)
+        }
+
+
 class Item(Protocol):
     __name__: str
     __qualname__: str
@@ -64,7 +74,7 @@ class RegistryMeta(  # type: ignore[misc]
 ):
     """Meta class for registries.
 
-    Under the hood, registries are simply dictionaries:
+    Underneath, registries are simply dictionaries:
 
         >>> class Cat(metaclass=RegistryMeta): pass
         >>> class BritishShorthair: pass
@@ -72,21 +82,108 @@ class RegistryMeta(  # type: ignore[misc]
         >>> Cat['british shorthair']
         <class '...BritishShorthair'>
 
-    Users can also access registries via higher level APIs, i.e. `register_`
-    and `build`, for convenience.
+    In this example, ``Cat`` is a registry and the "british shorthair" is a
+    category in the registry.
+    ``BritishShorthair`` is an object or class that is associated to the
+    "british shorthair" category.
 
-    Registries can be subclassed.
-    Derived classes of a registry are child registries:
+    For convenience, users can also access registries via higher level APIs,
+    such as '`register_`' and '`build`'.
+    These provide easier interfaces to register and retrieve instances:
+
+        >>> class Persian: pass
+        >>> Cat.register_('persian')(Persian)
+        <class '...Persian'>
+        >>> Cat.build(Config(type='persian'))
+        <...Persian object at ...>
+
+    Registries can be subclassed as well to create specializations or child
+    registries:
 
         >>> class HairlessCat(Cat): pass
         >>> Cat.child('HairlessCat')
         <HairlessCat >
+
+    In the example above, ``HairlessCat`` can be seen as a subcategory or
+    specialization of ``Cat``.
+    This allows to organize instances into a hierarchically structured
+    registry.
     """
 
     def __init__(cls, *args, **kwargs) -> None:
         """Initialize."""
         UserDict.__init__(cls)
         NonInstantiableMeta.__init__(cls, *args, **kwargs)
+
+    def __repr__(cls) -> str:
+        items = ' '.join(f'{k}={v}' for k, v in cls.items())
+        return f"<{cls.__name__} {items}>"
+
+    # Inheritance
+
+    @no_type_check
+    def __subclasses__(cls=...):
+        """Fetch subclasses of the current class.
+
+        For more details, refer to `ABC subclassed by meta classes`_.
+
+        .. _ABC subclassed by meta classes:
+           https://blog.csdn.net/LutingWang/article/details/128320057
+        """
+        if cls is ...:
+            return NonInstantiableMeta.__subclasses__(RegistryMeta)
+        return super().__subclasses__()
+
+    def child(cls, key: str) -> 'RegistryMeta':
+        """Retrieve a direct or indirect derived child registry.
+
+        Given a dot-separated string of subclass names, this method searches
+        for the specified child registry within its inheritance tree and
+        returns the matching child class.
+
+        Args:
+            key: A string of dot-separated subclass names.
+
+        Raises:
+            ValueError: If no subclass or more than one subclass with the
+                specified name exists.
+
+        Returns:
+            The specified child registry.
+        """
+        child = cls
+        for child_name in key.split('.'):
+            subclasses = tuple(child.__subclasses__())  # type: ignore[misc]
+            subclasses = tuple(
+                subclass for subclass in subclasses
+                if subclass.__name__ == child_name
+            )
+            if len(subclasses) == 0:
+                raise ValueError(f"{child_name} is not a child of {child}")
+            if len(subclasses) > 1:
+                raise ValueError(
+                    f"{child_name} matches multiple children of {child}"
+                )
+            child, = subclasses
+        return child
+
+    def _parse(cls, key: str) -> tuple['RegistryMeta', str]:
+        """Parse the ``key`` which may contain child classes separated by dots.
+
+        Args:
+            key: the string to be parsed.
+
+        Returns:
+            A tuple containing the child registry object and the updated key
+            string.
+        """
+        if '.' not in key:
+            return cls, key
+        child_name, key = key.rsplit('.', 1)
+        child = cls.child(child_name)
+        return child, key
+
+    # Retrieval
 
     def __missing__(cls, key: str) -> NoReturn:
         """Missing key.
@@ -100,9 +197,27 @@ class RegistryMeta(  # type: ignore[misc]
         logger.error("%s does not exist in %s", key, cls.__name__)
         raise KeyError(key)
 
+    def parse(cls, key: str) -> tuple['RegistryMeta', Item]:
+        """Parse ``key``.
+
+        Returns:
+            The child registry and the corresponding type.
+        """
+        child, key = cls._parse(key)
+        item = super(RegistryMeta, child).__getitem__(key)
+        return child, item
+
+    def __contains__(cls, key) -> bool:
+        if not isinstance(key, str):
+            return False
+        child, key = cls._parse(key)
+        return super(RegistryMeta, child).__contains__(key)
+
     def __getitem__(cls, key: str) -> Item:
         _, item = cls.parse(key)
         return item
+
+    # Registration
 
     def __setitem__(cls, key: str, item: Item) -> None:
         """Register ``item`` with name ``key``.
@@ -130,90 +245,13 @@ class RegistryMeta(  # type: ignore[misc]
         child, key = cls._parse(key)
         super(RegistryMeta, child).__setitem__(key, item)
 
-    def __delitem__(cls, key: str) -> None:
-        child, key = cls._parse(key)
-        return super(RegistryMeta, child).__delitem__(key)
-
-    def __contains__(cls, key) -> bool:
-        if not isinstance(key, str):
-            return False
-        child, key = cls._parse(key)
-        return super(RegistryMeta, child).__contains__(key)
-
-    def __repr__(cls) -> str:
-        items = ' '.join(f'{k}={v}' for k, v in cls.items())
-        return f"<{cls.__name__} {items}>"
-
-    @no_type_check
-    def __subclasses__(cls=...):
-        """Refer to `ABC subclassed by meta classes`_.
-
-        Returns:
-            Children registries.
-
-        .. _ABC subclassed by meta classes:
-           https://blog.csdn.net/LutingWang/article/details/128320057
-        """
-        if cls is ...:
-            return NonInstantiableMeta.__subclasses__(RegistryMeta)
-        return super().__subclasses__()
-
-    def _parse(cls, key: str) -> tuple['RegistryMeta', str]:
-        """Parse ``key``.
-
-        Returns:
-            The child registry and the updated key.
-        """
-        if '.' not in key:
-            return cls, key
-        child_name, key = key.rsplit('.', 1)
-        child = cls.child(child_name)
-        return child, key
-
-    def child(cls, key: str) -> 'RegistryMeta':
-        """Get a direct or indirect derived child registry.
-
-        Args:
-            key: dot separated subclass names.
-
-        Raises:
-            ValueError: if zero or multiple children are found.
-
-        Returns:
-            The derived registry.
-        """
-        child = cls
-        for child_name in key.split('.'):
-            subclasses = tuple(child.__subclasses__())  # type: ignore[misc]
-            subclasses = tuple(
-                subclass for subclass in subclasses
-                if subclass.__name__ == child_name
-            )
-            if len(subclasses) == 0:
-                raise ValueError(f"{child_name} is not a child of {child}")
-            if len(subclasses) > 1:
-                raise ValueError(
-                    f"{child_name} matches multiple children of {child}"
-                )
-            child, = subclasses
-        return child
-
-    def parse(cls, key: str) -> tuple['RegistryMeta', Item]:
-        """Parse ``key``.
-
-        Returns:
-            The child registry and the corresponding type.
-        """
-        child, key = cls._parse(key)
-        item = super(RegistryMeta, child).__getitem__(key)
-        return child, item
-
     def register_(
         cls,
         *args: str,
         forced: bool = False,
+        build_spec: BuildSpec | None = None,
     ) -> Callable[[T], T]:
-        """Register decorator.
+        """Register classes or functions to the registry.
 
         Args:
             args: names to be registered as.
@@ -222,7 +260,7 @@ class RegistryMeta(  # type: ignore[misc]
         Returns:
             Wrapper function.
 
-        `register_` is designed to be an decorator for classes and functions:
+        The decorator can be applied to both classes and functions:
 
             >>> class Cat(metaclass=RegistryMeta): pass
             >>> @Cat.register_()
@@ -231,47 +269,53 @@ class RegistryMeta(  # type: ignore[misc]
             ... def munchkin() -> str:
             ...     return 'munchkin'
 
-        `register_` has the following advantages:
+        If no arguments are given, the name of the object being registered is
+        used as the key:
 
-        - default name
+            >>> Cat['Munchkin']
+            <class '...Munchkin'>
+            >>> Cat['munchkin']
+            <function munchkin at ...>
 
-          By default, `register_` uses the name of the registered object as
-          ``keys``:
+        It is possible to register an object with multiple names:
 
-          >>> Cat['Munchkin']
-          <class '...Munchkin'>
-          >>> Cat['munchkin']
-          <function munchkin at ...>
+            >>> @Cat.register_('British Longhair', 'british longhair')
+            ... class BritishLonghair: pass
+            >>> 'British Longhair' in Cat
+            True
+            >>> 'british longhair' in Cat
+            True
 
-        - multiple names
+        It also allows one to specify child registries as part of the key
+        during registration:
 
-          >>> @Cat.register_('British Longhair', 'british longhair')
-          ... class BritishLonghair: pass
-          >>> 'British Longhair' in Cat
-          True
-          >>> 'british longhair' in Cat
-          True
+            >>> class HairlessCat(Cat): pass
+            >>> @Cat.register_('HairlessCat.CanadianHairless')
+            ... def canadian_hairless() -> str:
+            ...     return 'canadian hairless'
+            >>> HairlessCat
+            <HairlessCat CanadianHairless=<function canadian_hairless at ...>>
 
-        - compatibility with child registries
+        If 'forced' is True and an item of the same name exists, the new item
+        will replace the old one in the registry:
 
-          >>> class HairlessCat(Cat): pass
-          >>> @Cat.register_('HairlessCat.CanadianHairless')
-          ... def canadian_hairless() -> str:
-          ...     return 'canadian hairless'
-          >>> HairlessCat
-          <HairlessCat CanadianHairless=<function canadian_hairless at ...>>
+            >>> class AnotherMunchkin: pass
+            >>> Cat.register_('Munchkin')(AnotherMunchkin)
+            Traceback (most recent call last):
+                ...
+            KeyError: 'Munchkin'
+            >>> Cat.register_('Munchkin', forced=True)(AnotherMunchkin)
+            <class '...AnotherMunchkin'>
+            >>> Cat['Munchkin']
+            <class '...AnotherMunchkin'>
 
-        - forced registration
+        `BuildSpec`s can be bind to objects during registration:
 
-          >>> class AnotherMunchkin: pass
-          >>> Cat.register_('Munchkin')(AnotherMunchkin)
-          Traceback (most recent call last):
-              ...
-          KeyError: 'Munchkin'
-          >>> Cat.register_('Munchkin', forced=True)(AnotherMunchkin)
-          <class '...AnotherMunchkin'>
-          >>> Cat['Munchkin']
-          <class '...AnotherMunchkin'>
+            >>> build_spec = BuildSpec()
+            >>> @Cat.register_(build_spec=build_spec)
+            ... class Maine: pass
+            >>> Maine.build_spec is build_spec
+            True
         """
 
         def wrapper_func(item: T) -> T:
@@ -280,9 +324,19 @@ class RegistryMeta(  # type: ignore[misc]
                 if forced:
                     cls.pop(key, None)
                 cls[key] = item  # noqa: E501 pylint: disable=unsupported-assignment-operation
+            if build_spec is not None:
+                item.build_spec = build_spec  # type: ignore[attr-defined]
             return item
 
         return wrapper_func
+
+    # Deregistration
+
+    def __delitem__(cls, key: str) -> None:
+        child, key = cls._parse(key)
+        return super(RegistryMeta, child).__delitem__(key)
+
+    # Construction
 
     def _build(cls, item: Item, config: Config):
         """Build an instance according to the given config.
@@ -324,8 +378,10 @@ class RegistryMeta(  # type: ignore[misc]
         Returns:
             The built instance.
 
-        If the registered object is callable, the `build` method will
-        automatically call the objects:
+        The ``type`` entry of ``config`` specifies the name of the registered
+        object to be built.
+        The other entries of ``config`` will be passed to the object's call
+        method.
 
             >>> class Cat(metaclass=RegistryMeta): pass
             >>> @Cat.register_()
@@ -333,12 +389,6 @@ class RegistryMeta(  # type: ignore[misc]
             ...     return f'Tabby {name}'
             >>> Cat.build(Config(type='tabby', name='Garfield'))
             'Tabby Garfield'
-
-        Typically, ``config`` is a `Mapping` object.
-        The ``type`` entry of ``config`` specifies the name of the registered
-        object to be built.
-        The other entries of ``config`` will be passed to the object's call
-        method.
 
         Keyword arguments are the default configuration:
 
@@ -348,23 +398,49 @@ class RegistryMeta(  # type: ignore[misc]
             ... )
             'Tabby Garfield'
 
-        Refer to `_build` for customizations.
+        Override `_build` for customization:
+
+            >>> class DomesticCat(Cat):
+            ...     @classmethod
+            ...     def _build(cls, item: Item, config: Config):
+            ...         return item, config
+            >>> @DomesticCat.register_()
+            ... class Maine: pass
+            >>> DomesticCat.build(Config(type='Maine', name='maine'), age=1.2)
+            (<class '...Maine'>, {'age': 1.2, 'name': 'maine'})
+
+        If the object has a property named ``build_spec``, the config is
+        converted before construction:
+
+            >>> import todd
+            >>> @Cat.register_()
+            ... class Persian:
+            ...     def __init__(self, friend: str) -> None:
+            ...         self.friend = friend
+            ...     @todd.classproperty
+            ...     def build_spec(cls) -> BuildSpec:
+            ...         return BuildSpec(friend=lambda config: config.type)
+            >>> persian = Cat.build(
+            ...     Config(type='Persian'),
+            ...     friend=dict(type='Siamese'),
+            ... )
+            >>> persian.friend
+            'Siamese'
         """
-        default_config = Config(kwargs)
-        default_config.update(config)
-        backup_config = default_config.copy()
-        config = default_config.copy()
+        config = Config(kwargs) | config
+        original_config = config.copy()
 
         config_type = config.pop('type')
         registry, item = cls.parse(config_type)
 
-        # TODO: define build helper
+        if (build_spec := getattr(item, 'build_spec', None)) is not None:
+            config = build_spec(config)
 
         try:
             return registry._build(item, config)
         except Exception as e:
             # config may be altered
-            logger.error("Failed to build\n%s", backup_config.dumps())
+            logger.error("Failed to build\n%s", original_config.dumps())
             raise e
 
 
