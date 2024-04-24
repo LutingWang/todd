@@ -358,6 +358,8 @@ class RegistryMeta(  # type: ignore[misc]
         config_type = config.pop('type')
         registry, item = cls.parse(config_type)
 
+        # TODO: define build helper
+
         try:
             return registry._build(item, config)
         except Exception as e:

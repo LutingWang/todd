@@ -1,29 +1,90 @@
 __all__ = [
+    'CheckMixin',
+    'NoGradMixin',
+    'EvalMixin',
     'FrozenMixin',
 ]
 
-from abc import ABC
-from typing import Any, Generator, MutableMapping
+from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING, Any, Generator, MutableMapping
 from typing_extensions import Self
 
 from torch import nn
 
-from ..base import (
-    Config,
-    FilterRegistry,
-    NamedModulesFilter,
-    NamedParametersFilter,
-    Store,
-)
+from ..base import Config, FilterRegistry, Store
+from ..models import InitWeightsMixin
+from .filters import NamedModulesFilter, NamedParametersFilter
 
 
-class FrozenMixin(nn.Module, ABC):
+class CheckMixin(nn.Module, ABC):
+    """Mixin to perform a check before the first forward pass of a module.
+
+    You should implement `check` in your subclass:
+
+        >>> class Model(CheckMixin):
+        ...     def check(self, module: Self, *args, **kwargs) -> None:
+        ...         print(
+        ...             f"Checking {repr(module.__class__.__name__)} with "
+        ...             f"{args=} and {kwargs=}"
+        ...         )
+        ...     def forward(self, *args, **kwargs) -> None:
+        ...         print(f"Forwarding with {args=} and {kwargs=}")
+
+    The `check` method executes prior to ``__call__``:
+
+        >>> check = Model()
+        >>> check(1, 2, a=3, b=4)
+        Checking 'Model' with args=(1, 2) and kwargs={'a': 3, 'b': 4}
+        Forwarding with args=(1, 2) and kwargs={'a': 3, 'b': 4}
+
+    If `Store.DRY_RUN` is False, the `check` method executes only once:
+
+        >>> Store.DRY_RUN
+        False
+        >>> check(1, a=2)
+        Forwarding with args=(1,) and kwargs={'a': 2}
+
+    If `Store.DRY_RUN` is True, the `check` method executes every time
+    ``__call__`` is invoked:
+
+        >>> Store.DRY_RUN = True
+        >>> check = Model()
+        >>> check(1, 2, a=3, b=4)
+        Checking 'Model' with args=(1, 2) and kwargs={'a': 3, 'b': 4}
+        Forwarding with args=(1, 2) and kwargs={'a': 3, 'b': 4}
+        >>> check(1, a=2)
+        Checking 'Model' with args=(1,) and kwargs={'a': 2}
+        Forwarding with args=(1,) and kwargs={'a': 2}
+    """
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+
+        def forward_pre_hook(
+            module: Self,
+            args: tuple,
+            kwargs: dict[str, Any],
+        ) -> None:
+            self.check(module, *args, **kwargs)
+            if not Store.DRY_RUN:
+                handle.remove()
+
+        handle = self.register_forward_pre_hook(
+            forward_pre_hook,
+            with_kwargs=True,
+        )
+
+    @abstractmethod
+    def check(self, module: Self, *args, **kwargs) -> None:
+        pass
+
+
+class NoGradMixin(CheckMixin, InitWeightsMixin):
 
     def __init__(
         self,
         *args,
         no_grad_filter: Config | None = None,
-        eval_filter: Config | None = None,
         filter_state_dict: bool = False,
         **kwargs,
     ) -> None:
@@ -32,35 +93,15 @@ class FrozenMixin(nn.Module, ABC):
             None if no_grad_filter is None else
             FilterRegistry.build(no_grad_filter)
         )
-        self._eval_filter: NamedModulesFilter | None = (
-            None if eval_filter is None else FilterRegistry.build(eval_filter)
-        )
         self._filter_state_dict = filter_state_dict
 
-        self.check_no_grad()
-        self.check_eval()
         if filter_state_dict:
             self._register_state_dict_hook(self.state_dict_hook)
 
-    def check_no_grad(self) -> None:
-
-        def forward_pre_hook(module: 'FrozenMixin', *args, **kwargs) -> None:
-            for _, parameter in module._no_grad_named_parameters():
-                assert not parameter.requires_grad
-            if not Store.DRY_RUN:
-                handle.remove()
-
-        handle = self.register_forward_pre_hook(forward_pre_hook)
-
-    def check_eval(self) -> None:
-
-        def forward_pre_hook(module: 'FrozenMixin', *args, **kwargs) -> None:
-            for _, module_ in module._eval_modules():
-                assert not module_.training
-            if not Store.DRY_RUN:
-                handle.remove()
-
-        handle = self.register_forward_pre_hook(forward_pre_hook)
+    def check(self, module: Self, *args, **kwargs) -> None:
+        super().check(module, *args, **kwargs)
+        for _, parameter in module._no_grad_named_parameters():
+            assert not parameter.requires_grad
 
     def _no_grad_named_parameters(
         self,
@@ -68,28 +109,14 @@ class FrozenMixin(nn.Module, ABC):
         if self._no_grad_filter is not None:
             yield from self._no_grad_filter(self)
 
-    def _eval_modules(self) -> Generator[tuple[str, nn.Module], None, None]:
-        if self._eval_filter is not None:
-            yield from self._eval_filter(self)
-
     def init_weights(self, config: Config) -> bool:
-        recursive = True
-        if hasattr(super(), 'init_weights'):
-            recursive = super().init_weights(config)  # type: ignore[misc]
         self.requires_grad_()
-        self.train()
-        return recursive
+        return super().init_weights(config)
 
     def requires_grad_(self, requires_grad: bool = True) -> Self:
         super().requires_grad_(requires_grad)
         for _, parameter in self._no_grad_named_parameters():
             parameter.requires_grad_(False)
-        return self
-
-    def train(self, mode: bool = True) -> Self:
-        super().train(mode)
-        for _, module in self._eval_modules():
-            module.eval()  # FIXME: recursion error if eval_filter is name=''
         return self
 
     @staticmethod
@@ -109,32 +136,77 @@ class FrozenMixin(nn.Module, ABC):
             *args: other args.
             **kwargs: other kwargs.
 
-        Example:
-            >>> class Model(FrozenMixin):
+        Define a `no_grad_filter`:
+
+            >>> class Model(NoGradMixin):
             ...     def __init__(self, *args, **kwargs) -> None:
             ...         super().__init__(
             ...             *args,
             ...             no_grad_filter=dict(
             ...                 type='NamedParametersFilter',
-            ...                 modules=dict(
-            ...                     type='NamedModulesFilter',
-            ...                     name='conv',
-            ...                 ),
+            ...                 name='_conv.weight',
             ...             ),
             ...             filter_state_dict=True,
             ...             **kwargs,
             ...         )
-            ...         self.conv = nn.Conv1d(1, 2, 1)
-            ...         self.bn = nn.BatchNorm1d(2)
-            >>> Model().state_dict()
-            OrderedDict([('bn.weight', tensor([1., 1.])), ('bn.bias', tensor([\
-0., 0.])), ('bn.running_mean', tensor([0., 0.])), ('bn.running_var', tensor([\
-1., 1.])), ('bn.num_batches_tracked', tensor(0))])
-            >>> nn.Sequential(Model()).state_dict()
-            OrderedDict([('0.bn.weight', tensor([1., 1.])), ('0.bn.bias', \
-tensor([0., 0.])), ('0.bn.running_mean', tensor([0., 0.])), (\
-'0.bn.running_var', tensor([1., 1.])), ('0.bn.num_batches_tracked', \
-tensor(0))])
+            ...         self._conv = nn.Conv1d(1, 2, 1)
+
+        The parameters without gradient will be excluded from the
+        `state_dict`:
+
+            >>> model = Model()
+            >>> model.state_dict()
+            OrderedDict([('_conv.bias', tensor([..., ...]))])
+
+        The model can even be used as building blocks in other models:
+
+            >>> sequential = nn.Sequential(model)
+            >>> sequential.state_dict()
+            OrderedDict([('0._conv.bias', tensor([..., ...]))])
         """
         for name, _ in model._no_grad_named_parameters():
             state_dict.pop(prefix + name, None)
+
+
+class EvalMixin(CheckMixin, InitWeightsMixin):
+
+    def __init__(
+        self,
+        *args,
+        eval_filter: Config | None = None,
+        **kwargs,
+    ) -> None:
+        super().__init__(*args, **kwargs)
+        self._eval_filter: NamedModulesFilter | None = (
+            None if eval_filter is None else FilterRegistry.build(eval_filter)
+        )
+
+    def check(self, module: Self, *args, **kwargs) -> None:
+        super().check(module, *args, **kwargs)
+        for _, module_ in module._eval_modules():
+            assert not module_.training
+
+    def _eval_modules(self) -> Generator[tuple[str, nn.Module], None, None]:
+        if self._eval_filter is not None:
+            yield from self._eval_filter(self)
+
+    def init_weights(self, config: Config) -> bool:
+        self.train()
+        return super().init_weights(config)
+
+    def train(self, mode: bool = True) -> Self:
+        super().train(mode)
+        for _, module in self._eval_modules():
+            if module is self:
+                super().eval()
+            else:
+                module.eval()
+        return self
+
+
+class FrozenMixin(NoGradMixin, EvalMixin):
+
+    if TYPE_CHECKING:
+
+        def check(self, module: Self, *args, **kwargs) -> None:
+            ...

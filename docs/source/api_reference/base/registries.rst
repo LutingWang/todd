@@ -1,4 +1,4 @@
-Types
+Registries
 ==========
 
 .. automodule:: todd.base.registries

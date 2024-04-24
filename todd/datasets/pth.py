@@ -1,6 +1,5 @@
 __all__ = [
     'PthAccessLayer',
-    'PthDataset',
 ]
 
 import pathlib
@@ -8,7 +7,7 @@ from typing import Iterator, TypeVar
 
 import torch
 
-from .base import AccessLayerRegistry, BaseDataset
+from .base import AccessLayerRegistry
 from .folder import FolderAccessLayer
 
 T = TypeVar('T')
@@ -32,7 +31,3 @@ class PthAccessLayer(FolderAccessLayer[VT]):
 
     def __setitem__(self, key: str, value: VT) -> None:
         torch.save(value, self._file(key))
-
-
-class PthDataset(BaseDataset[T, str, VT]):
-    ACCESS_LAYER = PthAccessLayer.__name__

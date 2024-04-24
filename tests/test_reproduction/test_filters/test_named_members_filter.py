@@ -2,11 +2,7 @@ from typing import Generator
 
 from torch import nn
 
-from todd.base.filters import (
-    NamedMembersFilter,
-    NamedModulesFilter,
-    NamedParametersFilter,
-)
+from todd.reproduction.filters import NamedMembersFilter
 
 
 def named_members() -> list[tuple[str, int | str]]:
@@ -69,39 +65,3 @@ class TestNamedMembersFilter:
         )
         result = filter_(module)
         assert set(result) == {('name1', 1)}
-
-
-class TestNamedModulesFilter:
-
-    def test_named_members(self) -> None:
-        filter_ = NamedModulesFilter()
-        module = nn.Module()
-        module.conv1 = nn.Conv2d(3, 64, 3)
-        module.conv2 = nn.Conv2d(64, 64, 3)
-        module.fc = nn.Linear(64, 10)
-        result = filter_._named_members(module)
-        assert set(result) == {
-            ('', module),
-            ('conv1', module.conv1),
-            ('conv2', module.conv2),
-            ('fc', module.fc),
-        }
-
-
-class TestNamedParametersFilter:
-
-    def test_named_members(self) -> None:
-        filter_ = NamedParametersFilter()
-        module = nn.Module()
-        module.conv1 = nn.Conv2d(3, 64, 3)
-        module.conv2 = nn.Conv2d(64, 64, 3)
-        module.fc = nn.Linear(64, 10)
-        result = filter_._named_members(module)
-        assert set(result) == {
-            ('conv1.weight', module.conv1.weight),
-            ('conv1.bias', module.conv1.bias),
-            ('conv2.weight', module.conv2.weight),
-            ('conv2.bias', module.conv2.bias),
-            ('fc.weight', module.fc.weight),
-            ('fc.bias', module.fc.bias),
-        }

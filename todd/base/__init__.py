@@ -5,7 +5,6 @@ from .bboxes import *
 from .configs import *
 from .envs import *
 from .eta import *
-from .filters import *
 from .logger import *
 from .misc import *
 from .pipelines import *
