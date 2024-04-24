@@ -6,20 +6,30 @@ from typing import Generator, Iterable
 
 from torch import nn
 
-from ...base import Config, FilterRegistry
+from ...base import BuildSpec, FilterRegistry
+from ...base.registries import BuildSpecMixin
+from ...utils import classproperty
 from .named_members import NamedMembersFilter
 from .named_modules import NamedModulesFilter
 
 
 @FilterRegistry.register_()
-class NamedParametersFilter(NamedMembersFilter[nn.Parameter]):
+class NamedParametersFilter(NamedMembersFilter[nn.Parameter], BuildSpecMixin):
 
-    def __init__(self, *args, modules: Config | None = None, **kwargs) -> None:
+    def __init__(
+        self,
+        *args,
+        modules: NamedModulesFilter | None = None,
+        **kwargs,
+    ) -> None:
         super().__init__(*args, **kwargs)
         assert self._names is None or modules is None
-        self._named_modules_filter: NamedModulesFilter | None = (
-            None if modules is None else FilterRegistry.build(modules)
-        )
+        self._named_modules_filter = modules
+
+    @classproperty
+    def build_spec(self) -> BuildSpec:
+        build_spec = BuildSpec(modules=FilterRegistry.build)
+        return super().build_spec | build_spec
 
     @property
     def named_modules_filter(self) -> NamedModulesFilter:

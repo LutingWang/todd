@@ -10,10 +10,7 @@ __all__ = [
 ]
 
 import contextlib
-from typing import Any, Callable, Generator, Generic, TypeVar
-
-T = TypeVar('T')
-PropertyType = TypeVar('PropertyType')  # pylint: disable=invalid-name
+from typing import Any, Callable, Generator
 
 
 def get_(obj, attr: str, default=...):
@@ -68,10 +65,10 @@ def set_temp(obj, name: str, value) -> Generator[None, None, None]:
         del_(obj, name)
 
 
-class classproperty(Generic[T, PropertyType]):  # noqa: E501 N801 pylint: disable=invalid-name
+class classproperty:  # noqa: N801 pylint: disable=invalid-name
 
-    def __init__(self, method: Callable[[T], PropertyType]) -> None:
+    def __init__(self, method: Callable[[Any], Any]) -> None:
         self._method = method
 
-    def __get__(self, instance, cls: T) -> PropertyType:
+    def __get__(self, instance, cls):
         return self._method(cls)

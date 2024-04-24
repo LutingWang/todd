@@ -1,6 +1,8 @@
 # pylint: disable=no-value-for-parameter
 
 __all__ = [
+    'BuildSpec',
+    'BuildSpecMixin',
     'Item',
     'RegistryMeta',
     'PartialRegistryMeta',
@@ -42,7 +44,7 @@ import torch.utils.data.dataset
 import torchvision.transforms as tf
 from torch import nn
 
-from ..utils import NonInstantiableMeta, get_rank
+from ..utils import NonInstantiableMeta, classproperty, get_rank
 from .configs import Config
 from .logger import logger
 
@@ -55,6 +57,13 @@ class BuildSpec(UserDict[str, Callable[[Config], Config]]):
             for k, build_spec in self.items()
             if isinstance(v := config.get(k), Config)
         }
+
+
+class BuildSpecMixin:
+
+    @classproperty
+    def build_spec(self) -> BuildSpec:
+        return BuildSpec()
 
 
 class Item(Protocol):
@@ -309,7 +318,7 @@ class RegistryMeta(  # type: ignore[misc]
             >>> Cat['Munchkin']
             <class '...AnotherMunchkin'>
 
-        `BuildSpec`s can be bind to objects during registration:
+        `BuildSpec` instances can be bind to objects during registration:
 
             >>> build_spec = BuildSpec()
             >>> @Cat.register_(build_spec=build_spec)
@@ -412,13 +421,12 @@ class RegistryMeta(  # type: ignore[misc]
         If the object has a property named ``build_spec``, the config is
         converted before construction:
 
-            >>> import todd
             >>> @Cat.register_()
             ... class Persian:
             ...     def __init__(self, friend: str) -> None:
             ...         self.friend = friend
-            ...     @todd.classproperty
-            ...     def build_spec(cls) -> BuildSpec:
+            ...     @classproperty
+            ...     def build_spec(self) -> BuildSpec:
             ...         return BuildSpec(friend=lambda config: config.type)
             >>> persian = Cat.build(
             ...     Config(type='Persian'),

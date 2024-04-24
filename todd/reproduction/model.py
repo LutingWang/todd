@@ -6,13 +6,15 @@ __all__ = [
 ]
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Generator, MutableMapping
+from typing import Any, Generator, MutableMapping
 from typing_extensions import Self
 
 from torch import nn
 
-from ..base import Config, FilterRegistry, Store
+from ..base import BuildSpec, Config, FilterRegistry, Store
+from ..base.registries import BuildSpecMixin
 from ..models import InitWeightsMixin
+from ..utils import classproperty
 from .filters import NamedModulesFilter, NamedParametersFilter
 
 
@@ -79,24 +81,26 @@ class CheckMixin(nn.Module, ABC):
         pass
 
 
-class NoGradMixin(CheckMixin, InitWeightsMixin):
+class NoGradMixin(CheckMixin, InitWeightsMixin, BuildSpecMixin):
 
     def __init__(
         self,
         *args,
-        no_grad_filter: Config | None = None,
+        no_grad_filter: NamedParametersFilter | None = None,
         filter_state_dict: bool = False,
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
-        self._no_grad_filter: NamedParametersFilter | None = (
-            None if no_grad_filter is None else
-            FilterRegistry.build(no_grad_filter)
-        )
+        self._no_grad_filter = no_grad_filter
         self._filter_state_dict = filter_state_dict
 
         if filter_state_dict:
             self._register_state_dict_hook(self.state_dict_hook)
+
+    @classproperty
+    def build_spec(self) -> BuildSpec:
+        build_spec = BuildSpec(no_grad_filter=FilterRegistry.build, )
+        return super().build_spec | build_spec
 
     def check(self, module: Self, *args, **kwargs) -> None:
         super().check(module, *args, **kwargs)
@@ -136,14 +140,13 @@ class NoGradMixin(CheckMixin, InitWeightsMixin):
             *args: other args.
             **kwargs: other kwargs.
 
-        Define a `no_grad_filter`:
+        Define a ``no_grad_filter``:
 
             >>> class Model(NoGradMixin):
             ...     def __init__(self, *args, **kwargs) -> None:
             ...         super().__init__(
             ...             *args,
-            ...             no_grad_filter=dict(
-            ...                 type='NamedParametersFilter',
+            ...             no_grad_filter=NamedParametersFilter(
             ...                 name='_conv.weight',
             ...             ),
             ...             filter_state_dict=True,
@@ -152,7 +155,7 @@ class NoGradMixin(CheckMixin, InitWeightsMixin):
             ...         self._conv = nn.Conv1d(1, 2, 1)
 
         The parameters without gradient will be excluded from the
-        `state_dict`:
+        ``state_dict``:
 
             >>> model = Model()
             >>> model.state_dict()
@@ -168,18 +171,21 @@ class NoGradMixin(CheckMixin, InitWeightsMixin):
             state_dict.pop(prefix + name, None)
 
 
-class EvalMixin(CheckMixin, InitWeightsMixin):
+class EvalMixin(CheckMixin, InitWeightsMixin, BuildSpecMixin):
 
     def __init__(
         self,
         *args,
-        eval_filter: Config | None = None,
+        eval_filter: NamedModulesFilter | None = None,
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
-        self._eval_filter: NamedModulesFilter | None = (
-            None if eval_filter is None else FilterRegistry.build(eval_filter)
-        )
+        self._eval_filter = eval_filter
+
+    @classproperty
+    def build_spec(self) -> BuildSpec:
+        build_spec = BuildSpec(eval_filter=FilterRegistry.build)
+        return super().build_spec | build_spec
 
     def check(self, module: Self, *args, **kwargs) -> None:
         super().check(module, *args, **kwargs)
@@ -204,9 +210,5 @@ class EvalMixin(CheckMixin, InitWeightsMixin):
         return self
 
 
-class FrozenMixin(NoGradMixin, EvalMixin):
-
-    if TYPE_CHECKING:
-
-        def check(self, module: Self, *args, **kwargs) -> None:
-            ...
+class FrozenMixin(NoGradMixin, EvalMixin):  # type: ignore[misc]
+    pass

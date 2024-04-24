@@ -3,6 +3,7 @@ import torch
 from torch import nn
 
 import todd
+from todd.reproduction.filters import NamedModulesFilter, NamedParametersFilter
 from todd.reproduction.model import FrozenMixin
 
 # TODO: update
@@ -30,17 +31,10 @@ class TestFrozenMixin:
 
     def test_init_weights(self) -> None:
         model = Model(
-            no_grad_filter=dict(
-                type='NamedParametersFilter',
-                modules=dict(
-                    type='NamedModulesFilter',
-                    name='conv',
-                ),
+            no_grad_filter=NamedParametersFilter(
+                modules=NamedModulesFilter(name='conv'),
             ),
-            eval_filter=dict(
-                type='NamedModulesFilter',
-                name='bn',
-            ),
+            eval_filter=NamedModulesFilter(name='bn'),
         )
 
         assert not hasattr(model, '_initialized')
@@ -55,12 +49,8 @@ class TestFrozenMixin:
 
     def test_check_no_grad(self) -> None:
         model = Model(
-            no_grad_filter=dict(
-                type='NamedParametersFilter',
-                modules=dict(
-                    type='NamedModulesFilter',
-                    name='conv',
-                ),
+            no_grad_filter=NamedParametersFilter(
+                modules=NamedModulesFilter(name='conv'),
             ),
         )
         sequential = nn.Sequential(model)
@@ -76,12 +66,7 @@ class TestFrozenMixin:
             model(x)
 
     def test_check_eval(self) -> None:
-        model = Model(
-            eval_filter=dict(
-                type='NamedModulesFilter',
-                name='bn',
-            ),
-        )
+        model = Model(eval_filter=NamedModulesFilter(name='bn'))
         sequential = nn.Sequential(model)
 
         model.train()
@@ -92,12 +77,8 @@ class TestFrozenMixin:
 
     def test_requires_grad(self) -> None:
         model = Model(
-            no_grad_filter=dict(
-                type='NamedParametersFilter',
-                modules=dict(
-                    type='NamedModulesFilter',
-                    name='conv',
-                ),
+            no_grad_filter=NamedParametersFilter(
+                modules=NamedModulesFilter(name='conv'),
             ),
         )
 
@@ -112,12 +93,7 @@ class TestFrozenMixin:
         assert not model.bn.bias.requires_grad
 
     def test_train(self) -> None:
-        model = Model(
-            eval_filter=dict(
-                type='NamedModulesFilter',
-                name='bn',
-            ),
-        )
+        model = Model(eval_filter=NamedModulesFilter(name='bn'))
 
         model.train()
         assert model.conv.training
