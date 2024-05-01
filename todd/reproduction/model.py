@@ -2,6 +2,7 @@ __all__ = [
     'CheckMixin',
     'NoGradMixin',
     'EvalMixin',
+    'FreezeMixin',
     'FrozenMixin',
 ]
 
@@ -9,6 +10,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Generator, MutableMapping
 from typing_extensions import Self
 
+import torch
 from torch import nn
 
 from ..base import BuildSpec, Config, FilterRegistry, Store
@@ -94,12 +96,9 @@ class NoGradMixin(CheckMixin, InitWeightsMixin, BuildSpecMixin):
         self._no_grad_filter = no_grad_filter
         self._filter_state_dict = filter_state_dict
 
-        if filter_state_dict:
-            self._register_state_dict_hook(self.state_dict_hook)
-
     @classproperty
     def build_spec(self) -> BuildSpec:
-        build_spec = BuildSpec(no_grad_filter=FilterRegistry.build, )
+        build_spec = BuildSpec(no_grad_filter=FilterRegistry.build)
         return super().build_spec | build_spec
 
     def check(self, module: Self, *args, **kwargs) -> None:
@@ -123,22 +122,8 @@ class NoGradMixin(CheckMixin, InitWeightsMixin, BuildSpecMixin):
             parameter.requires_grad_(False)
         return self
 
-    @staticmethod
-    def state_dict_hook(
-        model: 'FrozenMixin',
-        state_dict: MutableMapping[str, Any],
-        prefix: str,
-        *args,
-        **kwargs,
-    ) -> None:
+    def state_dict(self, *args, prefix: str = '', **kwargs):
         """Remove frozen parameters from `torch.nn.Module.load_state_dict`.
-
-        Args:
-            model: the model to load state dict.
-            state_dict: the state dict to load.
-            prefix: the prefix of the model.
-            *args: other args.
-            **kwargs: other kwargs.
 
         Define a ``no_grad_filter``:
 
@@ -167,8 +152,11 @@ class NoGradMixin(CheckMixin, InitWeightsMixin, BuildSpecMixin):
             >>> sequential.state_dict()
             OrderedDict([('0._conv.bias', tensor([..., ...]))])
         """
-        for name, _ in model._no_grad_named_parameters():
+        state_dict: MutableMapping[str, torch.Tensor] = \
+            super().state_dict(*args, prefix=prefix, **kwargs)
+        for name, _ in self._no_grad_named_parameters():
             state_dict.pop(prefix + name, None)
+        return state_dict
 
 
 class EvalMixin(CheckMixin, InitWeightsMixin, BuildSpecMixin):
@@ -210,5 +198,9 @@ class EvalMixin(CheckMixin, InitWeightsMixin, BuildSpecMixin):
         return self
 
 
-class FrozenMixin(NoGradMixin, EvalMixin):  # type: ignore[misc]
+class FreezeMixin(NoGradMixin, EvalMixin):  # type: ignore[misc]
+    pass
+
+
+class FrozenMixin(FreezeMixin):
     pass

@@ -9,18 +9,13 @@ __all__ = [
     'Shape',
     'ModuleList',
     'ModuleDict',
-    'ExponentialMovingAverage',
-    'MeanStdMixin',
 ]
 
 import functools
 import itertools
 import operator
 import os
-from abc import ABC
-from typing import TYPE_CHECKING
 
-import einops
 import torch
 import torch.distributed as dist
 from torch import nn
@@ -176,76 +171,3 @@ class ModuleDict(nn.ModuleDict):
 
     def forward(self, *args, **kwargs) -> dict[str, nn.Module]:
         return {k: m(*args, **kwargs) for k, m in self.items()}
-
-
-class ExponentialMovingAverage(nn.Module):
-
-    def __init__(
-        self,
-        *args,
-        decay=0.99,
-        **kwargs,
-    ) -> None:
-        self.check_decay(decay)
-        super().__init__(*args, **kwargs)
-        self._decay = decay
-
-    @staticmethod
-    def check_decay(decay) -> None:
-        if isinstance(decay, torch.Tensor):
-            assert decay.ge(0).all() and decay.le(1).all()
-        else:
-            assert 0 <= decay <= 1
-
-    @property
-    def decay(self):
-        return self._decay
-
-    def forward(self, x, y, decay=None):
-        assert x is not None or y is not None
-        if x is None:
-            return y
-        if y is None:
-            return x
-        if decay is None:
-            decay = self._decay
-        else:
-            self.check_decay(decay)
-        return x * decay + y * (1 - decay)
-
-    if TYPE_CHECKING:
-        __call__ = forward
-
-
-class MeanStdMixin(nn.Module, ABC):
-
-    def __init__(
-        self,
-        *args,
-        mean: tuple[float, float, float],
-        std: tuple[float, float, float],
-        **kwargs,
-    ) -> None:
-        super().__init__(*args, **kwargs)
-        mean_ = torch.tensor(mean)
-        mean_ = einops.rearrange(mean_, 'c -> 1 c 1 1')
-        std_ = torch.tensor(std)
-        std_ = einops.rearrange(std_, 'c -> 1 c 1 1')
-        self.register_buffer('_mean', mean_)
-        self.register_buffer('_std', std_)
-
-    @property
-    def mean(self) -> torch.Tensor:
-        return self.get_buffer('_mean')
-
-    @property
-    def std(self) -> torch.Tensor:
-        return self.get_buffer('_std')
-
-    def normalize(self, image: torch.Tensor) -> torch.Tensor:
-        image = (image - self.mean) / self.std
-        return image
-
-    def denormalize(self, image: torch.Tensor) -> torch.Tensor:
-        image = image * self.std + self.mean
-        return image

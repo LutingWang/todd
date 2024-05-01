@@ -8,7 +8,6 @@ __all__ = [
     'PartialRegistryMeta',
     'Registry',
     'PartialRegistry',
-    'NormRegistry',
     'LRSchedulerRegistry',
     'OptimizerRegistry',
     'RunnerRegistry',
@@ -36,7 +35,15 @@ __all__ = [
 import inspect
 from collections import UserDict
 from functools import partial
-from typing import Callable, NoReturn, Protocol, TypeVar, cast, no_type_check
+from typing import (
+    Any,
+    Callable,
+    NoReturn,
+    Protocol,
+    TypeVar,
+    cast,
+    no_type_check,
+)
 
 import torch
 import torch.utils.data
@@ -49,7 +56,7 @@ from .configs import Config
 from .logger import logger
 
 
-class BuildSpec(UserDict[str, Callable[[Config], Config]]):
+class BuildSpec(UserDict[str, Callable[[Config], Any]]):
 
     def __call__(self, config: Config) -> Config:
         return config | {
@@ -477,10 +484,6 @@ class PartialRegistry(metaclass=PartialRegistryMeta):
     pass
 
 
-class NormRegistry(Registry):
-    pass
-
-
 class OptimizerRegistry(Registry):
 
     @staticmethod
@@ -692,20 +695,6 @@ for c in descendant_classes(torch.optim.Optimizer):
 
 for c in descendant_classes(torch.optim.lr_scheduler.LRScheduler):
     LRSchedulerRegistry.register_()(cast(Item, c))
-
-NormRegistry.update(
-    BN1d=nn.BatchNorm1d,
-    BN2d=nn.BatchNorm2d,
-    BN=nn.BatchNorm2d,
-    BN3d=nn.BatchNorm3d,
-    SyncBN=nn.SyncBatchNorm,
-    GN=nn.GroupNorm,
-    LN=nn.LayerNorm,
-    IN1d=nn.InstanceNorm1d,
-    IN2d=nn.InstanceNorm2d,
-    IN=nn.InstanceNorm2d,
-    IN3d=nn.InstanceNorm3d,
-)
 
 for _, c in inspect.getmembers(tf, inspect.isclass):
     TransformRegistry.register_()(cast(Item, c))

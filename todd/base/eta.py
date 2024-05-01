@@ -9,7 +9,7 @@ import datetime
 from abc import ABC, abstractmethod
 from typing import NamedTuple
 
-from ..utils import ExponentialMovingAverage as EMA
+from ..utils import EMA
 from .configs import Config
 from .registries import ETARegistry
 

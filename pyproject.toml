@@ -7,7 +7,7 @@ name = 'todd_ai'
 version = '0.4.0'
 description = 'Toolkit for Object Detection Distillation'
 readme = 'README.md'
-requires-python = '>=3.10'
+requires-python = '>=3.11'
 classifiers = [
     'Programming Language :: Python :: 3',
     'License :: OSI Approved :: Apache Software License',
@@ -80,6 +80,7 @@ test = [
 [project.scripts]
 configs_diff = 'todd.base.configs:diff_cli'
 collect_env = 'todd.base.envs:collect_env_cli'
+sgr = 'todd.utils.control_sequences:sgr_cli'
 
 [tool.setuptools.packages.find]
 include = [

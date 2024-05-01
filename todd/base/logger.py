@@ -6,7 +6,7 @@ __all__ = [
 
 import logging
 
-from ..utils import SGR
+from ..utils import SGR, apply_sgr
 
 
 class Formatter(logging.Formatter):
@@ -26,13 +26,13 @@ class SGRFormatter(Formatter):
     def format(self, record: logging.LogRecord) -> str:
         s = super().format(record)
         if record.levelno == logging.DEBUG:
-            return SGR.format(s, SGR.FAINT)
+            return apply_sgr(s, SGR.FAINT)
         if record.levelno == logging.WARNING:
-            return SGR.format(s, SGR.BOLD, SGR.FG_YELLOW)
+            return apply_sgr(s, SGR.BOLD, SGR.DISPLAY_YELLOW)
         if record.levelno == logging.ERROR:
-            return SGR.format(s, SGR.BOLD, SGR.FG_RED)
+            return apply_sgr(s, SGR.BOLD, SGR.DISPLAY_RED)
         if record.levelno == logging.CRITICAL:
-            return SGR.format(s, SGR.BOLD, SGR.BLINK_SLOW, SGR.FG_RED)
+            return apply_sgr(s, SGR.BOLD, SGR.SLOWLY_BLINKING, SGR.DISPLAY_RED)
         return s
 
 

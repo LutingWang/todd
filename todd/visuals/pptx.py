@@ -3,6 +3,7 @@ __all__ = [
 ]
 
 import io
+from typing import Any
 
 import cv2
 import numpy as np
@@ -19,8 +20,10 @@ import pptx.shapes.shapetree
 import pptx.slide
 import pptx.util
 
-from ..base import VisualRegistry
-from .base import BaseVisual, Color, XAnchor, YAnchor
+from ..base import Config, VisualRegistry, logger
+from .anchors import XAnchor, YAnchor
+from .base import BaseVisual
+from .colors import RGB, Color
 
 
 @VisualRegistry.register_()
@@ -33,7 +36,7 @@ class PPTXVisual(BaseVisual):
     .. _python-pptx: https://github.com/scanny/python-pptx
     """
 
-    def __init__(self, width: int, height: int) -> None:
+    def __init__(self, width: int, height: int, **kwargs) -> None:
         """Initialize the PowerPoint with a single slide.
 
         To initialize a PowerPoint with width 640pt and height 426pt, use the
@@ -53,33 +56,49 @@ class PPTXVisual(BaseVisual):
             width: the width of the PowerPoint in point
             height: the height of the PowerPoint in point
         """
-        super().__init__(width, height)
+        self._presentation = pptx.Presentation(**kwargs)
 
-        pre: pptx.presentation.Presentation = pptx.Presentation()
-        pre.slide_width = pptx.util.Pt(width)
-        pre.slide_height = pptx.util.Pt(height)
+        self.presentation.slide_width = pptx.util.Pt(width)
+        self.presentation.slide_height = pptx.util.Pt(height)
 
-        layout: pptx.slide.SlideLayout = pre.slide_layouts[6]
-        slides: pptx.slide.Slides = pre.slides
-        slide: pptx.slide.Slide = slides.add_slide(layout)
-        shapes: pptx.shapes.shapetree.SlideShapes = slide.shapes
-
-        self._pre = pre
-        self._shapes = shapes
+        slides: pptx.slide.Slides = self.presentation.slides
+        slides.add_slide(self.presentation.slide_layouts[6])
 
     @property
     def width(self) -> int:
         """Width of the PowerPoint."""
-        width: pptx.util.Pt = self._pre.slide_width
+        width: pptx.util.Pt = self.presentation.slide_width
         return int(width.pt)
 
     @property
     def height(self) -> int:
         """Height of the PowerPoint."""
-        height: pptx.util.Pt = self._pre.slide_height
+        height: pptx.util.Pt = self.presentation.slide_height
         return int(height.pt)
 
-    def save(self, path) -> None:
+    @property
+    def presentation(self) -> pptx.presentation.Presentation:
+        return self._presentation
+
+    @property
+    def slide(self) -> pptx.slide.Slide:
+        return self.presentation.slides[0]
+
+    @property
+    def shapes(self) -> pptx.shapes.shapetree.SlideShapes:
+        return self.slide.shapes
+
+    @classmethod
+    def _set_color_format_rgb(
+        cls,
+        cf: pptx.dml.color.ColorFormat,
+        color: Color,
+    ) -> None:
+        cf.rgb = pptx.dml.color.RGBColor(
+            *color.to(RGB).to_tuple(),
+        )
+
+    def save(self, path: Any) -> None:
         """Save the PowerPoint.
 
         The save target can either be a filepath, for example::
@@ -96,7 +115,7 @@ class PPTXVisual(BaseVisual):
         Args:
             path: destination path
         """
-        self._pre.save(path)
+        self.presentation.save(path)
 
     def image(
         self,
@@ -140,31 +159,26 @@ class PPTXVisual(BaseVisual):
             height: height of the image
             opacity: opacity of the image
         """
+        assert 0.0 <= opacity <= 1.0
+
         h, w, c = image.shape
         assert c == 3
-
-        left_pixels = pptx.util.Pt(left)
-        top_pixels = pptx.util.Pt(top)
-        width_pixels = width if width is None else pptx.util.Pt(width)
-        height_pixels = height if height is None else pptx.util.Pt(height)
-
-        assert 0.0 <= opacity <= 1.0
 
         alpha = np.ones((h, w, 1)) * 255 * opacity
         image = np.concatenate([image, alpha], axis=-1)
         status, image = cv2.imencode('.png', image)
         assert status
-        bytes_io = io.BytesIO(image.tobytes())
-        picture = self._shapes.add_picture(
-            bytes_io,
-            left_pixels,
-            top_pixels,
-            width_pixels,
-            height_pixels,
+
+        picture = self.shapes.add_picture(
+            io.BytesIO(image.tobytes()),
+            pptx.util.Pt(left),
+            pptx.util.Pt(top),
+            width if width is None else pptx.util.Pt(width),
+            height if height is None else pptx.util.Pt(height),
         )
 
-        image_part: pptx.parts.image.Image = picture.image
-        assert image_part.dpi == (72, 72)
+        picture_image: pptx.parts.image.Image = picture.image
+        assert picture_image.dpi == (72, 72)
 
         return picture
 
@@ -174,25 +188,28 @@ class PPTXVisual(BaseVisual):
         top: int,
         width: int,
         height: int,
-        color: Color = Color(0, 0, 0),  # noqa: B008
+        color: Color = RGB(0., 0., 0.),  # noqa: B008
+        thickness: int = 1,
+        fill: Color | None = None,
     ) -> pptx.shapes.autoshape.Shape:
-        autoshape_type = pptx.enum.shapes.MSO_AUTO_SHAPE_TYPE
-        rectangle: pptx.shapes.autoshape.Shape = self._shapes.add_shape(
-            autoshape_type.RECTANGLE,  # pylint: disable=no-member
+        rectangle: pptx.shapes.autoshape.Shape = self.shapes.add_shape(
+            pptx.enum.shapes.MSO_AUTO_SHAPE_TYPE.RECTANGLE,  # noqa: E501 pylint: disable=no-member
             pptx.util.Pt(left),
             pptx.util.Pt(top),
             pptx.util.Pt(width),
             pptx.util.Pt(height),
         )
 
-        fill: pptx.shapes.autoshape.FillFormat = rectangle.fill
-        fill.background()
-
         line: pptx.shapes.autoshape.LineFormat = rectangle.line
-        line.width = pptx.util.Pt(1)
+        line.width = pptx.util.Pt(thickness)
+        self._set_color_format_rgb(line.color, color)
 
-        line_color: pptx.dml.color.ColorFormat = line.color
-        line_color.rgb = pptx.dml.color.RGBColor(*color)
+        rectangle_fill: pptx.shapes.autoshape.FillFormat = rectangle.fill
+        if fill is None:
+            rectangle_fill.background()
+        else:
+            rectangle_fill.solid()
+            self._set_color_format_rgb(rectangle_fill.fore_color, fill)
 
         return rectangle
 
@@ -202,51 +219,42 @@ class PPTXVisual(BaseVisual):
         x: int,
         y: int,
         x_anchor: XAnchor = XAnchor.LEFT,
-        y_anchor: YAnchor = YAnchor.BOTTOM,
-        color: Color = Color(0, 0, 0),  # noqa: B008
+        y_anchor: YAnchor = YAnchor.TOP,
+        color: Color = RGB(0., 0., 0.),  # noqa: B008
+        font: Config | None = None,
     ) -> pptx.shapes.autoshape.Shape:
-        width = pptx.util.Pt(9 * len(text))
-        height = pptx.util.Pt(15)
+        if x_anchor is not XAnchor.LEFT:
+            logger.warning(
+                "%s does not support %s",
+                self.__class__.__name__,
+                f"{x_anchor=}",
+            )
+        if y_anchor is not YAnchor.TOP:
+            logger.warning(
+                "%s does not support %s",
+                self.__class__.__name__,
+                f"{y_anchor=}",
+            )
+        if font is None:
+            font = Config()
 
-        if x_anchor is XAnchor.LEFT:
-            left = pptx.util.Pt(x)
-        elif x_anchor is XAnchor.RIGHT:
-            left = pptx.util.Pt(x) - width
-        else:
-            raise ValueError(f"Unsupported anchor {x_anchor}")
-
-        if y_anchor is YAnchor.TOP:
-            top = pptx.util.Pt(y)
-        elif y_anchor is YAnchor.BOTTOM:
-            top = pptx.util.Pt(y) - height
-        else:
-            raise ValueError(f"Unsupported anchor {y_anchor}")
-
-        textbox: pptx.shapes.autoshape.Shape = self._shapes.add_textbox(
-            left,
-            top,
-            width,
-            height,
+        textbox: pptx.shapes.autoshape.Shape = self.shapes.add_textbox(
+            pptx.util.Pt(x),
+            pptx.util.Pt(y),
+            1,
+            1,
         )
 
         text_frame = textbox.text_frame
+        text_frame.text = text
         text_frame.margin_left = 0
         text_frame.margin_top = 0
         text_frame.margin_right = 0
         text_frame.margin_bottom = 0
-        text_frame.vertical_anchor = getattr(
-            pptx.enum.text.MSO_VERTICAL_ANCHOR,
-            y_anchor.name,
-        )
 
-        paragraph = text_frame.paragraphs[0]
-        paragraph.text = text
-
-        font = paragraph.font
-        font.name = 'Times New Roman'
-        font.size = pptx.util.Pt(12)
-
-        font_color: pptx.dml.color.ColorFormat = font.color
-        font_color.rgb = pptx.dml.color.RGBColor(*color)
+        paragraph_font = text_frame.paragraphs[0].font
+        paragraph_font.name = font.get('name', 'Times New Roman')
+        paragraph_font.size = pptx.util.Pt(font.get('size', 12))
+        self._set_color_format_rgb(paragraph_font.color, color)
 
         return textbox

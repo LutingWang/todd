@@ -2,21 +2,35 @@ __all__ = [
     'CV2Visual',
 ]
 
-from typing import cast
+from typing import Any
 
 import cv2
 import numpy as np
 import numpy.typing as npt
 
-from ..base import VisualRegistry
-from .base import BaseVisual, Color, XAnchor, YAnchor
+from ..base import Config, VisualRegistry
+from .anchors import XAnchor, YAnchor
+from .colors import BGR, RGB, Color
+from .raster import RasterVisual
+
+Image = npt.NDArray[np.uint8]
 
 
 @VisualRegistry.register_()
-class CV2Visual(BaseVisual):
+class CV2Visual(RasterVisual):
 
-    def __init__(self, width: int, height: int) -> None:
-        self._image = np.zeros((height, width, 3))
+    def __init__(
+        self,
+        width: int,
+        height: int,
+        channels: int = 3,
+        **kwargs,
+    ) -> None:
+        self._image = np.zeros(
+            (height, width, channels),
+            dtype=np.uint8,
+            **kwargs,
+        )
 
     @property
     def width(self) -> int:
@@ -26,34 +40,29 @@ class CV2Visual(BaseVisual):
     def height(self) -> int:
         return self._image.shape[0]
 
-    def save(self, path) -> None:
+    def save(self, path: Any) -> None:
         cv2.imwrite(path, self._image)
 
     def image(
         self,
-        image: npt.NDArray[np.uint8],
+        image: Image,
         left: int = 0,
         top: int = 0,
         width: int | None = None,
         height: int | None = None,
         opacity: float = 1.0,
-    ) -> npt.NDArray[np.uint8]:
-        h, w, c = image.shape
-        assert c == 3
-
-        if width is not None or height is not None:
-            if width is None:
-                width = round(w / h * cast(int, height))
-            if height is None:
-                height = round(h / w * cast(int, width))
-            image = cv2.resize(image, (width, height))
-            h, w, _ = image.shape
-
+    ) -> Image:
         assert 0.0 <= opacity <= 1.0
+
+        h, w, _ = image.shape
+        if width is not None or height is not None:
+            w, h = self._scale_wh((w, h), width, height)
+            image = cv2.resize(image, (w, h))
+
         self._image[top:top + h, left:left + w] *= 1 - opacity
         self._image[top:top + h, left:left + w] += image * opacity
 
-        return self._image.astype(np.uint8)
+        return self._image
 
     def rectangle(
         self,
@@ -61,16 +70,19 @@ class CV2Visual(BaseVisual):
         top: int,
         width: int,
         height: int,
-        color: Color = Color(0, 0, 0),  # noqa: B008
-    ) -> npt.NDArray[np.uint8]:
-        cv2.rectangle(
+        color: Color = RGB(0., 0., 0.),  # noqa: B008
+        thickness: int = 1,
+        fill: Color | None = None,
+    ) -> Image:
+        args = (
             self._image,
             (left, top),
             (left + width, top + height),
-            color,
-            thickness=1,
         )
-        return self._image.astype(np.uint8)
+        if fill is not None:
+            cv2.rectangle(*args, fill.to(BGR).to_tuple(), thickness=-1)
+        cv2.rectangle(*args, color.to(BGR).to_tuple(), thickness=thickness)
+        return self._image
 
     def text(
         self,
@@ -78,17 +90,27 @@ class CV2Visual(BaseVisual):
         x: int,
         y: int,
         x_anchor: XAnchor = XAnchor.LEFT,
-        y_anchor: YAnchor = YAnchor.BOTTOM,
-        color: Color = Color(0, 0, 0),  # noqa: B008
-    ) -> npt.NDArray[np.uint8]:
-        assert x_anchor is XAnchor.LEFT
-        assert y_anchor is YAnchor.BOTTOM
+        y_anchor: YAnchor = YAnchor.TOP,
+        color: Color = RGB(0., 0., 0.),  # noqa: B008
+        font: Config | None = None,
+        thickness: int = 1,
+    ) -> Image:
+        if font is None:
+            font = Config()
+
+        font_face = font.get('face', cv2.FONT_HERSHEY_COMPLEX_SMALL)
+        font_scale = font.get('scale', 1.0)
+
+        wh, _ = cv2.getTextSize(text, font_face, font_scale, thickness)
+        xy = self._translate_xy(wh, x, y, x_anchor, y_anchor)
+
         cv2.putText(
             self._image,
-            text=text,
-            org=(x, y),
-            fontFace=cv2.FONT_HERSHEY_COMPLEX_SMALL,
-            fontScale=1.0,
-            color=color,
+            text,
+            xy,
+            font_face,
+            font_scale,
+            color.to(BGR).to_tuple(),
+            thickness,
         )
-        return self._image.astype(np.uint8)
+        return self._image

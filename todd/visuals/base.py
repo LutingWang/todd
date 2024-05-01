@@ -1,58 +1,21 @@
 __all__ = [
-    'XAnchor',
-    'YAnchor',
     'BaseVisual',
 ]
 
-import enum
 from abc import ABC, abstractmethod
-from typing import Any, NamedTuple
+from typing import Any
 
 import cv2
 import numpy as np
 import numpy.typing as npt
 import torch
 
-
-class Color(NamedTuple):
-    red: float
-    green: float
-    blue: float
-
-
-class XAnchor(enum.Enum):
-    LEFT = enum.auto()
-    RIGHT = enum.auto()
-
-
-class YAnchor(enum.Enum):
-    TOP = enum.auto()
-    BOTTOM = enum.auto()
+from ..base import Config
+from .anchors import XAnchor, YAnchor
+from .colors import PALETTE, RGB, Color
 
 
 class BaseVisual(ABC):
-    PALETTE = [
-        Color(106, 0, 228),
-        Color(119, 11, 32),
-        Color(165, 42, 42),
-        Color(0, 0, 192),
-        Color(197, 226, 255),
-        Color(0, 60, 100),
-        Color(0, 0, 142),
-        Color(255, 77, 255),
-        Color(153, 69, 1),
-        Color(120, 166, 157),
-        Color(0, 182, 199),
-        Color(0, 226, 252),
-        Color(182, 182, 255),
-        Color(0, 0, 230),
-        Color(220, 20, 60),
-        Color(163, 255, 0),
-        Color(0, 82, 0),
-        Color(3, 95, 161),
-        Color(0, 80, 100),
-        Color(183, 130, 88),
-    ]
 
     @abstractmethod
     def __init__(self, width: int, height: int) -> None:
@@ -69,11 +32,11 @@ class BaseVisual(ABC):
         pass
 
     def color(self, index: int) -> Color:
-        index %= len(self.PALETTE)
-        return self.PALETTE[index]
+        index %= len(PALETTE)
+        return PALETTE[index]
 
     @abstractmethod
-    def save(self, path) -> None:
+    def save(self, path: Any) -> None:
         pass
 
     @abstractmethod
@@ -85,7 +48,7 @@ class BaseVisual(ABC):
         width: int | None = None,
         height: int | None = None,
         opacity: float = 1.0,
-    ):
+    ) -> Any:
         pass
 
     def activation(
@@ -97,15 +60,15 @@ class BaseVisual(ABC):
         height: int | None = None,
         inverse: bool = False,
         opacity: float = 0.5,
-    ):
+    ) -> Any:
         """Draw the activation map.
 
         Suppose our activation map is :math:`(256, 13, 20)`, where 256 is the
-        number of channels, 13 is the height, and 20 is the width::
+        number of channels, 13 is the height, and 20 is the width:
 
             >>> activation = torch.rand(256, 13, 20)
 
-        We first reduce the channel dimension, using whatever reduction::
+        We first reduce the channel dimension, using whatever reduction:
 
             >>> import einops
             >>> activation = einops.reduce(
@@ -114,7 +77,7 @@ class BaseVisual(ABC):
             ...     reduction='mean',
             ... )
 
-        Then we draw the activation map::
+        Then we draw the activation map:
 
             >>> from .pptx import PPTXVisual
             >>> visual = PPTXVisual(640, 426)
@@ -152,8 +115,10 @@ class BaseVisual(ABC):
         top: int,
         width: int,
         height: int,
-        color: Color = Color(0, 0, 0),  # noqa: B008
-    ):
+        color: Color = RGB(0., 0., 0.),  # noqa: B008
+        thickness: int = 1,
+        fill: Color | None = None,
+    ) -> Any:
         pass
 
     @abstractmethod
@@ -163,9 +128,10 @@ class BaseVisual(ABC):
         x: int,
         y: int,
         x_anchor: XAnchor = XAnchor.LEFT,
-        y_anchor: YAnchor = YAnchor.BOTTOM,
-        color: Color = Color(0, 0, 0),  # noqa: B008
-    ):
+        y_anchor: YAnchor = YAnchor.TOP,
+        color: Color = RGB(0., 0., 0.),  # noqa: B008
+        font: Config | None = None,
+    ) -> Any:
         pass
 
     def annotation(
@@ -175,7 +141,9 @@ class BaseVisual(ABC):
         top: int,
         width: int,
         height: int,
-        color: Color = Color(0, 0, 0),  # noqa: B008
+        color: Color = RGB(0., 0., 0.),  # noqa: B008
+        thickness: int = 1,
+        font: Config | None = None,
     ) -> tuple[Any, Any]:
         """Draw an annotation bbox.
 
@@ -184,7 +152,7 @@ class BaseVisual(ABC):
         The text is labeled above the bbox, left-aligned.
 
         The method is useful to visualize dataset annotations or pseudo
-        labels, for example::
+        labels, for example:
 
             >>> from .pptx import PPTXVisual
             >>> visual = PPTXVisual(640, 426)
@@ -219,11 +187,19 @@ class BaseVisual(ABC):
         Returns:
             tuple of the bbox and the text object
         """
-        rectangle = self.rectangle(left, top, width, height, color)
+        rectangle = self.rectangle(
+            left,
+            top,
+            width,
+            height,
+            color,
+            thickness,
+        )
         text_ = self.text(
             text,
             left,
-            top,
+            top + height,
             color=color,
+            font=font,
         )
-        return (rectangle, text_)
+        return rectangle, text_
