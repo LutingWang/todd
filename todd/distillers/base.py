@@ -10,8 +10,9 @@ from typing_extensions import Self
 
 from torch import nn
 
-from ..base import ComposedPipeline, Spec, transfer_weights
+from ..base import transfer_weights
 from ..configs import Config
+from ..data_structures import ComposedPipeline, Spec
 from ..losses import BaseLoss
 from ..registries import LossRegistry
 from ..stores import StoreMeta

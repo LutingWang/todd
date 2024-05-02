@@ -8,8 +8,8 @@ from typing import Literal
 
 from torch import nn
 
+from ...data_structures import Status
 from ...patches import get_
-from ...utils import Status
 
 
 class StatusEnum(IntEnum):

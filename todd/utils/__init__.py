@@ -1,7 +1,6 @@
 from .bboxes import *
 from .constants import *
 from .control_sequences import *
-from .data_structures import *
 from .ema import *
 from .generic_tensors import *
 from .metas import *

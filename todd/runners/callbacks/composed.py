@@ -5,8 +5,8 @@ __all__ = [
 from typing import Any, Iterable, Iterator, Literal, Mapping
 
 from ...configs import Config
+from ...data_structures import PriorityQueue
 from ...registries import CallbackRegistry
-from ...utils import PriorityQueue
 from .base import BaseCallback
 
 KT = Literal['init', 'should_break', 'should_continue', 'before_run_iter',

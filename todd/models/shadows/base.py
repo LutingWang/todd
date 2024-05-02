@@ -8,7 +8,8 @@ from typing import TYPE_CHECKING
 import torch
 from torch import nn
 
-from ...utils import StateDict, TensorCollectionUtil
+from ...data_structures import TensorCollectionUtil
+from ...utils import StateDict
 from ..norms import BATCHNORMS
 
 
