@@ -11,7 +11,7 @@ import einops
 import torch
 import torch.nn.functional as F
 
-from ..base import LossRegistry
+from ..registries import LossRegistry
 from .functional import FunctionalLoss, L1Loss, MSELoss
 
 

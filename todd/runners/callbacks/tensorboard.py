@@ -4,8 +4,8 @@ __all__ = [
 
 from torch.utils.tensorboard import SummaryWriter
 
-from ...base import CallbackRegistry
 from ...configs import Config
+from ...registries import CallbackRegistry
 from ...utils import get_rank
 from ..types import Memo
 from .base import BaseCallback

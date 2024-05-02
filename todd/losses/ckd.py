@@ -7,7 +7,7 @@ import torch
 import torch.distributed as dist
 import torch.nn.functional as F
 
-from ..base import LossRegistry
+from ..registries import LossRegistry
 from ..utils import BBoxesXYXY, get_rank, get_world_size
 from .base import BaseLoss
 

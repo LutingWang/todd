@@ -29,7 +29,7 @@ import pandas as pd
 from ..configs import Config
 from ..logger import logger
 from ..patches import exec_
-from .registries import PipelineRegistry, RegistryMeta
+from ..registries import PipelineRegistry, RegistryMeta
 
 Message = dict[str, Any]
 Pipelines = Iterable[Config] | Mapping[str, Config]

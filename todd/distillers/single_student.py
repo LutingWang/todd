@@ -11,8 +11,8 @@ from typing import Generic, Iterable, Mapping, TypeVar
 
 from torch import nn
 
-from ..base import DistillerRegistry
 from ..configs import Config
+from ..registries import DistillerRegistry
 from .base import BaseDistiller
 
 Pipelines = Iterable[Config] | Mapping[str, Config]

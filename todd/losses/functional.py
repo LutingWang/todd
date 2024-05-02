@@ -14,7 +14,7 @@ from abc import ABC, abstractmethod
 import torch
 import torch.nn.functional as F
 
-from ..base import LossRegistry
+from ..registries import LossRegistry
 from .base import BaseLoss
 
 

@@ -20,9 +20,9 @@ import pptx.shapes.shapetree
 import pptx.slide
 import pptx.util
 
-from ..base import VisualRegistry
 from ..configs import Config
 from ..logger import logger
+from ..registries import VisualRegistry
 from .anchors import XAnchor, YAnchor
 from .base import BaseVisual
 from .colors import RGB, Color

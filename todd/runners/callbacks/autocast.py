@@ -6,8 +6,8 @@ import contextlib
 
 import torch
 
-from ...base import CallbackRegistry
 from ...configs import Config
+from ...registries import CallbackRegistry
 from ..types import Memo
 from .base import BaseCallback
 

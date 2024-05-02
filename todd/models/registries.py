@@ -3,7 +3,7 @@ __all__ = [
     'ShadowRegistry',
 ]
 
-from ..base import Registry
+from ..registries import Registry
 
 
 class NormRegistry(Registry):

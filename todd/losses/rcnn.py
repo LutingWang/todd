@@ -9,7 +9,7 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 
-from ..base import LossRegistry
+from ..registries import LossRegistry
 from .functional import MSELoss
 
 

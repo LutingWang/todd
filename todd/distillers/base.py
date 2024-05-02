@@ -10,9 +10,10 @@ from typing_extensions import Self
 
 from torch import nn
 
-from ..base import ComposedPipeline, LossRegistry, Spec, transfer_weights
+from ..base import ComposedPipeline, Spec, transfer_weights
 from ..configs import Config
 from ..losses import BaseLoss
+from ..registries import LossRegistry
 from ..stores import StoreMeta
 from .adapts import BaseAdapt
 from .hooks import BaseHook

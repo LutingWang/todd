@@ -8,8 +8,8 @@ import torch
 from torch import nn
 from torch.distributed.fsdp import FullyShardedDataParallel as FSDP
 
-from ...base import OptimizerRegistry, StrategyRegistry
 from ...configs import Config
+from ...registries import OptimizerRegistry, StrategyRegistry
 from .cuda import CUDAStrategy
 
 # TODO: update when pytorch updates

@@ -16,7 +16,7 @@ from typing import Iterable, cast
 
 import torch
 
-from ..base import SchedulerRegistry
+from ..registries import SchedulerRegistry
 
 
 @SchedulerRegistry.register_()

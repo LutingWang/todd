@@ -8,8 +8,8 @@ import cv2
 import numpy as np
 import numpy.typing as npt
 
-from ..base import VisualRegistry
 from ..configs import Config
+from ..registries import VisualRegistry
 from .anchors import XAnchor, YAnchor
 from .colors import BGR, RGB, Color
 from .raster import RasterVisual

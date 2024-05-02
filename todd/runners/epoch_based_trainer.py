@@ -9,7 +9,7 @@ from typing import TypeVar
 
 from torch import nn
 
-from ..base import RunnerRegistry
+from ..registries import RunnerRegistry
 from ..utils import set_epoch
 from .trainer import Trainer
 from .types import Memo

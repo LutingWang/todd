@@ -8,8 +8,8 @@ from typing import Any, Mapping
 
 import torch
 
-from ...base import CallbackRegistry, ClipGradRegistry
 from ...configs import Config
+from ...registries import CallbackRegistry, ClipGradRegistry
 from ..types import Memo
 from .base import BaseCallback
 

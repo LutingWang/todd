@@ -22,7 +22,7 @@ import subprocess  # nosec B404
 
 from ..logger import logger
 from ..utils import subprocess_run
-from .registries import Registry
+from .registry import Registry
 
 
 class EnvRegistry(Registry):

@@ -10,7 +10,7 @@ from typing import cast
 import einops.layers.torch
 from torch import nn
 
-from ..base import Item, Registry
+from ..registries import Item, Registry
 
 
 class AdaptRegistry(Registry):

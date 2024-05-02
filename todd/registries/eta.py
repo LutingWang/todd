@@ -12,7 +12,7 @@ from typing import NamedTuple
 
 from ..configs import Config
 from ..utils import EMA
-from .registries import Registry
+from .registry import Registry
 
 
 class ETARegistry(Registry):

@@ -7,7 +7,7 @@ from abc import ABC
 
 import torch
 
-from ..base import LossRegistry
+from ..registries import LossRegistry
 from .functional import BCELoss, BCEWithLogitsLoss, FunctionalLoss
 
 

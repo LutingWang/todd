@@ -14,15 +14,15 @@ from typing import TYPE_CHECKING, Any, Generic, Iterable, Mapping, TypeVar
 from torch import nn
 from torch.utils.data import DataLoader, Dataset
 
-from ..base import (
+from ..configs import Config
+from ..logger import logger as base_logger
+from ..registries import (
     CollateRegistry,
     DatasetRegistry,
     RunnerRegistry,
     SamplerRegistry,
     StrategyRegistry,
 )
-from ..configs import Config
-from ..logger import logger as base_logger
 from ..utils import StateDictMixin, get_rank
 from .types import Memo
 

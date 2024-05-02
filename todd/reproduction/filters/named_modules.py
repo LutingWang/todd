@@ -6,7 +6,7 @@ from typing import Generator
 
 from torch import nn
 
-from ...base import FilterRegistry
+from ...registries import FilterRegistry
 from .named_members import NamedMembersFilter
 
 
