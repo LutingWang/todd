@@ -6,14 +6,18 @@ __all__ = [
     'all_gather_',
     'all_sync',
     'set_epoch',
+    'transfer_weight',
+    'transfer_weights',
 ]
 
 import functools
 import operator
 import os
+from typing import Mapping
 
 import torch
 import torch.distributed as dist
+from torch import nn
 from torch.utils.data import DataLoader
 
 
@@ -112,3 +116,19 @@ def load(f, *args, directory=None, **kwargs):
     if directory is not None:
         f = os.path.join(directory, f)
     return torch.load(f, *args, **kwargs)
+
+
+def transfer_weight(target: nn.Module, source: nn.Module) -> None:
+    state_dict = source.state_dict()
+    incompatible_keys = target.load_state_dict(state_dict, strict=False)
+    if get_rank() == 0:
+        from ..logger import logger  # pylint: disable=import-outside-toplevel
+        logger.info(incompatible_keys)
+
+
+def transfer_weights(models, weight_prefixes: Mapping[str, str]) -> None:
+    from ..patches import get_  # pylint: disable=import-outside-toplevel
+    for target_prefix, source_prefix in weight_prefixes.items():
+        target = get_(models, target_prefix)
+        source = get_(models, source_prefix)
+        transfer_weight(target, source)
