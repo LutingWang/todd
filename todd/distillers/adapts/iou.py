@@ -4,7 +4,7 @@ __all__ = [
 
 import torch
 
-from ...utils import BBoxesXYXY
+from ...data_structures import BBoxesXYXY
 from ..registries import AdaptRegistry
 from .base import BaseAdapt
 

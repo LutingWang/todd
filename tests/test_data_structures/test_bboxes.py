@@ -3,7 +3,7 @@
 import pytest
 import torch
 
-from todd.utils.bboxes import (
+from todd.data_structures.bboxes import (
     BBoxes,
     BBoxes__WH,
     BBoxes__XY,

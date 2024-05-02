@@ -1,4 +1,3 @@
-from .bboxes import *
 from .constants import *
 from .control_sequences import *
 from .ema import *
