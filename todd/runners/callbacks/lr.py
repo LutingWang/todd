@@ -7,7 +7,8 @@ from typing import Any, Mapping, cast
 
 import torch
 
-from ...base import CallbackRegistry, Config, LRSchedulerRegistry
+from ...base import CallbackRegistry, LRSchedulerRegistry
+from ...configs import Config
 from ...utils import get_rank, get_world_size
 from ..trainer import Trainer
 from ..types import Memo

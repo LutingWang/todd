@@ -7,8 +7,9 @@ from typing import Mapping
 
 from torch import nn
 
-from ..utils import get_, get_rank
-from .logger import logger
+from ..logger import logger
+from ..patches import get_
+from ..utils import get_rank
 
 
 def transfer_weight(target: nn.Module, source: nn.Module) -> None:

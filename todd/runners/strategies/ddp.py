@@ -7,7 +7,8 @@ from typing import TypeVar, cast
 from torch import nn
 from torch.nn.parallel import DistributedDataParallel as DDP
 
-from ...base import Config, StrategyRegistry
+from ...base import StrategyRegistry
+from ...configs import Config
 from .cuda import CUDAStrategy
 
 T = TypeVar('T', bound=DDP)

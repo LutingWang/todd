@@ -13,7 +13,8 @@ import torch
 import torch.distributed as dist
 from torch.backends import cudnn
 
-from ..base import Store, logger
+from ..logger import logger
+from ..stores import Store
 from ..utils import get_world_size
 
 

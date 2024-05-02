@@ -26,9 +26,9 @@ from typing import (
 
 import pandas as pd
 
-from ..utils import exec_
-from .configs import Config
-from .logger import logger
+from ..configs import Config
+from ..logger import logger
+from ..patches import exec_
 from .registries import PipelineRegistry, RegistryMeta
 
 Message = dict[str, Any]

@@ -13,10 +13,11 @@ from typing_extensions import Self
 import torch
 from torch import nn
 
-from ..base import BuildSpec, Config, FilterRegistry, Store
-from ..base.registries import BuildSpecMixin
+from ..base import BuildSpec, BuildSpecMixin, FilterRegistry
+from ..configs import Config
 from ..models import InitWeightsMixin
-from ..utils import classproperty
+from ..patches import classproperty
+from ..stores import Store
 from .filters import NamedModulesFilter, NamedParametersFilter
 
 

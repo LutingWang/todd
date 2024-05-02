@@ -8,7 +8,7 @@ from torch import nn
 
 from ...base import BuildSpec, FilterRegistry
 from ...base.registries import BuildSpecMixin
-from ...utils import classproperty
+from ...patches import classproperty
 from .named_members import NamedMembersFilter
 from .named_modules import NamedModulesFilter
 

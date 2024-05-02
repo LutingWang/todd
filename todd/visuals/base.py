@@ -10,7 +10,7 @@ import numpy as np
 import numpy.typing as npt
 import torch
 
-from ..base import Config
+from ..configs import Config
 from .anchors import XAnchor, YAnchor
 from .colors import PALETTE, RGB, Color
 

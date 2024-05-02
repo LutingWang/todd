@@ -29,11 +29,11 @@ repos:
       - id: check-vcs-permalinks
       - id: check-yaml
       - id: debug-statements
-        exclude: ^todd/base/patches\.py$
+        exclude: ^todd/patches\.py$
       - id: destroyed-symlinks
       - id: detect-private-key
       - id: end-of-file-fixer
-        exclude: ^tests/test_base/configs/diff\.html$
+        exclude: ^tests/configs/diff\.html$
       - id: fix-encoding-pragma
         args:
           - --remove
@@ -49,13 +49,13 @@ repos:
       - id: name-tests-test
         args:
           - --pytest-test-first
-        exclude: ^tests/(helpers|.*/configs/.*\.py$|test_distillers/fgd/fgd.py$|test_losses/ckd/ckd.py$)
+        exclude: ^tests/(helpers|configs/.*\.py$|test_distillers/fgd/fgd.py$|test_losses/ckd/ckd.py$)
       - id: pretty-format-json
         args:
           - --autofix
         exclude: \.ipynb$
       - id: trailing-whitespace
-        exclude: ^tests/test_base/configs/diff\.html$
+        exclude: ^tests/configs/diff\.html$
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.8.0
     hooks:

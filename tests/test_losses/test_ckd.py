@@ -2,7 +2,7 @@ import pathlib
 
 import torch
 
-from todd.base import Config
+from todd.configs import Config
 from todd.distillers import AdaptRegistry, BaseDistiller, DistillerStore
 from todd.distillers.adapts import BaseAdapt
 from todd.utils import CollectionTensor

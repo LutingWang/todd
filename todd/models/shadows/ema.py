@@ -5,7 +5,8 @@ __all__ = [
 import torch
 
 from ...base import BuildSpec, BuildSpecMixin
-from ...utils import EMA, classproperty
+from ...patches import classproperty
+from ...utils import EMA
 from ..registries import ShadowRegistry
 from .base import BaseShadow
 

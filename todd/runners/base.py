@@ -16,13 +16,13 @@ from torch.utils.data import DataLoader, Dataset
 
 from ..base import (
     CollateRegistry,
-    Config,
     DatasetRegistry,
     RunnerRegistry,
     SamplerRegistry,
     StrategyRegistry,
 )
-from ..base import logger as base_logger
+from ..configs import Config
+from ..logger import logger as base_logger
 from ..utils import StateDictMixin, get_rank
 from .types import Memo
 

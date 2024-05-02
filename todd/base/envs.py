@@ -1,6 +1,7 @@
 # pylint: disable=import-outside-toplevel
 
 __all__ = [
+    'EnvRegistry',
     'platform',
     'nvidia_smi',
     'python_version',
@@ -19,9 +20,13 @@ import importlib.util
 import os
 import subprocess  # nosec B404
 
+from ..logger import logger
 from ..utils import subprocess_run
-from .logger import logger
-from .registries import EnvRegistry
+from .registries import Registry
+
+
+class EnvRegistry(Registry):
+    pass
 
 
 @EnvRegistry.register_()

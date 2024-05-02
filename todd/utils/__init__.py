@@ -1,3 +1,4 @@
+from .bboxes import *
 from .constants import *
 from .control_sequences import *
 from .data_structures import *
@@ -6,6 +7,5 @@ from .generic_tensors import *
 from .metas import *
 from .misc import *
 from .mixins import *
-from .patches import *
 from .torch import *
 from .type_aliases import *

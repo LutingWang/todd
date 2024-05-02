@@ -9,7 +9,7 @@ import einops
 import torch
 from torch import nn
 
-from ..base import Config
+from ..configs import Config
 
 
 class InitWeightsMixin(nn.Module, ABC):

@@ -9,8 +9,20 @@ __all__ = [
     'classproperty',
 ]
 
+import builtins
 import contextlib
 from typing import Any, Callable, Generator
+
+from .logger import logger
+from .utils import get_rank
+
+try:
+    import ipdb
+    if get_rank() == 0:
+        logger.info("`ipdb` is installed. Using it for debugging.")
+    builtins.breakpoint = ipdb.set_trace
+except ImportError:
+    pass
 
 
 def get_(obj, attr: str, default=...):

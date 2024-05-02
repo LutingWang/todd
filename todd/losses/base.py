@@ -8,7 +8,7 @@ from typing import Literal
 import torch
 from torch import nn
 
-from ..base import Config
+from ..configs import Config
 from .schedulers import BaseScheduler, SchedulerRegistry
 
 Reduction = Literal['none', 'mean', 'sum', 'prod']

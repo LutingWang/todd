@@ -4,7 +4,7 @@ import pathlib
 import pytest
 
 from todd import set_temp
-from todd.base.configs import Config
+from todd.configs import Config
 
 
 class TestConfigs:

@@ -4,7 +4,8 @@ __all__ = [
 
 from typing import Any, Iterable, Iterator, Literal, Mapping
 
-from ...base import CallbackRegistry, Config
+from ...base import CallbackRegistry
+from ...configs import Config
 from ...utils import PriorityQueue
 from .base import BaseCallback
 

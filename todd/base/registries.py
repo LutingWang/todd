@@ -22,10 +22,8 @@ __all__ = [
     'SamplerRegistry',
     'ModelRegistry',
     'TransformRegistry',
-    'EnvRegistry',
     'PipelineRegistry',
     'FilterRegistry',
-    'ETARegistry',
     'ClipGradRegistry',
     'InitRegistry',
     'CollateRegistry',
@@ -50,9 +48,10 @@ import torch.utils.data.dataset
 import torchvision.transforms as tf
 from torch import nn
 
-from ..utils import NonInstantiableMeta, classproperty, get_rank
-from .configs import Config
-from .logger import logger
+from ..configs import Config
+from ..logger import logger
+from ..patches import classproperty
+from ..utils import NonInstantiableMeta, get_rank
 
 
 class BuildSpec(UserDict[str, Callable[[Config], Any]]):
@@ -633,19 +632,11 @@ class TransformRegistry(Registry):
         return RegistryMeta._build(cls, item, config)
 
 
-class EnvRegistry(Registry):
-    pass
-
-
 class PipelineRegistry(Registry):
     pass
 
 
 class FilterRegistry(Registry):
-    pass
-
-
-class ETARegistry(Registry):
     pass
 
 

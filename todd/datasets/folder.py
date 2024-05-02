@@ -7,7 +7,7 @@ import pathlib
 from abc import ABC
 from typing import Iterator, TypeVar
 
-from ..base import Config
+from ..configs import Config
 from .base import BaseAccessLayer
 
 VT = TypeVar('VT')

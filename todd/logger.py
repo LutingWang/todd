@@ -6,7 +6,7 @@ __all__ = [
 
 import logging
 
-from ..utils import SGR, apply_sgr
+from .utils import SGR, apply_sgr
 
 
 class Formatter(logging.Formatter):

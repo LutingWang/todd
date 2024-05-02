@@ -5,7 +5,8 @@ __all__ = [
 from abc import ABC
 from typing import Generator, TypeVar
 
-from ..base import AccessLayerRegistry, Config
+from ..base import AccessLayerRegistry
+from ..configs import Config
 from .base import BaseAccessLayer
 
 VT = TypeVar('VT')

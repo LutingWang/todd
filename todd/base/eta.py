@@ -1,4 +1,5 @@
 __all__ = [
+    'ETARegistry',
     'Datum',
     'BaseETA',
     'AverageETA',
@@ -9,9 +10,13 @@ import datetime
 from abc import ABC, abstractmethod
 from typing import NamedTuple
 
+from ..configs import Config
 from ..utils import EMA
-from .configs import Config
-from .registries import ETARegistry
+from .registries import Registry
+
+
+class ETARegistry(Registry):
+    pass
 
 
 class Datum(NamedTuple):
