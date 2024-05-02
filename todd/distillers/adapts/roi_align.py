@@ -1,7 +1,12 @@
+__all__ = [
+    'RoIAlign',
+]
+
 import torch
 from torch import nn
 
-from .base import AdaptRegistry, BaseAdapt
+from ..registries import AdaptRegistry
+from .base import BaseAdapt
 
 
 @AdaptRegistry.register_()

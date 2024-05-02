@@ -1,10 +1,8 @@
 """Toolkit for Object Detection Distillation."""
 
 __all__ = [
-    'adapts',
     'datasets',
     'distillers',
-    'hooks',
     'losses',
     'models',
     'reproduction',
@@ -14,10 +12,8 @@ __all__ = [
 __version__ = '0.4.0'
 
 from . import (
-    adapts,
     datasets,
     distillers,
-    hooks,
     losses,
     models,
     reproduction,

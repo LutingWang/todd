@@ -2,7 +2,7 @@ __all__ = [
     'DuplicateHook',
 ]
 
-from ..base import HookRegistry
+from ..registries import HookRegistry
 from .vanilla import VanillaHook
 
 

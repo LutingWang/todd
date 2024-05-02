@@ -2,9 +2,9 @@ import pathlib
 
 import torch
 
-from todd.adapts import AdaptRegistry, BaseAdapt
 from todd.base import Config
-from todd.distillers import BaseDistiller, DistillerStore
+from todd.distillers import AdaptRegistry, BaseDistiller, DistillerStore
+from todd.distillers.adapts import BaseAdapt
 from todd.utils import CollectionTensor
 
 

@@ -1,12 +1,18 @@
+__all__ = [
+    'SpatialAttention',
+    'ChannelAttention',
+]
+
 import einops
 import torch
 import torch.nn.functional as F
 
-from .base import AdaptRegistry, BaseAdapt
+from ..registries import AdaptRegistry
+from .base import BaseAdapt
 
 
 @AdaptRegistry.register_()
-class AbsMeanSpatialAttention(BaseAdapt):
+class SpatialAttention(BaseAdapt):
 
     def __init__(self, *args, temperature: float = 1, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -24,7 +30,7 @@ class AbsMeanSpatialAttention(BaseAdapt):
 
 
 @AdaptRegistry.register_()
-class AbsMeanChannelAttention(BaseAdapt):
+class ChannelAttention(BaseAdapt):
 
     def __init__(self, *args, temperature: float = 1, **kwargs) -> None:
         super().__init__(*args, **kwargs)

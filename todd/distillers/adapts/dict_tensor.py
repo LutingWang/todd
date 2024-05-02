@@ -1,3 +1,9 @@
+__all__ = [
+    'DictTensor',
+    'Union_',
+    'Intersect',
+]
+
 import itertools
 import operator
 from functools import reduce
@@ -6,13 +12,8 @@ from typing import Iterable, Iterator, Mapping, Sequence, overload
 import einops
 import torch
 
-from .base import AdaptRegistry, BaseAdapt
-
-__all__ = [
-    'DictTensor',
-    'Union_',
-    'Intersect',
-]
+from ..registries import AdaptRegistry
+from .base import BaseAdapt
 
 KeyType = tuple[int, ...]
 

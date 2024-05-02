@@ -1,7 +1,7 @@
 import pytest
 import torch
 
-from todd.adapts import IoU
+from todd.distillers.adapts import IoU
 
 
 class TestIoU:

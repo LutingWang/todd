@@ -1,11 +1,10 @@
 __all__ = [
-    'BaseAdapt',
     'AdaptRegistry',
+    'HookRegistry',
 ]
 
 import inspect
 import itertools
-from abc import ABC
 from typing import cast
 
 import einops.layers.torch
@@ -14,22 +13,22 @@ from torch import nn
 from ..base import Item, Registry
 
 
-class BaseAdapt(nn.Module, ABC):
-    pass
-
-
 class AdaptRegistry(Registry):
     pass
 
 
-for _, class_ in itertools.chain(
+class HookRegistry(Registry):
+    pass
+
+
+for _, c in itertools.chain(
     inspect.getmembers(nn, inspect.isclass),
     inspect.getmembers(einops.layers.torch, inspect.isclass),
 ):
-    if issubclass(class_, nn.Module):
-        AdaptRegistry.register_()(cast(Item, class_))
+    if issubclass(c, nn.Module):
+        AdaptRegistry.register_()(cast(Item, c))
 
-try:
+try:  # TODO: remove this
     import mmcv.cnn
 
     for k, v in itertools.chain(

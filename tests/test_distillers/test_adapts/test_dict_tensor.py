@@ -1,7 +1,7 @@
 import pytest
 import torch
 
-from todd.adapts.dict_tensor import Intersect
+from todd.distillers.adapts.dict_tensor import Intersect
 
 
 class TestIntersect:

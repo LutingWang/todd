@@ -1,8 +1,13 @@
+__all__ = [
+    'Decouple',
+]
+
 import einops
 import torch
 from torch import nn
 
-from .base import AdaptRegistry, BaseAdapt
+from ..registries import AdaptRegistry
+from .base import BaseAdapt
 
 
 @AdaptRegistry.register_()

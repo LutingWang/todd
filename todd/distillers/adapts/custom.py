@@ -1,6 +1,11 @@
+__all__ = [
+    'Custom',
+]
+
 import string
 
-from .base import AdaptRegistry, BaseAdapt
+from ..registries import AdaptRegistry
+from .base import BaseAdapt
 
 
 @AdaptRegistry.register_()
@@ -26,8 +31,7 @@ class Custom(BaseAdapt):
         self._pattern = pattern
 
     def forward(self, *args, **kwargs):
-        locals_ = dict(zip(string.ascii_letters, args))
-        if len(locals_.keys() & kwargs.keys()) != 0:
-            raise RuntimeError(locals_.keys() & kwargs.keys())
-        locals_.update(kwargs)
-        return eval(self._pattern, None, locals_)  # nosec B307
+        if keys := set(string.ascii_letters) & kwargs.keys():
+            raise RuntimeError(keys)
+        kwargs |= zip(string.ascii_letters, args)
+        return eval(self._pattern, None, kwargs)  # nosec B307

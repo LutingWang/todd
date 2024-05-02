@@ -1,10 +1,18 @@
+__all__ = [
+    'DeFeatMask',
+    'FGDMask',
+    'FGFIMask',
+    'FRSMask',
+]
+
 import math
 from abc import ABC, abstractmethod
 
 import einops
 import torch
 
-from .base import AdaptRegistry, BaseAdapt
+from ..registries import AdaptRegistry
+from .base import BaseAdapt
 
 
 class MultiLevelMask:
@@ -81,83 +89,6 @@ class SingleLevelMask(MultiLevelMask, ABC):
     ) -> torch.Tensor:
         masks = super().forward(*args, **kwargs)
         return masks[0]
-
-
-@AdaptRegistry.register_()
-class LabelEncMask(BaseAdapt):
-
-    def __init__(
-        self,
-        *args,
-        num_classes: int = 80,
-        aug: bool = True,
-        **kwargs,
-    ) -> None:
-        super().__init__(*args, **kwargs)
-        self._num_classes = num_classes
-        self._aug = aug
-
-    def _mask(
-        self,
-        shape: tuple[int, int],
-        bboxes: torch.Tensor,
-        labels: torch.Tensor,
-    ) -> torch.Tensor:
-        """Compute LabelEnc Mask.
-
-        Args:
-            shape: (h, w)
-            bboxes: m x 4
-            labels: m
-
-        Returns:
-            mask: k x h x w
-        """
-        masks = bboxes.new_zeros(self._num_classes, *shape)
-        bboxes = torch.cat(
-            [
-                bboxes[:, 2:] - bboxes[:, :2],
-                (bboxes[:, :2] + bboxes[:, 2:]) / 2
-            ],
-            dim=-1,
-        )
-        y, x = torch.meshgrid(
-            torch.arange(0, shape[0], dtype=torch.float, device=bboxes.device),
-            torch.arange(0, shape[1], dtype=torch.float, device=bboxes.device),
-        )
-        for (w, h, cx, cy), label in zip(bboxes.tolist(), labels.tolist()):
-            value = torch.max(
-                torch.abs(x - cx) / w,
-                torch.abs(y - cy) / h,
-            )
-            value = (1 - value) * (value < 0.5)
-            if self._aug:
-                weight = torch.rand((), device=value.device).clamp_max(0.5) * 2
-                value = value * weight
-            torch.maximum(masks[label], value, out=masks[label])
-        return masks
-
-    def forward(
-        self,
-        shape: tuple[int, int],
-        bboxes: list[torch.Tensor],
-        labels: list[torch.Tensor],
-    ) -> torch.Tensor:
-        """Compute LabelEnc Mask.
-
-        Args:
-            shape: (h, w)
-            bboxes: n x m x 4
-            labels: n x m
-
-        Returns:
-            masks: n x k x h x w
-        """
-        masks = [  # yapf: disable
-            self._mask(shape, bbox, label)
-            for bbox, label in zip(bboxes, labels)
-        ]
-        return torch.stack(masks)
 
 
 @AdaptRegistry.register_()

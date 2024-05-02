@@ -1,7 +1,13 @@
+__all__ = [
+    'Stack',
+    'Index',
+]
+
 import torch
 
-from ..utils import ListTensor
-from .base import AdaptRegistry, BaseAdapt
+from ...utils import ListTensor
+from ..registries import AdaptRegistry
+from .base import BaseAdapt
 
 
 class ListTensorAdapt(BaseAdapt):

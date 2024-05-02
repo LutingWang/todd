@@ -10,18 +10,18 @@ from typing_extensions import Self
 
 from torch import nn
 
-from ..adapts import AdaptRegistry, BaseAdapt
 from ..base import (
     ComposedPipeline,
     Config,
-    HookRegistry,
     LossRegistry,
     Spec,
     StoreMeta,
     transfer_weights,
 )
-from ..hooks import BaseHook
 from ..losses import BaseLoss
+from .adapts import BaseAdapt
+from .hooks import BaseHook
+from .registries import AdaptRegistry, HookRegistry
 
 Message = dict[str, Any]
 Pipelines = Iterable[Config] | Mapping[str, Config]

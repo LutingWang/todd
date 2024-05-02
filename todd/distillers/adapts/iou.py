@@ -1,7 +1,12 @@
+__all__ = [
+    'IoU',
+]
+
 import torch
 
-from ..base import BBoxesXYXY
-from .base import AdaptRegistry, BaseAdapt
+from ...base import BBoxesXYXY
+from ..registries import AdaptRegistry
+from .base import BaseAdapt
 
 
 @AdaptRegistry.register_()

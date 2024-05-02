@@ -15,7 +15,6 @@ __all__ = [
     'LossRegistry',
     'SchedulerRegistry',
     'VisualRegistry',
-    'HookRegistry',
     'DistillerRegistry',
     'AccessLayerRegistry',
     'DatasetRegistry',
@@ -547,10 +546,6 @@ class SchedulerRegistry(Registry):
 
 
 class VisualRegistry(Registry):
-    pass
-
-
-class HookRegistry(Registry):
     pass
 
 

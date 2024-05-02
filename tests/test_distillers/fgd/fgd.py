@@ -5,7 +5,7 @@ adapt_pipelines = {
         type='SharedParallelPipeline',
         args=('neck', ),
         callable_=dict(
-            type='AbsMeanSpatialAttention',
+            type='SpatialAttention',
             temperature=0.5,
         ),
     ),
@@ -13,7 +13,7 @@ adapt_pipelines = {
         type='SharedParallelPipeline',
         args=('teacher_neck', ),
         callable_=dict(
-            type='AbsMeanSpatialAttention',
+            type='SpatialAttention',
             temperature=0.5,
         ),
     ),
@@ -21,7 +21,7 @@ adapt_pipelines = {
         type='SharedParallelPipeline',
         args=('neck', ),
         callable_=dict(
-            type='AbsMeanChannelAttention',
+            type='ChannelAttention',
             temperature=0.5,
         ),
     ),
@@ -29,7 +29,7 @@ adapt_pipelines = {
         type='SharedParallelPipeline',
         args=('teacher_neck', ),
         callable_=dict(
-            type='AbsMeanChannelAttention',
+            type='ChannelAttention',
             temperature=0.5,
         ),
     ),
