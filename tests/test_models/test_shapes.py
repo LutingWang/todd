@@ -1,10 +1,10 @@
 import torch
 from torch import nn
 
-from todd.utils.torch import Shape
+from todd.models.shapes import Shape
 
 
-class TestShapePytest:
+class TestShape:
 
     def test_conv(self):
         module = nn.Conv1d(3, 6, 3, padding=1)

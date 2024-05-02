@@ -6,19 +6,14 @@ __all__ = [
     'all_gather_',
     'all_sync',
     'set_epoch',
-    'Shape',
-    'ModuleList',
-    'ModuleDict',
 ]
 
 import functools
-import itertools
 import operator
 import os
 
 import torch
 import torch.distributed as dist
-from torch import nn
 from torch.utils.data import DataLoader
 
 
@@ -117,57 +112,3 @@ def load(f, *args, directory=None, **kwargs):
     if directory is not None:
         f = os.path.join(directory, f)
     return torch.load(f, *args, **kwargs)
-
-
-class Shape:
-
-    @classmethod
-    def module(cls, module: nn.Module, x: torch.Tensor) -> tuple[int, ...]:
-        if isinstance(module, (nn.Conv1d, nn.Conv2d, nn.Conv3d)):
-            return cls.conv(module, x)
-        raise TypeError(f"Unknown type {type(module)}")
-
-    @staticmethod
-    def _conv(
-        x: int,
-        padding: int,
-        dilation: int,
-        kernel_size: int,
-        stride: int,
-    ) -> int:
-        x += 2 * padding - dilation * (kernel_size - 1) - 1
-        return x // stride + 1
-
-    @classmethod
-    def conv(
-        cls,
-        module: nn.Conv1d | nn.Conv2d | nn.Conv3d,
-        x: torch.Tensor,
-    ) -> tuple[int, ...]:
-        b, c, *shape = x.shape
-
-        assert c == module.in_channels
-        c = module.out_channels
-
-        return b, c, *itertools.starmap(
-            cls._conv,
-            zip(
-                shape,
-                module.padding,
-                module.dilation,
-                module.kernel_size,
-                module.stride,
-            ),
-        )
-
-
-class ModuleList(nn.ModuleList):
-
-    def forward(self, *args, **kwargs) -> list[nn.Module]:
-        return [m(*args, **kwargs) for m in self]
-
-
-class ModuleDict(nn.ModuleDict):
-
-    def forward(self, *args, **kwargs) -> dict[str, nn.Module]:
-        return {k: m(*args, **kwargs) for k, m in self.items()}
