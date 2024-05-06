@@ -5,7 +5,7 @@ __all__ = [
 
 import torch
 
-from ...utils import ListTensor
+from ...data_structures import TensorTreeUtil
 from ..registries import AdaptRegistry
 from .base import BaseAdapt
 
@@ -19,9 +19,9 @@ class ListTensorAdapt(BaseAdapt):
 
 @AdaptRegistry.register_()
 class Stack(ListTensorAdapt):
-    func = staticmethod(ListTensor.stack)
+    func = staticmethod(TensorTreeUtil.stack)
 
 
 @AdaptRegistry.register_()
 class Index(ListTensorAdapt):
-    func = staticmethod(ListTensor.index)
+    func = staticmethod(TensorTreeUtil.index)

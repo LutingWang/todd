@@ -1,7 +1,7 @@
 import pytest
 import torch
 
-from todd.utils import ListTensor
+from todd.data_structures import TensorTreeUtil, TreeUtil
 
 
 @pytest.fixture(scope='module')
@@ -68,7 +68,9 @@ class TestStack:
     )
     def test_normal(self, feat: str, request: pytest.FixtureRequest) -> None:
         feat_ = request.getfixturevalue(feat)
-        stacked_feat = ListTensor.stack(feat_).reshape(-1)
+        stacked_feat: torch.Tensor = TreeUtil.reduce(torch.stack, feat_)
+        stacked_feat = stacked_feat.reshape(-1)
+        # stacked_feat = ListTensor.stack(feat_).reshape(-1)
         assert torch.arange(720).eq(stacked_feat).all()
 
 
@@ -82,17 +84,17 @@ class TestIndex:
         self, feat: str, request: pytest.FixtureRequest
     ) -> None:
         feat_ = request.getfixturevalue(feat)
-        indexed_feat = ListTensor.index(feat_, torch.zeros([0, 0]))
+        indexed_feat = TensorTreeUtil.index(feat_, torch.zeros([0, 0]))
         assert indexed_feat.shape == (0, 6, 5, 4, 3, 2)
-        indexed_feat = ListTensor.index(feat_, torch.zeros([0, 1]))
+        indexed_feat = TensorTreeUtil.index(feat_, torch.zeros([0, 1]))
         assert indexed_feat.shape == (0, 5, 4, 3, 2)
-        indexed_feat = ListTensor.index(feat_, torch.zeros([0, 2]))
+        indexed_feat = TensorTreeUtil.index(feat_, torch.zeros([0, 2]))
         assert indexed_feat.shape == (0, 4, 3, 2)
-        indexed_feat = ListTensor.index(feat_, torch.zeros([0, 3]))
+        indexed_feat = TensorTreeUtil.index(feat_, torch.zeros([0, 3]))
         assert indexed_feat.shape == (0, 3, 2)
-        indexed_feat = ListTensor.index(feat_, torch.zeros([0, 4]))
+        indexed_feat = TensorTreeUtil.index(feat_, torch.zeros([0, 4]))
         assert indexed_feat.shape == (0, 2)
-        indexed_feat = ListTensor.index(feat_, torch.zeros([100, 0]))
+        indexed_feat = TensorTreeUtil.index(feat_, torch.zeros([100, 0]))
         assert indexed_feat.shape == (100, 6, 5, 4, 3, 2)
 
     @pytest.mark.parametrize(
@@ -102,7 +104,7 @@ class TestIndex:
     def test_normal(self, feat: str, request: pytest.FixtureRequest) -> None:
         feat_ = request.getfixturevalue(feat)
         pos = torch.Tensor([[0, 1], [1, 0], [1, 2]])
-        indexed_feat = ListTensor.index(feat_, pos)
+        indexed_feat = TensorTreeUtil.index(feat_, pos)
         assert torch.stack([
             torch.arange(24, 48).reshape(4, 3, 2),
             torch.arange(120, 144).reshape(4, 3, 2),

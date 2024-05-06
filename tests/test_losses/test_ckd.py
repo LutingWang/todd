@@ -2,10 +2,10 @@ import pathlib
 
 import torch
 
-from todd.configs import Config
+from todd import Config
+from todd.data_structures import TensorTreeUtil
 from todd.distillers import AdaptRegistry, BaseDistiller, DistillerStore
 from todd.distillers.adapts import BaseAdapt
-from todd.utils import CollectionTensor
 
 
 @AdaptRegistry.register_()
@@ -129,8 +129,8 @@ class TestCKD:
             tensors = losses.pop('_debug_')
             tensors.pop('bbox_ids')
 
-            assert CollectionTensor.allclose(rank_result['tensors'], tensors)
-            assert CollectionTensor.allclose(rank_result['losses'], losses)
+            assert TensorTreeUtil.all_close(rank_result['tensors'], tensors)
+            assert TensorTreeUtil.all_close(rank_result['losses'], losses)
 
 
 # if __name__ == '__main__':

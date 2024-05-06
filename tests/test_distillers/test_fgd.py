@@ -4,8 +4,8 @@ import pathlib
 import torch
 
 from todd import Config
+from todd.data_structures import TensorTreeUtil
 from todd.distillers import BaseDistiller, DistillerStore
-from todd.utils import CollectionTensor
 
 
 class TestFGD:
@@ -73,8 +73,8 @@ class TestFGD:
         DistillerStore.INTERMEDIATE_OUTPUTS = ''
         tensors = losses.pop('_debug_')
 
-        assert CollectionTensor.allclose(result['tensors'], tensors)
-        assert CollectionTensor.allclose(result['losses'], losses)
+        assert TensorTreeUtil.all_close(result['tensors'], tensors)
+        assert TensorTreeUtil.all_close(result['losses'], losses)
 
 
 if __name__ == '__main__':

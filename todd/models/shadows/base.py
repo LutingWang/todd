@@ -3,12 +3,12 @@ __all__ = [
 ]
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 import torch
 from torch import nn
 
-from ...data_structures import TensorCollectionUtil
+from ...data_structures import TreeUtil
 from ...utils import StateDict
 from ..norms import BATCHNORMS
 
@@ -41,9 +41,9 @@ class BaseShadow(nn.Module, ABC):
     def _to_device(self, state_dict: StateDict) -> StateDict:
         if self._device is None:
             return state_dict
-        return TensorCollectionUtil('to')(  # type: ignore[return-value]
-            state_dict,  # type: ignore[arg-type]
-            self._device,
+        return TreeUtil.map(
+            lambda t: cast(torch.Tensor, t).to(self._device),
+            state_dict,
         )
 
     @abstractmethod

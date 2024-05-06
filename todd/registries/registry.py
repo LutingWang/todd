@@ -27,6 +27,7 @@ __all__ = [
     'ClipGradRegistry',
     'InitRegistry',
     'CollateRegistry',
+    'DataStructureRegistry',
 ]
 
 import inspect
@@ -649,6 +650,10 @@ class InitRegistry(PartialRegistry):
 
 
 class CollateRegistry(PartialRegistry):
+    pass
+
+
+class DataStructureRegistry(Registry):
     pass
 
 

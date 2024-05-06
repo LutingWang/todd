@@ -1,3 +1,8 @@
+"""Control sequences as per ECMA-48_.
+
+.. _ECMA-48: https://ecma-international.org/publications-and-standards/standards/ecma-48/  # noqa: E501 pylint: disable=line-too-long
+"""
+
 __all__ = [
     'CSI',
     'control_sequence',
@@ -25,12 +30,7 @@ def control_sequence(
 
 
 class SGR(enum.IntEnum):
-    """Part of the SGR values.
-
-    Refer to `ECMA-48`_.
-
-    .. _ECMA-48: https://ecma-international.org/publications-and-standards/standards/ecma-48/  # noqa: E501 pylint: disable=line-too-long
-    """
+    """Part of the SGR values."""
 
     DEFAULT = 0
     BOLD = enum.auto()

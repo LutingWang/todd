@@ -5,6 +5,7 @@ __all__ = [
     'all_gather',
     'all_gather_',
     'all_sync',
+    'all_close',
     'set_epoch',
     'transfer_weight',
     'transfer_weights',
@@ -13,7 +14,7 @@ __all__ = [
 import functools
 import operator
 import os
-from typing import Mapping
+from typing import Any, Mapping
 
 import torch
 import torch.distributed as dist
@@ -98,6 +99,14 @@ def all_sync(x: torch.Tensor) -> bool:
     dist.all_reduce(x)
     x /= get_world_size()
     return torch.allclose(x, x_prime)
+
+
+def all_close(x: Any, y: Any, *args, **kwargs) -> bool:
+    if not isinstance(x, torch.Tensor):
+        x = torch.tensor(x)
+    if not isinstance(y, torch.Tensor):
+        y = torch.tensor(y)
+    return torch.allclose(x, y, *args, **kwargs)
 
 
 def set_epoch(dataloader: DataLoader, epoch: int) -> None:
