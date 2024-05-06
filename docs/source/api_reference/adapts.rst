@@ -1,4 +1,0 @@
-Adaptations
-===========
-
-.. automodule:: todd.adapts

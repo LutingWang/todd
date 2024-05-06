@@ -1,4 +1,0 @@
-Hooks
-=====
-
-.. automodule:: todd.hooks

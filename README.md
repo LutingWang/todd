@@ -42,4 +42,3 @@ TODO
 2. mypy supports recursive types
 3. add a script to prepare imagenet dataset
 4. add Any to all missing typing fields
-5. update docs
