@@ -107,19 +107,19 @@ class Union_(BaseAdapt):  # pylint: disable=invalid-name
         feats: list[torch.Tensor],
         ids: list[torch.Tensor],
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-        """Match `feats` according to their `poses`.
+        """Match ``feats`` according to their ``poses``.
 
-        Align the `feats` coming from different sources to have same
-        `matched_pos` and stack them togethor. For positions where some
-        of `feats` do not show up, an all-zero tensor is added as
-        default. A 2D `mask` is returned to indicate the type of a
-        matched feature, where `1` corresponds to features coming from
-        `feats` and `0` for added default all-zero tensors.
+        Align the ``feats`` coming from different sources to have same
+        ``matched_pos`` and stack them togethor. For positions where some
+        of ``feats`` do not show up, an all-zero tensor is added as
+        default. A 2D ``mask`` is returned to indicate the type of a
+        matched feature, where ``1`` corresponds to features coming from
+        ``feats`` and ``0`` for added default all-zero tensors.
 
         Args:
             feats: [n_s x d_1 x d_2 x ... x d_m]
-                Features from `s` different sources, each source can
-                have different `n_s`.
+                Features from ``s`` different sources, each source can
+                have different ``n_s``.
             ids: [n_s x l]
                 Positions of each feature.
 
@@ -152,8 +152,8 @@ class Intersect(BaseAdapt):
 
         Args:
             feats: [n_s x d_1 x d_2 x ... x d_m]
-                Features from `s` different sources, each source can
-                have different `n_s`.
+                Features from ``s`` different sources, each source can
+                have different ``n_s``.
             ids: [n_s x l]
                 Positions of each feature.
 

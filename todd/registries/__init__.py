@@ -1,3 +1,3 @@
 from .envs import *
-from .eta import *
+from .etas import *
 from .registry import *

@@ -3,12 +3,13 @@ __all__ = [
 ]
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, cast
+from functools import partial
+from typing import TYPE_CHECKING, Any
 
 import torch
 from torch import nn
 
-from ...data_structures import TreeUtil
+from ...data_structures import TensorTreeUtil
 from ...utils import StateDict
 from ..norms import BATCHNORMS
 
@@ -19,40 +20,45 @@ class BaseShadow(nn.Module, ABC):
         self,
         *args,
         module: nn.Module,
-        device=None,
+        device: Any = None,
         **kwargs,
     ) -> None:
-        super().__init__(*args, **kwargs)
-
         # BN layers are not supported
         assert not any(isinstance(m, BATCHNORMS) for m in module.modules())
 
-        self._shadow = self._to_device(module.state_dict())
+        super().__init__(*args, **kwargs)
         self._device = device
+        self._shadow = self._state_dict_to_device(module)
 
     @property
     def shadow(self) -> StateDict:
         return self._shadow
 
     @shadow.setter
-    def shadow(self, shadow: StateDict) -> None:
-        self._shadow = self._to_device(shadow)
+    def shadow(self, value: StateDict) -> None:
+        self._shadow = self._to_device(value)
 
     def _to_device(self, state_dict: StateDict) -> StateDict:
         if self._device is None:
             return state_dict
-        return TreeUtil.map(
-            lambda t: cast(torch.Tensor, t).to(self._device),
+        return TensorTreeUtil.map(
+            partial(torch.Tensor.to, device=self._device),
             state_dict,
         )
+
+    def _state_dict_to_device(self, module: nn.Module) -> StateDict:
+        return self._to_device(module.state_dict())
 
     @abstractmethod
     def _forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
         pass
 
     def forward(self, module: nn.Module) -> None:
-        for k, v in self._to_device(module.state_dict()).items():
-            self._shadow[k] = self._forward(self._shadow[k], v)
+        self._shadow = TensorTreeUtil.map(
+            self._forward,
+            self._shadow,
+            self._state_dict_to_device(module),
+        )
 
     if TYPE_CHECKING:
         __call__ = forward

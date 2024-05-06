@@ -205,7 +205,7 @@ class Config(AttrDict, dict):  # type: ignore[misc]
 
         Refer to `dumps` for more details.
 
-        Example:
+        Examples:
             >>> with tempfile.NamedTemporaryFile('r') as f:
             ...     Config(a=1, b=dict(c=3)).dump(f.name)
             ...     f.readlines()

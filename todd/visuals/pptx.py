@@ -42,12 +42,12 @@ class PPTXVisual(BaseVisual):
         """Initialize the PowerPoint with a single slide.
 
         To initialize a PowerPoint with width 640pt and height 426pt, use the
-        following code::
+        following code:
 
             >>> visual = PPTXVisual(640, 426)
 
         Once initialized, the width and height of the slide cannot be altered.
-        We can read the width and height of the PowerPoint by::
+        We can read the width and height of the PowerPoint by:
 
             >>> visual.width
             640
@@ -103,13 +103,13 @@ class PPTXVisual(BaseVisual):
     def save(self, path: Any) -> None:
         """Save the PowerPoint.
 
-        The save target can either be a filepath, for example::
+        The save target can either be a filepath, for example:
 
             >>> import tempfile
             >>> with tempfile.NamedTemporaryFile() as f:
             ...     PPTXVisual(640, 426).save(f.name)
 
-        Or it can simply be a file-like object::
+        Or it can simply be a file-like object:
 
             >>> with tempfile.TemporaryFile() as f:
             ...     PPTXVisual(640, 426).save(f)
@@ -130,12 +130,12 @@ class PPTXVisual(BaseVisual):
     ) -> pptx.shapes.picture.Picture:
         """Add an image to the PowerPoint.
 
-        Suppose the image is :math:`(426, 640)`::
+        Suppose the image is :math:`(426, 640)`:
 
             >>> image = np.random.randint(0, 256, (426, 640, 3))
 
         In most cases, the PowerPoint is of the same size as the image, so
-        that the image covers the whole background::
+        that the image covers the whole background:
 
             >>> h, w, _ = image.shape
             >>> visual = PPTXVisual(w, h)

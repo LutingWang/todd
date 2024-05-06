@@ -1,4 +1,5 @@
 __all__ = [
+    'BaseUtil',
     'TreeUtil',
     'TensorTreeUtil',
 ]
@@ -26,6 +27,9 @@ class BaseUtil(ABC):
 
         Args:
             obj: The object to get the elements from.
+
+        Returns:
+            Elements of the given object.
         """
 
     @classmethod
@@ -35,7 +39,7 @@ class BaseUtil(ABC):
 
         Args:
             f: The function to apply.
-            *objs: The objects to apply the function to.
+            objs: The objects to apply the function to.
 
         Returns:
             The result of applying the function to the objects.
@@ -112,7 +116,7 @@ class MappingUtil(CollectionUtil[Mapping]):
 
         Args:
             f: The function to apply.
-            *objs: The objects.
+            objs: The objects.
 
         Returns:
             A new `dict` with the results of applying the function to the
@@ -150,7 +154,7 @@ class SequenceUtil(CollectionUtil[Sequence]):
 
         Args:
             f: The function to apply.
-            *objs: The sequences to apply the function to.
+            objs: The sequences to apply the function to.
 
         Returns:
             A `tuple` of the results after applying the function to each
@@ -185,7 +189,7 @@ class SetUtil(CollectionUtil[Set]):
 
         Args:
             f: The function to apply.
-            *objs: The `set` objects to apply the function to.
+            objs: The `set` objects to apply the function to.
 
         Returns:
             A new `set` with the function applied to each element.
@@ -200,13 +204,13 @@ class TreeUtil(BaseUtil):
         """Find a utility class for all the given object.
 
         Args:
-            *objs: The objects to check.
+            objs: The objects to check.
 
         Returns:
             The utility class or `None` if none of the utility classes is
             applicable.
 
-        Example:
+        Examples:
             >>> TreeUtil.get_util([])
             <class '...SequenceUtil'>
             >>> TreeUtil.get_util(tuple())
@@ -245,7 +249,7 @@ class TreeUtil(BaseUtil):
         Returns:
             `True` if the object is atomic, `False` otherwise.
 
-        Example:
+        Examples:
             >>> TreeUtil.is_atomic([])
             True
             >>> TreeUtil.is_atomic({1: 'a', 2: 'b'})
@@ -266,7 +270,14 @@ class TreeUtil(BaseUtil):
     def map(cls, f: Callable[..., Any], *objs: Any) -> Any:
         """Recursively apply a function to the given objects.
 
-        Example:
+        Args:
+            f: The function to apply.
+            objs: The objects to apply the function to.
+
+        Returns:
+            The result of applying the function to the objects.
+
+        Examples:
             >>> TreeUtil.map(lambda x: x + 1, [1, 2, 3])
             (2, 3, 4)
             >>> result = TreeUtil.map(
@@ -289,7 +300,14 @@ class TreeUtil(BaseUtil):
     def reduce(cls, f: Callable[[list], Any], obj: Any) -> Any:
         """Apply a function to the collection and returns a single value.
 
-        Example:
+        Args:
+            f: The function to apply to the elements.
+            obj: The collection to reduce.
+
+        Returns:
+            The result of applying the function to the collection.
+
+        Examples:
             >>> TreeUtil.reduce(sum, [])
             0
             >>> TreeUtil.reduce(sum, [1])
@@ -310,7 +328,13 @@ class TreeUtil(BaseUtil):
     def elements(cls, obj: Any) -> list:
         """Get the elements of the given object.
 
-        Example:
+        Args:
+            obj: The object to get the elements from.
+
+        Returns:
+            Elements of the given object.
+
+        Examples:
             >>> list(TreeUtil.elements([]))
             []
             >>> list(TreeUtil.elements({1: 'a', 2: 'b'}))

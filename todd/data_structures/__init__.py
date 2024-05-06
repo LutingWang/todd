@@ -1,5 +1,5 @@
 from .bboxes import *
 from .pipelines import *
-from .priority_queue import *
-from .status import *
+from .priority_queues import *
+from .statuses import *
 from .trees import *
