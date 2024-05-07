@@ -103,7 +103,7 @@ class NoGradMixin(CheckMixin, InitWeightsMixin, BuildSpecMixin):
         filter_state_dict: A flag controlling whether to filter the
             state dictionary to exclude frozen parameters.
 
-    To use the mixin class, first define a model:
+    Given a model that inherits from this mixin class:
 
         >>> class NoGrad(NoGradMixin):
         ...     def __init__(self, *args, **kwargs):
@@ -112,67 +112,73 @@ class NoGradMixin(CheckMixin, InitWeightsMixin, BuildSpecMixin):
         ...     def forward(self) -> None:
         ...         pass
 
-    Set up a parameter filter:
+    Users can specify parameters to be excluded from gradient computation via
+    a filter:
 
         >>> npf = NamedParametersFilter(name='conv.weight')
+        >>> model = NoGrad(no_grad=npf)
 
-    Construct the model:
+    The exclusion of parameters from gradient computation does not happen
+    immediately after the model is constructed:
 
-        >>> model = NoGrad(no_grad=npf, filter_state_dict=True)
-        >>> model.conv.weight.requires_grad
-        True
-        >>> model.conv.bias.requires_grad
-        True
+        >>> {n: p.requires_grad for n, p in model.named_parameters()}
+        {'conv.weight': True, 'conv.bias': True}
 
-    Use `init_weights` to change the gradient requirement:
+    Instead, the exclusion is triggered by calling `init_weights`:
 
-        >>> model.init_weights(Config())
-        True
-        >>> model.conv.weight.requires_grad
-        False
-        >>> model.conv.bias.requires_grad
-        True
+        >>> _ = model.init_weights(Config())
+        >>> {n: p.requires_grad for n, p in model.named_parameters()}
+        {'conv.weight': False, 'conv.bias': True}
 
-    Use `check` method to verify if the properties meet the requirement:
+    or by calling `requires_grad_`:
 
-        >>> model.check(model, tuple(), {})
-        >>> model.conv.weight.requires_grad = True
+        >>> _ = model.requires_grad_()
+        >>> {n: p.requires_grad for n, p in model.named_parameters()}
+        {'conv.weight': False, 'conv.bias': True}
+        >>> _ = model.requires_grad_(False)
+        >>> {n: p.requires_grad for n, p in model.named_parameters()}
+        {'conv.weight': False, 'conv.bias': False}
+
+    Note that parameters that should be excluded from gradient computation can
+    sometimes be included.
+    A typical example is when the model is used as a component in another:
+
+        >>> sequential = nn.Sequential(model)
+        >>> _ = sequential.requires_grad_()
+        >>> {n: p.requires_grad for n, p in sequential.named_parameters()}
+        {'0.conv.weight': True, '0.conv.bias': True}
+
+    To prevent this, the `check` method can be used to verify if parameters
+    are correctly excluded from gradient computation:
+
         >>> model.check(model, tuple(), {})
         Traceback (most recent call last):
             ...
         AssertionError
-
-    Use `requires_grad_` to enforce the properties to meet the requirement:
-
         >>> _ = model.requires_grad_()
-        >>> model.conv.weight.requires_grad
-        False
-        >>> model.conv.bias.requires_grad
-        True
-        >>> _ = model.requires_grad_(False)
-        >>> model.conv.weight.requires_grad
-        False
-        >>> model.conv.bias.requires_grad
-        False
+        >>> model.check(model, tuple(), {})
 
-    Parameters that do not require gradient will be excluded from the state
-    dictionary:
+    Refer to `CheckMixin` for more information on the `check` method.
 
-        >>> model.state_dict()
-        OrderedDict([('conv.bias', tensor([..., ...]))])
+    By default, the state dictionary includes all parameters:
 
-    The model can be utilized as a component in other models:
+        >>> list(model.state_dict())
+        ['conv.weight', 'conv.bias']
+
+    However, in most cases, users may want to exclude frozen parameters from
+    the state dictionary.
+    This can be achieved by setting `filter_state_dict` to True:
+
+        >>> model = NoGrad(no_grad=npf, filter_state_dict=True)
+        >>> list(model.state_dict())
+        ['conv.bias']
+
+    State dictionary filtering works even if the model is used as a component
+    in another model:
 
         >>> sequential = nn.Sequential(model)
-        >>> sequential.state_dict()
-        OrderedDict([('0.conv.bias', tensor([..., ...]))])
-
-    Calling `requires_grad_` on ``sequential`` could violate the
-    requirements:
-
-        >>> _ = sequential.requires_grad_()
-        >>> sequential[0].conv.weight.requires_grad
-        True
+        >>> list(sequential.state_dict())
+        ['0.conv.bias']
     """
 
     def __init__(
@@ -214,8 +220,9 @@ class NoGradMixin(CheckMixin, InitWeightsMixin, BuildSpecMixin):
     def state_dict(self, *args, prefix: str = '', **kwargs) -> Any:
         state_dict: MutableMapping[str, torch.Tensor] = \
             super().state_dict(*args, prefix=prefix, **kwargs)
-        for name, _ in self._no_grad_named_parameters():
-            state_dict.pop(prefix + name, None)
+        if self._filter_state_dict:
+            for name, _ in self._no_grad_named_parameters():
+                state_dict.pop(prefix + name, None)
         return state_dict
 
 
@@ -332,6 +339,23 @@ class EvalMixin(CheckMixin, InitWeightsMixin, BuildSpecMixin):
 
 
 class FreezeMixin(NoGradMixin, EvalMixin):
+    """A mixin class that provides freezing functionality to a model.
+
+    Examples:
+        >>> class Freeze(FreezeMixin):
+        ...     def __init__(self, *args, **kwargs) -> None:
+        ...         super().__init__(*args, **kwargs)
+        ...         self.c = nn.Conv2d(1, 2, 3)
+        ...         self.b = nn.BatchNorm2d(2)
+        >>> nmf = NamedModulesFilter(name='b')
+        >>> freeze = Freeze(freeze=nmf)
+        >>> freeze.init_weights(Config())
+        True
+        >>> {n: p.requires_grad for n, p in freeze.named_parameters()}
+        {'c.weight': True, 'c.bias': True, 'b.weight': False, 'b.bias': False}
+        >>> {n: m.training for n, m in freeze.named_modules()}
+        {'': True, 'c': True, 'b': False}
+    """
 
     def __init__(
         self,
@@ -356,6 +380,25 @@ class FreezeMixin(NoGradMixin, EvalMixin):
 
 
 class FrozenMixin(FreezeMixin):
+    """A mixin class that provides freezing functionality to a class.
+
+    This mixin class is used to create frozen modules, where the parameters
+    are excluded from gradient computation and the modules are marked as
+    evaluation.
+
+    Examples:
+        >>> class Frozen(FrozenMixin):
+        ...     def __init__(self) -> None:
+        ...         super().__init__()
+        ...         self.conv = nn.Conv2d(1, 2, 3)
+        >>> frozen = Frozen()
+        >>> frozen.init_weights(Config())
+        True
+        >>> {n: p.requires_grad for n, p in frozen.named_parameters()}
+        {'conv.weight': False, 'conv.bias': False}
+        >>> {n: m.training for n, m in frozen.named_modules()}
+        {'': False, 'conv': False}
+    """
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, freeze=NamedModulesFilter(name=''), **kwargs)
