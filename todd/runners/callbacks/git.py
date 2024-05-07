@@ -4,8 +4,8 @@ __all__ = [
 
 import subprocess  # nosec B404
 
-from ...registries import CallbackRegistry
 from ...utils import get_rank, get_timestamp, subprocess_run
+from ..registries import CallbackRegistry
 from .base import BaseCallback
 
 

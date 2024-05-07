@@ -8,8 +8,9 @@ import torch
 from torch import nn
 
 from ...configs import Config
-from ...registries import ModelRegistry, OptimizerRegistry, StrategyRegistry
+from ...registries import ModelRegistry, OptimizerRegistry
 from ...utils import StateDictMixin, get_rank
+from ..registries import StrategyRegistry
 from ..utils import RunnerHolderMixin
 
 T = TypeVar('T', bound=nn.Module)

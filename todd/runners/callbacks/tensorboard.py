@@ -5,8 +5,8 @@ __all__ = [
 from torch.utils.tensorboard import SummaryWriter
 
 from ...configs import Config
-from ...registries import CallbackRegistry
 from ...utils import get_rank
+from ..registries import CallbackRegistry
 from ..types import Memo
 from .base import BaseCallback
 from .interval import IntervalMixin

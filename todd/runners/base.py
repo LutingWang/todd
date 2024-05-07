@@ -21,9 +21,9 @@ from ..registries import (
     DatasetRegistry,
     RunnerRegistry,
     SamplerRegistry,
-    StrategyRegistry,
 )
 from ..utils import StateDictMixin, get_rank
+from .registries import StrategyRegistry
 from .types import Memo
 
 if TYPE_CHECKING:

@@ -7,7 +7,8 @@ from typing import TypeVar
 import torch
 from torch import nn
 
-from .base import BaseRunner, RunnerRegistry
+from ..registries import RunnerRegistry
+from .base import BaseRunner
 from .types import Memo
 
 T = TypeVar('T', bound=nn.Module)

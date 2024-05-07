@@ -6,8 +6,8 @@ from abc import ABC
 from typing import Generator, TypeVar
 
 from ..configs import Config
-from ..registries import AccessLayerRegistry
 from .base import BaseAccessLayer
+from .registries import AccessLayerRegistry
 
 VT = TypeVar('VT')
 

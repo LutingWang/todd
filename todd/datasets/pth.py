@@ -7,8 +7,8 @@ from typing import Iterator, TypeVar
 
 import torch
 
-from .base import AccessLayerRegistry
 from .folder import FolderAccessLayer
+from .registries import AccessLayerRegistry
 
 T = TypeVar('T')
 VT = TypeVar('VT')

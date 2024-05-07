@@ -6,17 +6,21 @@ __all__ = [
     'DecayScheduler',
     'StepScheduler',
     'CosineAnnealingScheduler',
+    'ComposedScheduler',
     'ChainedScheduler',
     'SequentialScheduler',
 ]
 
 import bisect
 import math
+from functools import partial
 from typing import Iterable, cast
 
 import torch
 
-from ..registries import SchedulerRegistry
+from ..patches import classproperty
+from ..registries import BuildSpec, BuildSpecMixin
+from .registries import SchedulerRegistry
 
 
 @SchedulerRegistry.register_()
@@ -259,8 +263,27 @@ class CosineAnnealingScheduler(BaseScheduler):
         )
 
 
+class ComposedScheduler(BuildSpecMixin, BaseScheduler):
+
+    def __init__(
+        self,
+        *args,
+        schedulers: Iterable[BaseScheduler],
+        **kwargs,
+    ) -> None:
+        super().__init__(*args, **kwargs)
+        self._schedulers = tuple(schedulers)
+
+    @classproperty
+    def build_spec(self) -> BuildSpec:
+        build_spec = BuildSpec(
+            schedulers=partial(map, SchedulerRegistry.build),
+        )
+        return super().build_spec | build_spec
+
+
 @SchedulerRegistry.register_()
-class ChainedScheduler(BaseScheduler):
+class ChainedScheduler(ComposedScheduler):
     """Chained scheduler.
 
     Schedulers are chained in an multiplicative manner:
@@ -278,15 +301,6 @@ class ChainedScheduler(BaseScheduler):
         0.1
     """
 
-    def __init__(
-        self,
-        *args,
-        schedulers: Iterable[BaseScheduler],
-        **kwargs,
-    ) -> None:
-        super().__init__(*args, **kwargs)
-        self._schedulers = tuple(schedulers)
-
     def forward(self) -> float:
         return math.prod(scheduler() for scheduler in self._schedulers)
 
@@ -297,17 +311,15 @@ class ChainedScheduler(BaseScheduler):
 
 
 @SchedulerRegistry.register_()
-class SequentialScheduler(BaseScheduler):
+class SequentialScheduler(ComposedScheduler):
 
     def __init__(
         self,
         *args,
-        schedulers: Iterable[BaseScheduler],
         milestones: Iterable[int],
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
-        self._schedulers = tuple(schedulers)
         self._milestones = sorted(milestones)
 
     @property

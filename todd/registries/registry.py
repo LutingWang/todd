@@ -5,54 +5,16 @@ __all__ = [
     'BuildSpecMixin',
     'Item',
     'RegistryMeta',
-    'PartialRegistryMeta',
     'Registry',
-    'PartialRegistry',
-    'LRSchedulerRegistry',
-    'OptimizerRegistry',
-    'RunnerRegistry',
-    'CallbackRegistry',
-    'LossRegistry',
-    'SchedulerRegistry',
-    'VisualRegistry',
-    'DistillerRegistry',
-    'AccessLayerRegistry',
-    'DatasetRegistry',
-    'StrategyRegistry',
-    'SamplerRegistry',
-    'ModelRegistry',
-    'TransformRegistry',
-    'PipelineRegistry',
-    'FilterRegistry',
-    'ClipGradRegistry',
-    'InitRegistry',
-    'CollateRegistry',
-    'DataStructureRegistry',
 ]
 
-import inspect
 from collections import UserDict
-from functools import partial
-from typing import (
-    Any,
-    Callable,
-    NoReturn,
-    Protocol,
-    TypeVar,
-    cast,
-    no_type_check,
-)
-
-import torch
-import torch.utils.data
-import torch.utils.data.dataset
-import torchvision.transforms as tf
-from torch import nn
+from typing import Any, Callable, NoReturn, Protocol, TypeVar, no_type_check
 
 from ..configs import Config
 from ..logger import logger
 from ..patches import classproperty
-from ..utils import NonInstantiableMeta, get_rank
+from ..utils import NonInstantiableMeta
 
 
 class BuildSpec(UserDict[str, Callable[[Config], Any]]):
@@ -263,14 +225,14 @@ class RegistryMeta(  # type: ignore[misc]
     def register_(
         cls,
         *args: str,
-        forced: bool = False,
+        force: bool = False,
         build_spec: BuildSpec | None = None,
     ) -> Callable[[T], T]:
         """Register classes or functions to the registry.
 
         Args:
             args: names to be registered as.
-            forced: if set, registration will always happen.
+            force: if set, registration will always happen.
 
         Returns:
             Wrapper function.
@@ -319,7 +281,7 @@ class RegistryMeta(  # type: ignore[misc]
             Traceback (most recent call last):
                 ...
             KeyError: 'Munchkin'
-            >>> Cat.register_('Munchkin', forced=True)(AnotherMunchkin)
+            >>> Cat.register_('Munchkin', force=True)(AnotherMunchkin)
             <class '...AnotherMunchkin'>
             >>> Cat['Munchkin']
             <class '...AnotherMunchkin'>
@@ -336,7 +298,7 @@ class RegistryMeta(  # type: ignore[misc]
         def wrapper_func(item: T) -> T:
             keys = [item.__name__] if len(args) == 0 else args
             for key in keys:
-                if forced:
+                if force:
                     cls.pop(key, None)
                 cls[key] = item  # noqa: E501 pylint: disable=unsupported-assignment-operation
             if build_spec is not None:
@@ -458,18 +420,6 @@ class RegistryMeta(  # type: ignore[misc]
             raise e
 
 
-class PartialRegistryMeta(RegistryMeta):
-
-    @no_type_check
-    def __subclasses__(cls=...):
-        if cls is ...:
-            return NonInstantiableMeta.__subclasses__(PartialRegistryMeta)
-        return super().__subclasses__()
-
-    def _build(cls, item: Item, config: Config):
-        return partial(item, **config)
-
-
 class Registry(metaclass=RegistryMeta):
     """Base registry.
 
@@ -477,233 +427,3 @@ class Registry(metaclass=RegistryMeta):
 
         >>> class CatRegistry(Registry): pass
     """
-
-
-class PartialRegistry(metaclass=PartialRegistryMeta):
-    pass
-
-
-class OptimizerRegistry(Registry):
-
-    @staticmethod
-    def params(model: nn.Module, config: Config) -> Config:
-        config = config.copy()
-        params = config.pop('params')
-        filter_ = FilterRegistry.build(params)
-        filtered_params = [p for _, p in filter_(model)]
-        assert all(p.requires_grad for p in filtered_params)
-        config.params = filtered_params
-        return config
-
-    @classmethod
-    def _build(cls, item: Item, config: Config):
-        model: nn.Module = config.pop('model')
-        params = config.pop('params', None)
-        if params is None:
-            config.params = [p for p in model.parameters() if p.requires_grad]
-        else:
-            config.params = [cls.params(model, p) for p in params]
-        return RegistryMeta._build(cls, item, config)
-
-
-class LRSchedulerRegistry(Registry):
-
-    @classmethod
-    def _build(cls, item: Item, config: Config):
-        if item is torch.optim.lr_scheduler.SequentialLR:
-            config.schedulers = [
-                cls.build(scheduler, optimizer=config.optimizer)
-                for scheduler in config.schedulers
-            ]
-        return RegistryMeta._build(cls, item, config)
-
-
-class RunnerRegistry(Registry):
-    pass
-
-
-class CallbackRegistry(Registry):
-    pass
-
-
-class LossRegistry(Registry):
-    pass
-
-
-class SchedulerRegistry(Registry):
-
-    @classmethod
-    def _build(cls, item: Item, config: Config):
-        from ..losses.schedulers import (  # noqa: E501 pylint: disable=import-outside-toplevel
-            ChainedScheduler,
-            SequentialScheduler,
-        )
-        if item in (SequentialScheduler, ChainedScheduler):
-            config.schedulers = [
-                cls.build(scheduler) for scheduler in config.schedulers
-            ]
-        return RegistryMeta._build(cls, item, config)
-
-
-class VisualRegistry(Registry):
-    pass
-
-
-class DistillerRegistry(Registry):
-    pass
-
-
-class DatasetRegistry(Registry):
-
-    @classmethod
-    def _build(cls, item: Item, config: Config):
-        if item is torch.utils.data.ConcatDataset:
-            config.datasets = list(map(cls.build, config.datasets))
-        return RegistryMeta._build(cls, item, config)
-
-
-class AccessLayerRegistry(Registry):
-    pass
-
-
-class StrategyRegistry(Registry):
-    pass
-
-
-class SamplerRegistry(Registry):
-    pass
-
-
-class ModelRegistry(Registry):
-
-    @classmethod
-    def init_weights(
-        cls,
-        model: nn.Module,
-        config: Config | None,
-        prefix: str = '',
-    ) -> None:
-        weights = f"{model.__class__.__name__} ({prefix}) weights"
-
-        if getattr(model, '__initialized', False):
-            if get_rank() == 0:
-                logger.debug("Skip re-initializing %s", weights)
-            return
-        setattr(model, '__initialized', True)  # noqa: B010
-
-        if config is None:
-            if get_rank() == 0:
-                logger.debug(
-                    "Skip initializing %s since config is None",
-                    weights,
-                )
-            return
-
-        init_weights: Callable[[Config], bool] | None = \
-            getattr(model, 'init_weights', None)
-        if init_weights is not None:
-            if get_rank() == 0:
-                logger.debug("Initializing %s with %s", weights, config)
-            recursive = init_weights(config)
-            if not recursive:
-                return
-
-        for (
-            name,  # noqa: E501 pylint: disable=redefined-outer-name
-            child,
-        ) in model.named_children():
-            cls.init_weights(child, config, f'{prefix}.{name}')
-
-    @classmethod
-    def _build(cls, item: Item, config: Config):
-        config = config.copy()
-        init_weights = config.pop('init_weights', Config())
-        model = RegistryMeta._build(cls, item, config)
-        if isinstance(model, nn.Module):
-            cls.init_weights(model, init_weights)
-        return model
-
-
-class TransformRegistry(Registry):
-
-    @classmethod
-    def _build(cls, item: Item, config: Config):
-        if item is tf.Compose:
-            config.transforms = list(map(cls.build, config.transforms))
-        return RegistryMeta._build(cls, item, config)
-
-
-class PipelineRegistry(Registry):
-    pass
-
-
-class FilterRegistry(Registry):
-    pass
-
-
-class ClipGradRegistry(PartialRegistry):
-    pass
-
-
-class InitRegistry(PartialRegistry):
-    pass
-
-
-class CollateRegistry(PartialRegistry):
-    pass
-
-
-class DataStructureRegistry(Registry):
-    pass
-
-
-def descendant_classes(cls: type) -> list[type]:
-    classes = []
-    for subclass in cls.__subclasses__():
-        classes.append(subclass)
-        classes.extend(descendant_classes(subclass))
-    return classes
-
-
-c: type
-
-for c in descendant_classes(nn.Module):
-    # pylint: disable=invalid-name
-    name = '_'.join(c.__module__.split('.') + [c.__name__])
-    if name not in ModelRegistry:
-        ModelRegistry.register_(name)(cast(Item, c))
-
-for _, c in inspect.getmembers(torch.utils.data.dataset, inspect.isclass):
-    if issubclass(c, torch.utils.data.Dataset):
-        DatasetRegistry.register_()(cast(Item, c))
-
-for c in descendant_classes(torch.utils.data.Sampler):
-    SamplerRegistry.register_()(cast(Item, c))
-
-for c in descendant_classes(torch.optim.Optimizer):
-    if '<locals>' not in c.__qualname__:
-        OptimizerRegistry.register_()(cast(Item, c))
-
-for c in descendant_classes(torch.optim.lr_scheduler.LRScheduler):
-    LRSchedulerRegistry.register_()(cast(Item, c))
-
-for _, c in inspect.getmembers(tf, inspect.isclass):
-    TransformRegistry.register_()(cast(Item, c))
-
-ClipGradRegistry.register_()(nn.utils.clip_grad_norm_)
-ClipGradRegistry.register_()(nn.utils.clip_grad_value_)
-
-InitRegistry.register_()(nn.init.uniform_)
-InitRegistry.register_()(nn.init.normal_)
-InitRegistry.register_()(nn.init.trunc_normal_)
-InitRegistry.register_()(nn.init.constant_)
-InitRegistry.register_()(nn.init.ones_)
-InitRegistry.register_()(nn.init.zeros_)
-InitRegistry.register_()(nn.init.eye_)
-InitRegistry.register_()(nn.init.dirac_)
-InitRegistry.register_()(nn.init.xavier_uniform_)
-InitRegistry.register_()(nn.init.xavier_normal_)
-InitRegistry.register_()(nn.init.kaiming_uniform_)
-InitRegistry.register_()(nn.init.kaiming_normal_)
-InitRegistry.register_()(nn.init.orthogonal_)
-InitRegistry.register_()(nn.init.sparse_)

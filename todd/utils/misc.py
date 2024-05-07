@@ -1,6 +1,7 @@
 __all__ = [
     'get_timestamp',
     'subprocess_run',
+    'descendant_classes',
 ]
 
 import subprocess  # nosec B404
@@ -24,3 +25,11 @@ def subprocess_run(args: str) -> str:
         shell=True,  # nosec B602
         text=True,
     ).stdout
+
+
+def descendant_classes(cls: type) -> list[type]:
+    classes = []
+    for subclass in cls.__subclasses__():
+        classes.append(subclass)
+        classes.extend(descendant_classes(subclass))
+    return classes

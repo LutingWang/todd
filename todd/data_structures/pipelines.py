@@ -29,7 +29,10 @@ import pandas as pd
 from ..configs import Config
 from ..logger import logger
 from ..patches import exec_
-from ..registries import PipelineRegistry, RegistryMeta
+from ..registries import RegistryMeta
+from .registries import PipelineRegistry
+
+# TODO: refactor
 
 Message = dict[str, Any]
 Pipelines = Iterable[Config] | Mapping[str, Config]

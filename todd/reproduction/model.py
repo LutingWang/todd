@@ -16,9 +16,10 @@ from torch import nn
 from ..configs import Config
 from ..models import InitWeightsMixin
 from ..patches import classproperty
-from ..registries import BuildSpec, BuildSpecMixin, FilterRegistry
+from ..registries import BuildSpec, BuildSpecMixin
 from ..stores import Store
 from .filters import NamedModulesFilter, NamedParametersFilter
+from .registries import FilterRegistry
 
 
 class CheckMixin(nn.Module, ABC):

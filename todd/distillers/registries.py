@@ -10,14 +10,14 @@ from typing import cast
 import einops.layers.torch
 from torch import nn
 
-from ..registries import Item, Registry
+from ..registries import DistillerRegistry, Item
 
 
-class AdaptRegistry(Registry):
+class AdaptRegistry(DistillerRegistry):
     pass
 
 
-class HookRegistry(Registry):
+class HookRegistry(DistillerRegistry):
     pass
 
 

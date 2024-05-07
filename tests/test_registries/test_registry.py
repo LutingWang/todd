@@ -6,7 +6,8 @@ from custom_types import CustomModule
 from torch import nn
 
 from todd import Config
-from todd.registries.registry import OptimizerRegistry, Registry, RegistryMeta
+from todd.registries.optimizers import OptimizerRegistry  # TODO split up
+from todd.registries.registry import Registry, RegistryMeta
 
 
 class Registry1(metaclass=RegistryMeta):

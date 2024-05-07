@@ -11,7 +11,7 @@ from torch.utils.data import Dataset
 
 from ..configs import Config
 from ..logger import logger
-from ..registries import AccessLayerRegistry
+from .registries import AccessLayerRegistry
 
 KT = TypeVar('KT')
 VT = TypeVar('VT')
