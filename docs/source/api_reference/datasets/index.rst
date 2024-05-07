@@ -1,5 +1,5 @@
-Distillers
-==========
+Datasets
+========
 
 .. toctree::
    :glob:

@@ -1,5 +1,4 @@
 __all__ = [
-    'InitWeightsMixin',
     'MeanStdMixin',
 ]
 
@@ -8,16 +7,6 @@ from abc import ABC
 import einops
 import torch
 from torch import nn
-
-from ..configs import Config
-
-
-class InitWeightsMixin(nn.Module, ABC):
-
-    def init_weights(self, config: Config) -> bool:
-        if hasattr(super(), 'init_weights'):
-            return super().init_weights(config)  # type: ignore[misc]
-        return True
 
 
 class MeanStdMixin(nn.Module, ABC):

@@ -1,5 +1,5 @@
-Distillers
-==========
+Visuals
+=======
 
 .. toctree::
    :glob:

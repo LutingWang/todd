@@ -1,5 +1,5 @@
-Distillers
-==========
+Losses
+======
 
 .. toctree::
    :glob:

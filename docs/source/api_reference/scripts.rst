@@ -1,4 +1,0 @@
-Scripts
-=======
-
-.. automodule:: todd.scripts

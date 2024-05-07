@@ -2,8 +2,8 @@ __all__ = [
     'FilterRegistry',
 ]
 
-from ..registries import ReproductionRegistry
+from ..registries import ReproducerRegistry
 
 
-class FilterRegistry(ReproductionRegistry):
+class FilterRegistry(ReproducerRegistry):
     pass

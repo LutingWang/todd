@@ -1,5 +1,5 @@
-Distillers
-==========
+Models
+======
 
 .. toctree::
    :glob:

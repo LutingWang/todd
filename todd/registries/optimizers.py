@@ -10,7 +10,7 @@ from torch import nn
 from ..configs import Config
 from ..utils import descendant_classes
 from .registry import Item, Registry, RegistryMeta
-from .reproduction import ReproductionRegistry
+from .reproducers import ReproducerRegistry
 
 if TYPE_CHECKING:
     from ..reproducers.filters import NamedParametersFilter
@@ -23,7 +23,7 @@ class OptimizerRegistry(Registry):
         config = config.copy()
         params = config.pop('params')
         filter_: 'NamedParametersFilter' = (
-            ReproductionRegistry.child('FilterRegistry').build(params)
+            ReproducerRegistry.child('FilterRegistry').build(params)
         )
         filtered_params = [p for _, p in filter_(model)]
         assert all(p.requires_grad for p in filtered_params)

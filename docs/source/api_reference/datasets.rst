@@ -1,4 +1,0 @@
-Datasets
-========
-
-.. automodule:: todd.datasets

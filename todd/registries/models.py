@@ -1,7 +1,9 @@
 __all__ = [
+    'InitWeightsMixin',
     'ModelRegistry',
 ]
 
+from abc import ABC
 from typing import Any, Callable, cast
 
 from torch import nn
@@ -10,6 +12,14 @@ from ..configs import Config
 from ..logger import logger
 from ..utils import descendant_classes, get_rank
 from .registry import Item, Registry, RegistryMeta
+
+
+class InitWeightsMixin(nn.Module, ABC):
+
+    def init_weights(self, config: Config) -> bool:
+        if hasattr(super(), 'init_weights'):
+            return super().init_weights(config)  # type: ignore[misc]
+        return True
 
 
 class ModelRegistry(Registry):

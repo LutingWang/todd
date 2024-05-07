@@ -6,5 +6,3 @@ Registries
    :maxdepth: 2
 
    *
-
-.. py:module:: todd.registries

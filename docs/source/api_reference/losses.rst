@@ -1,4 +1,0 @@
-Losses
-======
-
-.. automodule:: todd.losses
