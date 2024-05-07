@@ -21,6 +21,8 @@ import torch.distributed as dist
 from torch import nn
 from torch.utils.data import DataLoader
 
+from .logger import logger
+
 
 def get_rank(*args, **kwargs) -> int:
     if dist.is_initialized():
@@ -131,12 +133,11 @@ def transfer_weight(target: nn.Module, source: nn.Module) -> None:
     state_dict = source.state_dict()
     incompatible_keys = target.load_state_dict(state_dict, strict=False)
     if get_rank() == 0:
-        from ..logger import logger  # pylint: disable=import-outside-toplevel
         logger.info(incompatible_keys)
 
 
 def transfer_weights(models, weight_prefixes: Mapping[str, str]) -> None:
-    from ..patches import get_  # pylint: disable=import-outside-toplevel
+    from .patches import get_  # pylint: disable=import-outside-toplevel
     for target_prefix, source_prefix in weight_prefixes.items():
         target = get_(models, target_prefix)
         source = get_(models, source_prefix)

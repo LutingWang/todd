@@ -18,8 +18,8 @@ from typing import Iterable, cast
 
 import torch
 
-from ..patches import classproperty
 from ..registries import BuildSpec, BuildSpecMixin
+from ..utils import classproperty
 from .registries import SchedulerRegistry
 
 

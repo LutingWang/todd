@@ -78,8 +78,8 @@ test = [
 ]
 
 [project.scripts]
-configs_diff = 'todd.base.configs:diff_cli'
-collect_env = 'todd.base.envs:collect_env_cli'
+configs_diff = 'todd.utils.configs:diff_cli'
+collect_env = 'todd.registries.envs:collect_env_cli'
 sgr = 'todd.utils.control_sequences:sgr_cli'
 
 [tool.setuptools.packages.find]
@@ -153,7 +153,7 @@ ignore_errors = true
 [tool.pytest.ini_options]
 norecursedirs = [
     'tests/helpers',
-    'tests/configs',
+    'tests/test_utils/configs',
 ]
 filterwarnings = [
     'ignore::DeprecationWarning:pkg_resources:121',

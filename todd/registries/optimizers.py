@@ -7,8 +7,7 @@ from typing import TYPE_CHECKING, cast
 import torch
 from torch import nn
 
-from ..configs import Config
-from ..utils import descendant_classes
+from ..utils import Config, descendant_classes
 from .registry import Item, Registry, RegistryMeta
 from .reproducers import ReproducerRegistry
 

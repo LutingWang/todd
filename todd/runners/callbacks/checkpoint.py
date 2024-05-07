@@ -8,8 +8,7 @@ import pathlib
 
 import torch
 
-from ...configs import Config
-from ...utils import get_rank
+from ...utils import Config, get_rank
 from ..registries import CallbackRegistry
 from ..types import Memo
 from .base import BaseCallback

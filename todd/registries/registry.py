@@ -19,10 +19,7 @@ from typing import (
     no_type_check,
 )
 
-from ..configs import Config
-from ..logger import logger
-from ..patches import classproperty
-from ..utils import NonInstantiableMeta
+from ..utils import Config, NonInstantiableMeta, classproperty, logger
 
 F = Callable[[Config], Any]
 

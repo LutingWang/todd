@@ -13,9 +13,7 @@ import torch
 import torch.distributed as dist
 from torch.backends import cudnn
 
-from ..logger import logger
-from ..stores import Store
-from ..utils import get_world_size
+from ..utils import Store, get_world_size, logger
 
 
 def randint(high: int = 2**30) -> int:

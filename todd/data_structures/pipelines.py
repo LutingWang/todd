@@ -26,10 +26,8 @@ from typing import (
 
 import pandas as pd
 
-from ..configs import Config
-from ..logger import logger
-from ..patches import exec_
 from ..registries import RegistryMeta
+from ..utils import Config, exec_, logger
 from .registries import PipelineRegistry
 
 # TODO: refactor

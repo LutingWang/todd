@@ -5,7 +5,7 @@ __all__ = [
 from abc import ABC
 from typing import Generator, TypeVar
 
-from ..configs import Config
+from ..utils import Config
 from .base import BaseAccessLayer
 from .registries import AccessLayerRegistry
 

@@ -14,7 +14,7 @@ import contextlib
 from typing import Any, Callable, Generator
 
 from .logger import logger
-from .utils import get_rank
+from .torch import get_rank
 
 try:
     import ipdb

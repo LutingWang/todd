@@ -20,8 +20,7 @@ import importlib.util
 import os
 import subprocess  # nosec B404
 
-from ..logger import logger
-from ..utils import subprocess_run
+from ..utils import logger, subprocess_run
 from .registry import Registry
 
 

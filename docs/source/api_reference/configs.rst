@@ -1,4 +1,0 @@
-Configs
-=======
-
-.. automodule:: todd.configs

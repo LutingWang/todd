@@ -14,7 +14,6 @@ Welcome to todd's documentation!
    :caption: API Reference:
 
    api_reference/*/index
-   api_reference/*
 
 Indices and tables
 ==================

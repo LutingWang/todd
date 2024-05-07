@@ -1,4 +1,0 @@
-Patches
-=======
-
-.. automodule:: todd.patches

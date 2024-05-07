@@ -8,9 +8,7 @@ from typing import Any, Callable, cast
 
 from torch import nn
 
-from ..configs import Config
-from ..logger import logger
-from ..utils import descendant_classes, get_rank
+from ..utils import Config, descendant_classes, get_rank, logger
 from .registry import Item, Registry, RegistryMeta
 
 

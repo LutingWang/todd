@@ -1,4 +1,0 @@
-Stores
-======
-
-.. automodule:: todd.stores

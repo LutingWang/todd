@@ -6,8 +6,7 @@ from typing import cast
 
 from torch.optim import lr_scheduler
 
-from ..configs import Config
-from ..utils import descendant_classes
+from ..utils import Config, descendant_classes
 from .registry import Item, Registry, RegistryMeta
 
 

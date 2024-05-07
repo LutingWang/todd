@@ -8,11 +8,8 @@ from typing import Any
 
 import torch
 
-from ...configs import Config
-from ...logger import Formatter
 from ...registries import BaseETA, ETARegistry
-from ...stores import Store
-from ...utils import get_rank, get_timestamp
+from ...utils import Config, Formatter, Store, get_rank, get_timestamp
 from ..registries import CallbackRegistry
 from ..types import Memo
 from .base import BaseCallback

@@ -9,8 +9,7 @@ from typing import Generic, MutableMapping, TypeVar
 
 from torch.utils.data import Dataset
 
-from ..configs import Config
-from ..logger import logger
+from ..utils import Config, logger
 from .registries import AccessLayerRegistry
 
 KT = TypeVar('KT')
