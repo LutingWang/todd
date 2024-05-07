@@ -13,7 +13,7 @@ from .registry import Item, Registry, RegistryMeta
 from .reproduction import ReproductionRegistry
 
 if TYPE_CHECKING:
-    from ..reproduction.filters import NamedParametersFilter
+    from ..reproducers.filters import NamedParametersFilter
 
 
 class OptimizerRegistry(Registry):

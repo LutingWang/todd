@@ -67,6 +67,24 @@ def sgr(parameter_bytes: Iterable[SGR]) -> str:
 
 
 def apply_sgr(str_: str, *parameter_bytes: SGR) -> str:
+    r"""Apply SGR to a string.
+
+    Args:
+        str_: The string to apply SGR to.
+        parameter_bytes: The SGR parameters.
+
+    Returns:
+        The string with the SGR applied.
+
+    Examples:
+        >>> apply_sgr(
+        ...     ' hello ',
+        ...     SGR.BOLD,
+        ...     SGR.DISPLAY_GREEN,
+        ...     SGR.BACKGROUND_GREEN,
+        ... )
+        '\x1b[1;32;42m hello \x1b[m'
+    """
     return sgr(parameter_bytes) + str_ + sgr([])
 
 

@@ -1,6 +1,6 @@
 from torch import nn
 
-from todd.reproduction.filters import NamedModulesFilter
+from todd.reproducers.filters import NamedModulesFilter
 
 
 class TestNamedModulesFilter:

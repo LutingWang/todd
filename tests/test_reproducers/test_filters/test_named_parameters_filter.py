@@ -1,6 +1,6 @@
 from torch import nn
 
-from todd.reproduction.filters import NamedParametersFilter
+from todd.reproducers.filters import NamedParametersFilter
 
 
 class TestNamedParametersFilter:

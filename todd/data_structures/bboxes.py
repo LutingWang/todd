@@ -68,7 +68,7 @@ class BBoxes(ABC):
             kwargs += ', normalized=True'
         if self.has_image_wh:
             kwargs += f', image_wh={self._image_wh}'
-        return f'{self.__class__.__name__}({self._bboxes}{kwargs})'
+        return f'{type(self).__name__}({self._bboxes}{kwargs})'
 
     def _copy(self, bboxes: torch.Tensor, **kwargs) -> Self:
         if self._normalized:

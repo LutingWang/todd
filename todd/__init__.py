@@ -6,7 +6,7 @@ __all__ = [
     'losses',
     'models',
     'registries',
-    'reproduction',
+    'reproducers',
     'runners',
     'visuals',
 ]
@@ -18,7 +18,7 @@ from . import (
     losses,
     models,
     registries,
-    reproduction,
+    reproducers,
     runners,
     visuals,
 )

@@ -95,8 +95,7 @@ class RGB(Color):
 
     def __repr__(self) -> str:
         return (
-            f"{self.__class__.__name__}({self._red}, {self._green}, "
-            f"{self._blue})"
+            f"{type(self).__name__}({self._red}, {self._green}, {self._blue})"
         )
 
     @property
@@ -141,8 +140,8 @@ class RGBA(RGB):
 
     def __repr__(self) -> str:
         return (
-            f"{self.__class__.__name__}({self._red}, {self._green}, "
-            f"{self._blue}, alpha={self._alpha})"
+            f"{type(self).__name__}({self._red}, {self._green}, {self._blue}, "
+            f"alpha={self._alpha})"
         )
 
     @property
@@ -168,8 +167,7 @@ class BGR(RGB):
 
     def __repr__(self) -> str:
         return (
-            f"{self.__class__.__name__}({self._blue}, {self._green}, "
-            f"{self._red})"
+            f"{type(self).__name__}({self._blue}, {self._green}, {self._red})"
         )
 
 
@@ -187,7 +185,7 @@ class YIQ(Color):
 
     def __repr__(self) -> str:
         return (
-            f"{self.__class__.__name__}({self._luminance}, {self._in_phase}, "
+            f"{type(self).__name__}({self._luminance}, {self._in_phase}, "
             f"{self._quadrature})"
         )
 

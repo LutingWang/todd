@@ -35,11 +35,30 @@ def get_(obj, attr: str, default=...):
 
 
 def has_(obj, name: str) -> bool:
+    """Check if an object has an attribute.
+
+    Args:
+        obj: The object to check.
+        name: The attribute name.
+
+    Returns:
+        Whether the object has the attribute.
+    """
     default = object()
     return get_(obj, name, default) is not default
 
 
 def set_(obj, attr: str, value) -> None:
+    """Set an attribute of an object.
+
+    Args:
+        obj: The object to set the attribute on.
+        attr: The attribute name.
+        value: The value to set.
+
+    Raises:
+        ValueError: If the attribute is invalid.
+    """
     locals_: dict[str, Any] = dict()
     exec(f'__o{attr} = __v', dict(__o=obj, __v=value), locals_)  # nosec B102
     if len(locals_) != 0:
@@ -47,6 +66,12 @@ def set_(obj, attr: str, value) -> None:
 
 
 def del_(obj, attr: str) -> None:
+    """Delete an attribute of an object.
+
+    Args:
+        obj: The object to delete the attribute from.
+        attr: The attribute name.
+    """
     exec(f'del __o{attr}', dict(__o=obj))  # nosec B102
 
 
@@ -66,6 +91,13 @@ def map_(data, f: Callable[[Any], Any]):
 
 @contextlib.contextmanager
 def set_temp(obj, name: str, value) -> Generator[None, None, None]:
+    """Set a temporary attribute on an object.
+
+    Args:
+        obj: The object to set the attribute on.
+        name: The attribute name.
+        value: The value to set.
+    """
     if has_(obj, name):
         prev = get_(obj, name)
         set_(obj, name, value)

@@ -1,7 +1,7 @@
 import pytest
 import torch
 
-from todd.reproduction.seed import init_seed, randint, set_seed_temp
+from todd.reproducers.seed import init_seed, randint, set_seed_temp
 
 
 class TestSeed:
