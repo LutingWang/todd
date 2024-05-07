@@ -49,3 +49,5 @@ logger.setLevel(logging.DEBUG)
 handler = logging.StreamHandler()
 handler.setFormatter(SGRFormatter())
 logger.addHandler(handler)
+
+# TODO: define a master logger

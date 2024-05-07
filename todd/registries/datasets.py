@@ -3,7 +3,6 @@ __all__ = [
 ]
 
 import inspect
-from functools import partial
 from typing import cast
 
 import torch.utils.data.dataset
@@ -21,5 +20,5 @@ for _, c in inspect.getmembers(torch.utils.data.dataset, inspect.isclass):
 
 DatasetRegistry.register_(
     force=True,
-    build_spec=BuildSpec(datasets=partial(map, DatasetRegistry.build)),
+    build_spec=BuildSpec({'*datasets': DatasetRegistry.build}),
 )(torch.utils.data.ConcatDataset)

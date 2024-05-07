@@ -3,7 +3,6 @@ __all__ = [
 ]
 
 import inspect
-from functools import partial
 from typing import cast
 
 import torchvision.transforms as tf
@@ -20,5 +19,5 @@ for _, c in inspect.getmembers(tf, inspect.isclass):
 
 TransformRegistry.register_(
     force=True,
-    build_spec=BuildSpec(transforms=partial(map, TransformRegistry.build)),
+    build_spec=BuildSpec({'*transforms': TransformRegistry.build}),
 )(tf.Compose)
