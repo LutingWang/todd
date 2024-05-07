@@ -9,4 +9,5 @@ from .log import *
 from .lr import *
 from .monitor import *
 from .optimize import *
+from .shadow import *
 from .tensorboard import *

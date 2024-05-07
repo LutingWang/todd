@@ -50,8 +50,7 @@ class BaseRunner(StateDictMixin, Generic[T]):
 
         self._iter = 0
         self._build(*args, **kwargs)
-
-        self._callbacks.init()
+        self._init_callbacks()
 
         self._logger.debug(
             "Rank %d initialized by %s@%s",
@@ -61,8 +60,10 @@ class BaseRunner(StateDictMixin, Generic[T]):
         )
 
     def __repr__(self) -> str:
-        # TODO: update
-        return f"{type(self).__name__}()"
+        return (
+            f"<{type(self).__name__} name={self._name} "
+            f"load_from={self._load_from} auto_resume={self._auto_resume}>"
+        )
 
     @property
     def name(self) -> str:
@@ -217,6 +218,9 @@ class BaseRunner(StateDictMixin, Generic[T]):
         self._build_callbacks(*args, **kwargs)
         self._build_work_dir(*args, **kwargs)
         self._build_logger(*args, **kwargs)
+
+    def _init_callbacks(self) -> None:
+        self._callbacks.init()
 
     def _run_iter(self, batch, memo: Memo, *args, **kwargs) -> Memo:
         """Run iteration.
