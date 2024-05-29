@@ -80,7 +80,7 @@ test = [
 [project.scripts]
 configs_diff = 'todd.configs.diff:diff_cli'
 collect_env = 'todd.utils.collect_env:collect_env_cli'
-sgr = 'todd.loggers.control_sequences:sgr_cli'
+sgr = 'todd.loggers.control_sequences.sgr:sgr_cli'
 
 [tool.setuptools.packages.find]
 include = [

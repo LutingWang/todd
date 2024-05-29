@@ -3,12 +3,12 @@ __all__ = [
     'PipelineRegistry',
 ]
 
-from ..registries import KnowledgeDistillationRegistry
+from ..registries import KDRegistry
 
 
-class DistillerRegistry(KnowledgeDistillationRegistry):
+class DistillerRegistry(KDRegistry):
     pass
 
 
-class PipelineRegistry(KnowledgeDistillationRegistry):
+class PipelineRegistry(KDRegistry):
     pass

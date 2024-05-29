@@ -4,9 +4,9 @@ __all__ = [
 
 import torch
 
+from ....knowledge_distillation.distillers import AdaptRegistry
+from ....knowledge_distillation.distillers.adapts import BaseAdapt
 from ....object_detection import BBoxesXYXY
-from ..registries import AdaptRegistry
-from .base import BaseAdapt
 
 
 @AdaptRegistry.register_()

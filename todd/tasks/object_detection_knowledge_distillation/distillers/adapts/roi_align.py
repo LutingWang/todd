@@ -5,8 +5,8 @@ __all__ = [
 import torch
 from torch import nn
 
-from ..registries import AdaptRegistry
-from .base import BaseAdapt
+from ....knowledge_distillation.distillers import AdaptRegistry
+from ....knowledge_distillation.distillers.adapts import BaseAdapt
 
 
 @AdaptRegistry.register_()

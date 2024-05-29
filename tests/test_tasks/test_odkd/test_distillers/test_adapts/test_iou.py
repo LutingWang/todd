@@ -1,7 +1,9 @@
 import pytest
 import torch
 
-from todd.tasks.knowledge_distillation.distillers.adapts import IoU
+from todd.tasks.object_detection_knowledge_distillation.distillers.adapts import (  # noqa: E501 pylint: disable=line-too-long
+    IoU,
+)
 
 
 class TestIoU:

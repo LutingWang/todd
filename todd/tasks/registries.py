@@ -1,24 +1,24 @@
 __all__ = [
-    'ImageGenerationRegistry',
-    'KnowledgeDistillationRegistry',
-    'ObjectDetectionRegistry',
-    'OpticalFlowRegistry',
+    'IGRegistry',
+    'KDRegistry',
+    'ODRegistry',
+    'OFERegistry',
 ]
 
 from ..registries import TaskRegistry
 
 
-class ImageGenerationRegistry(TaskRegistry):
+class IGRegistry(TaskRegistry):
     pass
 
 
-class KnowledgeDistillationRegistry(TaskRegistry):
+class KDRegistry(TaskRegistry):
     pass
 
 
-class ObjectDetectionRegistry(TaskRegistry):
+class ODRegistry(TaskRegistry):
     pass
 
 
-class OpticalFlowRegistry(TaskRegistry):
+class OFERegistry(TaskRegistry):
     pass
