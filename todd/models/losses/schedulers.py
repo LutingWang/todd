@@ -13,10 +13,10 @@ __all__ = [
 
 import bisect
 import math
-from functools import partial
 from typing import Iterable, cast
 
 import torch
+from torch import nn
 
 from ...patches import classproperty
 from ...registries import BuildSpec, BuildSpecMixin
@@ -24,7 +24,7 @@ from .registries import SchedulerRegistry
 
 
 @SchedulerRegistry.register_()
-class BaseScheduler(torch.nn.Module):
+class BaseScheduler(nn.Module):
     """Base class for schedulers.
 
     Under most cases, schedulers are used as a variable loss weight.
@@ -55,7 +55,7 @@ class BaseScheduler(torch.nn.Module):
         """
         super().__init__(*args, **kwargs)
         self._gain = gain
-        self.register_forward_hook(forward_hook)
+        self.register_forward_hook(lambda m, i, o: self._scale(o))
         self.register_buffer('_steps', torch.tensor(1))
 
     @property
@@ -73,6 +73,9 @@ class BaseScheduler(torch.nn.Module):
     def step(self) -> None:
         self._steps += 1
 
+    def _scale(self, output: float) -> float:
+        return output * self.gain
+
     def forward(self) -> float:
         """Compute the current schedule weight.
 
@@ -84,10 +87,6 @@ class BaseScheduler(torch.nn.Module):
         `forward` to return a percentage value in :math:`[0, 1]`.
         """
         return 1.0
-
-
-def forward_hook(module: BaseScheduler, inputs: tuple, output: float) -> float:
-    return output * module.gain
 
 
 @SchedulerRegistry.register_()
@@ -276,9 +275,7 @@ class ComposedScheduler(BuildSpecMixin, BaseScheduler):
 
     @classproperty
     def build_spec(self) -> BuildSpec:
-        build_spec = BuildSpec(
-            schedulers=partial(map, SchedulerRegistry.build),
-        )
+        build_spec = BuildSpec({'*schedulers': SchedulerRegistry.build})
         return super().build_spec | build_spec
 
 

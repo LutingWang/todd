@@ -95,7 +95,6 @@ class classproperty:  # noqa: N801 pylint: disable=invalid-name
         return self._method(cls)
 
 
-# TODO: rename
 def descendant_classes(cls: type) -> list[type]:
     classes = []
     for subclass in cls.__subclasses__():

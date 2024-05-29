@@ -3,6 +3,7 @@
     "BATCHNORMS",
     "CXCY",
     "CXCYWH",
+    "denormalize",
     "FGFI",
     "frozens",
     "SGFI",

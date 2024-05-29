@@ -9,23 +9,36 @@ __all__ = [
     'CosineEmbeddingLoss',
 ]
 
-from abc import ABC, abstractmethod
+from abc import ABC
+from typing import Callable
 
 import torch
 import torch.nn.functional as F
 
+from ...patches import classproperty
+from ...registries import BuildSpec, ModelRegistry
 from ..registries import LossRegistry
-from .base import BaseLoss
+from .base import BaseLoss, Reduction
 
 
+@LossRegistry.register_()
 class FunctionalLoss(BaseLoss):
 
-    @staticmethod
-    @abstractmethod
-    def func(*args, **kwargs) -> torch.Tensor:
-        pass
+    def __init__(
+        self,
+        *args,
+        func: Callable[..., torch.Tensor],
+        **kwargs,
+    ) -> None:
+        super().__init__(*args, **kwargs)
+        self._func = func
 
-    def forward(
+    @classproperty
+    def build_spec(self) -> BuildSpec:
+        build_spec = BuildSpec(func=ModelRegistry.build)
+        return super().build_spec | build_spec
+
+    def forward(  # pylint: disable=arguments-differ
         self,
         pred: torch.Tensor,
         target: torch.Tensor,
@@ -34,17 +47,21 @@ class FunctionalLoss(BaseLoss):
         **kwargs,
     ) -> torch.Tensor:
         if mask is None:
-            loss = self.func(
+            return self._func(
                 pred,
                 target,
                 *args,
                 reduction=self.reduction,
                 **kwargs,
             )
-        else:
-            loss = self.func(pred, target, *args, reduction='none', **kwargs)
-            loss = self.reduce(loss, mask)
-        return loss
+        loss = self._func(
+            pred,
+            target,
+            *args,
+            reduction=Reduction.NONE.value,
+            **kwargs,
+        )
+        return self._reduce(loss, mask)
 
 
 class NormMixin(FunctionalLoss, ABC):
@@ -70,46 +87,44 @@ class NormMixin(FunctionalLoss, ABC):
 @LossRegistry.register_()
 class L1Loss(NormMixin, FunctionalLoss):
 
-    @staticmethod
-    def func(*args, **kwargs) -> torch.Tensor:
-        return F.l1_loss(*args, **kwargs)
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, func=F.l1_loss, **kwargs)
 
 
 @LossRegistry.register_()
 class MSELoss(NormMixin, FunctionalLoss):
 
-    @staticmethod
-    def func(*args, **kwargs) -> torch.Tensor:
-        return F.mse_loss(*args, **kwargs)
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, func=F.mse_loss, **kwargs)
 
 
 @LossRegistry.register_()
 class BCELoss(FunctionalLoss):
 
-    @staticmethod
-    def func(*args, **kwargs) -> torch.Tensor:
-        return F.binary_cross_entropy(*args, **kwargs)
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, func=F.binary_cross_entropy, **kwargs)
 
 
 @LossRegistry.register_()
 class BCEWithLogitsLoss(FunctionalLoss):
 
-    @staticmethod
-    def func(*args, **kwargs) -> torch.Tensor:
-        return F.binary_cross_entropy_with_logits(*args, **kwargs)
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(
+            *args,
+            func=F.binary_cross_entropy_with_logits,
+            **kwargs,
+        )
 
 
 @LossRegistry.register_()
 class CrossEntropyLoss(FunctionalLoss):
 
-    @staticmethod
-    def func(*args, **kwargs) -> torch.Tensor:
-        return F.cross_entropy(*args, **kwargs)
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, func=F.cross_entropy, **kwargs)
 
 
 @LossRegistry.register_()
 class CosineEmbeddingLoss(FunctionalLoss):
 
-    @staticmethod
-    def func(*args, **kwargs) -> torch.Tensor:
-        return F.cosine_embedding_loss(*args, **kwargs)
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, func=F.cosine_embedding_loss, **kwargs)

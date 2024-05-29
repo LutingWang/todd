@@ -27,9 +27,10 @@ class FolderAccessLayer(BaseAccessLayer[str, VT], ABC):
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
-        if isinstance(subfolder_action, str):
-            subfolder_action = Action(subfolder_action.lower())
-        self._subfolder_action = subfolder_action
+        self._subfolder_action = (
+            subfolder_action if isinstance(subfolder_action, Action) else
+            Action(subfolder_action.lower())
+        )
 
     @property
     def folder_root(self) -> pathlib.Path:

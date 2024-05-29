@@ -2,38 +2,50 @@ __all__ = [
     'BaseLoss',
 ]
 
-from abc import ABC
-from typing import Literal
+from abc import ABC, abstractmethod
+from enum import StrEnum
+from typing import TYPE_CHECKING
 
 import torch
 from torch import nn
 
-from ...configs import Config
+from ...patches import classproperty
+from ...registries import BuildSpec, BuildSpecMixin
 from .schedulers import BaseScheduler, SchedulerRegistry
 
-Reduction = Literal['none', 'mean', 'sum', 'prod']
+
+class Reduction(StrEnum):
+    NONE = 'none'
+    MEAN = 'mean'
+    SUM = 'sum'
+    PROD = 'prod'
 
 
-class BaseLoss(nn.Module, ABC):
+class BaseLoss(BuildSpecMixin, nn.Module, ABC):
 
     def __init__(
         self,
-        reduction: Reduction = 'mean',
-        weight: float | Config = 1.0,
+        reduction: str | Reduction = Reduction.MEAN,
+        weight: float | BaseScheduler = 1.0,
         bound: float | None = None,
         **kwargs,
     ) -> None:
-        # mypy takes int as float, while python does not
-        if isinstance(weight, (int, float)):
-            weight = Config(type='BaseScheduler', gain=weight)
-        if bound is not None and bound <= 1e-4:
-            raise ValueError('bound must be greater than 1e-4')
         super().__init__(**kwargs)
-        self._reduction = reduction
-        self._weight: BaseScheduler = SchedulerRegistry.build(weight)
-        self._threshold = None if bound is None else bound / self.weight
+        self._reduction = (
+            reduction if isinstance(reduction, Reduction) else
+            Reduction(reduction.lower())
+        )
+        self._weight = (
+            weight if isinstance(weight, BaseScheduler) else
+            BaseScheduler(gain=weight)
+        )
+        self._bound = bound
+        self.register_forward_hook(lambda m, i, o: self._scale(o))
 
-        self.register_forward_hook(forward_hook)
+    @classproperty
+    def build_spec(self) -> BuildSpec:
+        build_spec = BuildSpec(weight=SchedulerRegistry.build)
+        return super().build_spec | build_spec
 
     @property
     def reduction(self) -> Reduction:
@@ -43,46 +55,30 @@ class BaseLoss(nn.Module, ABC):
     def weight(self) -> float:
         return self._weight()
 
-    @property
-    def threshold(self) -> float | None:
-        return self._threshold
-
     def step(self) -> None:
         self._weight.step()
 
-    def reduce(
+    def _reduce(
         self,
         loss: torch.Tensor,
         mask: torch.Tensor | None = None,
     ) -> torch.Tensor:
         if mask is not None:
             loss = loss * mask
-        if self._reduction == 'none':
-            pass
-        elif self._reduction in ['sum', 'mean', 'prod']:
-            loss = getattr(loss, self._reduction)()
-        else:
-            raise NotImplementedError(self._reduction)
+        if self._reduction is not Reduction.NONE:
+            loss = getattr(loss, self._reduction.value)()
         return loss
 
-    # TODO: design forward signature
+    def _scale(self, loss: torch.Tensor) -> torch.Tensor:
+        weight = self.weight
+        if self._bound is not None:
+            coef = self._bound / (weight * loss.item())
+            weight *= min(coef, 1.)  # weight <= bound / loss
+        return weight * loss
 
+    @abstractmethod
+    def forward(self, *args, **kwargs) -> torch.Tensor:
+        pass
 
-def forward_hook(
-    module: BaseLoss,
-    inputs: tuple,
-    output: torch.Tensor,
-) -> torch.Tensor:
-    weight = module.weight
-    if module.threshold is None:
-        return weight * output
-
-    # coef = bound / (weight * output)
-    coef = module.threshold / output.item()
-    # if bound < weight * output
-    if coef < 1.0:
-        # weight = bound / output
-        weight *= coef
-
-    output = weight * output
-    return output
+    if TYPE_CHECKING:
+        __call__ = forward
