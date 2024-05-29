@@ -8,10 +8,15 @@ from typing import Any
 
 import torch
 
-from ...registries import BaseETA, ETARegistry
-from ...utils import Config, Formatter, Store, get_rank, get_timestamp
-from ..registries import CallbackRegistry
-from ..types import Memo
+from ...configs import Config
+from ...loggers import Formatter
+from ...patches import get_rank
+from ...utils import Store
+from ...utils import collect_env as collect_env_
+from ...utils import get_timestamp
+from ..memos import Memo
+from ..registries import CallbackRegistry, ETARegistry
+from ..utils import BaseETA
 from .base import BaseCallback
 from .interval import IntervalMixin
 
@@ -42,10 +47,7 @@ class LogCallback(IntervalMixin, BaseCallback):
             handler.setFormatter(Formatter())
             self.runner.logger.addHandler(handler)
         if self._collect_env is not None:
-            from ...registries import (  # noqa: E501 pylint: disable=import-outside-toplevel
-                collect_env,
-            )
-            env = collect_env(**self._collect_env)
+            env = collect_env_(**self._collect_env)
             self.runner.logger.info(env)
 
     def before_run(self, memo: Memo) -> None:

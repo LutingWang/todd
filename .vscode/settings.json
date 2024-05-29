@@ -1,18 +1,12 @@
 {
   "cSpell.words": [
-    "autofix",
-    "autoshape",
+    "BATCHNORMS",
     "CXCY",
     "CXCYWH",
-    "docstrings",
     "FGFI",
-    "intersphinx",
-    "metas",
+    "frozens",
     "SGFI",
     "shorthair",
-    "typehints",
-    "undoc",
-    "viewcode",
     "XYWH",
     "XYXY"
   ],

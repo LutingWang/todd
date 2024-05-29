@@ -1,25 +1,31 @@
 """Toolkit for Object Detection Distillation."""
 
 __all__ = [
+    'configs',
     'datasets',
-    'distillers',
-    'losses',
+    'loggers',
     'models',
     'registries',
-    'reproducers',
     'runners',
+    'tasks',
+    'utils',
     'visuals',
+    'Config',
+    'Registry',
 ]
 __version__ = '0.4.0'
 
 from . import (
+    configs,
     datasets,
-    distillers,
-    losses,
+    loggers,
     models,
     registries,
-    reproducers,
     runners,
+    tasks,
+    utils,
     visuals,
 )
-from .utils import *
+from .configs import Config
+from .patches import *
+from .registries import Registry

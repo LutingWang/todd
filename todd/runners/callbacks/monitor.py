@@ -5,8 +5,8 @@ __all__ = [
 import contextlib
 import logging
 
+from ..memos import Memo
 from ..registries import CallbackRegistry
-from ..types import Memo
 from .base import BaseCallback
 
 

@@ -7,8 +7,10 @@ from typing import Any, Mapping, TypeVar, cast
 import torch
 from torch import nn
 
+from ...configs import Config
+from ...patches import get_rank
 from ...registries import ModelRegistry, OptimizerRegistry
-from ...utils import Config, StateDictMixin, get_rank
+from ...utils import StateDictMixin
 from ..registries import StrategyRegistry
 from ..utils import RunnerHolderMixin
 

@@ -1,0 +1,16 @@
+{
+	"from . import *": {
+		"prefix": "fi",
+		"body": [
+			"from .$0 import *"
+		]
+	},
+	"__all__": {
+		"prefix": "__all__",
+		"body": [
+			"__all__ = [",
+			"    $0",
+			"]"
+		]
+	}
+}

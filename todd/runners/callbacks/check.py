@@ -4,8 +4,8 @@ __all__ = [
 
 import todd
 
+from ..memos import Memo
 from ..registries import CallbackRegistry
-from ..types import Memo
 from .base import BaseCallback
 
 # TODO: check if the model has grad after each iteration

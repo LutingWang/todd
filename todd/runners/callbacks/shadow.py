@@ -4,8 +4,9 @@ __all__ = [
 
 from typing import Any, Mapping
 
+from ...configs import Config
 from ...models.shadows import EMAShadow
-from ...utils import Config, get_rank
+from ...patches import get_rank
 from ..registries import CallbackRegistry
 from .base import BaseCallback
 from .interval import IntervalMixin

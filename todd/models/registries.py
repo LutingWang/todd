@@ -1,14 +1,24 @@
 __all__ = [
     'NormRegistry',
     'ShadowRegistry',
+    'FilterRegistry',
+    'LossRegistry',
 ]
 
-from ..registries import Registry
+from ..registries import ModelRegistry
 
 
-class NormRegistry(Registry):
+class NormRegistry(ModelRegistry):
     pass
 
 
-class ShadowRegistry(Registry):
+class ShadowRegistry(ModelRegistry):
+    pass
+
+
+class FilterRegistry(ModelRegistry):
+    pass
+
+
+class LossRegistry(ModelRegistry):
     pass

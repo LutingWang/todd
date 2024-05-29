@@ -8,8 +8,8 @@ import os
 import torch
 from packaging.version import parse
 
-from .logger import logger
-from .metas import NonInstantiableMeta
+from ..loggers import logger
+from ..patches import NonInstantiableMeta
 
 
 class StoreMeta(NonInstantiableMeta):

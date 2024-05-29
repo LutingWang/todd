@@ -8,8 +8,10 @@ from typing import Any, Callable, cast
 
 from torch import nn
 
-from ..utils import Config, descendant_classes, get_rank, logger
-from .registry import Item, Registry, RegistryMeta
+from ..configs import Config
+from ..loggers import logger
+from ..patches import descendant_classes, get_rank
+from .base import Item, Registry, RegistryMeta
 
 
 class InitWeightsMixin(nn.Module, ABC):

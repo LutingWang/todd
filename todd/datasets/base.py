@@ -1,41 +1,20 @@
 __all__ = [
-    'BaseAccessLayer',
     'BaseDataset',
 ]
 
 import reprlib
 from abc import ABC, abstractmethod
-from typing import Generic, MutableMapping, TypeVar
+from typing import Generic, TypeVar
 
 from torch.utils.data import Dataset
 
-from ..utils import Config, logger
+from ..configs import Config
+from ..loggers import logger
+from .access_layers import BaseAccessLayer
 from .registries import AccessLayerRegistry
 
 KT = TypeVar('KT')
 VT = TypeVar('VT')
-
-
-class BaseAccessLayer(MutableMapping[KT, VT]):
-
-    def __init__(
-        self,
-        data_root: str,
-        task_name: str = '',
-    ) -> None:
-        self._data_root = data_root
-        self._task_name = task_name
-
-    @property
-    @abstractmethod
-    def exists(self) -> bool:
-        pass
-
-    @abstractmethod
-    def touch(self) -> None:
-        pass
-
-
 T = TypeVar('T')
 
 

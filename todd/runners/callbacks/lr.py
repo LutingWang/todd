@@ -7,11 +7,12 @@ from typing import Any, Mapping, cast
 
 import torch
 
+from ...configs import Config
+from ...patches import get_rank, get_world_size
 from ...registries import LRSchedulerRegistry
-from ...utils import Config, get_rank, get_world_size
+from ..memos import Memo
 from ..registries import CallbackRegistry
-from ..trainer import Trainer
-from ..types import Memo
+from ..trainers import Trainer
 from .base import BaseCallback
 from .interval import IntervalMixin
 

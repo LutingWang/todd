@@ -8,9 +8,10 @@ import pathlib
 
 import torch
 
-from ...utils import Config, get_rank
+from ...configs import Config
+from ...patches import get_rank
+from ..memos import Memo
 from ..registries import CallbackRegistry
-from ..types import Memo
 from .base import BaseCallback
 from .interval import IntervalMixin
 

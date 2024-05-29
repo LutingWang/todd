@@ -7,8 +7,8 @@ __all__ = [
 import contextlib
 
 from ...utils import StateDictMixin
+from ..memos import Memo
 from ..registries import CallbackRegistry
-from ..types import Memo
 from ..utils import RunnerHolderMixin
 
 

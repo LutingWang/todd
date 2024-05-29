@@ -42,3 +42,5 @@ TODO
 2. mypy supports recursive types
 3. add a script to prepare imagenet dataset
 4. add Any to all missing typing fields
+5. make loss registry a sub-registry of model registry
+6. refactor registries

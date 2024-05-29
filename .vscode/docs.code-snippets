@@ -9,7 +9,7 @@
 			"   :glob:",
 			"   :maxdepth: 2",
 			"",
-			"   *",
+			"   *"
 		]
 	},
 	"automodule": {
@@ -18,7 +18,7 @@
 			"$1 $0",
 			"====================",
 			"",
-			".. automodule:: todd.$2${TM_FILENAME/.rst//}",
+			".. automodule:: todd.$2${TM_FILENAME/.rst//}"
 		]
 	}
 }

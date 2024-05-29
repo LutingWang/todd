@@ -9,8 +9,7 @@ from typing import TYPE_CHECKING, Any
 import torch
 from torch import nn
 
-from ...data_structures import TensorTreeUtil
-from ...utils import StateDict
+from ...utils import StateDict, TensorTreeUtil
 from ..norms import BATCHNORMS
 
 
