@@ -1,11 +1,4 @@
-"""Control sequences as per ECMA-48_.
-
-.. _ECMA-48: https://ecma-international.org/publications-and-standards/standards/ecma-48/  # noqa: E501 pylint: disable=line-too-long
-"""
-
 __all__ = [
-    'CSI',
-    'control_sequence',
     'SGR',
     'sgr',
     'apply_sgr',
@@ -13,20 +6,9 @@ __all__ = [
 
 import enum
 import itertools
-from typing import Any, Iterable
+from typing import Iterable
 
-CSI = '\033['
-
-
-def control_sequence(
-    parameter_bytes: Iterable[Any],
-    intermediate_bytes: Iterable[Any],
-    final_byte: str,
-) -> str:
-    return (
-        CSI + ';'.join(map(str, parameter_bytes))
-        + ''.join(map(str, intermediate_bytes)) + final_byte
-    )
+from .control_sequence import control_sequence
 
 
 class SGR(enum.IntEnum):
