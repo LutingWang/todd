@@ -8,8 +8,9 @@ from typing import Generic, TypeVar
 
 from torch.utils.data import Dataset
 
-from ..configs import Config
 from ..loggers import logger
+from ..patches import classproperty
+from ..registries import BuildSpec, BuildSpecMixin
 from .access_layers import BaseAccessLayer
 from .registries import AccessLayerRegistry
 
@@ -18,30 +19,28 @@ VT = TypeVar('VT')
 T = TypeVar('T')
 
 
-class BaseDataset(Dataset[T], Generic[T, KT, VT], ABC):
+class BaseDataset(BuildSpecMixin, Dataset[T], Generic[T, KT, VT], ABC):
 
     def __init__(
         self,
         *args,
-        access_layer: Config,
-        keys: Config | None = None,
+        access_layer: BaseAccessLayer[KT, VT],
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
-        self._build_access_layer(access_layer)
-        if keys is None:
-            keys = Config()
-        self._build_keys(keys)
+        self._access_layer = access_layer
+        self._build_keys()
+
+    @classproperty
+    def build_spec(self) -> BuildSpec:
+        build_spec = BuildSpec(access_layer=AccessLayerRegistry.build)
+        return super().build_spec | build_spec
 
     @property
     def access_layer(self) -> BaseAccessLayer[KT, VT]:
         return self._access_layer
 
-    def _build_access_layer(self, config: Config) -> None:
-        self._access_layer: BaseAccessLayer[KT, VT] = \
-            AccessLayerRegistry.build(config)
-
-    def _build_keys(self, config: Config) -> None:
+    def _build_keys(self) -> None:
         logger.debug("Initializing keys.")
         self._keys = list(self._access_layer)
         logger.debug(

@@ -10,7 +10,6 @@ import torch
 from ..registries import AccessLayerRegistry
 from .folder import FolderAccessLayer
 
-T = TypeVar('T')
 VT = TypeVar('VT')
 
 
@@ -18,7 +17,7 @@ VT = TypeVar('VT')
 class PthAccessLayer(FolderAccessLayer[VT]):
 
     def _files(self) -> Iterator[pathlib.Path]:
-        return self._folder_root.glob('*.pth')
+        return self.folder_root.glob('*.pth')
 
     def _file(self, key: str) -> pathlib.Path:
         return super()._file(f'{key}.pth')

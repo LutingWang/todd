@@ -3,9 +3,10 @@ __all__ = [
 ]
 
 from abc import ABC
-from typing import Generator, TypeVar
+from typing import Generator, Mapping, TypeVar
 
-from ...configs import Config
+from ...patches import classproperty
+from ...registries import BuildSpec, BuildSpecMixin
 from ..registries import AccessLayerRegistry
 from .base import BaseAccessLayer
 
@@ -13,52 +14,49 @@ VT = TypeVar('VT')
 
 
 @AccessLayerRegistry.register_()
-class ConcatAccessLayer(BaseAccessLayer[str, VT], ABC):
+class ConcatAccessLayer(BuildSpecMixin, BaseAccessLayer[str, VT], ABC):
     KEY_SEPARATOR = ':'
     DATA_ROOT_SEPARATOR = '|'
 
     def __init__(
         self,
         *args,
-        access_layers: Config,
+        access_layers: Mapping[str, BaseAccessLayer[str, VT]],
         **kwargs,
     ) -> None:
-        named_access_layers: dict[str, BaseAccessLayer[str, VT]] = {
-            k: AccessLayerRegistry.build(v)
-            for k, v in access_layers.items()
-        }
-        assert not any(self.KEY_SEPARATOR in k for k in named_access_layers)
+        assert not any(self.KEY_SEPARATOR in k for k in access_layers)
 
         data_root = self.DATA_ROOT_SEPARATOR.join(
-            access_layer._data_root
-            for access_layer in named_access_layers.values()
+            al._data_root for al in access_layers.values()
         )
         super().__init__(data_root, *args, **kwargs)
 
-        self._named_access_layers = named_access_layers
+        self._access_layers = access_layers
+
+    @classproperty
+    def build_spec(self) -> BuildSpec:
+        build_spec = BuildSpec({'*access_layers': AccessLayerRegistry.build})
+        return super().build_spec | build_spec
 
     def _parse(self, key: str) -> tuple[BaseAccessLayer[str, VT], str]:
         name, key = key.split(self.KEY_SEPARATOR, maxsplit=1)
-        return self._named_access_layers[name], key
+        return self._access_layers[name], key
 
     @property
     def exists(self) -> bool:
-        return all(
-            access_layer.exists
-            for access_layer in self._named_access_layers.values()
-        )
+        return all(al.exists for al in self._access_layers.values())
 
     def touch(self) -> None:
-        for access_layer in self._named_access_layers.values():
+        for access_layer in self._access_layers.values():
             access_layer.touch()
 
     def __iter__(self) -> Generator[str, None, None]:
-        for name, access_layer in self._named_access_layers.items():
+        for name, access_layer in self._access_layers.items():
             for k in access_layer:
                 yield name + self.KEY_SEPARATOR + k
 
     def __len__(self) -> int:
-        return sum(map(len, self._named_access_layers))
+        return sum(map(len, self._access_layers))
 
     def __getitem__(self, key: str) -> VT:
         access_layer, key = self._parse(key)
