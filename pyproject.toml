@@ -78,9 +78,9 @@ test = [
 ]
 
 [project.scripts]
-configs_diff = 'todd.utils.configs:diff_cli'
-collect_env = 'todd.registries.envs:collect_env_cli'
-sgr = 'todd.utils.control_sequences:sgr_cli'
+configs_diff = 'todd.configs.diff:diff_cli'
+collect_env = 'todd.utils.collect_env:collect_env_cli'
+sgr = 'todd.loggers.control_sequences:sgr_cli'
 
 [tool.setuptools.packages.find]
 include = [
@@ -153,7 +153,7 @@ ignore_errors = true
 [tool.pytest.ini_options]
 norecursedirs = [
     'tests/helpers',
-    'tests/test_configs/configs_base',
+    'tests/test_configs/py',
 ]
 filterwarnings = [
     'ignore::DeprecationWarning:pkg_resources:121',
@@ -219,6 +219,7 @@ disable = [
     'eval-used',
     'exec-used',
     'fixme',
+    'import-outside-toplevel',
     'missing-module-docstring',
     'missing-class-docstring',
     'missing-function-docstring',

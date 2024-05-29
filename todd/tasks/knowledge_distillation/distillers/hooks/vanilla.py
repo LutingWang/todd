@@ -7,7 +7,7 @@ from .base import BaseHook
 
 
 @HookRegistry.register_()
-class VanillaHook(BaseHook):
+class VanillaHook(BaseHook):  # TODO: Rename to hook
 
     def _reset(self) -> None:
         self._tensor_ = None

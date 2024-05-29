@@ -1,5 +1,3 @@
-# pylint: disable=import-outside-toplevel
-
 __all__ = [
     'EnvRegistry',
     'platform',
@@ -12,7 +10,7 @@ __all__ = [
     'cuda_home',
     'git_commit_id',
     'git_status',
-    'collect_env',
+    'collect_env_',
 ]
 
 import argparse
@@ -104,7 +102,7 @@ def git_status(verbose: bool = False) -> str | None:
         return None
 
 
-def collect_env(*args, **kwargs) -> str:
+def collect_env_(*args, **kwargs) -> str:
     envs = ['']
     for k, v in EnvRegistry.items():
         env = v(*args, **kwargs)
@@ -119,5 +117,5 @@ def collect_env_cli() -> None:
     parser = argparse.ArgumentParser(description="Collect Environment")
     parser.add_argument('-v', '--verbose', action='store_true', default=False)
     args = parser.parse_args()
-    env = collect_env(verbose=args.verbose)
+    env = collect_env_(verbose=args.verbose)
     logger.info(env)

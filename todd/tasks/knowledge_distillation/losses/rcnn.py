@@ -24,9 +24,7 @@ class SGFILoss(MSELoss):
         out_channels: int = 64,
         **kwargs,
     ) -> None:
-        from mmcv.cnn import (  # pylint: disable=import-outside-toplevel
-            ConvModule,
-        )
+        from mmcv.cnn import ConvModule
 
         super().__init__(*args, **kwargs)
         self._embed: Callable[..., torch.Tensor] = nn.Sequential(

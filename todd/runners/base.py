@@ -176,9 +176,7 @@ class BaseRunner(StateDictMixin, Generic[T]):
         callbacks: Iterable[Config] | None = None,
         **kwargs,
     ) -> None:
-        from .callbacks import (  # pylint: disable=import-outside-toplevel
-            ComposedCallback,
-        )
+        from .callbacks import ComposedCallback
         if callbacks is None:
             callbacks = []
         self._callbacks = ComposedCallback(runner=self, callbacks=callbacks)

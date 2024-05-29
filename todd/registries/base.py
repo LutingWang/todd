@@ -10,6 +10,7 @@ __all__ = [
 
 from collections import UserDict
 from typing import (
+    TYPE_CHECKING,
     Any,
     Callable,
     Generator,
@@ -19,11 +20,13 @@ from typing import (
     no_type_check,
 )
 
-from ..configs import Config
 from ..loggers import logger
 from ..patches import NonInstantiableMeta, classproperty
 
-F = Callable[[Config], Any]
+if TYPE_CHECKING:
+    from ..configs import Config
+
+F = Callable[['Config'], Any]
 
 
 class BuildSpec(UserDict[str, F]):
@@ -39,6 +42,7 @@ class BuildSpec(UserDict[str, F]):
     the corresponding value is a `Config` object, the function will be applied
     to the value:
 
+        >>> from todd import Config
         >>> config = Config(age=Config(value=3))
         >>> build_spec(config)
         {'age': 3}
@@ -74,9 +78,10 @@ class BuildSpec(UserDict[str, F]):
     """
 
     def build(self, f: F, v: Any, star: bool) -> Any:
+        from ..configs import Config
+        from ..utils import TreeUtil
         if not star:
             return f(v) if isinstance(v, Config) else v
-        from ..utils import TreeUtil  # pylint: disable=import-outside-toplevel
         util = TreeUtil.get_util(v)
         assert util is not None  # user makes sure v is a collection
         if not all(isinstance(e, Config) for e in util.elements(v)):
@@ -87,7 +92,7 @@ class BuildSpec(UserDict[str, F]):
         for k, v in self.items():
             yield k.removeprefix('*'), v, k.startswith('*')
 
-    def __call__(self, config: Config) -> Config:
+    def __call__(self, config: 'Config') -> 'Config':
         return config | {
             k: self.build(f, config[k], star)
             for k, f, star in self._items()
@@ -106,7 +111,7 @@ class Item(Protocol):
     __name__: str
     __qualname__: str
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self, *args, **kwargs) -> Any:
         ...
 
 
@@ -139,6 +144,7 @@ class RegistryMeta(  # type: ignore[misc]
         >>> class Persian: pass
         >>> Cat.register_('persian')(Persian)
         <class '...Persian'>
+        >>> from todd import Config
         >>> Cat.build(Config(type='persian'))
         <...Persian object at ...>
 
@@ -167,7 +173,7 @@ class RegistryMeta(  # type: ignore[misc]
     # Inheritance
 
     @no_type_check
-    def __subclasses__(cls=...):
+    def __subclasses__(cls=...) -> Any:
         """Fetch subclasses of the current class.
 
         For more details, refer to `ABC subclassed by meta classes`_.
@@ -383,7 +389,7 @@ class RegistryMeta(  # type: ignore[misc]
 
     # Construction
 
-    def _build(cls, item: Item, config: Config):
+    def _build(cls, item: Item, config: 'Config') -> Any:
         """Build an instance according to the given config.
 
         Args:
@@ -396,6 +402,7 @@ class RegistryMeta(  # type: ignore[misc]
         To customize the build process of instances, registries must overload
         `_build` with a class method:
 
+            >>> from todd import Config
             >>> class Cat(metaclass=RegistryMeta):
             ...     @classmethod
             ...     def _build(cls, item: Item, config: Config):
@@ -413,7 +420,7 @@ class RegistryMeta(  # type: ignore[misc]
         """
         return item(**config)
 
-    def build(cls, config: Config, **kwargs):
+    def build(cls, config: 'Config', **kwargs) -> Any:
         """Call the registered object to construct a new instance.
 
         Args:
@@ -432,6 +439,7 @@ class RegistryMeta(  # type: ignore[misc]
             >>> @Cat.register_()
             ... def tabby(name: str) -> str:
             ...     return f'Tabby {name}'
+            >>> from todd import Config
             >>> Cat.build(Config(type='tabby', name='Garfield'))
             'Tabby Garfield'
 
@@ -471,8 +479,9 @@ class RegistryMeta(  # type: ignore[misc]
             >>> persian.friend
             'Siamese'
         """
+        from ..configs import Config, PyConfig
         config = Config(kwargs) | config
-        original_config = config.copy()
+        py_config = PyConfig(config)
 
         config_type = config.pop('type')
         registry, item = cls.parse(config_type)
@@ -484,11 +493,11 @@ class RegistryMeta(  # type: ignore[misc]
             return registry._build(item, config)
         except Exception as e:
             # config may be altered
-            logger.error("Failed to build\n%s", original_config.dumps())
+            logger.error("Failed to build\n%s", py_config.dumps())
             raise e
 
 
-class Registry(metaclass=RegistryMeta):  # TODO: rename to base registry
+class Registry(metaclass=RegistryMeta):  # TODO: split
     """Base registry.
 
     To create custom registry, inherit from the `Registry` class:

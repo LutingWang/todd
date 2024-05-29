@@ -3,7 +3,7 @@ import pathlib
 
 import torch
 
-from todd import Config
+from todd.configs import PyConfig
 from todd.tasks.knowledge_distillation.distillers import (
     BaseDistiller,
     DistillerStore,
@@ -64,7 +64,7 @@ class TestFGD:
         torch.save(result, filename)
 
     def test_fgd(self, data_dir: pathlib.Path) -> None:
-        config = Config.load(data_dir / 'fgd.py')
+        config = PyConfig.load(data_dir / 'fgd.py')
         result = torch.load(data_dir / 'fgd.pth', map_location='cpu')
 
         distiller = BaseDistiller(**config)

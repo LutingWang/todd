@@ -13,7 +13,7 @@ from .base import BaseAdapt
 class RoIAlign(BaseAdapt):
 
     def __init__(self, strides: list[int], *args, **kwargs) -> None:
-        import mmcv.ops  # pylint: disable=import-outside-toplevel
+        import mmcv.ops
 
         super().__init__(*args, **kwargs)
         self._layers = nn.ModuleList([

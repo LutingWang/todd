@@ -1,4 +1,5 @@
 from .base import *
+from .configs import *
 from .models import *
 from .partials import *
 from .patches import *

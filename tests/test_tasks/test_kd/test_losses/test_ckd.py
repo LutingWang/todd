@@ -2,7 +2,7 @@ import pathlib
 
 import torch
 
-from todd import Config
+from todd.configs import PyConfig
 from todd.tasks.knowledge_distillation.distillers import (
     AdaptRegistry,
     BaseDistiller,
@@ -117,7 +117,7 @@ class TestCKD:
     #     torch.save(result, filename)
 
     def test_ckd(self, data_dir: pathlib.Path) -> None:
-        config = Config.load(data_dir / 'ckd.py')
+        config = PyConfig.load(data_dir / 'ckd.py')
         result = torch.load(data_dir / 'ckd.pth', map_location='cpu')
 
         distiller = BaseDistiller(**config)

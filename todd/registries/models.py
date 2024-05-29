@@ -4,19 +4,21 @@ __all__ = [
 ]
 
 from abc import ABC
-from typing import Any, Callable, cast
+from typing import TYPE_CHECKING, Any, Callable, Optional, cast
 
 from torch import nn
 
-from ..configs import Config
 from ..loggers import logger
 from ..patches import descendant_classes, get_rank
 from .base import Item, Registry, RegistryMeta
 
+if TYPE_CHECKING:
+    from ..configs import Config
+
 
 class InitWeightsMixin(nn.Module, ABC):
 
-    def init_weights(self, config: Config) -> bool:
+    def init_weights(self, config: 'Config') -> bool:
         if hasattr(super(), 'init_weights'):
             return super().init_weights(config)  # type: ignore[misc]
         return True
@@ -28,7 +30,7 @@ class ModelRegistry(Registry):
     def init_weights(
         cls,
         model: nn.Module,
-        config: Config | None,
+        config: Optional['Config'],
         prefix: str = '',
     ) -> None:
         weights = f"{model.__class__.__name__} ({prefix}) weights"
@@ -63,7 +65,8 @@ class ModelRegistry(Registry):
             cls.init_weights(child, config, f'{prefix}.{name}')
 
     @classmethod
-    def _build(cls, item: Item, config: Config) -> Any:
+    def _build(cls, item: Item, config: 'Config') -> Any:
+        from ..configs import Config
         config = config.copy()
         init_weights = config.pop('init_weights', Config())
         model = RegistryMeta._build(cls, item, config)

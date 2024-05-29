@@ -10,7 +10,7 @@ __all__ = [
 ]
 
 import inspect
-from typing import cast
+from typing import TYPE_CHECKING, Any, cast
 
 import torch
 import torchvision.transforms as tf
@@ -20,12 +20,14 @@ from torch.optim import lr_scheduler
 from torch.utils import data
 from torch.utils.data import dataset
 
-from ..configs import Config
 from ..models import FilterRegistry
 from ..models.filters import NamedParametersFilter
 from ..patches import descendant_classes
 from .base import BuildSpec, Item, Registry, RegistryMeta
 from .partials import PartialRegistry
+
+if TYPE_CHECKING:
+    from ..configs import Config
 
 
 class InitRegistry(PartialRegistry):
@@ -59,7 +61,7 @@ ClipGradRegistry.register_()(utils.clip_grad_value_)
 class LRSchedulerRegistry(Registry):
 
     @classmethod
-    def _build(cls, item: Item, config: Config):
+    def _build(cls, item: Item, config: 'Config') -> Any:
         if item is lr_scheduler.SequentialLR:
             config.schedulers = [
                 cls.build(scheduler, optimizer=config.optimizer)
@@ -75,7 +77,7 @@ for c in descendant_classes(lr_scheduler.LRScheduler):
 class OptimizerRegistry(Registry):
 
     @staticmethod
-    def params(model: nn.Module, config: Config) -> Config:
+    def params(model: nn.Module, config: 'Config') -> 'Config':
         config = config.copy()
         params = config.pop('params')
         filter_: NamedParametersFilter = FilterRegistry.build(params)
@@ -85,7 +87,7 @@ class OptimizerRegistry(Registry):
         return config
 
     @classmethod
-    def _build(cls, item: Item, config: Config):
+    def _build(cls, item: Item, config: 'Config') -> Any:
         model: nn.Module = config.pop('model')
         params = config.pop('params', None)
         if params is None:

@@ -11,9 +11,7 @@ import torch
 from ...configs import Config
 from ...loggers import Formatter
 from ...patches import get_rank
-from ...utils import Store
-from ...utils import collect_env as collect_env_
-from ...utils import get_timestamp
+from ...utils import Store, collect_env_, get_timestamp
 from ..memos import Memo
 from ..registries import CallbackRegistry, ETARegistry
 from ..utils import BaseETA
