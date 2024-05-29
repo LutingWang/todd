@@ -9,8 +9,8 @@ from torch import nn
 from ...patches import classproperty
 from ...registries import BuildSpec, BuildSpecMixin
 from ..registries import FilterRegistry
-from .named_members import NamedMembersFilter
-from .named_modules import NamedModulesFilter
+from .named_member import NamedMembersFilter
+from .named_module import NamedModulesFilter
 
 
 @FilterRegistry.register_()

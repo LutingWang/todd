@@ -1,6 +1,6 @@
 from torch import nn
 
-from todd.models.filters.named_parameters import NamedParametersFilter
+from todd.models.filters.named_parameter import NamedParametersFilter
 
 
 class TestNamedParametersFilter:

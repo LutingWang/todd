@@ -9,8 +9,8 @@ from torch import nn
 
 from ..patches import set_epoch
 from ..registries import RunnerRegistry
-from .memos import Memo
-from .trainers import Trainer
+from .memo import Memo
+from .trainer import Trainer
 
 T = TypeVar('T', bound=nn.Module)
 

@@ -1,6 +1,6 @@
 from torch import nn
 
-from todd.models.filters.named_modules import NamedModulesFilter
+from todd.models.filters.named_module import NamedModulesFilter
 
 
 class TestNamedModulesFilter:

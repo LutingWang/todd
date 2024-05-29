@@ -12,7 +12,7 @@ from ...configs import Config
 from ...loggers import Formatter
 from ...patches import get_rank
 from ...utils import Store, collect_env_, get_timestamp
-from ..memos import Memo
+from ..memo import Memo
 from ..registries import CallbackRegistry, ETARegistry
 from ..utils import BaseETA
 from .base import BaseCallback

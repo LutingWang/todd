@@ -4,7 +4,7 @@ __all__ = [
 
 import subprocess  # nosec B404
 
-from ...patches import get_rank, subprocess_run
+from ...patches import get_rank, run
 from ...utils import get_timestamp
 from ..registries import CallbackRegistry
 from .base import BaseCallback
@@ -31,7 +31,7 @@ class GitCallback(BaseCallback):
             if self._diff:
                 args_ += f' {self._diff}'
             try:
-                diff = subprocess_run(args_)
+                diff = run(args_)
             except subprocess.CalledProcessError as e:
                 diff = str(e)
                 self.runner.logger.error(e)

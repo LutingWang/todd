@@ -4,7 +4,7 @@ __all__ = [
 
 import todd
 
-from ..memos import Memo
+from ..memo import Memo
 from ..registries import CallbackRegistry
 from .base import BaseCallback
 

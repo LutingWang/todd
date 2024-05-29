@@ -2,7 +2,7 @@ from typing import Generator
 
 from torch import nn
 
-from todd.models.filters.named_members import NamedMembersFilter
+from todd.models.filters.named_member import NamedMembersFilter
 
 
 def named_members() -> list[tuple[str, int | str]]:

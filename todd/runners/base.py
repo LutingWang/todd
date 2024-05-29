@@ -24,7 +24,7 @@ from ..registries import (
     SamplerRegistry,
 )
 from ..utils import StateDictMixin
-from .memos import Memo
+from .memo import Memo
 from .registries import StrategyRegistry
 
 if TYPE_CHECKING:

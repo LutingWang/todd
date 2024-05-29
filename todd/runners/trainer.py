@@ -11,7 +11,7 @@ from torch import nn
 from ..configs import Config
 from ..registries import RunnerRegistry
 from .base import BaseRunner
-from .memos import Memo
+from .memo import Memo
 
 T = TypeVar('T', bound=nn.Module)
 

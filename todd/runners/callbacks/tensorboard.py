@@ -6,7 +6,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 from ...configs import Config
 from ...patches import get_rank
-from ..memos import Memo
+from ..memo import Memo
 from ..registries import CallbackRegistry
 from .base import BaseCallback
 from .interval import IntervalMixin

@@ -44,3 +44,4 @@ TODO
 4. add Any to all missing typing fields
 5. make loss registry a sub-registry of model registry
 6. refactor registries
+7. remove odpsrun

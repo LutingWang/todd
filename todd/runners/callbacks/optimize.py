@@ -8,30 +8,38 @@ from typing import Any, Mapping
 
 import torch
 
-from ...configs import Config
-from ...registries import ClipGradRegistry
-from ..memos import Memo
+from ...patches import classproperty
+from ...registries import BuildSpec, BuildSpecMixin, ClipGradRegistry
+from ..memo import Memo
 from ..registries import CallbackRegistry
 from .base import BaseCallback
 
 
 @CallbackRegistry.register_()
-class OptimizeCallback(BaseCallback):
+class OptimizeCallback(BuildSpecMixin, BaseCallback):
 
     # TODO: add accumulate
     def __init__(
         self,
         *args,
-        grad_scaler: Config | None = None,
-        grad_clipper: Config | None = None,
+        grad_scaler: torch.cuda.amp.GradScaler | None = None,
+        grad_clipper=None,
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
         self.trainer
         if grad_scaler is not None:
-            self._build_grad_scaler(grad_scaler)
+            self._grad_scaler = grad_scaler
         if grad_clipper is not None:
-            self._build_grad_clipper(grad_clipper)
+            self._grad_clipper = grad_clipper
+
+    @classproperty
+    def build_spec(self) -> BuildSpec:
+        build_spec = BuildSpec(
+            grad_scaler=lambda c: torch.cuda.amp.GradScaler(**c),
+            grad_clipper=ClipGradRegistry.build,
+        )
+        return super().build_spec | build_spec
 
     @property
     def with_grad_scaler(self) -> bool:
@@ -40,12 +48,6 @@ class OptimizeCallback(BaseCallback):
     @property
     def with_grad_clipper(self) -> bool:
         return hasattr(self, '_grad_clipper')
-
-    def _build_grad_scaler(self, config: Config) -> None:
-        self._grad_scaler = torch.cuda.amp.GradScaler(**config)
-
-    def _build_grad_clipper(self, config: Config) -> None:
-        self._grad_clipper = ClipGradRegistry.build(config)
 
     def _scale_grad(self, loss: torch.Tensor) -> torch.Tensor:
         return self._grad_scaler.scale(loss)

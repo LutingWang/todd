@@ -10,9 +10,9 @@ import torch
 from ...configs import Config
 from ...patches import get_rank, get_world_size
 from ...registries import LRSchedulerRegistry
-from ..memos import Memo
+from ..memo import Memo
 from ..registries import CallbackRegistry
-from ..trainers import Trainer
+from ..trainer import Trainer
 from .base import BaseCallback
 from .interval import IntervalMixin
 

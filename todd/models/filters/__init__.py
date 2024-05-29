@@ -1,4 +1,4 @@
 from .base import *
-from .named_members import *
-from .named_modules import *
-from .named_parameters import *
+from .named_member import *
+from .named_module import *
+from .named_parameter import *

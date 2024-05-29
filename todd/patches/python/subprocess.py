@@ -1,12 +1,11 @@
 __all__ = [
-    'subprocess_run',
+    'run',
 ]
 
 import subprocess  # nosec B404
 
 
-# TODO: rename
-def subprocess_run(args: str) -> str:
+def run(args: str) -> str:
     return subprocess.run(
         args,
         check=True,

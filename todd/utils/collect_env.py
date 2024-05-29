@@ -19,7 +19,7 @@ import os
 import subprocess  # nosec B404
 
 from ..loggers import logger
-from ..patches import subprocess_run
+from ..patches import run
 from ..registries import Registry
 
 
@@ -37,7 +37,7 @@ def platform(verbose: bool = False) -> str | None:
 def nvidia_smi(verbose: bool = False) -> str | None:
     args = 'nvidia-smi -q' if verbose else 'nvidia-smi -L'
     try:
-        return subprocess_run(args)
+        return run(args)
     except subprocess.CalledProcessError:
         return None
 
@@ -86,7 +86,7 @@ def cuda_home(verbose: bool = False) -> str | None:
 def git_commit_id(verbose: bool = False) -> str | None:
     args = 'git rev-parse HEAD' if verbose else 'git rev-parse --short HEAD'
     try:
-        return subprocess_run(args)
+        return run(args)
     except subprocess.CalledProcessError:
         return os.getenv('GIT_COMMIT_ID')
 
@@ -97,7 +97,7 @@ def git_status(verbose: bool = False) -> str | None:
     if not verbose:
         args += ' --porcelain'
     try:
-        return subprocess_run(args)
+        return run(args)
     except subprocess.CalledProcessError:
         return None
 

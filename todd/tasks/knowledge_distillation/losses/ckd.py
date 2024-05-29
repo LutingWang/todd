@@ -87,7 +87,7 @@ class CKDLoss(BaseLoss):
         super().__init__(*args, **kwargs)
         self._memory_pool = MemoryPool()
 
-    def forward(
+    def forward(  # pylint: disable=arguments-differ
         self,
         preds: torch.Tensor,
         targets: torch.Tensor,

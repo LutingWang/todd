@@ -8,10 +8,10 @@ from torch import nn
 
 from ...utils import HolderMixin
 from ..base import BaseRunner
-from ..epoch_based_trainers import EpochBasedTrainer
-from ..iter_based_trainers import IterBasedTrainer
-from ..trainers import Trainer
-from ..validators import Validator
+from ..epoch_based_trainer import EpochBasedTrainer
+from ..iter_based_trainer import IterBasedTrainer
+from ..trainer import Trainer
+from ..validator import Validator
 
 T = TypeVar('T', bound=nn.Module)
 
