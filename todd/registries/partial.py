@@ -6,7 +6,7 @@ __all__ = [
 from functools import partial
 from typing import TYPE_CHECKING, no_type_check
 
-from .base import Any, Item, NonInstantiableMeta, RegistryMeta
+from .registry import Any, Item, NonInstantiableMeta, RegistryMeta
 
 if TYPE_CHECKING:
     from ..configs import Config

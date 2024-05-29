@@ -2,7 +2,7 @@ __all__ = [
     'RunnerRegistry',
 ]
 
-from .base import Registry
+from .registry import Registry
 
 
 class RunnerRegistry(Registry):

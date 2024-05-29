@@ -2,7 +2,7 @@ __all__ = [
     'TaskRegistry',
 ]
 
-from .base import Registry
+from .registry import Registry
 
 
 class TaskRegistry(Registry):

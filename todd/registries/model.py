@@ -10,7 +10,7 @@ from torch import nn
 
 from ..loggers import logger
 from ..patches import descendant_classes, get_rank
-from .base import Item, Registry, RegistryMeta
+from .registry import Item, Registry, RegistryMeta
 
 if TYPE_CHECKING:
     from ..configs import Config

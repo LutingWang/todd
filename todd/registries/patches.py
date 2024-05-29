@@ -20,14 +20,13 @@ from torch.optim import lr_scheduler
 from torch.utils import data
 from torch.utils.data import dataset
 
-from ..models import FilterRegistry
-from ..models.filters import NamedParametersFilter
 from ..patches import descendant_classes
-from .base import BuildSpec, Item, Registry, RegistryMeta
-from .partials import PartialRegistry
+from .partial import PartialRegistry
+from .registry import BuildSpec, Item, Registry, RegistryMeta
 
 if TYPE_CHECKING:
     from ..configs import Config
+    from ..models.filters import NamedParametersFilter
 
 
 class InitRegistry(PartialRegistry):
@@ -78,9 +77,10 @@ class OptimizerRegistry(Registry):
 
     @staticmethod
     def params(model: nn.Module, config: 'Config') -> 'Config':
+        from ..models import FilterRegistry
         config = config.copy()
         params = config.pop('params')
-        filter_: NamedParametersFilter = FilterRegistry.build(params)
+        filter_: 'NamedParametersFilter' = FilterRegistry.build(params)
         filtered_params = [p for _, p in filter_(model)]
         assert all(p.requires_grad for p in filtered_params)
         config.params = filtered_params

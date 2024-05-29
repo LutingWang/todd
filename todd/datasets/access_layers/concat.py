@@ -27,7 +27,7 @@ class ConcatAccessLayer(BaseAccessLayer[str, VT], ABC):
             k: AccessLayerRegistry.build(v)
             for k, v in access_layers.items()
         }
-        assert all(self.KEY_SEPARATOR not in k for k in named_access_layers)
+        assert not any(self.KEY_SEPARATOR in k for k in named_access_layers)
 
         data_root = self.DATA_ROOT_SEPARATOR.join(
             access_layer._data_root
