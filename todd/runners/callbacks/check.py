@@ -2,8 +2,7 @@ __all__ = [
     'CheckCallback',
 ]
 
-import todd
-
+from ...patches.torch import get_rank
 from ..memo import Memo
 from ..registries import CallbackRegistry
 from .base import BaseCallback
@@ -15,7 +14,7 @@ from .base import BaseCallback
 class CheckCallback(BaseCallback):
 
     def before_run(self, memo: Memo) -> None:
-        if todd.get_rank() == 0:
+        if get_rank() == 0:
             requires_grad_parameters = [
                 repr(name)
                 for name, parameter in

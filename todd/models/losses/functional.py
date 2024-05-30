@@ -15,7 +15,7 @@ from typing import Callable
 import torch
 import torch.nn.functional as F
 
-from ...patches import classproperty
+from ...patches.python import classproperty
 from ...registries import BuildSpec, ModelRegistry
 from ..registries import LossRegistry
 from .base import BaseLoss, Reduction

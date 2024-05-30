@@ -9,7 +9,7 @@ import torch.nn.functional as F
 
 from ....models import LossRegistry
 from ....models.losses import BaseLoss
-from ....patches import get_rank, get_world_size
+from ....patches.torch import get_rank, get_world_size
 from ...object_detection import BBoxesXYXY
 
 

@@ -11,7 +11,8 @@ from typing import Generator
 import torch
 import torch.distributed as dist
 
-from ..patches import del_, get_, get_world_size, has_, set_
+from ..patches.python import del_, get_, has_, set_
+from ..patches.torch import get_world_size
 
 
 def get_timestamp() -> str:

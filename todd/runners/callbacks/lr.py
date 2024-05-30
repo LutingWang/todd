@@ -8,7 +8,7 @@ from typing import Any, Mapping, cast
 import torch
 
 from ...configs import Config
-from ...patches import get_rank, get_world_size
+from ...patches.torch import get_rank, get_world_size
 from ...registries import LRSchedulerRegistry
 from ..memo import Memo
 from ..registries import CallbackRegistry

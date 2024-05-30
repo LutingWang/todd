@@ -9,7 +9,7 @@ import pathlib
 import torch
 
 from ...configs import Config
-from ...patches import get_rank
+from ...patches.torch import get_rank
 from ..memo import Memo
 from ..registries import CallbackRegistry
 from .base import BaseCallback

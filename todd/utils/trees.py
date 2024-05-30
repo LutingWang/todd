@@ -12,7 +12,7 @@ from typing import Any, Callable, Generic, Iterable, TypeGuard, TypeVar, cast
 
 import torch
 
-from ..patches import all_close
+from ..patches.torch import all_close
 from ..registries import Registry
 
 T = TypeVar('T')

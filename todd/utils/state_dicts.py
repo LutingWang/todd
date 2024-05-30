@@ -11,7 +11,8 @@ import torch
 from torch import nn
 
 from ..loggers import logger
-from ..patches import get_, get_rank
+from ..patches.python import get_
+from ..patches.torch import get_rank
 
 T = TypeVar('T')
 

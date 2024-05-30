@@ -5,7 +5,7 @@ __all__ = [
 from abc import ABC
 from typing import Generator, Mapping, TypeVar
 
-from ...patches import classproperty
+from ...patches.python import classproperty
 from ...registries import BuildSpec, BuildSpecMixin
 from ..registries import AccessLayerRegistry
 from .base import BaseAccessLayer

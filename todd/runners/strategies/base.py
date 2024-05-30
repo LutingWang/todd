@@ -8,7 +8,7 @@ import torch
 from torch import nn
 
 from ...configs import Config
-from ...patches import get_rank
+from ...patches.torch import get_rank
 from ...registries import ModelRegistry, OptimizerRegistry
 from ...utils import StateDictMixin
 from ..registries import StrategyRegistry

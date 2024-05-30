@@ -14,7 +14,7 @@ import torch
 from torch import nn
 
 from ..configs import Config
-from ..patches import classproperty
+from ..patches.python import classproperty
 from ..registries import BuildSpec, BuildSpecMixin, InitWeightsMixin
 from ..utils import Store
 from .filters import NamedModulesFilter, NamedParametersFilter

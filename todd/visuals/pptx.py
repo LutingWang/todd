@@ -20,12 +20,12 @@ import pptx.shapes.shapetree
 import pptx.slide
 import pptx.util
 
+from ..colors import RGB, Color
 from ..configs import Config
 from ..loggers import logger
 from ..registries import VisualRegistry
 from .anchors import XAnchor, YAnchor
 from .base import BaseVisual
-from .colors import RGB, Color
 
 
 @VisualRegistry.register_()

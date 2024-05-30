@@ -5,7 +5,7 @@ __all__ = [
 from torch.utils.tensorboard import SummaryWriter
 
 from ...configs import Config
-from ...patches import get_rank
+from ...patches.torch import get_rank
 from ..memo import Memo
 from ..registries import CallbackRegistry
 from .base import BaseCallback

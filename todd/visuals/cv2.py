@@ -8,10 +8,10 @@ import cv2
 import numpy as np
 import numpy.typing as npt
 
+from ..colors import BGR, RGB, Color
 from ..configs import Config
 from ..registries import VisualRegistry
 from .anchors import XAnchor, YAnchor
-from .colors import BGR, RGB, Color
 from .raster import RasterVisual
 
 Image = npt.NDArray[np.uint8]

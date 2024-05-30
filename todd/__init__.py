@@ -1,6 +1,7 @@
 """Toolkit for Object Detection Distillation."""
 
 __all__ = [
+    'colors',
     'configs',
     'datasets',
     'loggers',
@@ -16,6 +17,7 @@ __all__ = [
 __version__ = '0.4.0'
 
 from . import (
+    colors,
     configs,
     datasets,
     loggers,

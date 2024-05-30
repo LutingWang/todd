@@ -4,7 +4,7 @@ __all__ = [
 
 import torch
 
-from ...patches import classproperty
+from ...patches.python import classproperty
 from ...registries import BuildSpec, BuildSpecMixin
 from ...utils import EMA
 from ..registries import ShadowRegistry

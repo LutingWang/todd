@@ -7,7 +7,7 @@ from typing import Any, Generator, TypeVar
 
 from torch import nn
 
-from ..patches import set_epoch
+from ..patches.torch import set_epoch
 from ..registries import RunnerRegistry
 from .memo import Memo
 from .trainer import Trainer

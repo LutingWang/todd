@@ -9,7 +9,8 @@ from typing import TYPE_CHECKING, Any, Callable, Optional, cast
 from torch import nn
 
 from ..loggers import logger
-from ..patches import descendant_classes, get_rank
+from ..patches.python import descendant_classes
+from ..patches.torch import get_rank
 from .registry import Item, Registry, RegistryMeta
 
 if TYPE_CHECKING:

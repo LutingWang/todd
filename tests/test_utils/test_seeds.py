@@ -1,7 +1,7 @@
 import pytest
 import torch
 
-from todd.patches import randint  # TODO: move to elsewhere
+from todd.patches.torch import randint  # TODO: move to elsewhere
 from todd.utils.seeds import init_seed, set_seed_temp
 
 

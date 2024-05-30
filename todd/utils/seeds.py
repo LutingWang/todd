@@ -13,7 +13,7 @@ import torch
 from torch.backends import cudnn
 
 from ..loggers import logger
-from ..patches import randint
+from ..patches.torch import randint
 from .stores import Store
 
 

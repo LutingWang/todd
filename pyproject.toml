@@ -15,6 +15,7 @@ classifiers = [
 ]
 dependencies = [
     'einops',
+    'ffmpeg-python',
     'lmdb',
     'opencv-python',
     'pandas',
@@ -81,6 +82,7 @@ test = [
 configs_diff = 'todd.configs.diff:diff_cli'
 collect_env = 'todd.utils.collect_env:collect_env_cli'
 sgr = 'todd.loggers.control_sequences.sgr:sgr_cli'
+images_to_video = 'todd.patches.cv2.video:images_to_video_cli'
 
 [tool.setuptools.packages.find]
 include = [

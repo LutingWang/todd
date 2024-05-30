@@ -16,7 +16,7 @@ from torch.utils.data import DataLoader, Dataset
 
 from ..configs import Config
 from ..loggers import logger as base_logger
-from ..patches import get_rank
+from ..patches.torch import get_rank
 from ..registries import (
     CollateRegistry,
     DatasetRegistry,

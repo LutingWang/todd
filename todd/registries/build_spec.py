@@ -6,7 +6,7 @@ __all__ = [
 from collections import UserDict
 from typing import TYPE_CHECKING, Any, Callable, Generator
 
-from ..patches import classproperty
+from ..patches.python import classproperty
 
 if TYPE_CHECKING:
     from ..configs import Config

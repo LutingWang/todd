@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 import torch
 from torch import nn
 
-from ...patches import classproperty
+from ...patches.python import classproperty
 from ...registries import BuildSpec, BuildSpecMixin
 from .schedulers import BaseScheduler, SchedulerRegistry
 

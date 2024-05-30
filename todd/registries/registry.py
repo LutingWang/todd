@@ -18,7 +18,7 @@ from typing import (
 )
 
 from ..loggers import logger
-from ..patches import NonInstantiableMeta
+from ..patches.python import NonInstantiableMeta
 from .build_spec import BuildSpec
 
 if TYPE_CHECKING:
@@ -385,7 +385,7 @@ class RegistryMeta(  # type: ignore[misc]
         If the object has a property named ``build_spec``, the config is
         converted before construction:
 
-            >>> from ..patches import classproperty
+            >>> from ..patches.python import classproperty
             >>> @Cat.register_()
             ... class Persian:
             ...     def __init__(self, friend: str) -> None:

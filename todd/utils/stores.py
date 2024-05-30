@@ -9,7 +9,7 @@ import torch
 from packaging.version import parse
 
 from ..loggers import logger
-from ..patches import NonInstantiableMeta
+from ..patches.python import NonInstantiableMeta
 
 
 class StoreMeta(NonInstantiableMeta):

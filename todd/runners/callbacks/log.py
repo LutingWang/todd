@@ -10,7 +10,7 @@ import torch
 
 from ...configs import Config
 from ...loggers import Formatter
-from ...patches import get_rank
+from ...patches.torch import get_rank
 from ...utils import Store, collect_env_, get_timestamp
 from ..memo import Memo
 from ..registries import CallbackRegistry, ETARegistry

@@ -4,7 +4,7 @@ __all__ = [
 
 from typing import Any, Mapping, MutableMapping
 
-from ..patches import AttrDict, set_
+from ..patches.python import AttrDict, set_
 
 
 class Config(AttrDict, dict):  # type: ignore[misc]

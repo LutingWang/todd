@@ -4,7 +4,7 @@ __all__ = [
 
 import logging
 
-from ..patches import get_rank
+from ..patches.torch import get_rank
 
 master_logger = logging.getLogger('todd.master')
 if get_rank() > 0:
