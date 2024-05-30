@@ -14,7 +14,7 @@ import numpy as np
 import numpy.typing as npt
 import torch
 
-from ...colors import color_wheel as color_wheel_
+from ...colors import ColorWheel
 
 
 class OpticalFlow:
@@ -25,11 +25,11 @@ class OpticalFlow:
         self._optical_flow = optical_flow
 
     @property
-    def h(self) -> torch.Tensor:
+    def h(self) -> int:
         return self._optical_flow.shape[0]
 
     @property
-    def w(self) -> torch.Tensor:
+    def w(self) -> int:
         return self._optical_flow.shape[1]
 
     @property
@@ -53,19 +53,15 @@ class OpticalFlow:
 
     def to_color(
         self,
-        color_wheel: torch.Tensor | None = None,
+        color_wheel: ColorWheel | None = None,
         epsilon: float = 1e-5,
     ) -> torch.Tensor:
         if color_wheel is None:
-            color_wheel = color_wheel_()
+            color_wheel = ColorWheel()
         of = self.__class__(self._optical_flow / (self.r.max() + epsilon))
-        i = (of.a + 1) / 2 * (color_wheel.shape[0] - 1)
-        i0 = i.floor().int()
-        i1 = (i0 + 1) % color_wheel.shape[0]
-        color = ((i - i0).unsqueeze(-1) * color_wheel[i0] +
-                 (i1 - 1).unsqueeze(-1) * color_wheel[i1])
-        color = 255 - of.r.unsqueeze(-1) * (255 - color)
-        return color
+        i = (of.a + 1) / 2 * (len(color_wheel) - 1)
+        color = 255 - of.r.unsqueeze(-1) * (255 - color_wheel[i])
+        return color.type(torch.uint8)
 
 
 class SerializableOpticalFlow(OpticalFlow):

@@ -12,6 +12,7 @@ import torch
 
 from ..colors import PALETTE, RGB, Color
 from ..configs import Config
+from ..patches.cv2 import ColorMap
 from .anchors import XAnchor, YAnchor
 
 
@@ -58,7 +59,6 @@ class BaseVisual(ABC):
         top: int = 0,
         width: int | None = None,
         height: int | None = None,
-        inverse: bool = False,
         opacity: float = 0.5,
     ) -> Any:
         """Draw the activation map.
@@ -94,18 +94,10 @@ class BaseVisual(ABC):
             top: y coordinate of the top size of the activation map
             width: width of the activation map
             height: height of the activation map
-            inverse: invert the activation map or not
             opacity: opacity of the activation map
         """
-        activation = activation.detach()
-        activation -= activation.min()
-        activation /= activation.max()
-        if inverse:
-            activation = 1 - activation
-        activation *= 255
-        array: npt.NDArray = activation.cpu().numpy()
-        image: npt.NDArray[np.uint8] = array.astype(np.uint8)
-        image = cv2.applyColorMap(image, cv2.COLORMAP_JET)
+        color_map = ColorMap(cv2.COLORMAP_JET)
+        image = color_map(activation.detach())
         return self.image(image, left, top, width, height, opacity)
 
     @abstractmethod
