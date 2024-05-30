@@ -4,7 +4,7 @@ __all__ = [
 
 import subprocess  # nosec B404
 
-from ...patches.python import run
+from ...patches.py import run
 from ...patches.torch import get_rank
 from ...utils import get_timestamp
 from ..registries import CallbackRegistry

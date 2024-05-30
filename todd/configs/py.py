@@ -6,7 +6,7 @@ import importlib
 
 import yapf.yapflib.yapf_api as yapf
 
-from ..patches.python import exec_
+from ..patches.py import exec_
 from ..registries import ConfigRegistry
 from .serializable import SerializableConfig
 

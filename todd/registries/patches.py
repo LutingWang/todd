@@ -20,7 +20,7 @@ from torch.optim import lr_scheduler
 from torch.utils import data
 from torch.utils.data import dataset
 
-from ..patches.python import descendant_classes
+from ..patches.py import descendant_classes
 from .partial import PartialRegistry
 from .registry import BuildSpec, Item, Registry, RegistryMeta
 

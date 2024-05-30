@@ -4,7 +4,7 @@ __all__ = [
 
 import logging
 
-from ..patches.python import Formatter as BaseFormatter
+from ..patches.py import Formatter as BaseFormatter
 from .control_sequences import SGR, apply_sgr
 
 

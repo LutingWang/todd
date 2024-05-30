@@ -9,7 +9,7 @@ from typing import Generic, TypeVar
 from torch.utils.data import Dataset
 
 from ..loggers import logger
-from ..patches.python import classproperty
+from ..patches.py import classproperty
 from ..registries import BuildSpec, BuildSpecMixin
 from .access_layers import BaseAccessLayer
 from .registries import AccessLayerRegistry

@@ -1,9 +1,9 @@
 __all__ = [
     'cv2',
-    'python',
+    'py',
     'torch',
 ]
 
 # TODO: change python to py
 
-from . import cv2, python, torch
+from . import cv2, py, torch

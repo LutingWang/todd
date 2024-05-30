@@ -28,7 +28,7 @@ import pandas as pd
 
 from ....configs import Config
 from ....loggers import logger
-from ....patches.python import exec_
+from ....patches.py import exec_
 from ....registries import RegistryMeta
 from ..registries import PipelineRegistry
 

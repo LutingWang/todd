@@ -18,7 +18,7 @@ from typing import Iterable, cast
 import torch
 from torch import nn
 
-from ...patches.python import classproperty
+from ...patches.py import classproperty
 from ...registries import BuildSpec, BuildSpecMixin
 from .registries import SchedulerRegistry
 

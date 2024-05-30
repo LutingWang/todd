@@ -11,7 +11,7 @@ from typing import Generator
 import torch
 import torch.distributed as dist
 
-from ..patches.python import del_, get_, has_, set_
+from ..patches.py import del_, get_, has_, set_
 from ..patches.torch import get_world_size
 
 

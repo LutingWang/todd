@@ -8,7 +8,7 @@ from typing import Any, Mapping
 
 import torch
 
-from ...patches.python import classproperty
+from ...patches.py import classproperty
 from ...registries import BuildSpec, BuildSpecMixin, ClipGradRegistry
 from ..memo import Memo
 from ..registries import CallbackRegistry

@@ -6,7 +6,7 @@ from typing import Generator, Iterable
 
 from torch import nn
 
-from ...patches.python import classproperty
+from ...patches.py import classproperty
 from ...registries import BuildSpec, BuildSpecMixin
 from ..registries import FilterRegistry
 from .named_member import NamedMembersFilter

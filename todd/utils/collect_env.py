@@ -19,7 +19,7 @@ import os
 import subprocess  # nosec B404
 
 from ..loggers import logger
-from ..patches.python import run
+from ..patches.py import run
 from ..registries import Registry
 
 

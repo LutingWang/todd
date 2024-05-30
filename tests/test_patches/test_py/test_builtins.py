@@ -1,7 +1,7 @@
 import pytest
 from custom_types import CustomObject
 
-from todd.patches.python.builtins import del_, get_, has_, set_
+from todd.patches.py.builtins import del_, get_, has_, set_
 from todd.utils import set_temp  # TODO: move to elsewhere
 
 
