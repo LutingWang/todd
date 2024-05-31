@@ -2,7 +2,6 @@ import pytest
 from custom_types import CustomObject
 
 from todd.patches.py.builtins import del_, get_, has_, set_
-from todd.utils import set_temp  # TODO: move to elsewhere
 
 
 def test_has(obj: CustomObject) -> None:
@@ -31,13 +30,3 @@ def test_del(obj: CustomObject) -> None:
     set_(obj, '.obj.two', 2)
     del_(obj, '.obj.two')
     assert not has_(obj, '.obj.two')
-
-
-def test_set_temp(obj: CustomObject) -> None:
-    with set_temp(obj, '.one', 'I'):
-        assert obj.one == 'I'
-    assert obj.one == 1
-
-    with set_temp(obj, '.zero', 0):
-        assert obj.zero == 0
-    assert not hasattr(obj, 'zero')

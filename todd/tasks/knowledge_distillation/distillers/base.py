@@ -13,7 +13,7 @@ from torch import nn
 from ....configs import Config
 from ....models.losses import BaseLoss
 from ....models.registries import LossRegistry
-from ....utils import StoreMeta, transfer_weights
+from ....utils import StoreMeta, transfer_state_dicts
 from ..utils import ComposedPipeline, Spec
 from .adapts import BaseAdapt
 from .hooks import BaseHook
@@ -80,7 +80,7 @@ class BaseDistiller(nn.Module, ABC):
         self._loss_pipeline = loss_pipeline
 
         if weight_transfer is not None:
-            transfer_weights(self, weight_transfer)
+            transfer_state_dicts(self, weight_transfer)
 
         outputs: set[str] = set()
         for pipeline in self._hook_pipeline.pipelines:
@@ -125,11 +125,11 @@ class BaseDistiller(nn.Module, ABC):
     def models(self) -> tuple[nn.Module, ...]:
         return self._models
 
-    def _apply(self, fn: Callable[..., None]) -> Self:
+    def _apply(self, fn: Callable[..., None], *args, **kwargs) -> Self:
         for model in self._models:
             if getattr(model, 'sync_apply', True):
-                model._apply(fn)
-        return super()._apply(fn)
+                model._apply(fn, *args, **kwargs)
+        return super()._apply(fn, *args, **kwargs)
 
     def tensors(self) -> Message:
         tensors: Message = dict()

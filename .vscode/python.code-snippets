@@ -12,5 +12,11 @@
 			"    $0",
 			"]"
 		]
+	},
+	"args_kwargs": {
+		"prefix": "args_kwargs",
+		"body": [
+			"*args, **kwargs"
+		]
 	}
 }

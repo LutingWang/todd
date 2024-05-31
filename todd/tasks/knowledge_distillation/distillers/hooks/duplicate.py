@@ -3,11 +3,11 @@ __all__ = [
 ]
 
 from ..registries import HookRegistry
-from .vanilla import VanillaHook
+from .vanilla import Hook
 
 
 @HookRegistry.register_()
-class DuplicateHook(VanillaHook):
+class DuplicateHook(Hook):
 
     def __init__(self, *args, num: int = 1, **kwargs) -> None:
         super().__init__(*args, **kwargs)

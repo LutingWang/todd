@@ -1,7 +1,6 @@
 import pytest
 import torch
 
-from todd.patches.torch import randint  # TODO: move to elsewhere
 from todd.utils.seeds import init_seed, set_seed_temp
 
 
@@ -34,11 +33,6 @@ class TestSeed:
             [35, 51, 98, 16, 62, 32, 77, 84, 77, 17],
             dtype=torch.int,
         )
-
-    def test_randint(self) -> None:
-        init_seed(42)
-        assert randint() == 534895718
-        assert randint() == 199900595
 
     def test_init_seed(
         self,

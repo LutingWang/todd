@@ -418,7 +418,7 @@ class RegistryMeta(  # type: ignore[misc]
             raise e
 
 
-class Registry(metaclass=RegistryMeta):  # TODO: split
+class Registry(metaclass=RegistryMeta):
     """Base registry.
 
     To create custom registry, inherit from the `Registry` class:

@@ -2,6 +2,7 @@ __all__ = [
     'IGRegistry',
     'KDRegistry',
     'ODRegistry',
+    'ODKDRegistry',
     'OFERegistry',
 ]
 
@@ -17,6 +18,10 @@ class KDRegistry(TaskRegistry):
 
 
 class ODRegistry(TaskRegistry):
+    pass
+
+
+class ODKDRegistry(TaskRegistry):
     pass
 
 

@@ -17,8 +17,6 @@ from ..registries import Registry
 
 T = TypeVar('T')
 
-# TODO: rename
-
 
 class CollectionUtilRegistry(Registry):
     pass

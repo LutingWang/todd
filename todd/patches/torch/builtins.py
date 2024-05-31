@@ -1,7 +1,7 @@
 __all__ = [
     'all_close',
     'load',
-    'randint',
+    'random_int',
 ]
 
 import os
@@ -13,14 +13,13 @@ import torch.distributed as dist
 from .distributed import get_world_size
 
 
-def randint() -> int:
+def random_int() -> int:
     seed = torch.randint(2**30, [])
     if get_world_size() > 1:
         dist.broadcast(seed, src=0)
     return cast(int, seed.item())
 
 
-# TODO: rename to allclose
 def all_close(x: Any, y: Any, *args, **kwargs) -> bool:
     if not isinstance(x, torch.Tensor):
         x = torch.tensor(x)

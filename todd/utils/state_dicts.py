@@ -1,22 +1,27 @@
 __all__ = [
     'StateDict',
+    'Keys',
     'StateDictMixin',
-    'transfer_weight',
-    'transfer_weights',
+    'transfer_state_dict',
+    'transfer_state_dicts',
 ]
 
-from typing import Any, Mapping, TypeVar
+from typing import Any, Mapping, NamedTuple, TypeVar
 
 import torch
 from torch import nn
 
-from ..loggers import logger
+from ..loggers import master_logger
 from ..patches.py import get_
-from ..patches.torch import get_rank
 
 T = TypeVar('T')
 
 StateDict = dict[str, torch.Tensor]
+
+
+class Keys(NamedTuple):
+    missing: list[str]
+    unexpected: list[str]
 
 
 class StateDictMixin:
@@ -29,22 +34,25 @@ class StateDictMixin:
         state_dict: Mapping[str, Any],
         *args,
         **kwargs,
-    ) -> None:
+    ) -> Keys | None:
         pass
 
 
-# TODO: rename and support StateDictMixin
-
-
-def transfer_weight(target: nn.Module, source: nn.Module) -> None:
+def transfer_state_dict(
+    target: nn.Module | StateDictMixin, source: nn.Module | StateDictMixin
+) -> None:
     state_dict = source.state_dict()
-    incompatible_keys = target.load_state_dict(state_dict, strict=False)
-    if get_rank() == 0:
-        logger.info(incompatible_keys)
+    keys = target.load_state_dict(state_dict, strict=False)
+    if keys is not None:
+        missing, unexpected = keys
+        master_logger.info(
+            "\nMissing keys: %s\nUnexpected keys: %s", ', '.join(missing),
+            ', '.join(unexpected)
+        )
 
 
-def transfer_weights(models, weight_prefixes: Mapping[str, str]) -> None:
-    for target_prefix, source_prefix in weight_prefixes.items():
+def transfer_state_dicts(models: Any, prefixes: Mapping[str, str]) -> None:
+    for target_prefix, source_prefix in prefixes.items():
         target = get_(models, target_prefix)
         source = get_(models, source_prefix)
-        transfer_weight(target, source)
+        transfer_state_dict(target, source)

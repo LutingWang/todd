@@ -1,7 +1,7 @@
 __all__ = [
     'get_timestamp',
     'set_temp',
-    'all_sync',
+    'is_sync',
 ]
 
 import contextlib
@@ -43,7 +43,7 @@ def set_temp(obj, name: str, value) -> Generator[None, None, None]:
         del_(obj, name)
 
 
-def all_sync(x: torch.Tensor) -> bool:  # TODO: rename to is_sync
+def is_sync(x: torch.Tensor) -> bool:
     if get_world_size() <= 1:
         return True
     x_prime = x.clone()

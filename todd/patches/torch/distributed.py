@@ -3,7 +3,7 @@ __all__ = [
     'get_local_rank',
     'get_world_size',
     'all_gather',
-    'all_gather_',
+    'all_gather_object',
 ]
 
 import functools
@@ -58,7 +58,7 @@ def all_gather(
 
 
 @all_gather_decorator
-def all_gather_(  # TODO: rename to all_gather_object
+def all_gather_object(
     tensor: torch.Tensor,
     world_size: int,
     *args,

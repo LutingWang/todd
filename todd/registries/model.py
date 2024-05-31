@@ -8,9 +8,8 @@ from typing import TYPE_CHECKING, Any, Callable, Optional, cast
 
 from torch import nn
 
-from ..loggers import logger
+from ..loggers import master_logger
 from ..patches.py import descendant_classes
-from ..patches.torch import get_rank
 from .registry import Item, Registry, RegistryMeta
 
 if TYPE_CHECKING:
@@ -37,24 +36,21 @@ class ModelRegistry(Registry):
         weights = f"{model.__class__.__name__} ({prefix}) weights"
 
         if getattr(model, '__initialized', False):
-            if get_rank() == 0:
-                logger.debug("Skip re-initializing %s", weights)
+            master_logger.debug("Skip re-initializing %s", weights)
             return
         setattr(model, '__initialized', True)  # noqa: B010
 
         if config is None:
-            if get_rank() == 0:
-                logger.debug(
-                    "Skip initializing %s since config is None",
-                    weights,
-                )
+            master_logger.debug(
+                "Skip initializing %s since config is None",
+                weights,
+            )
             return
 
         init_weights: Callable[[Config], bool] | None = \
             getattr(model, 'init_weights', None)
         if init_weights is not None:
-            if get_rank() == 0:
-                logger.debug("Initializing %s with %s", weights, config)
+            master_logger.debug("Initializing %s with %s", weights, config)
             recursive = init_weights(config)
             if not recursive:
                 return

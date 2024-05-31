@@ -1,5 +1,5 @@
 __all__ = [
-    'VanillaHook',
+    'Hook',
 ]
 
 from ..registries import HookRegistry
@@ -7,7 +7,7 @@ from .base import BaseHook
 
 
 @HookRegistry.register_()
-class VanillaHook(BaseHook):  # TODO: Rename to hook
+class Hook(BaseHook):
 
     def _reset(self) -> None:
         self._tensor_ = None

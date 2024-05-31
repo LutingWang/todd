@@ -19,8 +19,6 @@ try:
 except ImportError:
     pass
 
-# TODO: rename as getattr_, ...
-
 
 def get_(obj, attr: str, default=...):
     try:

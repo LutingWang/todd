@@ -13,7 +13,7 @@ import torch
 from torch.backends import cudnn
 
 from ..loggers import logger
-from ..patches.torch import randint
+from ..patches.torch import random_int
 from .stores import Store
 
 
@@ -33,7 +33,7 @@ def set_seed_temp(
     benchmark: bool = True,
 ) -> Generator[None, None, None]:
     if seed is None:
-        seed = randint()
+        seed = random_int()
     elif isinstance(seed, int):
         pass
     else:
