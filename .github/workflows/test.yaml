@@ -28,3 +28,5 @@ jobs:
           coverage run
           coverage xml && coverage report -m
       - uses: codecov/codecov-action@main
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
