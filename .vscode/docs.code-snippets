@@ -1,0 +1,24 @@
+{
+	"index": {
+		"prefix": "index",
+		"body": [
+			"$1 $0",
+			"====================",
+			"",
+			".. toctree::",
+			"   :glob:",
+			"   :maxdepth: 2",
+			"",
+			"   *"
+		]
+	},
+	"automodule": {
+		"prefix": "automodule",
+		"body": [
+			"$1 $0",
+			"====================",
+			"",
+			".. automodule:: todd.$2${TM_FILENAME/.rst//}"
+		]
+	}
+}

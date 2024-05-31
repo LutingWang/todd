@@ -1,0 +1,24 @@
+name: lint
+
+on: push
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - python: "3.11"
+            torch: "2.0.1"
+            torchvision: "0.15.2"
+    steps:
+      - uses: LutingWang/todd/.github/actions/checkout-todd@main
+      - uses: actions/setup-python@master
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Lint
+        run: |
+          pip install torch==${{ matrix.torch }} torchvision==${{ matrix.torchvision }}
+          pip install .[dev,doc,test]
+          pre-commit install
+          pre-commit run --all-files

@@ -1,0 +1,27 @@
+{
+  "cSpell.words": [
+    "BATCHNORMS",
+    "CXCY",
+    "CXCYWH",
+    "denormalize",
+    "Deregistration",
+    "FGFI",
+    "frozens",
+    "odkd",
+    "preds",
+    "SGFI",
+    "shorthair",
+    "XYWH",
+    "XYXY"
+  ],
+  "python.analysis.extraPaths": [
+    "tests/helpers"
+  ],
+  "python.testing.pytestArgs": [
+    "tests",
+    "todd",
+    "--doctest-modules"
+  ],
+  "python.testing.pytestEnabled": true,
+  "python.testing.unittestEnabled": true
+}

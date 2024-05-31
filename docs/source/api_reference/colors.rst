@@ -1,0 +1,4 @@
+Colors
+======
+
+.. automodule:: todd.colors

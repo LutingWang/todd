@@ -1,0 +1,30 @@
+name: test
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - python: "3.11"
+            torch: "2.0.1"
+            torchvision: "0.15.2"
+    steps:
+      - uses: LutingWang/todd/.github/actions/checkout-todd@main
+        with:
+          lfs: true
+      - uses: actions/setup-python@master
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Test
+        run: |
+          pip install torch==${{ matrix.torch }} torchvision==${{ matrix.torchvision }}
+          pip install .[test]
+          coverage run
+          coverage xml && coverage report -m
+      - uses: codecov/codecov-action@main

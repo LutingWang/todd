@@ -1,0 +1,92 @@
+#!/usr/bin/env zsh
+
+doc="usage: $(basename $0) [-h] [--debug] [PARAM ...]
+
+positional arguments:
+  PARAM    parameters to be used as environment variables in the script
+
+optional arguments:
+  -h       show this help message and exit
+  --debug  debug mode
+"
+
+zparseopts -D -a help h -debug=debug
+if [[ -n ${help} ]]; then
+    echo ${doc}
+    exit 0
+fi
+
+set -ex
+
+# https://unix.stackexchange.com/a/64164/549354
+setopt extended_glob
+cd (../)#pyproject.toml(Y1:a:h)
+
+git_status = $(git status --porcelain)
+if [[ -z ${debug} && -n ${git_status} ]] {
+    echo ${git_status}
+    exit 1
+}
+
+pre-commit run debug-statements -a
+
+odpscmd -e $(python <<EOF
+import argparse
+import re
+import tarfile
+from typing import Any
+from urllib.parse import SplitResult, urlencode
+
+import toml
+
+
+def query(config: dict[str, str]) -> str:
+    return urlencode(config, safe='/:')
+
+
+def buckets(config: dict[str, Any]) -> str:
+    config['query'] = query(config['query'])
+    return SplitResult(**config).geturl()
+
+
+def script(config: dict[str, Any]) -> str:
+    result = f'/tmp/{config["name"]}.tar.gz'
+
+    def filter_(info: tarfile.TarInfo) -> tarfile.TarInfo | None:
+        if any(re.match(f, info.name) for f in config['filters']):
+            return None
+        return info
+
+    with tarfile.open(result, 'w:gz') as file:
+        for f in config['files']:
+            file.add(f, filter=filter_)
+    return 'file://' + result
+
+
+def pai(config: dict[str, Any]) -> str:
+    parameters = [
+        '--odps',
+        rf'GIT_HEAD::$(git rev-parse --short head 2>/dev/null)',
+    ]
+    parameters.extend('$@'.split())
+    parameters = config['user_defined_parameters'] + parameters
+
+    return rf'''
+pai -name {config["name"]}
+    -Doversubscription={str(config["oversubscription"]).lower()}
+    -Dscript="{script(config["script"])}"
+    -DentryFile="{config["entry_file"]}"
+    -DworkerCount={config["worker_count"]}
+    -DuserDefinedParameters="{" ".join(parameters)}"
+    -Dbuckets="{buckets(config["buckets"])}";
+'''
+
+
+def odps(config: dict[str, Any]) -> str:
+    return f'use {config["workbench"]};' + pai(config['pai'])
+
+
+config = toml.load('pyproject.toml')['odps']
+print(odps(config))
+EOF
+)
