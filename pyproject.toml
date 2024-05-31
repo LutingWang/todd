@@ -4,7 +4,7 @@ build-backend = 'setuptools.build_meta'
 
 [project]
 name = 'todd_ai'
-version = '0.5.0'
+version = '0.5.1'
 description = 'Toolkit for Object Detection Distillation'
 readme = 'README.md'
 requires-python = '>=3.11'
@@ -149,6 +149,12 @@ module = [
 ]
 ignore_errors = true
 
+[[tool.mypy.overrides]]
+module = [
+    'todd.base._patches.*',
+]
+ignore_errors = true
+
 [tool.codespell]
 write-changes = true
 
@@ -200,7 +206,7 @@ exclude_lines = [
 
 [tool.commitizen]
 name = 'cz_conventional_commits'
-version = "0.5.0"
+version = "0.5.1"
 tag_format = 'v$version'
 version_files = [
     'pyproject.toml:^version',
