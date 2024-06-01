@@ -26,7 +26,6 @@ Prerequisites:
 
 - torch
 - torchvision
-- mmcv/mmcv_full (optional)
 
 ```shell
 pip install todd_ai

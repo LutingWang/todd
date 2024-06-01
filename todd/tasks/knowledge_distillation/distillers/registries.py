@@ -3,13 +3,12 @@ __all__ = [
     'HookRegistry',
 ]
 
-import inspect
-import itertools
 from typing import cast
 
 import einops.layers.torch
 from torch import nn
 
+from ....patches.py import get_classes, get_named_classes, import_module
 from ....registries import Item
 from ..registries import DistillerRegistry
 
@@ -22,20 +21,11 @@ class HookRegistry(DistillerRegistry):
     pass
 
 
-for _, c in itertools.chain(
-    inspect.getmembers(nn, inspect.isclass),
-    inspect.getmembers(einops.layers.torch, inspect.isclass),
+for c in (
+    get_classes(nn, nn.Module) + get_classes(einops.layers.torch, nn.Module)
 ):
-    if issubclass(c, nn.Module):
-        AdaptRegistry.register_()(cast(Item, c))
+    AdaptRegistry.register_()(cast(Item, c))
 
-try:  # TODO: remove this
-    import mmcv.cnn
-
-    for k, v in itertools.chain(
-        mmcv.cnn.CONV_LAYERS.module_dict.items(),
-        mmcv.cnn.PLUGIN_LAYERS.module_dict.items(),
-    ):
-        AdaptRegistry.register_(f'mmcv_{k}')(v)
-except Exception:  # nosec B110 pylint: disable=broad-exception-caught
-    pass
+if (mmcv_cnn := import_module('mmcv.cnn')) is not None:
+    for n, c in get_named_classes(mmcv_cnn, nn.Module).items():
+        AdaptRegistry.register_(f'mmcv_{n}')(cast(Item, c))

@@ -55,6 +55,7 @@ dev = [
     'matplotlib',
     'mccabe',
     'mypy',
+    'openmim',
     'pandas-stubs',
     'pep8-naming',
     'pre-commit',
@@ -67,14 +68,14 @@ dev = [
     'types-tqdm',
 ]
 doc = [
-    'mmcv<2.0',
+    'openmim',
     'python-docs-theme',
     'sphinx',
     'sphinx_rtd_theme',
 ]
 test = [
     'coverage',
-    'mmcv<2.0',
+    'openmim',
     'pytest',
 ]
 
@@ -170,10 +171,7 @@ norecursedirs = [
     'tests/test_configs/py',
 ]
 filterwarnings = [
-    'ignore::DeprecationWarning:pkg_resources:121',
-    'ignore::DeprecationWarning:pkg_resources:2870',
-    'ignore::DeprecationWarning:yapf:16',
-    'ignore::UserWarning:mmcv:20',
+    'ignore::DeprecationWarning:pkg_resources:87',
     'ignore::DeprecationWarning:torch:4',
     'ignore::DeprecationWarning:torch:6',
 ]

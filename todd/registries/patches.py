@@ -9,7 +9,6 @@ __all__ = [
     'TransformRegistry',
 ]
 
-import inspect
 from typing import TYPE_CHECKING, Any, cast
 
 import torch
@@ -20,7 +19,7 @@ from torch.optim import lr_scheduler
 from torch.utils import data
 from torch.utils.data import dataset
 
-from ..patches.py import descendant_classes
+from ..patches.py import descendant_classes, get_classes
 from .partial import PartialRegistry
 from .registry import BuildSpec, Item, Registry, RegistryMeta
 
@@ -106,9 +105,8 @@ class DatasetRegistry(Registry):
     pass
 
 
-for _, c in inspect.getmembers(dataset, inspect.isclass):
-    if issubclass(c, data.Dataset):
-        DatasetRegistry.register_()(cast(Item, c))
+for c in get_classes(dataset, data.Dataset):
+    DatasetRegistry.register_()(cast(Item, c))
 
 DatasetRegistry.register_(
     force=True,
@@ -132,7 +130,7 @@ class TransformRegistry(Registry):
     pass
 
 
-for _, c in inspect.getmembers(tf, inspect.isclass):
+for c in get_classes(tf):
     TransformRegistry.register_()(cast(Item, c))
 
 TransformRegistry.register_(

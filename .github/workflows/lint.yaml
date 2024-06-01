@@ -20,5 +20,6 @@ jobs:
         run: |
           pip install torch==${{ matrix.torch }} torchvision==${{ matrix.torchvision }}
           pip install .[dev,doc,test]
+          mim install mmcv
           pre-commit install
           pre-commit run --all-files

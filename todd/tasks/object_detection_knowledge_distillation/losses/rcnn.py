@@ -7,6 +7,7 @@ from typing import Callable
 import einops
 import torch
 import torch.nn.functional as F
+from mmcv.cnn import ConvModule
 from torch import nn
 
 from ....models import LossRegistry
@@ -24,8 +25,6 @@ class SGFILoss(MSELoss):
         out_channels: int = 64,
         **kwargs,
     ) -> None:
-        from mmcv.cnn import ConvModule
-
         super().__init__(*args, **kwargs)
         self._embed: Callable[..., torch.Tensor] = nn.Sequential(
             ConvModule(in_channels, hidden_channels, 3, stride=2),
