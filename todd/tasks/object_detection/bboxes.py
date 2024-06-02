@@ -550,6 +550,8 @@ class BBoxesCXCYWH(BBoxesCXCY__, BBoxes__WH):
     def expand(self, ratio_wh: tuple[float, float] | torch.Tensor) -> Self:
         if isinstance(ratio_wh, tuple):
             ratio = self._bboxes.new_tensor(ratio_wh)
+        else:
+            ratio = ratio_wh
         wh = self.wh * ratio
         bboxes = torch.cat([self.center, wh], dim=-1)
         return self._copy(bboxes)
