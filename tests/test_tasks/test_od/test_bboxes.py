@@ -237,7 +237,7 @@ class TestBBoxes:
         bboxes = torch.tensor([[10.0, 20.0, 30.0, 50.0]])
         bboxes_ = PseudoBBoxes(bboxes)
         scaler = torch.tensor([[2, 4, 2, 4]])
-        assert bboxes_._scale((2, 4)).eq(scaler).all()
+        assert bboxes_._duplicate((2, 4)).eq(scaler).all()
         scaled_bboxes = torch.tensor([[20, 80, 60, 200]])
         scaled_bboxes_ = bboxes_.scale((2, 4))
         assert scaled_bboxes_.to_tensor().eq(scaled_bboxes).all()
@@ -315,35 +315,6 @@ class TestBBoxes:
         mul_bboxes_ = bboxes_ * (2, 4)
         assert mul_bboxes_.normalized
         assert mul_bboxes_.image_wh == (10, 10)
-
-    def test_translate(self) -> None:
-        bboxes = torch.tensor([[10.0, 20.0, 30.0, 50.0]])
-        bboxes_ = PseudoBBoxes(bboxes)
-        translation = torch.tensor([[10, 20, 10, 20]])
-        assert bboxes_._translate((10, 20)).eq(translation).all()
-        translated_bboxes = torch.tensor([[20, 40, 40, 70]])
-        translated_bboxes_ = bboxes_.translate((10, 20))
-        assert translated_bboxes_.to_tensor().eq(translated_bboxes).all()
-
-        bboxes_ = PseudoBBoxes(bboxes)
-        translated_bboxes_ = bboxes_.translate((10, 20))
-        assert not translated_bboxes_.normalized
-        assert not translated_bboxes_.has_image_wh
-
-        bboxes_ = PseudoBBoxes(bboxes, normalized=True)
-        translated_bboxes_ = bboxes_.translate((10, 20))
-        assert translated_bboxes_.normalized
-        assert not translated_bboxes_.has_image_wh
-
-        bboxes_ = PseudoBBoxes(bboxes, image_wh=(10, 10))
-        translated_bboxes_ = bboxes_.translate((10, 20))
-        assert not translated_bboxes_.normalized
-        assert translated_bboxes_.image_wh == (10, 10)
-
-        bboxes_ = PseudoBBoxes(bboxes, normalized=True, image_wh=(10, 10))
-        translated_bboxes_ = bboxes_.translate((10, 20))
-        assert translated_bboxes_.normalized
-        assert translated_bboxes_.image_wh == (10, 10)
 
     def test_normalize(self) -> None:
         bboxes = torch.tensor([[10.0, 20.0, 30.0, 50.0]])
@@ -555,10 +526,6 @@ class TestBBoxesXYXY:
         with pytest.raises(AttributeError):
             bboxes_.clamp()
 
-        bboxes_ = BBoxesXYXY(bboxes, normalized=True)
-        with pytest.raises(AttributeError):
-            bboxes_.clamp()
-
         bboxes_ = BBoxesXYXY(bboxes, image_wh=(50, 100))
         clamped_bboxes_ = bboxes_.clamp()
         assert clamped_bboxes_.to_tensor().eq(bboxes).all()
@@ -760,6 +727,35 @@ class TestBBoxesXYXY:
         assert not bboxes_.indices(min_wh=(20.0, 31.0)).item()
         assert not bboxes_.indices(min_wh=(21.0, 31.0)).item()
 
+    def test_translate(self) -> None:
+        bboxes = torch.tensor([[10.0, 20.0, 30.0, 50.0]])
+        bboxes_ = BBoxesXYXY(bboxes)
+        translation = torch.tensor([[10, 20, 10, 20]])
+        assert bboxes_._duplicate((10, 20)).eq(translation).all()
+        translated_bboxes = torch.tensor([[20, 40, 40, 70]])
+        translated_bboxes_ = bboxes_.translate((10, 20))
+        assert translated_bboxes_.to_tensor().eq(translated_bboxes).all()
+
+        bboxes_ = BBoxesXYXY(bboxes)
+        translated_bboxes_ = bboxes_.translate((10, 20))
+        assert not translated_bboxes_.normalized
+        assert not translated_bboxes_.has_image_wh
+
+        bboxes_ = BBoxesXYXY(bboxes, normalized=True)
+        translated_bboxes_ = bboxes_.translate((10, 20))
+        assert translated_bboxes_.normalized
+        assert not translated_bboxes_.has_image_wh
+
+        bboxes_ = BBoxesXYXY(bboxes, image_wh=(10, 10))
+        translated_bboxes_ = bboxes_.translate((10, 20))
+        assert not translated_bboxes_.normalized
+        assert translated_bboxes_.image_wh == (10, 10)
+
+        bboxes_ = BBoxesXYXY(bboxes, normalized=True, image_wh=(10, 10))
+        translated_bboxes_ = bboxes_.translate((10, 20))
+        assert translated_bboxes_.normalized
+        assert translated_bboxes_.image_wh == (10, 10)
+
 
 class TestBBoxesXYWH:
 
@@ -822,10 +818,6 @@ class TestBBoxesXYWH:
     def test_clamp(self) -> None:
         bboxes = torch.tensor([[10, 20, 20, 30]])
         bboxes_ = BBoxesXYWH(bboxes)
-        with pytest.raises(AttributeError):
-            bboxes_.clamp()
-
-        bboxes_ = BBoxesXYWH(bboxes, normalized=True)
         with pytest.raises(AttributeError):
             bboxes_.clamp()
 
@@ -922,10 +914,6 @@ class TestBBBoxesCXCYWH:
     def test_clamp(self) -> None:
         bboxes = torch.tensor([[20, 35, 20, 30]])
         bboxes_ = BBoxesCXCYWH(bboxes)
-        with pytest.raises(AttributeError):
-            bboxes_.clamp()
-
-        bboxes_ = BBoxesCXCYWH(bboxes, normalized=True)
         with pytest.raises(AttributeError):
             bboxes_.clamp()
 

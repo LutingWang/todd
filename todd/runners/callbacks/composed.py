@@ -40,15 +40,13 @@ class ComposedCallback(BaseCallback):
             c.init(*args, **kwargs)
 
     def should_break(self, *args, **kwargs) -> bool:
-        super().should_break(*args, **kwargs)
-        return any(
+        return super().should_break(*args, **kwargs) or any(
             c.should_break(*args, **kwargs)
             for c in self._callbacks('should_break')
         )
 
     def should_continue(self, *args, **kwargs) -> bool:
-        super().should_continue(*args, **kwargs)
-        return any(
+        return super().should_continue(*args, **kwargs) or any(
             c.should_continue(*args, **kwargs)
             for c in self._callbacks('should_continue')
         )
@@ -69,15 +67,13 @@ class ComposedCallback(BaseCallback):
             c.after_run_iter(*args, **kwargs)
 
     def should_break_epoch(self, *args, **kwargs) -> bool:
-        super().should_break_epoch(*args, **kwargs)
-        return any(
+        return super().should_break_epoch(*args, **kwargs) or any(
             c.should_break_epoch(*args, **kwargs)
             for c in self._callbacks('should_break_epoch')
         )
 
     def should_continue_epoch(self, *args, **kwargs) -> bool:
-        super().should_continue_epoch(*args, **kwargs)
-        return any(
+        return super().should_continue_epoch(*args, **kwargs) or any(
             c.should_continue_epoch(*args, **kwargs)
             for c in self._callbacks('should_continue_epoch')
         )

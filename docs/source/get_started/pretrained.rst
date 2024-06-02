@@ -36,3 +36,12 @@ Stable Diffusion
     pretrained/stable_diffusion/
     ├── stable-diffusion-xl-base-1.0
     └── stable-diffusion-xl-refiner-1.0
+
+LLaVA
+-----
+
+.. code-block:: bash
+
+    root=pretrained/llava
+    mkdir -p ${root} && cd ${root}
+    git clone git@hf.co:llava-hf/llava-1.5-13b-hf

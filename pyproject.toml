@@ -44,6 +44,7 @@ dev = [
     'bandit[toml]',
     'codespell',
     'commitizen',
+    'diffusers',
     'doc8',
     'docformatter[tomli]',
     'flake8',

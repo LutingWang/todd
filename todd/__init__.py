@@ -15,5 +15,7 @@ from . import (
     visuals,
 )
 from .configs import Config
+from .loggers import logger
 from .patches import *
 from .registries import Registry
+from .utils import Store

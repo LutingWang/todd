@@ -1,6 +1,7 @@
 # pylint: disable=invalid-name,self-cls-assignment
 
 __all__ = [
+    'BBox',
     'BBoxes',
     'BBoxesXY__',
     'BBoxesCXCY__',
@@ -11,7 +12,6 @@ __all__ = [
     'BBoxesCXCYWH',
 ]
 
-import functools
 from abc import ABC, abstractmethod
 from typing import Any, Generator, TypeVar
 from typing_extensions import Self
@@ -134,11 +134,16 @@ class BBoxes(ABC):
     def to_tensor(self) -> torch.Tensor:
         return self._bboxes
 
-    def _scale(self, ratio_xy: tuple[float, float]) -> torch.Tensor:
-        return self._bboxes.new_tensor(ratio_xy * 2)
+    def _duplicate(
+        self,
+        t: tuple[float, float] | torch.Tensor,
+    ) -> torch.Tensor:
+        if isinstance(t, tuple):
+            return self._bboxes.new_tensor(t * 2)
+        return torch.cat([t, t], dim=-1)
 
     def scale(self, ratio_xy: tuple[float, float]) -> Self:
-        ratio = self._scale(ratio_xy)
+        ratio = self._duplicate(ratio_xy)
         bboxes = self._bboxes * ratio
         return self._copy(bboxes)
 
@@ -149,14 +154,6 @@ class BBoxes(ABC):
         w, h = ratio_xy
         ratio_xy = (1 / w, 1 / h)
         return self.scale(ratio_xy)
-
-    def _translate(self, offset_xy: tuple[float, float]) -> torch.Tensor:
-        return self._bboxes.new_tensor(offset_xy * 2)
-
-    def translate(self, offset_xy: tuple[float, float]) -> Self:
-        offset = self._translate(offset_xy)
-        bboxes = self._bboxes + offset
-        return self._copy(bboxes)
 
     def normalize(self) -> Self:
         if self._normalized:
@@ -342,10 +339,13 @@ class BBoxes(ABC):
         unions = unions.clamp_min_(eps)
         return intersections / unions
 
+    def translate(self, offset_xy: tuple[float, float] | torch.Tensor) -> Self:
+        return self.to(BBoxesXYXY).translate(offset_xy).to(self.__class__)
+
     def round(self) -> Self:
         return self.to(BBoxesXYXY).round().to(self.__class__)
 
-    def expand(self, ratio_wh: tuple[float, float]) -> Self:
+    def expand(self, ratio_wh: tuple[float, float] | torch.Tensor) -> Self:
         return self.to(BBoxesCXCYWH).expand(ratio_wh).to(self.__class__)
 
     def clamp(self) -> Self:
@@ -467,32 +467,29 @@ class BBoxesXYXY(BBoxesXY__, BBoxes__XY):
     def center(self) -> torch.Tensor:
         return (self.lt + self.rb) / 2
 
-    @staticmethod
-    def _denormalized_decorator(func):
+    def translate(self, offset_xy: tuple[float, float] | torch.Tensor) -> Self:
+        offset = self._duplicate(offset_xy)
+        bboxes = self._bboxes + offset
+        self = self._copy(bboxes)
+        return self
 
-        @functools.wraps(func)
-        def wrapper(self: Self, *args, **kwargs) -> Self:
-            if normalized := self._normalized:
-                self = self.denormalize()
-            self = func(self, *args, **kwargs)
-            if normalized:
-                self = self.normalize()
-            return self
-
-        return wrapper
-
-    @_denormalized_decorator
     def round(self) -> Self:
+        if normalized := self._normalized:
+            self = self.denormalize()
         lt = self.lt.floor()
         rb = self.rb.ceil()
         bboxes = torch.cat([lt, rb], dim=-1)
         self = self._copy(bboxes)
+        if normalized:
+            self = self.normalize()
         return self
 
-    @_denormalized_decorator
     def clamp(self) -> Self:
-        image_wh = self._bboxes.new_tensor(self.image_wh * 2)
-        bboxes = self._bboxes.clamp_min(0).clamp_max(image_wh)
+        if self._normalized:
+            bboxes = self._bboxes.clamp(0, 1)
+        else:
+            image_wh = self._bboxes.new_tensor(self.image_wh * 2)
+            bboxes = self._bboxes.clamp_min(0).clamp_max(image_wh)
         self = self._copy(bboxes)
         return self
 
@@ -550,7 +547,9 @@ class BBoxesCXCYWH(BBoxesCXCY__, BBoxes__WH):
     def rb(self) -> torch.Tensor:
         return self.center + self.wh / 2
 
-    def expand(self, ratio_wh: tuple[float, float]) -> Self:
-        wh = self.wh * self._bboxes.new_tensor(ratio_wh)
+    def expand(self, ratio_wh: tuple[float, float] | torch.Tensor) -> Self:
+        if isinstance(ratio_wh, tuple):
+            ratio = self._bboxes.new_tensor(ratio_wh)
+        wh = self.wh * ratio
         bboxes = torch.cat([self.center, wh], dim=-1)
         return self._copy(bboxes)

@@ -5,6 +5,7 @@ __all__ = [
 ]
 
 import contextlib
+from typing import Any
 
 from ...utils import StateDictMixin
 from ..memo import Memo
@@ -18,7 +19,7 @@ class BaseCallback(RunnerHolderMixin, StateDictMixin):
     def init(self, *args, **kwargs) -> None:
         pass
 
-    def should_break(self, batch, memo: Memo) -> bool:
+    def should_break(self, batch: Any, memo: Memo) -> bool:
         """Determine whether to break the run loop.
 
         Args:
@@ -34,7 +35,7 @@ class BaseCallback(RunnerHolderMixin, StateDictMixin):
         """
         return False
 
-    def should_continue(self, batch, memo: Memo) -> bool:
+    def should_continue(self, batch: Any, memo: Memo) -> bool:
         """Determine whether to skip the current iteration.
 
         Args:
@@ -46,18 +47,18 @@ class BaseCallback(RunnerHolderMixin, StateDictMixin):
         """
         return False
 
-    def before_run_iter(self, batch, memo: Memo) -> None:
+    def before_run_iter(self, batch: Any, memo: Memo) -> None:
         pass
 
     def run_iter_context(
         self,
         exit_stack: contextlib.ExitStack,
-        batch,
+        batch: Any,
         memo: Memo,
     ) -> None:
         pass
 
-    def after_run_iter(self, batch, memo: Memo) -> None:
+    def after_run_iter(self, batch: Any, memo: Memo) -> None:
         pass
 
     def should_break_epoch(self, epoch_memo: Memo, memo: Memo) -> bool:
