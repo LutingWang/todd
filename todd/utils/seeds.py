@@ -1,3 +1,5 @@
+# pylint: disable=using-constant-test
+
 __all__ = [
     'init_seed',
     'set_seed_temp',
@@ -22,7 +24,7 @@ def init_seed(seed: int) -> None:
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
-    if Store.CUDA:
+    if Store.cuda:
         torch.cuda.manual_seed(seed)
 
 
@@ -48,7 +50,7 @@ def set_seed_temp(
     np_state = np.random.get_state()
     torch_state = torch.get_rng_state()
 
-    if Store.CUDA:
+    if Store.cuda:
         cuda_state = torch.cuda.get_rng_state()
         prev_deterministic = cudnn.deterministic
         prev_benchmark = cudnn.benchmark
@@ -62,7 +64,7 @@ def set_seed_temp(
     np.random.set_state(np_state)
     torch.set_rng_state(torch_state)
 
-    if Store.CUDA:
+    if Store.cuda:
         torch.cuda.set_rng_state(cuda_state)
         cudnn.deterministic = prev_deterministic
         cudnn.benchmark = prev_benchmark

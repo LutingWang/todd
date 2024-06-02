@@ -140,6 +140,7 @@ module = [
     'pptx.*',
     'setuptools.*',
     'torchvision.*',
+    'transformers.*',
     'yapf.*',
 ]
 ignore_missing_imports = true

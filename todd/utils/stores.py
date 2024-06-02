@@ -4,12 +4,11 @@ __all__ = [
 ]
 
 import os
-
-import torch
-from packaging.version import parse
+from typing import Any
 
 from ..loggers import logger
-from ..patches.py import NonInstantiableMeta
+from ..patches.py import NonInstantiableMeta, classproperty
+from ..patches.torch import get_device
 
 
 class StoreMeta(NonInstantiableMeta):
@@ -24,14 +23,6 @@ class StoreMeta(NonInstantiableMeta):
         >>> CustomStore.VARIABLE = 1
         >>> CustomStore.VARIABLE
         1
-
-    Variables cannot have the same name:
-
-        >>> class AnotherStore(metaclass=StoreMeta):
-        ...     VARIABLE: int
-        Traceback (most recent call last):
-        ...
-        TypeError: Duplicated keys={'VARIABLE'}
 
     Variables can have explicit default values:
 
@@ -68,33 +59,34 @@ class StoreMeta(NonInstantiableMeta):
         2
     """
 
-    _read_only: dict[str, bool] = dict()
-
     def __init__(cls, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-
-        if keys := cls.__annotations__.keys() & cls._read_only:
-            raise TypeError(f"Duplicated {keys=}")
-
         for k, v in cls.__annotations__.items():
-            variable = os.environ.get(k, '')
-            if read_only := variable != '':
-                if v is not str:
-                    variable = eval(variable)  # nosec B307
-                    assert isinstance(variable, v)
-                super().__setattr__(k, variable)
-            cls._read_only[k] = read_only
+            if not hasattr(cls, k):
+                setattr(cls, k, v())
 
-    def __getattr__(cls, name: str) -> None:
-        if name in cls.__annotations__:
-            return cls.__annotations__[name]()
-        raise AttributeError(name)
+    def _overridden(cls, name: str) -> bool:
+        return name in cls.__annotations__ and name in os.environ
+
+    def __getattribute__(cls, name: str) -> Any:
+        if (
+            name in ['__annotations__', '_overridden']
+            # pylint: disable=no-value-for-parameter
+            or not cls._overridden(name)
+        ):
+            return super().__getattribute__(name)
+        type_ = cls.__annotations__[name]
+        variable = os.environ[name]
+        if type_ is not str:
+            variable = eval(variable)  # nosec B307
+            assert isinstance(variable, type_)
+        return variable
 
     def __setattr__(cls, name: str, value) -> None:
-        if name in cls.__annotations__ and cls._read_only.get(name, False):
-            logger.debug("Cannot set %s to %s.", name, value)
+        if not cls._overridden(name):  # pylint: disable=no-value-for-parameter
+            super().__setattr__(name, value)
             return
-        super().__setattr__(name, value)
+        logger.debug("Cannot set %s to %s.", name, value)
 
     def __repr__(cls) -> str:
         variables = ' '.join(
@@ -104,21 +96,22 @@ class StoreMeta(NonInstantiableMeta):
 
 
 class Store(metaclass=StoreMeta):
-    CPU: bool
-
-    CUDA: bool = torch.cuda.is_available()
-    MPS: bool
-
+    DEVICE: str = get_device()
     DRY_RUN: bool
     TRAIN_WITH_VAL_DATASET: bool
 
+    @classmethod
+    def _device(cls, name: str) -> bool:
+        return cls.DEVICE == name
 
-if parse(torch.__version__) >= parse('1.12'):
-    from torch.backends import mps
-    if mps.is_available():
-        Store.MPS = True
+    @classproperty
+    def cpu(self) -> bool:
+        return self._device('cpu')
 
-if not Store.CUDA and not Store.MPS:
-    Store.CPU = True
+    @classproperty
+    def cuda(self) -> bool:
+        return self._device('cuda')
 
-assert Store.CPU or Store.CUDA or Store.MPS
+    @classproperty
+    def mps(self) -> bool:
+        return self._device('mps')

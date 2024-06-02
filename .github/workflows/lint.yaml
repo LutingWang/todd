@@ -22,4 +22,4 @@ jobs:
           pip install .[dev,doc,test]
           mim install mmcv
           pre-commit install
-          pre-commit run --all-files
+          pre-commit run -a

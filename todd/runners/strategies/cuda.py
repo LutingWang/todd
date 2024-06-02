@@ -21,7 +21,7 @@ T = TypeVar('T', bound=nn.Module)
 class CUDAStrategy(BaseStrategy[T]):
 
     def setup(self, config: Config) -> None:
-        assert Store.CUDA
+        assert Store.cuda
         if not dist.is_initialized():
             init_process_group = config.get(
                 'init_process_group',

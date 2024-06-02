@@ -2,6 +2,7 @@ __all__ = [
     'all_close',
     'load',
     'random_int',
+    'get_device',
 ]
 
 import os
@@ -9,6 +10,7 @@ from typing import Any, cast
 
 import torch
 import torch.distributed as dist
+from torch.backends import mps
 
 from .distributed import get_world_size
 
@@ -32,3 +34,11 @@ def load(f, *args, directory=None, **kwargs):
     if directory is not None:
         f = os.path.join(directory, f)
     return torch.load(f, *args, **kwargs)
+
+
+def get_device() -> str:
+    if torch.cuda.is_available():
+        return 'cuda'
+    if mps.is_available():
+        return 'mps'
+    return 'cpu'

@@ -74,7 +74,7 @@ class LogCallback(IntervalMixin, BaseCallback):
             eta = round(eta)
             prefix += f"ETA {str(datetime.timedelta(seconds=eta))} "
 
-        if Store.CUDA:
+        if Store.cuda:  # pylint: disable=using-constant-test
             max_memory_allocated = max(
                 torch.cuda.max_memory_allocated(i)
                 for i in range(torch.cuda.device_count())
