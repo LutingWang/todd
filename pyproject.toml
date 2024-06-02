@@ -63,6 +63,7 @@ dev = [
     'pylint',
     'torch-tb-profiler',
     'tqdm',
+    'transformers',
     'types-Pillow',
     'types-toml',
     'types-tqdm',
