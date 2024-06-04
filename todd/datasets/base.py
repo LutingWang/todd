@@ -4,7 +4,7 @@ __all__ = [
 
 import reprlib
 from abc import ABC, abstractmethod
-from typing import Generic, TypeVar
+from typing import Generator, Generic, TypeVar
 
 from torch.utils.data import Dataset
 
@@ -51,6 +51,10 @@ class BaseDataset(BuildSpecMixin, Dataset[T], Generic[T, KT, VT], ABC):
 
     def __len__(self) -> int:
         return len(self._keys)
+
+    def __iter__(self) -> Generator[T, None, None]:
+        for index in range(len(self)):
+            yield self[index]
 
     def _access(self, index: int) -> VT:
         key = self._keys[index]

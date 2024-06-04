@@ -59,17 +59,17 @@ class FolderAccessLayer(BaseAccessLayer[str, VT], ABC):
     def _file(self, key: str) -> pathlib.Path:
         return self.folder_root / key
 
-    def _name(self, path: pathlib.Path) -> str:
-        return path.name
-
-    def _relative_to(self, path: pathlib.Path) -> str:
-        return str(path.relative_to(self.folder_root))
-
     def __iter__(self) -> Iterator[str]:
         if self._subfolder_action in [Action.NONE, Action.FILTER]:
-            func = self._name
+
+            def func(path: pathlib.Path) -> str:
+                return path.name
+
         elif self._subfolder_action is Action.WALK:
-            func = self._relative_to
+
+            def func(path: pathlib.Path) -> str:
+                return str(path.relative_to(self.folder_root))
+
         else:
             raise NotImplementedError
         return map(func, self._files())

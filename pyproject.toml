@@ -62,6 +62,7 @@ dev = [
     'pre-commit',
     'pydocstyle',
     'pylint',
+    'scipy',
     'torch-tb-profiler',
     'tqdm',
     'transformers',

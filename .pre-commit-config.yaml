@@ -42,11 +42,6 @@ repos:
       - id: mixed-line-ending
         args:
           - --fix=lf
-        exclude: \.bat$
-      - id: mixed-line-ending
-        args:
-          - --fix=crlf
-        files: \.bat$
       - id: name-tests-test
         args:
           - --pytest-test-first

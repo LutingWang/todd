@@ -30,7 +30,8 @@ class OpticalFlow:
     ) -> None:
         _, _, c = optical_flow.shape
         assert c == 2
-        optical_flow[validity] = 0
+        if validity is not None:
+            optical_flow[validity] = 0
         self._optical_flow = optical_flow
         self._validity = validity
 

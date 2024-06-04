@@ -1,2 +1,2 @@
-from . import losses
+from . import losses, visuals
 from .bboxes import *

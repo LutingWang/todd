@@ -2,7 +2,7 @@ __all__ = [
     'CV2Visual',
 ]
 
-from typing import Any
+from typing import Any, cast
 
 import cv2
 import numpy as np
@@ -29,7 +29,6 @@ class CV2Visual(RasterVisual):
     ) -> None:
         self._image = np.zeros(
             (height, width, channels),
-            dtype=np.uint8,
             **kwargs,
         )
 
@@ -42,7 +41,7 @@ class CV2Visual(RasterVisual):
         return self._image.shape[0]
 
     def save(self, path: Any) -> None:
-        cv2.imwrite(path, self._image)
+        cv2.imwrite(path, self._image.astype(np.uint8))
 
     def image(
         self,
@@ -54,14 +53,15 @@ class CV2Visual(RasterVisual):
         opacity: float = 1.0,
     ) -> Image:
         assert 0.0 <= opacity <= 1.0
+        image_ = image.astype(np.float32)
 
-        h, w, _ = image.shape
+        h, w, _ = image_.shape
         if width is not None or height is not None:
             w, h = self._scale_wh((w, h), width, height)
-            image = cv2.resize(image, (w, h))
+            image_ = cv2.resize(image_, (w, h))
 
         self._image[top:top + h, left:left + w] *= 1 - opacity
-        self._image[top:top + h, left:left + w] += image * opacity
+        self._image[top:top + h, left:left + w] += image_ * opacity
 
         return self._image
 
@@ -103,7 +103,13 @@ class CV2Visual(RasterVisual):
         font_scale = font.get('scale', 1.0)
 
         wh, _ = cv2.getTextSize(text, font_face, font_scale, thickness)
-        xy = self._translate_xy(wh, x, y, x_anchor, y_anchor)
+        xy = self._translate_xy(
+            cast(tuple[int, int], wh),
+            x,
+            y,
+            x_anchor,
+            y_anchor,
+        )
 
         cv2.putText(
             self._image,
