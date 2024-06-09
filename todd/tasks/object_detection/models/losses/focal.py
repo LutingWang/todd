@@ -7,8 +7,8 @@ from abc import ABC
 
 import torch
 
-from ....models.losses import BCELoss, BCEWithLogitsLoss, FunctionalLoss
-from ....models.registries import LossRegistry
+from .....models.losses import BCELoss, BCEWithLogitsLoss, FunctionalLoss
+from ..registries import ODLossRegistry
 
 
 class FocalMixin(FunctionalLoss, ABC):
@@ -42,11 +42,11 @@ class FocalMixin(FunctionalLoss, ABC):
         )
 
 
-@LossRegistry.register_()
+@ODLossRegistry.register_()
 class FocalLoss(FocalMixin, BCELoss):
     pass
 
 
-@LossRegistry.register_()
+@ODLossRegistry.register_()
 class FocalWithLogitsLoss(FocalMixin, BCEWithLogitsLoss):
     pass

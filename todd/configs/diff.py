@@ -6,7 +6,7 @@ import webbrowser
 from typing import cast
 
 from ..registries import ConfigRegistry
-from .serializable import SerializableConfig
+from .serialize import SerializeMixin
 
 
 def diff_cli() -> None:
@@ -17,7 +17,7 @@ def diff_cli() -> None:
     parser.add_argument('--out', default='terminal')
     args = parser.parse_args()
 
-    config_type = cast(type[SerializableConfig], ConfigRegistry[args.type])
+    config_type = cast(type[SerializeMixin], ConfigRegistry[args.type])
     a = config_type.load(args.a)
     b = config_type.load(args.b)
     out: str = args.out

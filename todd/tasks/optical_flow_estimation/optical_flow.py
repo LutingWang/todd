@@ -1,7 +1,8 @@
 __all__ = [
     'OpticalFlow',
-    'SerializableOpticalFlow',
+    'SerializeMixin',
     'FloOpticalFlow',
+    'Flo5OpticalFlow',
     'PfmOpticalFlow',
     'PngOpticalFlow',
 ]
@@ -9,37 +10,25 @@ __all__ = [
 import math
 import pathlib
 from abc import abstractmethod
-from typing import Container
 from typing_extensions import Self
 
 import cv2
 import einops
+import h5py
 import numpy as np
 import numpy.typing as npt
 import torch
 
 from ...colors import ColorWheel
+from .registries import OpticalFlowRegistry
 
 
 class OpticalFlow:
 
-    def __init__(
-        self,
-        optical_flow: torch.Tensor,
-        validity: torch.Tensor | None = None,
-    ) -> None:
+    def __init__(self, optical_flow: torch.Tensor) -> None:
         _, _, c = optical_flow.shape
         assert c == 2
-        if validity is not None:
-            optical_flow[validity] = 0
         self._optical_flow = optical_flow
-        self._validity = validity
-
-    @property
-    def validity(self) -> torch.Tensor:
-        if self._validity is None:
-            return torch.ones_like(self.u, dtype=torch.bool)
-        return self._validity
 
     @property
     def h(self) -> int:
@@ -81,30 +70,51 @@ class OpticalFlow:
         return color.type(torch.uint8)
 
 
-class SerializableOpticalFlow(OpticalFlow):
-    SUFFIXES: Container[str]
+class SparseMixin(OpticalFlow):
 
-    @classmethod
-    def _validate(cls, path: pathlib.Path) -> None:
-        assert path.suffix in cls.SUFFIXES
+    def __init__(
+        self,
+        optical_flow: torch.Tensor,
+        validity: torch.Tensor,
+    ) -> None:
+        optical_flow[~validity] = 0
+        super().__init__(optical_flow)
+        self._validity = validity
+
+    @property
+    def validity(self) -> torch.Tensor:
+        return self._validity
+
+
+class SerializeMixin(OpticalFlow):
+    SUFFIX: str
 
     @classmethod
     @abstractmethod
+    def _load(cls, path: pathlib.Path) -> Self:
+        pass
+
+    @classmethod
     def load(cls, path: pathlib.Path) -> Self:
-        pass
+        assert path.suffix == cls.SUFFIX
+        return cls._load(path)
 
     @abstractmethod
-    def dump(self, path: pathlib.Path) -> None:
+    def _dump(self, path: pathlib.Path) -> None:
         pass
 
+    def dump(self, path: pathlib.Path) -> None:
+        assert path.suffix == self.SUFFIX
+        self._dump(path)
 
-class FloOpticalFlow(SerializableOpticalFlow):
-    SUFFIXES = {'.flo'}
+
+@OpticalFlowRegistry.register_()
+class FloOpticalFlow(SerializeMixin, OpticalFlow):
+    SUFFIX = '.flo'
     MAGIC = 202021.25
 
     @classmethod
-    def load(cls, path: pathlib.Path) -> Self:
-        cls._validate(path)
+    def _load(cls, path: pathlib.Path) -> Self:
         with path.open('rb') as f:
             magic = np.fromfile(f, '<f', 1)
             assert magic == cls.MAGIC
@@ -114,8 +124,7 @@ class FloOpticalFlow(SerializableOpticalFlow):
             data = np.fromfile(f, '<f', math.prod(shape)).reshape(shape)
         return cls(torch.tensor(data))
 
-    def dump(self, path: pathlib.Path) -> None:
-        self._validate(path)
+    def _dump(self, path: pathlib.Path) -> None:
         with path.open('wb') as f:
             np.array([self.MAGIC], '<f').tofile(f)
             np.array([self.w], '<i').tofile(f)
@@ -124,13 +133,39 @@ class FloOpticalFlow(SerializableOpticalFlow):
             data.astype('<f').tofile(f)
 
 
-class PfmOpticalFlow(SerializableOpticalFlow):
-    SUFFIXES = {'.pfm'}
+@OpticalFlowRegistry.register_()
+class Flo5OpticalFlow(SparseMixin, SerializeMixin, OpticalFlow):
+    SUFFIX = '.flo5'
+
+    @classmethod
+    def _load(cls, path: pathlib.Path) -> Self:
+        with h5py.File(path) as f:
+            data = f['flow'][...]
+        validity: npt.NDArray[np.bool_] = ~np.isnan(data)
+        validity = validity.all(axis=-1)
+        data[~validity] = 0
+        return cls(torch.tensor(data).float(), torch.tensor(validity))
+
+    def _dump(self, path: pathlib.Path) -> None:
+        optical_flow = self._optical_flow.half().numpy()
+        validity = self._validity.numpy()
+        optical_flow[~validity] = np.nan
+        with h5py.File(path, 'w') as f:
+            f.create_dataset(
+                'flow',
+                data=optical_flow,
+                compression='gzip',
+                compression_opts=5,
+            )
+
+
+@OpticalFlowRegistry.register_()
+class PfmOpticalFlow(SerializeMixin, OpticalFlow):
+    SUFFIX = '.pfm'
     HEADER = b'PF'
 
     @classmethod
-    def load(cls, path: pathlib.Path) -> Self:
-        cls._validate(path)
+    def _load(cls, path: pathlib.Path) -> Self:
         with path.open('rb') as f:
             header = f.readline().strip()
             assert header == cls.HEADER
@@ -145,8 +180,7 @@ class PfmOpticalFlow(SerializableOpticalFlow):
         data = data[:, :, :2]
         return cls(torch.tensor(data).flipud())
 
-    def dump(self, path: pathlib.Path) -> None:
-        self._validate(path)
+    def _dump(self, path: pathlib.Path) -> None:
         with path.open('wb') as f:
             f.write(self.HEADER + b'\n')
             f.write(f'{self.w} {self.h}\n'.encode())
@@ -156,13 +190,14 @@ class PfmOpticalFlow(SerializableOpticalFlow):
             data.tofile(f)
 
 
-class PngOpticalFlow(SerializableOpticalFlow):
-    SUFFIXES = {'.png'}
+@OpticalFlowRegistry.register_()
+class PngOpticalFlow(SerializeMixin, SparseMixin, OpticalFlow):
+    SUFFIX = '.png'
 
     @classmethod
-    def load(cls, path: pathlib.Path) -> Self:
-        cls._validate(path)
+    def _load(cls, path: pathlib.Path) -> Self:
         data = cv2.imread(str(path), cv2.IMREAD_UNCHANGED)
+        data = data.astype(np.int32)  # torch 2.0 does not support uint16
         tensor = torch.tensor(data)
         validity, tensor = tensor.split_with_sizes([1, 2], dim=-1)
         validity = einops.rearrange(validity.bool(), 'h w 1 -> h w')
@@ -170,14 +205,11 @@ class PngOpticalFlow(SerializableOpticalFlow):
         tensor = (tensor - 2**15) / 64.
         return cls(tensor, validity)
 
-    def dump(self, path: pathlib.Path) -> None:
-        self._validate(path)
+    def _dump(self, path: pathlib.Path) -> None:
         tensor = self._optical_flow * 64 + 2**15
-        tensor = tensor.flip(-1).type(torch.uint16)
-        validity = einops.rearrange(
-            self.validity.type(torch.uint16),
-            'h w -> h w 1',
-        )
+        tensor = tensor.flip(-1).int()
+        validity = einops.rearrange(self._validity, 'h w -> h w 1').int()
         tensor = torch.cat([validity, tensor], dim=-1)
-        data = tensor.numpy()
+        data: npt.NDArray[np.int32] = tensor.numpy()
+        data = data.astype(np.uint16)
         cv2.imwrite(str(path), data)

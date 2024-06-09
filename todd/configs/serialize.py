@@ -1,5 +1,5 @@
 __all__ = [
-    'SerializableConfig',
+    'SerializeMixin',
 ]
 
 import difflib
@@ -10,7 +10,7 @@ from typing_extensions import Self
 from .config import Config
 
 
-class SerializableConfig(Config):
+class SerializeMixin(Config):
 
     @classmethod
     @abstractmethod

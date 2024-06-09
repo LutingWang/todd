@@ -7,19 +7,18 @@ from typing import Any
 import torch
 
 from ....configs import Config
-from ....datasets import BaseDataset
 from ....datasets.access_layers import CV2AccessLayer
-from ....patches.py import classproperty
-from ....registries import BuildSpec
 from ..optical_flow import FloOpticalFlow
 from ..registries import OFEDatasetRegistry
-from .access_layers import FloAccessLayer
+from .access_layers import OpticalFlowAccessLayer
+from .base import BaseDataset
 
 T = dict[str, Any]
+VT = FloOpticalFlow
 
 
 @OFEDatasetRegistry.register_()
-class SintelDataset(BaseDataset[T, str, FloOpticalFlow]):
+class SintelDataset(BaseDataset[VT]):
 
     def __init__(
         self,
@@ -29,9 +28,11 @@ class SintelDataset(BaseDataset[T, str, FloOpticalFlow]):
         **kwargs,
     ) -> None:
         task_name = 'training/'
-        flo_access_layer = FloAccessLayer(
+        flo_access_layer = OpticalFlowAccessLayer(
             **access_layer,
             task_name=task_name + 'flow',
+            optical_flow_type=VT,
+            subfolder_action='walk',
         )
         super().__init__(*args, access_layer=flo_access_layer, **kwargs)
         self._frame = CV2AccessLayer(
@@ -49,12 +50,6 @@ class SintelDataset(BaseDataset[T, str, FloOpticalFlow]):
             task_name=task_name + 'occlusions',
             suffix='png',
         )
-
-    @classproperty
-    def build_spec(self) -> BuildSpec:
-        build_spec: BuildSpec = super().build_spec
-        build_spec.pop('access_layer')
-        return build_spec
 
     def _next_key(self, key: str, prefix: str = 'frame_') -> str:
         scene, frame = key.split('/')

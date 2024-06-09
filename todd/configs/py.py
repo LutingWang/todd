@@ -8,7 +8,8 @@ import yapf.yapflib.yapf_api as yapf
 
 from ..patches.py import exec_
 from ..registries import ConfigRegistry
-from .serializable import SerializableConfig
+from .config import Config
+from .serialize import SerializeMixin
 
 
 class _import_:  # noqa: N801 pylint: disable=invalid-name
@@ -25,7 +26,7 @@ class _import_:  # noqa: N801 pylint: disable=invalid-name
 
 
 @ConfigRegistry.register_('py')
-class PyConfig(SerializableConfig):  # type: ignore[misc]
+class PyConfig(SerializeMixin, Config):  # type: ignore[misc]
 
     @staticmethod
     def _loads(s: str) -> dict:

@@ -11,6 +11,20 @@ Welcome to todd's documentation!
 .. toctree::
    :glob:
    :maxdepth: 2
+   :caption: Data:
+
+   data/*
+
+.. toctree::
+   :glob:
+   :maxdepth: 2
+   :caption: Pretrained:
+
+   pretrained/*
+
+.. toctree::
+   :glob:
+   :maxdepth: 2
    :caption: API Reference:
 
    api_reference/*

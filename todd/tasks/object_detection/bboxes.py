@@ -19,6 +19,8 @@ from typing_extensions import Self
 import einops
 import torch
 
+from .registries import BBoxesRegistry
+
 BBox = tuple[float, float, float, float]
 T = TypeVar('T', bound='BBoxes')
 
@@ -441,6 +443,7 @@ class BBoxes__WH(BBoxes):  # noqa: N801
         return bboxes.wh
 
 
+@BBoxesRegistry.register_()
 class BBoxesXYXY(BBoxesXY__, BBoxes__XY):
 
     @property
@@ -494,6 +497,7 @@ class BBoxesXYXY(BBoxesXY__, BBoxes__XY):
         return self
 
 
+@BBoxesRegistry.register_()
 class BBoxesXYWH(BBoxesXY__, BBoxes__WH):
 
     @property
@@ -521,6 +525,7 @@ class BBoxesXYWH(BBoxesXY__, BBoxes__WH):
         return self.lt + self.wh / 2
 
 
+@BBoxesRegistry.register_()
 class BBoxesCXCYWH(BBoxesCXCY__, BBoxes__WH):
 
     @property
