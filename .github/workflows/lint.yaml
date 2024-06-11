@@ -19,7 +19,7 @@ jobs:
       - name: Lint
         run: |
           pip install torch==${{ matrix.torch }} torchvision==${{ matrix.torchvision }}
-          pip install .[optional,doc,test]
+          pip install .[optional,lint,doc,test]
           mim install mmcv
           pre-commit install
           pre-commit run -a
