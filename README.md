@@ -40,7 +40,7 @@ mim install mmcv
 ## Developer Guides
 
 ```bash
-pip install .\[dev,doc,test\]
+pip install .\[optional,dev,lint,doc,test\]
 ```
 
 TODO

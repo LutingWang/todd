@@ -24,7 +24,7 @@ jobs:
       - name: Test
         run: |
           pip install torch==${{ matrix.torch }} torchvision==${{ matrix.torchvision }}
-          pip install .[test]
+          pip install .[optional,test]
           mim install mmcv
           coverage run
           coverage xml && coverage report -m

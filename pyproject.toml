@@ -39,47 +39,49 @@ Homepage = 'https://github.com/LutingWang/todd'
 Documentation = 'https://toddai.readthedocs.io/en/latest/'
 
 [project.optional-dependencies]
+optional = [
+    'diffusers',
+    'h5py',
+    'matplotlib',
+    'openmim',
+    'scipy',
+    'tqdm',
+    'transformers',
+]
 dev = [
+    'ipdb',
+    'ipykernel',
+    'jupyter',
+    'torch-tb-profiler',
+]
+lint = [
     'autoflake',
     'bandit[toml]',
     'codespell',
     'commitizen',
-    'diffusers',
     'doc8',
     'docformatter[tomli]',
     'flake8',
     'flake8-bugbear',
     'flake8-docstrings',
-    'h5py',
-    'ipdb',
-    'ipykernel',
-    'jupyter',
-    'matplotlib',
     'mccabe',
     'mypy',
-    'openmim',
     'pandas-stubs',
     'pep8-naming',
     'pre-commit',
     'pydocstyle',
     'pylint',
-    'scipy',
-    'torch-tb-profiler',
-    'tqdm',
-    'transformers',
     'types-Pillow',
     'types-toml',
     'types-tqdm',
 ]
 doc = [
-    'openmim',
     'python-docs-theme',
     'sphinx',
     'sphinx_rtd_theme',
 ]
 test = [
     'coverage',
-    'openmim',
     'pytest',
 ]
 

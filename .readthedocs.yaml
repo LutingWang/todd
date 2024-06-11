@@ -12,4 +12,5 @@ python:
   install:
     - path: .
       extra_requirements:
+        - optional
         - doc
