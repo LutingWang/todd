@@ -2,11 +2,13 @@ __all__ = [
     'DatasetRegistry',
     'ClipGradRegistry',
     'CollateRegistry',
+    'WorkerInitRegistry',
     'InitRegistry',
     'LRSchedulerRegistry',
     'OptimizerRegistry',
     'SamplerRegistry',
     'TransformRegistry',
+    'DataLoaderRegistry',
 ]
 
 from typing import TYPE_CHECKING, Any, cast
@@ -19,6 +21,7 @@ from torch.optim import lr_scheduler
 from torch.utils import data
 from torch.utils.data import dataset
 
+from ..loggers import logger
 from ..patches.py import descendant_classes, get_classes
 from .partial import PartialRegistry
 from .registry import BuildSpec, Item, Registry, RegistryMeta
@@ -126,6 +129,17 @@ class CollateRegistry(PartialRegistry):
     pass
 
 
+class WorkerInitRegistry(PartialRegistry):
+    pass
+
+
+@WorkerInitRegistry.register_('default')
+def default_worker_init(worker_id: int) -> None:
+    from ..utils import init_seed
+    logger.debug("Initializing worker %d", worker_id)
+    init_seed(torch.initial_seed())
+
+
 class TransformRegistry(Registry):
     pass
 
@@ -137,3 +151,41 @@ TransformRegistry.register_(
     force=True,
     build_spec=BuildSpec({'*transforms': TransformRegistry.build}),
 )(tf.Compose)
+
+
+class DataLoaderRegistry(Registry):
+
+    @classmethod
+    def _build(cls, item: Item, config: 'Config') -> Any:
+        sampler = config.pop('sampler', None)
+        if sampler is not None:
+            config.sampler = SamplerRegistry.build(
+                sampler,
+                dataset=config.dataset,
+            )
+
+        batch_sampler = config.pop('batch_sampler', None)
+        if batch_sampler is not None:
+            config.batch_sampler = SamplerRegistry.build(
+                batch_sampler,
+                sampler=config.pop('sampler'),
+            )
+
+        collate_fn = config.pop('collate_fn', None)
+        if collate_fn is not None:
+            config.collate_fn = CollateRegistry.build(collate_fn)
+
+        worker_init_fn = config.pop('worker_init_fn', None)
+        if worker_init_fn is None:
+            logger.info(
+                "`worker_init_fn` is recommended to be `%s`, instead of `%s`.",
+                'default',
+                None,
+            )
+        else:
+            config.worker_init_fn = WorkerInitRegistry.build(worker_init_fn)
+
+        return RegistryMeta._build(cls, item, config)
+
+
+DataLoaderRegistry.register_()(data.DataLoader)

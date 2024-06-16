@@ -1,6 +1,8 @@
 ImageNet
 ========
 
+https://image-net.org/
+
 ImageNet-1k
 -----------
 
@@ -8,8 +10,9 @@ ImageNet-1k
 
     root=data/imagenet
     mkdir -p ${root} && cd ${root}
-    wget https://image-net.org/data/ILSVRC/2012/ILSVRC2012_devkit_t12.tar.gz -P ${DATA_ROOT}
-    tar -zxf ILSVRC2012_devkit_t12.tar.gz
+    f=ILSVRC2012_devkit_t12.tar.gz
+    wget https://image-net.org/data/ILSVRC/2012/${f} -P ${DATA_ROOT}
+    tar -zxf ${f}
 
     mkdir annotations train val
     wget https://image-net.org/data/ILSVRC/2012/ILSVRC2012_img_train.tar -P ${DATA_ROOT}

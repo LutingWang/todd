@@ -1,6 +1,8 @@
 LVIS
 ====
 
+https://www.lvisdataset.org/
+
 LVIS v1.0
 ---------
 

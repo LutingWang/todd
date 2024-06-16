@@ -17,12 +17,7 @@ from torch.utils.data import DataLoader, Dataset
 from ..configs import Config
 from ..loggers import logger as base_logger
 from ..patches.torch import get_rank
-from ..registries import (
-    CollateRegistry,
-    DatasetRegistry,
-    RunnerRegistry,
-    SamplerRegistry,
-)
+from ..registries import DataLoaderRegistry, DatasetRegistry, RunnerRegistry
 from ..utils import StateDictMixin
 from .memo import Memo
 from .registries import StrategyRegistry
@@ -148,27 +143,11 @@ class BaseRunner(StateDictMixin, Generic[T]):
         Args:
             dataloader: dataloader config.
         """
-        dataloader = dataloader.copy()
-
-        sampler = dataloader.pop('sampler', None)
-        if sampler is not None:
-            dataloader.sampler = SamplerRegistry.build(
-                sampler,
-                dataset=self._dataset,
-            )
-
-        batch_sampler = dataloader.pop('batch_sampler', None)
-        if batch_sampler is not None:
-            dataloader.batch_sampler = SamplerRegistry.build(
-                batch_sampler,
-                sampler=dataloader.pop('sampler'),
-            )
-
-        collate_fn = dataloader.pop('collate_fn', None)
-        if collate_fn is not None:
-            dataloader.collate_fn = CollateRegistry.build(collate_fn)
-
-        self._dataloader = DataLoader(self._dataset, **dataloader)
+        dataloader.setdefault('type', 'DataLoader')
+        self._dataloader = DataLoaderRegistry.build(
+            dataloader,
+            dataset=self._dataset,
+        )
 
     def _build_callbacks(
         self,

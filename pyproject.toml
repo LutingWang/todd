@@ -151,26 +151,8 @@ module = [
 ]
 ignore_missing_imports = true
 
-[[tool.mypy.overrides]]
-module = [
-    'todd.base._patches.*',
-]
-ignore_errors = true
-
-[[tool.mypy.overrides]]
-module = [
-    'todd.base._patches.*',
-]
-ignore_errors = true
-
 [tool.codespell]
 write-changes = true
-
-[[tool.mypy.overrides]]
-module = [
-    'todd.base._patches.*',
-]
-ignore_errors = true
 
 [tool.pytest.ini_options]
 norecursedirs = [

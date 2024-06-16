@@ -1,6 +1,8 @@
 MPI-Sintel
 ==========
 
+http://sintel.is.tue.mpg.de/
+
 .. code-block:: bash
 
     root=data/sintel
