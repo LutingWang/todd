@@ -9,10 +9,10 @@ from typing import Literal
 from torch import nn
 
 from .....patches.py import get_
-from .....utils import Status
+from .....utils import StateMachine
 
 
-class StatusEnum(IntEnum):
+class StateEnum(IntEnum):
     INITIALIZED = auto()
     BOUND = auto()
     REGISTERED = auto()
@@ -30,11 +30,11 @@ class BaseHook(ABC):
         super().__init__(*args, **kwargs)
         self._path = path
         self._name = name
-        self._status = Status(StatusEnum.INITIALIZED)
+        self._state = StateMachine(StateEnum.INITIALIZED)
         self.reset()
 
     def __call__(self):
-        self._status.transit({StatusEnum.REGISTERED: StatusEnum.REGISTERED})
+        self._state.transit({StateEnum.REGISTERED: StateEnum.REGISTERED})
         return self._tensor()
 
     @property
@@ -46,8 +46,8 @@ class BaseHook(ABC):
         return self._name
 
     @property
-    def status(self) -> StatusEnum:
-        return self._status.status
+    def state(self) -> StateEnum:
+        return self._state.state
 
     @abstractmethod
     def _reset(self) -> None:
@@ -78,24 +78,24 @@ class BaseHook(ABC):
         self._handle.remove()
 
     def reset(self) -> None:
-        self._status.transit({
-            StatusEnum.INITIALIZED: StatusEnum.INITIALIZED,
-            StatusEnum.BOUND: StatusEnum.BOUND,
-            StatusEnum.REGISTERED: StatusEnum.BOUND,
+        self._state.transit({
+            StateEnum.INITIALIZED: StateEnum.INITIALIZED,
+            StateEnum.BOUND: StateEnum.BOUND,
+            StateEnum.REGISTERED: StateEnum.BOUND,
         })
         self._reset()
 
     def bind(self, model: nn.Module) -> None:
-        self._status.transit({StatusEnum.INITIALIZED: StatusEnum.BOUND})
+        self._state.transit({StateEnum.INITIALIZED: StateEnum.BOUND})
         self._bind(model)
 
     def unbind(self) -> None:
-        self._status.transit({StatusEnum.BOUND: StatusEnum.INITIALIZED})
+        self._state.transit({StateEnum.BOUND: StateEnum.INITIALIZED})
         self._unbind()
 
     def register_tensor(self, tensor) -> None:
-        self._status.transit({
-            StatusEnum.BOUND: StatusEnum.REGISTERED,
-            StatusEnum.REGISTERED: StatusEnum.REGISTERED,
+        self._state.transit({
+            StateEnum.BOUND: StateEnum.REGISTERED,
+            StateEnum.REGISTERED: StateEnum.REGISTERED,
         })
         self._register_tensor(tensor)

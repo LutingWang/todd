@@ -3,17 +3,18 @@ SHELL := /usr/bin/env zsh
 .PHONY: lint test coverage commit docs
 
 lint:
-	pre-commit run -a
+	pipenv run pre-commit run -a
 
 test:
-	pytest
+	pipenv run pytest
 
 coverage:
-	coverage run
-	coverage report
+	pipenv run coverage run
+	pipenv run coverage report
+	pipenv run coverage html
 
 commit: test
-	cz c
+	pipenv run cz c
 
 docs:
-	cd docs && make html
+	cd docs && PIPENV_PIPFILE=../Pipfile pipenv run make html

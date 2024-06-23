@@ -6,7 +6,7 @@ import torch
 
 from ....knowledge_distillation.distillers import AdaptRegistry
 from ....knowledge_distillation.distillers.adapts import BaseAdapt
-from ....object_detection import BBoxesXYXY
+from ....object_detection import FlattenBBoxesXYXY
 
 
 @AdaptRegistry.register_()
@@ -59,9 +59,8 @@ class IoU(BaseAdapt):
         """
         bboxes1, shape1 = self._reshape(bboxes1)
         bboxes2, shape2 = self._reshape(bboxes2)
-        ious = BBoxesXYXY.ious(
-            BBoxesXYXY(bboxes1),
-            BBoxesXYXY(bboxes2),
+        ious = FlattenBBoxesXYXY(bboxes1).ious(
+            FlattenBBoxesXYXY(bboxes2),
             self._eps,
         )
         return ious.reshape(shape1 + shape2)

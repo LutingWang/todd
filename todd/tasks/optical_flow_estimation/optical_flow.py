@@ -64,9 +64,9 @@ class OpticalFlow:
     ) -> torch.Tensor:
         if color_wheel is None:
             color_wheel = ColorWheel()
-        of = self.__class__(self._optical_flow / (self.r.max() + epsilon))
-        i = (of.a + 1) / 2 * (len(color_wheel) - 1)
-        color = 255 - of.r.unsqueeze(-1) * (255 - color_wheel[i])
+        i = (self.a + 1) / 2 * (len(color_wheel) - 1)
+        r = self.r / (self.r.max() + epsilon)
+        color = 255 - r.unsqueeze(-1) * (255 - color_wheel[i])
         return color.type(torch.uint8)
 
 

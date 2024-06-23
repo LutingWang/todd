@@ -88,7 +88,7 @@ def annotations(
     texts: Iterable[str | None] | None = None,
     **kwargs,
 ) -> list[tuple[Any, Any]]:
-    bboxes = bboxes.to(BBoxesXYWH)
+    bboxes = bboxes.to(BBoxesXYWH).flatten()
     if texts is None:
         texts = [None] * len(bboxes)
     else:

@@ -168,8 +168,8 @@ class PPTXVisual(BaseVisual):
 
         alpha = np.ones((h, w, 1)) * 255 * opacity
         image = np.concatenate([image, alpha], axis=-1)
-        status, image = cv2.imencode('.png', image)
-        assert status
+        success, image = cv2.imencode('.png', image)
+        assert success
 
         picture = self.shapes.add_picture(
             io.BytesIO(image.tobytes()),

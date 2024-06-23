@@ -1,24 +1,25 @@
 {
   "cSpell.words": [
-    "BATCHNORMS",
-    "CXCY",
-    "CXCYWH",
+    "batchnorms",
+    "cxcy",
+    "cxcywh",
     "denormalize",
     "denormalized",
-    "Deregistration",
+    "deregistration",
     "downsample",
     "FGFI",
     "frozens",
-    "llava",
+    "IoUs",
+    "LLAVA",
     "odkd",
     "preds",
     "SGFI",
     "shorthair",
-    "sintel",
+    "Sintel",
     "synset",
     "synsets",
-    "XYWH",
-    "XYXY"
+    "xywh",
+    "xyxy"
   ],
   "python.analysis.extraPaths": [
     "tests/helpers"

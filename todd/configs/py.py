@@ -22,7 +22,7 @@ class _import_:  # noqa: N801 pylint: disable=invalid-name
         return getattr(self.__module, attr)
 
     def __repr__(self) -> str:
-        return f"_import_({repr(self.__name)})"
+        return f"_import_({self.__name!r})"
 
 
 @ConfigRegistry.register_('py')
@@ -76,7 +76,7 @@ class PyConfig(SerializeMixin, Config):  # type: ignore[misc]
         for k in sorted(self):
             v = self[k]
             items = imports if isinstance(v, _import_) else others
-            item = f'{k}={repr(v)}'
+            item = f'{k}={v!r}'
             items.append(item)
         items = imports + others
         code, _ = yapf.FormatCode('\n'.join(items))

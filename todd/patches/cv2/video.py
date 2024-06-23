@@ -21,8 +21,9 @@ class VideoWriter:
 
         fd, file = tempfile.mkstemp(suffix='.mp4')
         os.close(fd)
-        atexit.register(self._cleanup)
         self._file = file
+
+        atexit.register(self._cleanup)
 
         self._video_writer = cv2.VideoWriter()
 
@@ -41,7 +42,7 @@ class VideoWriter:
             h, w, _ = frame.shape
             self._video_writer.open(
                 self._file,
-                cv2.VideoWriter_fourcc(*'mp4v'),
+                cv2.VideoWriter_fourcc(*'mp4v'),  # type: ignore[attr-defined]
                 self._fps,
                 (w, h),
             )

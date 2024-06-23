@@ -10,7 +10,7 @@ import torch.nn.functional as F
 from ....models import LossRegistry
 from ....models.losses import BaseLoss
 from ....patches.torch import get_rank, get_world_size
-from ...object_detection import BBoxesXYXY
+from ...object_detection import FlattenBBoxesXYXY
 
 
 def ckd_loss(
@@ -115,8 +115,8 @@ class CKDLoss(BaseLoss):
         else:
             ignore_x, ignore_y, ind = [], [], 0
             for bbox in bboxes:
-                bbox_ = BBoxesXYXY(bbox)
-                ious = BBoxesXYXY.ious(bbox_, bbox_)
+                bbox_ = FlattenBBoxesXYXY(bbox)
+                ious = bbox_.ious(bbox_)
                 x, y = torch.where(ious > 0.5)
                 ignore_x.append(x + ind)
                 ignore_y.append(y + ind)

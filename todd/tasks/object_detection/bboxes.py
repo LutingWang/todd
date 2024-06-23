@@ -1,4 +1,4 @@
-# pylint: disable=invalid-name,self-cls-assignment
+# pylint: disable=invalid-name
 
 __all__ = [
     'BBox',
@@ -10,166 +10,41 @@ __all__ = [
     'BBoxesXYXY',
     'BBoxesXYWH',
     'BBoxesCXCYWH',
+    'FlattenMixin',
+    'FlattenBBoxesXYXY',
+    'FlattenBBoxesXYWH',
+    'FlattenBBoxesCXCYWH',
 ]
 
 from abc import ABC, abstractmethod
-from typing import Any, Generator, TypeVar
+from typing import TypeVar
 from typing_extensions import Self
 
 import einops
 import torch
 
+from ..utils import FlattenMixin as BaseFlattenMixin
+from ..utils import NormalizeMixin, TensorWrapper
 from .registries import BBoxesRegistry
 
 BBox = tuple[float, float, float, float]
 T = TypeVar('T', bound='BBoxes')
 
 
-class BBoxes(ABC):
+class BBoxes(NormalizeMixin[BBox], TensorWrapper[BBox], ABC):
+    OBJECT_DIMENSIONS = 1
 
-    def __init__(
-        self,
-        bboxes: torch.Tensor,
-        *,
-        normalized: bool = False,
-        image_wh: tuple[int, int] | None = None,
-    ) -> None:
-        r"""Initialize.
+    @classmethod
+    def to_object(cls, tensor: torch.Tensor) -> BBox:
+        return tuple(tensor.tolist())
 
-        Args:
-            bboxes: :math:`n \times 4`.
-            normalized: whether the bboxes are normalized.
-            image_wh: the size of the image.
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        assert self._tensor.shape[-1] == 4
 
-        Bounding boxes must be 2 dimensional and the second dimension must be
-        of size 4.
-        """
-        if bboxes.ndim != 2:
-            raise ValueError('bboxes must be 2-dim')
-        if bboxes.shape[-1] != 4:
-            raise ValueError('bboxes must have 4 columns')
-        self._bboxes = bboxes
-        self._normalized = normalized
-        if image_wh is not None:
-            self.set_image_wh(image_wh)
-
-    def __len__(self) -> int:
-        return self._bboxes.shape[0]
-
-    def __iter__(self) -> Generator[BBox, None, None]:
-        """Iterate over bboxes.
-
-        Yields:
-            One bbox.
-        """
-        yield from map(tuple, self._bboxes.tolist())
-
-    def __repr__(self) -> str:
-        kwargs = ''
-        if self._normalized:
-            kwargs += ', normalized=True'
-        if self.has_image_wh:
-            kwargs += f', image_wh={self._image_wh}'
-        return f'{type(self).__name__}({self._bboxes}{kwargs})'
-
-    def _copy(self, bboxes: torch.Tensor, **kwargs) -> Self:
-        if self._normalized:
-            kwargs.setdefault('normalized', True)
-        if self.has_image_wh:
-            kwargs.setdefault('image_wh', self._image_wh)
-        return self.__class__(bboxes, **kwargs)
-
-    def __getitem__(self, indices) -> Self:
-        """Get specific bboxes.
-
-        Args:
-            indices: a index or multiple indices.
-
-        Returns:
-            If `indices` refers to a single box, return a ``tuple``.
-            Otherwise, return ``BBoxes``.
-        """
-        bboxes = self._bboxes[indices]
-        if bboxes.ndim == 1:
-            bboxes = bboxes.unsqueeze(0)
-        return self._copy(bboxes)
-
-    def __add__(self, other: Self) -> Self:
-        r"""Concatenate bboxes.
-
-        Args:
-            other: :math:`n' \times 4`.
-
-        Returns:
-            :math:`(n + n') \times 4`, where `n` is the length of `self`.
-        """
-        assert self._normalized == other._normalized
-        if self.has_image_wh:
-            assert self._image_wh == other._image_wh
-        else:
-            assert not other.has_image_wh
-        bboxes = torch.cat([self._bboxes, other._bboxes])
-        return self._copy(bboxes)
-
-    @property
-    def normalized(self) -> bool:
-        return self._normalized
-
-    @property
-    def has_image_wh(self) -> bool:
-        return hasattr(self, '_image_wh')
-
-    @property
-    def image_wh(self) -> tuple[int, int]:
-        return self._image_wh
-
-    def set_image_wh(
-        self,
-        image_wh: tuple[int, int],
-        override: bool = False,
-    ) -> None:
-        if not self.has_image_wh or override:
-            self._image_wh = image_wh
-            return
-        assert self._image_wh == image_wh, f"{self._image_wh} != {image_wh}"
-
-    def to_tensor(self) -> torch.Tensor:
-        return self._bboxes
-
-    def _duplicate(
-        self,
-        t: tuple[float, float] | torch.Tensor,
-    ) -> torch.Tensor:
-        if isinstance(t, tuple):
-            return self._bboxes.new_tensor(t * 2)
-        return torch.cat([t, t], dim=-1)
-
-    def scale(self, ratio_xy: tuple[float, float]) -> Self:
-        ratio = self._duplicate(ratio_xy)
-        bboxes = self._bboxes * ratio
-        return self._copy(bboxes)
-
-    def __mul__(self, ratio_xy: tuple[float, float]) -> Self:
-        return self.scale(ratio_xy)
-
-    def __truediv__(self, ratio_xy: tuple[float, float]) -> Self:
-        w, h = ratio_xy
-        ratio_xy = (1 / w, 1 / h)
-        return self.scale(ratio_xy)
-
-    def normalize(self) -> Self:
-        if self._normalized:
-            return self._copy(self._bboxes)
-        self = self / self.image_wh
-        self._normalized = True
-        return self
-
-    def denormalize(self) -> Self:
-        if not self._normalized:
-            return self._copy(self._bboxes)
-        self = self.scale(self.image_wh)
-        self._normalized = False
-        return self
+    def scale(self, ratio_wh: tuple[float, ...], /) -> Self:
+        bboxes = self._tensor * self._tensor.new_tensor(ratio_wh * 2)
+        return self.copy(bboxes)
 
     @property
     @abstractmethod
@@ -264,94 +139,51 @@ class BBoxes(ABC):
         from1 = cls._from1(bboxes)
         from2 = cls._from2(bboxes)
         from_ = torch.cat([from1, from2], dim=-1)
-        kwargs: dict[str, Any] = dict()
-        if bboxes._normalized:
-            kwargs['normalized'] = True
-        if bboxes.has_image_wh:
-            kwargs['image_wh'] = bboxes._image_wh
-        return cls(from_, **kwargs)
+        (_, *args), kwargs = bboxes.__getstate__()
+        return cls(from_, *args, **kwargs)
 
     def to(self, cls: type[T]) -> T:
         return cls.from_(self)
 
-    def intersections(self, other: 'BBoxes') -> torch.Tensor:
-        r"""Intersections.
-
-        Args:
-            other: :math:`n' \times 4`.
-
-        Returns:
-            :math:`n \times n'`.
-        """
-        lt = torch.maximum(  # [n, n', 2]
-            einops.rearrange(self.lt, 'n1 lt -> n1 1 lt'),
-            einops.rearrange(other.lt, 'n2 lt -> 1 n2 lt'),
-        )
-        rb = torch.minimum(  # [n, n', 2]
-            einops.rearrange(self.rb, 'n1 rb -> n1 1 rb'),
-            einops.rearrange(other.rb, 'n2 rb -> 1 n2 rb'),
-        )
-        wh = rb - lt
-        wh = wh.clamp_min_(0)
-        return wh[..., 0] * wh[..., 1]
-
-    def __and__(self, other: 'BBoxes') -> torch.Tensor:
-        return self.intersections(other)
-
-    def unions(
-        self,
-        other: 'BBoxes',
-        intersections: torch.Tensor,
-    ) -> torch.Tensor:
-        r"""Unions.
-
-        Args:
-            other: :math:`n' \times 4`.
-            intersections: :math:`n \times n'`
-
-        Returns:
-            :math:`n \times n'`.
-        """
-        return self.area[:, None] + other.area[None, :] - intersections
-
-    def __or__(self, other: 'BBoxes') -> torch.Tensor:
-        r"""Wrap `unions`.
-
-        Args:
-            other: :math:`n' \times 4`.
-
-        Returns:
-            :math:`n \times n'`.
-        """
-        intersections = self.intersections(other)
-        return self.unions(other, intersections)
-
-    def ious(self, other: 'BBoxes', eps: float = 1e-6) -> torch.Tensor:
-        r"""Intersections over unions.
-
-        Args:
-            other: :math:`n' \times 4`.
-            eps: avoid division by zero.
-
-        Returns:
-            :math:`n \times n'`.
-        """
-        intersections = self.intersections(other)
-        unions = self.unions(other, intersections)
-        unions = unions.clamp_min_(eps)
-        return intersections / unions
-
     def translate(self, offset_xy: tuple[float, float] | torch.Tensor) -> Self:
-        return self.to(BBoxesXYXY).translate(offset_xy).to(self.__class__)
+        if isinstance(offset_xy, tuple):
+            offset_xy = self._tensor.new_tensor(offset_xy)
+        bboxes = self.to(BBoxesXYXY)
+        tensor = bboxes._tensor + torch.cat([offset_xy, offset_xy], dim=-1)
+        bboxes = bboxes.copy(tensor)
+        return bboxes.to(self.__class__)
 
     def round(self) -> Self:
-        return self.to(BBoxesXYXY).round().to(self.__class__)
+        bboxes = self.to(BBoxesXYXY)
+        if normalized := bboxes._normalized:
+            bboxes = bboxes.denormalize()
+        lt = bboxes.lt.floor()
+        rb = bboxes.rb.ceil()
+        tensor = torch.cat([lt, rb], dim=-1)
+        bboxes = bboxes.copy(tensor)
+        if normalized:
+            bboxes = bboxes.normalize()
+        return bboxes.to(self.__class__)
 
     def expand(self, ratio_wh: tuple[float, float] | torch.Tensor) -> Self:
-        return self.to(BBoxesCXCYWH).expand(ratio_wh).to(self.__class__)
+        if isinstance(ratio_wh, tuple):
+            ratio_wh = self._tensor.new_tensor(ratio_wh)
+        bboxes = self.to(BBoxesCXCYWH)
+        tensor = torch.cat([bboxes.center, bboxes.wh * ratio_wh], dim=-1)
+        bboxes = bboxes.copy(tensor)
+        return bboxes.to(self.__class__)
 
     def clamp(self) -> Self:
-        return self.to(BBoxesXYXY).clamp().to(self.__class__)
+        bboxes = self.to(BBoxesXYXY)
+        if bboxes._normalized:
+            tensor = bboxes._tensor.clamp(0, 1)
+        else:
+            tensor = bboxes._tensor.clamp_min(0)
+            tensor = tensor.clamp_max(
+                bboxes._tensor.new_tensor(bboxes.divisor * 2),
+            )
+        bboxes = bboxes.copy(tensor)
+        return bboxes.to(self.__class__)
 
     def indices(
         self,
@@ -359,84 +191,112 @@ class BBoxes(ABC):
         min_area: float | None = None,
         min_wh: tuple[float, float] | None = None,
     ) -> torch.Tensor:
-        indices = self._bboxes.new_ones(len(self), dtype=torch.bool)
+        indices = self._tensor.new_ones(self.shape, dtype=torch.bool)
         if min_area is not None:
-            indices &= self.area.ge(min_area)
+            indices &= self.area >= min_area
         if min_wh is not None:
-            indices &= self.wh.ge(torch.tensor(min_wh)).all(-1)
+            indices &= (self.wh >= torch.tensor(min_wh)).all(-1)
         return indices
 
+    def pairwise_intersections(self, other: 'BBoxes') -> torch.Tensor:
+        lt = torch.maximum(self.lt, other.lt)
+        rb = torch.minimum(self.rb, other.rb)
+        wh = rb - lt
+        wh = wh.clamp_min_(0)
+        return wh[:, 0] * wh[:, 1]
 
-class BBoxesXY__(BBoxes):
+    def _pairwise_unions(
+        self,
+        other: 'BBoxes',
+        intersections: torch.Tensor,
+    ) -> torch.Tensor:
+        return self.area + other.area - intersections
+
+    def pairwise_unions(self, other: 'BBoxes') -> torch.Tensor:
+        intersections = self.pairwise_intersections(other)
+        return self._pairwise_unions(other, intersections)
+
+    def pairwise_ious(
+        self,
+        other: 'BBoxes',
+        eps: float = 1e-6,
+    ) -> torch.Tensor:
+        intersections = self.pairwise_intersections(other)
+        unions = self._pairwise_unions(other, intersections)
+        unions = unions.clamp_min(eps)
+        return intersections / unions
+
+
+class BBoxesXY__(BBoxes, ABC):
 
     @property
     def left(self) -> torch.Tensor:
-        return self._bboxes[:, 0]
+        return self._tensor[:, 0]
 
     @property
     def top(self) -> torch.Tensor:
-        return self._bboxes[:, 1]
+        return self._tensor[:, 1]
 
     @property
     def lt(self) -> torch.Tensor:
-        return self._bboxes[:, :2]
+        return self._tensor[:, :2]
 
     @classmethod
     def _from1(cls, bboxes: BBoxes) -> torch.Tensor:
         return bboxes.lt
 
 
-class BBoxesCXCY__(BBoxes):
+class BBoxesCXCY__(BBoxes, ABC):
 
     @property
     def center_x(self) -> torch.Tensor:
-        return self._bboxes[:, 0]
+        return self._tensor[:, 0]
 
     @property
     def center_y(self) -> torch.Tensor:
-        return self._bboxes[:, 1]
+        return self._tensor[:, 1]
 
     @property
     def center(self) -> torch.Tensor:
-        return self._bboxes[:, :2]
+        return self._tensor[:, :2]
 
     @classmethod
     def _from1(cls, bboxes: BBoxes) -> torch.Tensor:
         return bboxes.center
 
 
-class BBoxes__XY(BBoxes):  # noqa: N801
+class BBoxes__XY(BBoxes, ABC):  # noqa: N801
 
     @property
     def right(self) -> torch.Tensor:
-        return self._bboxes[:, 2]
+        return self._tensor[:, 2]
 
     @property
     def bottom(self) -> torch.Tensor:
-        return self._bboxes[:, 3]
+        return self._tensor[:, 3]
 
     @property
     def rb(self) -> torch.Tensor:
-        return self._bboxes[:, 2:]
+        return self._tensor[:, 2:]
 
     @classmethod
     def _from2(cls, bboxes: BBoxes) -> torch.Tensor:
         return bboxes.rb
 
 
-class BBoxes__WH(BBoxes):  # noqa: N801
+class BBoxes__WH(BBoxes, ABC):  # noqa: N801
 
     @property
     def width(self) -> torch.Tensor:
-        return self._bboxes[:, 2]
+        return self._tensor[:, 2]
 
     @property
     def height(self) -> torch.Tensor:
-        return self._bboxes[:, 3]
+        return self._tensor[:, 3]
 
     @property
     def wh(self) -> torch.Tensor:
-        return self._bboxes[:, 2:]
+        return self._tensor[:, 2:]
 
     @classmethod
     def _from2(cls, bboxes: BBoxes) -> torch.Tensor:
@@ -470,31 +330,9 @@ class BBoxesXYXY(BBoxesXY__, BBoxes__XY):
     def center(self) -> torch.Tensor:
         return (self.lt + self.rb) / 2
 
-    def translate(self, offset_xy: tuple[float, float] | torch.Tensor) -> Self:
-        offset = self._duplicate(offset_xy)
-        bboxes = self._bboxes + offset
-        self = self._copy(bboxes)
-        return self
-
-    def round(self) -> Self:
-        if normalized := self._normalized:
-            self = self.denormalize()
-        lt = self.lt.floor()
-        rb = self.rb.ceil()
-        bboxes = torch.cat([lt, rb], dim=-1)
-        self = self._copy(bboxes)
-        if normalized:
-            self = self.normalize()
-        return self
-
-    def clamp(self) -> Self:
-        if self._normalized:
-            bboxes = self._bboxes.clamp(0, 1)
-        else:
-            image_wh = self._bboxes.new_tensor(self.image_wh * 2)
-            bboxes = self._bboxes.clamp_min(0).clamp_max(image_wh)
-        self = self._copy(bboxes)
-        return self
+    def flatten(self) -> 'FlattenBBoxesXYXY':
+        args, kwargs = self.copy(self._flatten()).__getstate__()
+        return FlattenBBoxesXYXY(*args, **kwargs)
 
 
 @BBoxesRegistry.register_()
@@ -524,6 +362,10 @@ class BBoxesXYWH(BBoxesXY__, BBoxes__WH):
     def center(self) -> torch.Tensor:
         return self.lt + self.wh / 2
 
+    def flatten(self) -> 'FlattenBBoxesXYWH':
+        args, kwargs = self.copy(self._flatten()).__getstate__()
+        return FlattenBBoxesXYWH(*args, **kwargs)
+
 
 @BBoxesRegistry.register_()
 class BBoxesCXCYWH(BBoxesCXCY__, BBoxes__WH):
@@ -552,11 +394,91 @@ class BBoxesCXCYWH(BBoxesCXCY__, BBoxes__WH):
     def rb(self) -> torch.Tensor:
         return self.center + self.wh / 2
 
-    def expand(self, ratio_wh: tuple[float, float] | torch.Tensor) -> Self:
-        if isinstance(ratio_wh, tuple):
-            ratio = self._bboxes.new_tensor(ratio_wh)
-        else:
-            ratio = ratio_wh
-        wh = self.wh * ratio
-        bboxes = torch.cat([self.center, wh], dim=-1)
-        return self._copy(bboxes)
+    def flatten(self) -> 'FlattenBBoxesCXCYWH':
+        args, kwargs = self.copy(self._flatten()).__getstate__()
+        return FlattenBBoxesCXCYWH(*args, **kwargs)
+
+
+class FlattenMixin(BaseFlattenMixin[BBox], BBoxes, ABC):
+
+    def intersections(self, other: 'FlattenMixin') -> torch.Tensor:
+        r"""Intersections.
+
+        Args:
+            other: :math:`n' \times 4`.
+
+        Returns:
+            :math:`n \times n'`.
+        """
+        lt = torch.maximum(  # [n, n', 2]
+            einops.rearrange(self.lt, 'n1 lt -> n1 1 lt'),
+            einops.rearrange(other.lt, 'n2 lt -> 1 n2 lt'),
+        )
+        rb = torch.minimum(  # [n, n', 2]
+            einops.rearrange(self.rb, 'n1 rb -> n1 1 rb'),
+            einops.rearrange(other.rb, 'n2 rb -> 1 n2 rb'),
+        )
+        wh = rb - lt
+        wh = wh.clamp_min_(0)
+        return wh[..., 0] * wh[..., 1]
+
+    def __and__(self, other: 'FlattenMixin') -> torch.Tensor:
+        return self.intersections(other)
+
+    def _unions(
+        self,
+        other: 'FlattenMixin',
+        intersections: torch.Tensor,
+    ) -> torch.Tensor:
+        r"""Unions.
+
+        Args:
+            other: :math:`n' \times 4`.
+            intersections: :math:`n \times n'`
+
+        Returns:
+            :math:`n \times n'`.
+        """
+        return self.area[:, None] + other.area[None, :] - intersections
+
+    def unions(self, other: 'FlattenMixin') -> torch.Tensor:
+        r"""Wrap `_unions`.
+
+        Args:
+            other: :math:`n' \times 4`.
+
+        Returns:
+            :math:`n \times n'`.
+        """
+        intersections = self.intersections(other)
+        return self._unions(other, intersections)
+
+    def __or__(self, other: 'FlattenMixin') -> torch.Tensor:
+        return self.unions(other)
+
+    def ious(self, other: 'FlattenMixin', eps: float = 1e-6) -> torch.Tensor:
+        r"""Intersections over unions.
+
+        Args:
+            other: :math:`n' \times 4`.
+            eps: avoid division by zero.
+
+        Returns:
+            :math:`n \times n'`.
+        """
+        intersections = self.intersections(other)
+        unions = self._unions(other, intersections)
+        unions = unions.clamp_min(eps)
+        return intersections / unions
+
+
+class FlattenBBoxesXYXY(FlattenMixin, BBoxesXYXY):
+    pass
+
+
+class FlattenBBoxesXYWH(FlattenMixin, BBoxesXYWH):
+    pass
+
+
+class FlattenBBoxesCXCYWH(FlattenMixin, BBoxesCXCYWH):
+    pass

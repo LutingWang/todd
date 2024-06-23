@@ -34,7 +34,7 @@ class CheckMixin(nn.Module, ABC):
         ...         kwargs: dict[str, Any],
         ...     ) -> None:
         ...         print(
-        ...             f"Checking {repr(module.__class__.__name__)} with "
+        ...             f"Checking {module.__class__.__name__!r} with "
         ...             f"{args=} and {kwargs=}"
         ...         )
         ...     def forward(self, *args, **kwargs) -> None:
@@ -153,12 +153,12 @@ class NoGradMixin(CheckMixin, InitWeightsMixin, BuildSpecMixin):
     To prevent this, the `check` method can be used to verify if parameters
     are correctly excluded from gradient computation:
 
-        >>> model.check(model, tuple(), {})
+        >>> model.check(model, tuple(), dict())
         Traceback (most recent call last):
             ...
         AssertionError
         >>> _ = model.requires_grad_()
-        >>> model.check(model, tuple(), {})
+        >>> model.check(model, tuple(), dict())
 
     Refer to `CheckMixin` for more information on the `check` method.
 
@@ -272,9 +272,9 @@ class EvalMixin(CheckMixin, InitWeightsMixin, BuildSpecMixin):
 
     Use `check` method to verify if the properties meet the requirement:
 
-        >>> model.check(model, tuple(), {})
+        >>> model.check(model, tuple(), dict())
         >>> model.bn.training = True
-        >>> model.check(model, tuple(), {})
+        >>> model.check(model, tuple(), dict())
         Traceback (most recent call last):
             ...
         AssertionError
