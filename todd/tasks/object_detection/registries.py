@@ -2,7 +2,8 @@ __all__ = [
     'BBoxesRegistry',
 ]
 
-from ...registries import ModelRegistry
+from todd.registries import ModelRegistry
+
 from ..registries import ODRegistry
 
 

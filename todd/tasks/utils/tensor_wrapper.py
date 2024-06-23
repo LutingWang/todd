@@ -127,8 +127,11 @@ class NormalizeMixin(TensorWrapper[T], ABC):
         return args, kwargs
 
     @abstractmethod
-    def scale(self, ratio: FloatTuple, /) -> Self:
+    def _scale(self, ratio: FloatTuple, /) -> torch.Tensor:
         pass
+
+    def scale(self, ratio: FloatTuple) -> Self:
+        return self.copy(self._scale(ratio))
 
     def __mul__(self, other: FloatTuple) -> Self:
         return self.scale(other)

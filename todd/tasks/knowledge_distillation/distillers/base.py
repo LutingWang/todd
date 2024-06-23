@@ -10,10 +10,11 @@ from typing_extensions import Self
 
 from torch import nn
 
-from ....configs import Config
-from ....models.losses import BaseLoss
-from ....models.registries import LossRegistry
-from ....utils import StoreMeta, transfer_state_dicts
+from todd.configs import Config
+from todd.models.losses import BaseLoss
+from todd.models.registries import LossRegistry
+from todd.utils import StoreMeta, transfer_state_dicts
+
 from ..utils import ComposedPipeline, Spec
 from .adapts import BaseAdapt
 from .hooks import BaseHook

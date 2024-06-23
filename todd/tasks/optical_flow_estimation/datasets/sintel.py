@@ -6,8 +6,9 @@ from typing import Any
 
 import torch
 
-from ....configs import Config
-from ....datasets.access_layers import CV2AccessLayer
+from todd.configs import Config
+from todd.datasets.access_layers import CV2AccessLayer
+
 from ..optical_flow import FloOpticalFlow
 from ..registries import OFEDatasetRegistry
 from .access_layers import OpticalFlowAccessLayer

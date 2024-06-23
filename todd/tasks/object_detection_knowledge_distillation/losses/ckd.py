@@ -7,10 +7,10 @@ import torch
 import torch.distributed as dist
 import torch.nn.functional as F
 
-from ....models import LossRegistry
-from ....models.losses import BaseLoss
-from ....patches.torch import get_rank, get_world_size
-from ...object_detection import FlattenBBoxesXYXY
+from todd.models import LossRegistry
+from todd.models.losses import BaseLoss
+from todd.patches.torch import get_rank, get_world_size
+from todd.tasks.object_detection import FlattenBBoxesXYXY
 
 
 def ckd_loss(

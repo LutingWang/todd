@@ -6,8 +6,8 @@ import mmcv.ops
 import torch
 from torch import nn
 
-from ....knowledge_distillation.distillers import AdaptRegistry
-from ....knowledge_distillation.distillers.adapts import BaseAdapt
+from todd.tasks.knowledge_distillation.distillers import AdaptRegistry
+from todd.tasks.knowledge_distillation.distillers.adapts import BaseAdapt
 
 
 @AdaptRegistry.register_()

@@ -5,7 +5,8 @@ __all__ = [
 
 import torch
 
-from .....utils import TensorTreeUtil
+from todd.utils import TensorTreeUtil
+
 from ..registries import AdaptRegistry
 from .base import BaseAdapt
 

@@ -19,7 +19,8 @@ import numpy as np
 import numpy.typing as npt
 import torch
 
-from ...colors import ColorWheel
+from todd.colors import ColorWheel
+
 from .registries import OpticalFlowRegistry
 
 

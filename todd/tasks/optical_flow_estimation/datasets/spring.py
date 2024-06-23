@@ -6,7 +6,8 @@ from typing import Any
 
 import torch
 
-from ....configs import Config
+from todd.configs import Config
+
 from ..optical_flow import Flo5OpticalFlow
 from ..registries import OFEDatasetRegistry
 from .access_layers import SpringCV2AccessLayer, SpringOpticalFlowAccessLayer

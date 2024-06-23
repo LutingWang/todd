@@ -11,7 +11,8 @@ from typing import Generic, Iterable, Mapping, TypeVar
 
 from torch import nn
 
-from ....configs import Config
+from todd.configs import Config
+
 from ..registries import DistillerRegistry
 from .base import BaseDistiller
 

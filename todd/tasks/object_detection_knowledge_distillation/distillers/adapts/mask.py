@@ -11,8 +11,8 @@ from abc import ABC, abstractmethod
 import einops
 import torch
 
-from ....knowledge_distillation.distillers import AdaptRegistry
-from ....knowledge_distillation.distillers.adapts import BaseAdapt
+from todd.tasks.knowledge_distillation.distillers import AdaptRegistry
+from todd.tasks.knowledge_distillation.distillers.adapts import BaseAdapt
 
 
 class MultiLevelMask:

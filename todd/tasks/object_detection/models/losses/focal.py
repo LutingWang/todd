@@ -7,7 +7,8 @@ from abc import ABC
 
 import torch
 
-from .....models.losses import BCELoss, BCEWithLogitsLoss, FunctionalLoss
+from todd.models.losses import BCELoss, BCEWithLogitsLoss, FunctionalLoss
+
 from ..registries import ODLossRegistry
 
 

@@ -5,9 +5,10 @@ __all__ = [
 
 from typing import Any, Iterable
 
-from ....colors import RGB, Color
-from ....configs import Config
-from ....visuals import BaseVisual
+from todd.colors import RGB, Color
+from todd.configs import Config
+from todd.visuals import BaseVisual
+
 from ..bboxes import BBoxes, BBoxesXYWH
 
 
@@ -31,7 +32,7 @@ def annotation(
     The method is useful to visualize dataset annotations or pseudo
     labels, for example:
 
-        >>> from ....visuals import PPTXVisual
+        >>> from todd.visuals import PPTXVisual
         >>> visual = PPTXVisual(640, 426)
         >>> annotations = [
         ...     dict(bbox=[236.98, 142.51, 24.7, 69.5], category_id=64),

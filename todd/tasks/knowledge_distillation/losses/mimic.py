@@ -11,8 +11,8 @@ import einops
 import torch
 import torch.nn.functional as F
 
-from ....models import LossRegistry
-from ....models.losses import FunctionalLoss, L1Loss, MSELoss
+from todd.models import LossRegistry
+from todd.models.losses import FunctionalLoss, L1Loss, MSELoss
 
 
 class _2DMixin(FunctionalLoss, ABC):  # noqa: N801

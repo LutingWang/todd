@@ -10,8 +10,8 @@ import torch.nn.functional as F
 from mmcv.cnn import ConvModule
 from torch import nn
 
-from ....models import LossRegistry
-from ....models.losses import MSELoss
+from todd.models import LossRegistry
+from todd.models.losses import MSELoss
 
 
 @LossRegistry.register_()

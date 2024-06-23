@@ -42,9 +42,8 @@ class BBoxes(NormalizeMixin[BBox], TensorWrapper[BBox], ABC):
         super().__init__(*args, **kwargs)
         assert self._tensor.shape[-1] == 4
 
-    def scale(self, ratio_wh: tuple[float, ...], /) -> Self:
-        bboxes = self._tensor * self._tensor.new_tensor(ratio_wh * 2)
-        return self.copy(bboxes)
+    def _scale(self, ratio_xy: tuple[float, ...], /) -> Self:
+        return self._tensor * self._tensor.new_tensor(ratio_xy * 2)
 
     @property
     @abstractmethod

@@ -3,7 +3,8 @@ __all__ = [
     'OpticalFlowRegistry',
 ]
 
-from ...registries import DatasetRegistry
+from todd.registries import DatasetRegistry
+
 from ..registries import OFERegistry
 
 

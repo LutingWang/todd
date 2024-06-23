@@ -8,8 +8,8 @@ from typing import Literal
 
 from torch import nn
 
-from .....patches.py import get_
-from .....utils import StateMachine
+from todd.patches.py import get_
+from todd.utils import StateMachine
 
 
 class StateEnum(IntEnum):

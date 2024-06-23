@@ -5,9 +5,10 @@ __all__ = [
 from abc import abstractmethod
 from typing import Any, TypeVar
 
-from ....datasets import BaseDataset as BaseDataset_
-from ....patches.py import classproperty
-from ....registries import BuildSpec
+from todd.datasets import BaseDataset as BaseDataset_
+from todd.patches.py import classproperty
+from todd.registries import BuildSpec
+
 from ..optical_flow import OpticalFlow
 from ..registries import OFEDatasetRegistry
 
