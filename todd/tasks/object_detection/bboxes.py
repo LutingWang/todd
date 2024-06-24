@@ -441,7 +441,7 @@ class FlattenMixin(BaseFlattenMixin[BBox], BBoxes, ABC):
         return self.area[:, None] + other.area[None, :] - intersections
 
     def unions(self, other: 'FlattenMixin') -> torch.Tensor:
-        r"""Wrap `_unions`.
+        r"""Unions.
 
         Args:
             other: :math:`n' \times 4`.
