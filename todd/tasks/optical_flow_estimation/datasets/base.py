@@ -22,7 +22,7 @@ class BaseDataset(BaseDataset_[T, str, VT]):
     @classproperty
     def build_spec(self) -> BuildSpec:
         build_spec: BuildSpec = super().build_spec
-        build_spec.pop('access_layer')  # pylint: disable=no-member
+        build_spec.pop('access_layer')
         return build_spec
 
     @abstractmethod

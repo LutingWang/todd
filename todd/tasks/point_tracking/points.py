@@ -34,7 +34,10 @@ class Points(NormalizeMixin[Point], TensorWrapper[Point]):
         assert self._tensor.shape[-1] == 2
 
     def _scale(self, ratio_xy: tuple[float, ...], /) -> torch.Tensor:
-        return self._tensor * self._tensor.new_tensor(ratio_xy)
+        return self._tensor * self._tensor.new_tensor(
+            ratio_xy,
+            dtype=torch.float32,
+        )
 
     def flatten(self) -> 'FlattenPoints':
         args, kwargs = self.copy(self._flatten()).__getstate__()

@@ -33,7 +33,7 @@ class SpringDataset(BaseDataset[VT]):
             access_layer if frame_access_layer is None else access_layer
             | frame_access_layer
         )
-        self._frame = SpringCV2AccessLayer(**frame_access_layer)
+        self._frame = SpringCV2AccessLayer(**frame_access_layer)  # noqa: E501 pylint: disable=abstract-class-instantiated
         super().__init__(*args, access_layer=flo_access_layer, **kwargs)
 
     def _build_keys(self) -> list[str]:
