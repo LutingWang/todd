@@ -1,10 +1,10 @@
 __all__ = [
     'Point',
     'Points',
+    'FlattenPoints',
 ]
 
 from dataclasses import dataclass
-from typing_extensions import Self
 
 import torch
 
@@ -33,8 +33,13 @@ class Points(NormalizeMixin[Point], TensorWrapper[Point]):
         super().__init__(*args, **kwargs)
         assert self._tensor.shape[-1] == 2
 
-    def _scale(self, ratio_xy: tuple[float, ...], /) -> Self:
+    def _scale(self, ratio_xy: tuple[float, ...], /) -> torch.Tensor:
         return self._tensor * self._tensor.new_tensor(ratio_xy)
 
-    def flatten(self) -> FlattenMixin[Point]:
-        raise NotImplementedError
+    def flatten(self) -> 'FlattenPoints':
+        args, kwargs = self.copy(self._flatten()).__getstate__()
+        return FlattenPoints(*args, **kwargs)
+
+
+class FlattenPoints(FlattenMixin[Point], Points):
+    pass

@@ -50,10 +50,10 @@ class SpringDataset(BaseDataset[VT]):
         return scene + '/' + frame
 
     def __getitem__(self, index: int) -> T:
-        key = self._keys[index]
+        key, of = self._access(index)
         return dict(
             id_=key,
-            of=self._access_layer[key].to_tensor(),
+            of=of.to_tensor(),
             frame1=torch.tensor(self._frame[key]),
             frame2=torch.tensor(self._frame[self._next_key(key)]),
         )

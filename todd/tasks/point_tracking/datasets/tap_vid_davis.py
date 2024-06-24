@@ -1,4 +1,5 @@
 __all__ = [
+    'T',
     'TAPVidDAVISDataset',
 ]
 
@@ -15,6 +16,7 @@ from .access_layers import VT, TAPVidDAVISAccessLayer
 
 
 class T(TypedDict):
+    id_: str
     video: torch.Tensor
     query_ts: torch.Tensor
     query_points: torch.Tensor
@@ -43,7 +45,7 @@ class TAPVidDAVISDataset(BaseDataset[T, str, VT]):
         )
 
     def __getitem__(self, index: int) -> T:
-        vt = self._access(index)
+        id_, vt = self._access(index)
         video = torch.from_numpy(vt['video'])
         points = torch.from_numpy(vt['points'])
         occluded = torch.from_numpy(vt['occluded'])
@@ -63,6 +65,7 @@ class TAPVidDAVISDataset(BaseDataset[T, str, VT]):
             query_points.append(point)
 
         return T(
+            id_=id_,
             video=video,
             query_ts=torch.cat(query_ts),
             query_points=torch.cat(query_points),

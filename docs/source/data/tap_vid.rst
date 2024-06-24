@@ -14,6 +14,10 @@ TAP-Vid-DAVIS
     wget https://storage.googleapis.com/dm-tapnet/${f}
     unzip -p ${f} tapvid_davis/tapvid_davis.pkl > davis.pkl
 
+.. literalinclude:: tap_vid_davis.py
+    :language: python
+    :linenos:
+
 .. code::
 
     data/tap_vid/

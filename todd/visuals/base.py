@@ -3,7 +3,7 @@ __all__ = [
 ]
 
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Iterable, Self
 
 import cv2
 import numpy as np
@@ -13,7 +13,6 @@ import torch
 from ..colors import PALETTE, RGB, Color
 from ..configs import Config
 from ..patches.cv2 import ColorMap
-from .anchors import XAnchor, YAnchor
 
 
 class BaseVisual(ABC):
@@ -89,7 +88,7 @@ class BaseVisual(ABC):
             <pptx.shapes.picture.Picture object at ...>
 
         Args:
-            activation: :math:`(H, W)` or :math:`(H, W, 1)`
+            activation: :math:`(H, W)`
             left: x coordinate of the left side of the activation map
             top: y coordinate of the top size of the activation map
             width: width of the activation map
@@ -119,9 +118,73 @@ class BaseVisual(ABC):
         text: str,
         x: int,
         y: int,
-        x_anchor: XAnchor = XAnchor.LEFT,
-        y_anchor: YAnchor = YAnchor.TOP,
         color: Color = RGB(0., 0., 0.),  # noqa: B008
         font: Config | None = None,
     ) -> Any:
         pass
+
+    @abstractmethod
+    def point(
+        self,
+        x: int,
+        y: int,
+        size: int,
+        color: Color = RGB(0., 0., 0.),  # noqa: B008
+    ) -> Any:
+        pass
+
+    @abstractmethod
+    def marker(
+        self,
+        x: int,
+        y: int,
+        size: int,
+        color: Color = RGB(0., 0., 0.),  # noqa: B008
+    ) -> Any:
+        pass
+
+    def scatter(
+        self,
+        points: Iterable[tuple[int, int]],
+        sizes: Iterable[int],
+        colors: Iterable[Color],
+        types: Iterable[str],
+    ) -> Any:
+        for (x, y), size, color, type_ in zip(points, sizes, colors, types):
+            if type_ == '.':
+                self.point(x, y, size, color)
+            elif type_ == '*':
+                self.marker(x, y, size, color)
+            else:
+                raise ValueError(f'Invalid type: {type_}')
+        return self
+
+    @abstractmethod
+    def line(
+        self,
+        x1: int,
+        y1: int,
+        x2: int,
+        y2: int,
+        color: Color = RGB(0., 0., 0.),  # noqa: B008
+        thickness: int = 1,
+    ) -> Any:
+        pass
+
+    def trajectory(
+        self,
+        trajectory: Iterable[tuple[int, int]],
+        color: Color = RGB(0., 0., 0.),  # noqa: B008
+        thickness: int = 1,
+    ) -> Self:
+        """Draw the trajectory.
+
+        Args:
+            trajectory: :math:`(T, 2)`
+            color: color of the trajectory
+            thickness: thickness of the trajectory
+        """
+        trajectory = list(trajectory)
+        for (x1, y1), (x2, y2) in zip(trajectory[:-1], trajectory[1:]):
+            self.line(x1, y1, x2, y2, color, thickness)
+        return self

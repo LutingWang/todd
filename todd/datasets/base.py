@@ -59,9 +59,9 @@ class BaseDataset(BuildSpecMixin, Dataset[T], Generic[T, KT, VT], ABC):
         for index in range(len(self)):
             yield self[index]
 
-    def _access(self, index: int) -> VT:
+    def _access(self, index: int) -> tuple[KT, VT]:
         key = self._keys[index]
-        return self._access_layer[key]
+        return key, self._access_layer[key]
 
     @abstractmethod
     def __getitem__(self, index: int) -> T:

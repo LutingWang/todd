@@ -22,9 +22,7 @@ import pptx.util
 
 from ..colors import RGB, Color
 from ..configs import Config
-from ..loggers import logger
 from ..registries import VisualRegistry
-from .anchors import XAnchor, YAnchor
 from .base import BaseVisual
 
 
@@ -220,23 +218,9 @@ class PPTXVisual(BaseVisual):
         text: str,
         x: int,
         y: int,
-        x_anchor: XAnchor = XAnchor.LEFT,
-        y_anchor: YAnchor = YAnchor.TOP,
         color: Color = RGB(0., 0., 0.),  # noqa: B008
         font: Config | None = None,
     ) -> pptx.shapes.autoshape.Shape:
-        if x_anchor is not XAnchor.LEFT:
-            logger.warning(
-                "%s does not support %s",
-                self.__class__.__name__,
-                f"{x_anchor=}",
-            )
-        if y_anchor is not YAnchor.TOP:
-            logger.warning(
-                "%s does not support %s",
-                self.__class__.__name__,
-                f"{y_anchor=}",
-            )
         if font is None:
             font = Config()
 
@@ -260,3 +244,32 @@ class PPTXVisual(BaseVisual):
         self._set_color_format_rgb(paragraph_font.color, color)
 
         return textbox
+
+    def point(
+        self,
+        x: int,
+        y: int,
+        size: int,
+        color: Color = RGB(0., 0., 0.),  # noqa: B008
+    ) -> Any:
+        raise NotImplementedError
+
+    def marker(
+        self,
+        x: int,
+        y: int,
+        size: int,
+        color: Color = RGB(0., 0., 0.),  # noqa: B008
+    ) -> Any:
+        raise NotImplementedError
+
+    def line(
+        self,
+        x1: int,
+        y1: int,
+        x2: int,
+        y2: int,
+        color: Color = RGB(0., 0., 0.),  # noqa: B008
+        thickness: int = 1,
+    ) -> Any:
+        raise NotImplementedError
