@@ -4,11 +4,11 @@ __all__ = [
 
 import torch
 
-from ..registries import AdaptRegistry
+from ..registries import KDAdaptRegistry
 from .base import BaseAdapt
 
 
-@AdaptRegistry.register_()
+@KDAdaptRegistry.register_()
 class Detach(BaseAdapt):
 
     def forward(self, tensor: torch.Tensor) -> torch.Tensor:

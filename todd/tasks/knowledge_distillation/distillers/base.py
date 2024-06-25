@@ -18,7 +18,7 @@ from todd.utils import StoreMeta, transfer_state_dicts
 from ..utils import ComposedPipeline, Spec
 from .adapts import BaseAdapt
 from .hooks import BaseHook
-from .registries import AdaptRegistry, HookRegistry
+from .registries import KDAdaptRegistry, KDHookRegistry
 
 Message = dict[str, Any]
 Pipelines = Iterable[Config] | Mapping[str, Config]
@@ -47,7 +47,7 @@ class BaseDistiller(nn.Module, ABC):
         self._models = models
 
         hook_pipeline: ComposedPipeline[BaseHook] = ComposedPipeline(
-            callable_registry=HookRegistry,
+            callable_registry=KDHookRegistry,
             pipelines=[
                 Config(type=ComposedPipeline.__name__, pipelines=pipelines)
                 for pipelines in hook_pipelines
@@ -59,7 +59,7 @@ class BaseDistiller(nn.Module, ABC):
         self._hook_pipeline = hook_pipeline
 
         adapt_pipeline: ComposedPipeline[BaseAdapt] = ComposedPipeline(
-            callable_registry=AdaptRegistry,
+            callable_registry=KDAdaptRegistry,
             pipelines=adapt_pipelines,
         )
         adapts = nn.ModuleList(

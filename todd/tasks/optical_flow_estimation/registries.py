@@ -1,6 +1,6 @@
 __all__ = [
     'OFEDatasetRegistry',
-    'OpticalFlowRegistry',
+    'OFEOpticalFlowRegistry',
 ]
 
 from todd.registries import DatasetRegistry
@@ -12,5 +12,5 @@ class OFEDatasetRegistry(OFERegistry, DatasetRegistry):
     pass
 
 
-class OpticalFlowRegistry(OFERegistry):
+class OFEOpticalFlowRegistry(OFERegistry):
     pass

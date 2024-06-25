@@ -13,7 +13,7 @@ from torch import nn
 
 from todd.configs import Config
 
-from ..registries import DistillerRegistry
+from ..registries import KDDistillerRegistry
 from .base import BaseDistiller
 
 Pipelines = Iterable[Config] | Mapping[str, Config]
@@ -39,7 +39,7 @@ class SingleStudentDistiller(BaseDistiller, ABC):
         return self._models[0]
 
 
-@DistillerRegistry.register_()
+@KDDistillerRegistry.register_()
 class MultiTeacherDistiller(SingleStudentDistiller, ABC):
 
     def __init__(
@@ -83,7 +83,7 @@ class MultiTeacherDistiller(SingleStudentDistiller, ABC):
         return self.models[1 + self._num_online_teachers:]
 
 
-@DistillerRegistry.register_()
+@KDDistillerRegistry.register_()
 class SingleTeacherDistiller(SingleStudentDistiller, ABC):
 
     def __init__(
@@ -113,7 +113,7 @@ class SingleTeacherDistiller(SingleStudentDistiller, ABC):
         return self.models[1]
 
 
-@DistillerRegistry.register_()
+@KDDistillerRegistry.register_()
 class SelfDistiller(SingleStudentDistiller, ABC):
 
     def __init__(
@@ -146,7 +146,7 @@ class StudentMixin(Generic[T]):
         self._build_distiller(distiller)
 
     def _build_distiller(self, config: Config) -> None:
-        self._distiller: T = DistillerRegistry.build(config, student=self)
+        self._distiller: T = KDDistillerRegistry.build(config, student=self)
 
     @property
     def distiller(self) -> T:

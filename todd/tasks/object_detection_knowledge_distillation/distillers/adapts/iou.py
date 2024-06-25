@@ -4,12 +4,14 @@ __all__ = [
 
 import torch
 
-from todd.tasks.knowledge_distillation.distillers import AdaptRegistry
-from todd.tasks.knowledge_distillation.distillers.adapts import BaseAdapt
-from todd.tasks.object_detection import FlattenBBoxesXYXY
+import todd.tasks.knowledge_distillation as kd
+import todd.tasks.object_detection as od
+
+KDAdaptRegistry = kd.distillers.KDAdaptRegistry
+BaseAdapt = kd.distillers.adapts.BaseAdapt
 
 
-@AdaptRegistry.register_()
+@KDAdaptRegistry.register_()
 class IoU(BaseAdapt):
 
     def __init__(
@@ -59,8 +61,8 @@ class IoU(BaseAdapt):
         """
         bboxes1, shape1 = self._reshape(bboxes1)
         bboxes2, shape2 = self._reshape(bboxes2)
-        ious = FlattenBBoxesXYXY(bboxes1).ious(
-            FlattenBBoxesXYXY(bboxes2),
+        ious = od.FlattenBBoxesXYXY(bboxes1).ious(
+            od.FlattenBBoxesXYXY(bboxes2),
             self._eps,
         )
         return ious.reshape(shape1 + shape2)

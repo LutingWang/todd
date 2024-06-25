@@ -31,7 +31,7 @@ from todd.loggers import logger
 from todd.patches.py import exec_
 from todd.registries import RegistryMeta
 
-from ..registries import PipelineRegistry
+from ..registries import KDPipelineRegistry
 
 # TODO: refactor
 
@@ -158,7 +158,7 @@ class IOMixin(BasePipeline[T]):
         return self.outputs(outputs)
 
 
-@PipelineRegistry.register_()
+@KDPipelineRegistry.register_()
 class VanillaPipeline(IOMixin[T], BasePipeline[T]):
 
     def __init__(
@@ -216,7 +216,7 @@ class ParallelIOMixin(IOMixin[T]):
         return cast(Message, data_frame.to_dict(orient='list'))
 
 
-@PipelineRegistry.register_()
+@KDPipelineRegistry.register_()
 class ParallelPipeline(ParallelIOMixin[T], BasePipeline[T]):
 
     def __init__(self, *args, callables: Iterable[Config], **kwargs) -> None:
@@ -237,7 +237,7 @@ class ParallelPipeline(ParallelIOMixin[T], BasePipeline[T]):
         return self._callables[i](*args, **kwargs)
 
 
-@PipelineRegistry.register_()
+@KDPipelineRegistry.register_()
 class SharedParallelPipeline(ParallelIOMixin[T], VanillaPipeline[T]):
 
     def _parallelism(self, args: Args, kwargs: Kwargs) -> int:
@@ -249,7 +249,7 @@ class SharedParallelPipeline(ParallelIOMixin[T], VanillaPipeline[T]):
         return VanillaPipeline._call(self, args, kwargs)
 
 
-@PipelineRegistry.register_()
+@KDPipelineRegistry.register_()
 class ComposedPipeline(BasePipeline[T]):
 
     def __init__(self, *args, pipelines: Pipelines, **kwargs) -> None:
@@ -260,7 +260,7 @@ class ComposedPipeline(BasePipeline[T]):
 
     def _build_pipelines(self, config: Iterable[Config]) -> None:
         self._pipelines: tuple[BasePipeline[T], ...] = tuple(
-            PipelineRegistry.build(
+            KDPipelineRegistry.build(
                 pipeline,
                 callable_registry=self._callable_registry,
             ) for pipeline in config

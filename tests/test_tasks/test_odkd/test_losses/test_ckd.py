@@ -2,17 +2,17 @@ import pathlib
 
 import torch
 
+import todd.tasks.knowledge_distillation as kd
 from todd.configs import PyConfig
-from todd.tasks.knowledge_distillation.distillers import (
-    AdaptRegistry,
-    BaseDistiller,
-    DistillerStore,
-)
-from todd.tasks.knowledge_distillation.distillers.adapts import BaseAdapt
 from todd.utils import TensorTreeUtil
 
+BaseDistiller = kd.distillers.BaseDistiller
+DistillerStore = kd.distillers.DistillerStore
+KDAdaptRegistry = kd.distillers.KDAdaptRegistry
+BaseAdapt = kd.distillers.adapts.BaseAdapt
 
-@AdaptRegistry.register_()
+
+@KDAdaptRegistry.register_()
 class CustomAdapt(BaseAdapt):
 
     def __init__(self, stride: int = 1, **kwargs) -> None:

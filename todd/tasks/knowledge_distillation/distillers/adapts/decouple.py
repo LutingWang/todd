@@ -6,11 +6,11 @@ import einops
 import torch
 from torch import nn
 
-from ..registries import AdaptRegistry
+from ..registries import KDAdaptRegistry
 from .base import BaseAdapt
 
 
-@AdaptRegistry.register_()
+@KDAdaptRegistry.register_()
 class Decouple(BaseAdapt):
 
     def __init__(

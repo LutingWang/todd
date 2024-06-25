@@ -1,14 +1,14 @@
 __all__ = [
-    'DistillerRegistry',
-    'PipelineRegistry',
+    'KDDistillerRegistry',
+    'KDPipelineRegistry',
 ]
 
 from ..registries import KDRegistry
 
 
-class DistillerRegistry(KDRegistry):
+class KDDistillerRegistry(KDRegistry):
     pass
 
 
-class PipelineRegistry(KDRegistry):
+class KDPipelineRegistry(KDRegistry):
     pass

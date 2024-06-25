@@ -17,4 +17,4 @@ commit: test
 	pipenv run cz c
 
 docs:
-	cd docs && PIPENV_PIPFILE=../Pipfile pipenv run make html
+	pipenv run make -C docs html

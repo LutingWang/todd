@@ -4,11 +4,11 @@ __all__ = [
 
 import torch
 
-from ..registries import HookRegistry
+from ..registries import KDHookRegistry
 from .base import BaseHook
 
 
-@HookRegistry.register_()
+@KDHookRegistry.register_()
 class AppendHook(BaseHook):
 
     def _reset(self) -> None:

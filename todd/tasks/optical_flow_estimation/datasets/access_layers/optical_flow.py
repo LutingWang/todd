@@ -9,7 +9,7 @@ from todd.patches.py import classproperty
 from todd.registries import BuildSpec, BuildSpecMixin
 
 from ...optical_flow import SerializeMixin
-from ...registries import OpticalFlowRegistry
+from ...registries import OFEOpticalFlowRegistry
 from ..registries import OFEAccessLayerRegistry
 
 VT = TypeVar('VT', bound=SerializeMixin)
@@ -33,7 +33,7 @@ class OpticalFlowAccessLayer(
     @classproperty
     def build_spec(self) -> BuildSpec:
         build_spec = BuildSpec(
-            optical_flow_type=lambda c: OpticalFlowRegistry[c.type],
+            optical_flow_type=lambda c: OFEOpticalFlowRegistry[c.type],
         )
         return super().build_spec | build_spec
 

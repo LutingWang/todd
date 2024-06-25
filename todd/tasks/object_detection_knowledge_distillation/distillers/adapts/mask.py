@@ -11,8 +11,10 @@ from abc import ABC, abstractmethod
 import einops
 import torch
 
-from todd.tasks.knowledge_distillation.distillers import AdaptRegistry
-from todd.tasks.knowledge_distillation.distillers.adapts import BaseAdapt
+import todd.tasks.knowledge_distillation as kd
+
+KDAdaptRegistry = kd.distillers.KDAdaptRegistry
+BaseAdapt = kd.distillers.adapts.BaseAdapt
 
 
 class MultiLevelMask:
@@ -91,7 +93,7 @@ class SingleLevelMask(MultiLevelMask, ABC):
         return masks[0]
 
 
-@AdaptRegistry.register_()
+@KDAdaptRegistry.register_()
 class DeFeatMask(MultiLevelMask, BaseAdapt):
 
     def __init__(
@@ -170,7 +172,7 @@ class DeFeatMask(MultiLevelMask, BaseAdapt):
         return masks + neg_masks
 
 
-@AdaptRegistry.register_()
+@KDAdaptRegistry.register_()
 class FGDMask(DeFeatMask):
 
     def _normalize_pos(self, masks: torch.Tensor) -> torch.Tensor:
@@ -202,7 +204,7 @@ class FGDMask(DeFeatMask):
         return mask
 
 
-@AdaptRegistry.register_()
+@KDAdaptRegistry.register_()
 class FGFIMask(BaseAdapt):
 
     def __init__(self, *args, thresh: float = 0.5, **kwargs) -> None:
@@ -272,7 +274,7 @@ class FGFIMask(BaseAdapt):
 #         return masks
 
 
-@AdaptRegistry.register_()
+@KDAdaptRegistry.register_()
 class FRSMask(BaseAdapt):
 
     def __init__(self, *args, with_logits: bool = True, **kwargs) -> None:

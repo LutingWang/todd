@@ -25,7 +25,7 @@ import torch
 
 from ..utils import FlattenMixin as BaseFlattenMixin
 from ..utils import NormalizeMixin, TensorWrapper
-from .registries import BBoxesRegistry
+from .registries import ODBBoxesRegistry
 
 BBox = tuple[float, float, float, float]
 T = TypeVar('T', bound='BBoxes')
@@ -42,7 +42,7 @@ class BBoxes(NormalizeMixin[BBox], TensorWrapper[BBox], ABC):
         super().__init__(*args, **kwargs)
         assert self._tensor.shape[-1] == 4
 
-    def _scale(self, ratio_xy: tuple[float, ...], /) -> Self:
+    def _scale(self, ratio_xy: tuple[float, ...], /) -> torch.Tensor:
         return self._tensor * self._tensor.new_tensor(ratio_xy * 2)
 
     @property
@@ -302,7 +302,7 @@ class BBoxes__WH(BBoxes, ABC):  # noqa: N801
         return bboxes.wh
 
 
-@BBoxesRegistry.register_()
+@ODBBoxesRegistry.register_()
 class BBoxesXYXY(BBoxesXY__, BBoxes__XY):
 
     @property
@@ -334,7 +334,7 @@ class BBoxesXYXY(BBoxesXY__, BBoxes__XY):
         return FlattenBBoxesXYXY(*args, **kwargs)
 
 
-@BBoxesRegistry.register_()
+@ODBBoxesRegistry.register_()
 class BBoxesXYWH(BBoxesXY__, BBoxes__WH):
 
     @property
@@ -366,7 +366,7 @@ class BBoxesXYWH(BBoxesXY__, BBoxes__WH):
         return FlattenBBoxesXYWH(*args, **kwargs)
 
 
-@BBoxesRegistry.register_()
+@ODBBoxesRegistry.register_()
 class BBoxesCXCYWH(BBoxesCXCY__, BBoxes__WH):
 
     @property
@@ -471,13 +471,16 @@ class FlattenMixin(BaseFlattenMixin[BBox], BBoxes, ABC):
         return intersections / unions
 
 
+@ODBBoxesRegistry.register_()
 class FlattenBBoxesXYXY(FlattenMixin, BBoxesXYXY):
     pass
 
 
+@ODBBoxesRegistry.register_()
 class FlattenBBoxesXYWH(FlattenMixin, BBoxesXYWH):
     pass
 
 
+@ODBBoxesRegistry.register_()
 class FlattenBBoxesCXCYWH(FlattenMixin, BBoxesCXCYWH):
     pass

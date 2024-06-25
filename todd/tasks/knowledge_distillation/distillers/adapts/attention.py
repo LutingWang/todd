@@ -7,11 +7,11 @@ import einops
 import torch
 import torch.nn.functional as F
 
-from ..registries import AdaptRegistry
+from ..registries import KDAdaptRegistry
 from .base import BaseAdapt
 
 
-@AdaptRegistry.register_()
+@KDAdaptRegistry.register_()
 class SpatialAttention(BaseAdapt):
 
     def __init__(self, *args, temperature: float = 1, **kwargs) -> None:
@@ -29,7 +29,7 @@ class SpatialAttention(BaseAdapt):
         return einops.rearrange(a, 'n (h w) -> n 1 h w', h=h, w=w)
 
 
-@AdaptRegistry.register_()
+@KDAdaptRegistry.register_()
 class ChannelAttention(BaseAdapt):
 
     def __init__(self, *args, temperature: float = 1, **kwargs) -> None:

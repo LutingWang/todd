@@ -1,6 +1,6 @@
 __all__ = [
-    'AdaptRegistry',
-    'HookRegistry',
+    'KDAdaptRegistry',
+    'KDHookRegistry',
 ]
 
 from typing import cast
@@ -11,22 +11,22 @@ from torch import nn
 from todd.patches.py import get_classes, get_named_classes, import_module
 from todd.registries import Item
 
-from ..registries import DistillerRegistry
+from ..registries import KDDistillerRegistry
 
 
-class AdaptRegistry(DistillerRegistry):
+class KDAdaptRegistry(KDDistillerRegistry):
     pass
 
 
-class HookRegistry(DistillerRegistry):
+class KDHookRegistry(KDDistillerRegistry):
     pass
 
 
 for c in (
     get_classes(nn, nn.Module) + get_classes(einops.layers.torch, nn.Module)
 ):
-    AdaptRegistry.register_()(cast(Item, c))
+    KDAdaptRegistry.register_()(cast(Item, c))
 
 if (mmcv_cnn := import_module('mmcv.cnn')) is not None:
     for n, c in get_named_classes(mmcv_cnn, nn.Module).items():
-        AdaptRegistry.register_(f'mmcv_{n}')(cast(Item, c))
+        KDAdaptRegistry.register_(f'mmcv_{n}')(cast(Item, c))

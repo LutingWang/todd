@@ -4,11 +4,11 @@ __all__ = [
 
 from typing import Any
 
-from ..registries import AdaptRegistry
+from ..registries import KDAdaptRegistry
 from .base import BaseAdapt
 
 
-@AdaptRegistry.register_()
+@KDAdaptRegistry.register_()
 class Null(BaseAdapt):
 
     def forward(self, x: Any) -> Any:

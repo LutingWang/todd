@@ -7,7 +7,7 @@ import torch
 
 from todd.utils import TensorTreeUtil
 
-from ..registries import AdaptRegistry
+from ..registries import KDAdaptRegistry
 from .base import BaseAdapt
 
 
@@ -18,11 +18,11 @@ class ListTensorAdapt(BaseAdapt):
         return self.func(*args, **kwargs)
 
 
-@AdaptRegistry.register_()
+@KDAdaptRegistry.register_()
 class Stack(ListTensorAdapt):
     func = staticmethod(TensorTreeUtil.stack)
 
 
-@AdaptRegistry.register_()
+@KDAdaptRegistry.register_()
 class Index(ListTensorAdapt):
     func = staticmethod(TensorTreeUtil.index)

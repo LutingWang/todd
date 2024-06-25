@@ -2,11 +2,11 @@ __all__ = [
     'DuplicateHook',
 ]
 
-from ..registries import HookRegistry
+from ..registries import KDHookRegistry
 from .vanilla import Hook
 
 
-@HookRegistry.register_()
+@KDHookRegistry.register_()
 class DuplicateHook(Hook):
 
     def __init__(self, *args, num: int = 1, **kwargs) -> None:

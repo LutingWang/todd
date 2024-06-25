@@ -6,11 +6,13 @@ import mmcv.ops
 import torch
 from torch import nn
 
-from todd.tasks.knowledge_distillation.distillers import AdaptRegistry
-from todd.tasks.knowledge_distillation.distillers.adapts import BaseAdapt
+import todd.tasks.knowledge_distillation as kd
+
+KDAdaptRegistry = kd.distillers.KDAdaptRegistry
+BaseAdapt = kd.distillers.adapts.BaseAdapt
 
 
-@AdaptRegistry.register_()
+@KDAdaptRegistry.register_()
 class RoIAlign(BaseAdapt):
 
     def __init__(self, strides: list[int], *args, **kwargs) -> None:

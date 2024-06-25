@@ -21,7 +21,7 @@ import torch
 
 from todd.colors import ColorWheel
 
-from .registries import OpticalFlowRegistry
+from .registries import OFEOpticalFlowRegistry
 
 
 class OpticalFlow:
@@ -109,7 +109,7 @@ class SerializeMixin(OpticalFlow):
         self._dump(path)
 
 
-@OpticalFlowRegistry.register_()
+@OFEOpticalFlowRegistry.register_()
 class FloOpticalFlow(SerializeMixin, OpticalFlow):
     SUFFIX = '.flo'
     MAGIC = 202021.25
@@ -134,7 +134,7 @@ class FloOpticalFlow(SerializeMixin, OpticalFlow):
             data.astype('<f').tofile(f)
 
 
-@OpticalFlowRegistry.register_()
+@OFEOpticalFlowRegistry.register_()
 class Flo5OpticalFlow(SparseMixin, SerializeMixin, OpticalFlow):
     SUFFIX = '.flo5'
 
@@ -160,7 +160,7 @@ class Flo5OpticalFlow(SparseMixin, SerializeMixin, OpticalFlow):
             )
 
 
-@OpticalFlowRegistry.register_()
+@OFEOpticalFlowRegistry.register_()
 class PfmOpticalFlow(SerializeMixin, OpticalFlow):
     SUFFIX = '.pfm'
     HEADER = b'PF'
@@ -191,7 +191,7 @@ class PfmOpticalFlow(SerializeMixin, OpticalFlow):
             data.tofile(f)
 
 
-@OpticalFlowRegistry.register_()
+@OFEOpticalFlowRegistry.register_()
 class PngOpticalFlow(SerializeMixin, SparseMixin, OpticalFlow):
     SUFFIX = '.png'
 

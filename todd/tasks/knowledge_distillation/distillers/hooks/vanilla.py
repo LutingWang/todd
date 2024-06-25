@@ -2,11 +2,11 @@ __all__ = [
     'Hook',
 ]
 
-from ..registries import HookRegistry
+from ..registries import KDHookRegistry
 from .base import BaseHook
 
 
-@HookRegistry.register_()
+@KDHookRegistry.register_()
 class Hook(BaseHook):
 
     def _reset(self) -> None:

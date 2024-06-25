@@ -12,7 +12,7 @@ from typing import Iterable, Iterator, Mapping, Sequence, overload
 import einops
 import torch
 
-from ..registries import AdaptRegistry
+from ..registries import KDAdaptRegistry
 from .base import BaseAdapt
 
 KeyType = tuple[int, ...]
@@ -99,7 +99,7 @@ class DictTensor(Mapping):
         return dict_tensors
 
 
-@AdaptRegistry.register_('Union')
+@KDAdaptRegistry.register_('Union')
 class Union_(BaseAdapt):  # pylint: disable=invalid-name
 
     def forward(
@@ -140,7 +140,7 @@ class Union_(BaseAdapt):  # pylint: disable=invalid-name
         return union_feats, union_ids, union_mask
 
 
-@AdaptRegistry.register_()
+@KDAdaptRegistry.register_()
 class Intersect(BaseAdapt):
 
     def forward(

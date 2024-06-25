@@ -1,5 +1,6 @@
 __all__ = [
-    'BBoxesRegistry',
+    'ODBBoxesRegistry',
+    'ODModelRegistry',
 ]
 
 from todd.registries import ModelRegistry
@@ -7,7 +8,7 @@ from todd.registries import ModelRegistry
 from ..registries import ODRegistry
 
 
-class BBoxesRegistry(ODRegistry):
+class ODBBoxesRegistry(ODRegistry):
     pass
 
 

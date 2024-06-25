@@ -4,11 +4,11 @@ __all__ = [
 
 import string
 
-from ..registries import AdaptRegistry
+from ..registries import KDAdaptRegistry
 from .base import BaseAdapt
 
 
-@AdaptRegistry.register_()
+@KDAdaptRegistry.register_()
 class Custom(BaseAdapt):
     """Custom adaptation described using patterns.
 
