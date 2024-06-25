@@ -1,49 +1,20 @@
 __all__ = [
-    'L12DLoss',
-    'MSE2DLoss',
     'FGDLoss',
     'FGFILoss',
 ]
-
-from abc import ABC
 
 import einops
 import torch
 import torch.nn.functional as F
 
-from todd.models import LossRegistry
-from todd.models.losses import FunctionalLoss, L1Loss, MSELoss
+import todd.tasks.knowledge_distillation as kd
+
+from ..registries import ODKDLossRegistry
+
+MSE2DLoss = kd.models.losses.MSE2DLoss
 
 
-class _2DMixin(FunctionalLoss, ABC):  # noqa: N801
-
-    def forward(
-        self,
-        pred: torch.Tensor,
-        target: torch.Tensor,
-        *args,
-        mask: torch.Tensor | None = None,
-        **kwargs,
-    ) -> torch.Tensor:
-        _, _, h, w = pred.shape
-        if pred.shape != target.shape:
-            target = F.adaptive_avg_pool2d(target, (h, w))
-        if mask is not None and pred.shape != mask.shape:
-            mask = F.adaptive_avg_pool2d(mask, (h, w))
-        return super().forward(pred, target, *args, mask=mask, **kwargs)
-
-
-@LossRegistry.register_()
-class L12DLoss(_2DMixin, L1Loss):
-    pass
-
-
-@LossRegistry.register_()
-class MSE2DLoss(_2DMixin, MSELoss):
-    pass
-
-
-@LossRegistry.register_()
+@ODKDLossRegistry.register_()
 class FGFILoss(MSE2DLoss):
 
     def forward(
@@ -72,7 +43,7 @@ class FGFILoss(MSE2DLoss):
         )
 
 
-@LossRegistry.register_()
+@ODKDLossRegistry.register_()
 class FGDLoss(MSE2DLoss):
 
     def forward(

@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, NoReturn
+from typing import TYPE_CHECKING, Any, Never
 
 from torch import nn
 
@@ -20,5 +20,5 @@ class CustomModule(nn.Module):
         for k, v in kwargs.items():
             setattr(self, k, v)
 
-    def forward(self, *args, **kwargs) -> NoReturn:
+    def forward(self, *args, **kwargs) -> Never:
         raise RuntimeError(f"{self.__class__.__name__} forward is called")

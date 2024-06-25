@@ -120,7 +120,7 @@ class TestCKD:
         config = PyConfig.load(data_dir / 'ckd.py')
         result = torch.load(data_dir / 'ckd.pth', map_location='cpu')
 
-        distiller = BaseDistiller(**config)
+        distiller = BaseDistiller(**config.distiller)
 
         for rank in range(4):
             rank_result = result[f'rank{rank}']

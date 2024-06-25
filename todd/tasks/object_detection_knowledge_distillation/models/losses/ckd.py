@@ -7,10 +7,11 @@ import torch
 import torch.distributed as dist
 import torch.nn.functional as F
 
-from todd.models import LossRegistry
 from todd.models.losses import BaseLoss
 from todd.patches.torch import get_rank, get_world_size
 from todd.tasks.object_detection import FlattenBBoxesXYXY
+
+from ..registries import ODKDLossRegistry
 
 
 def ckd_loss(
@@ -80,7 +81,7 @@ class MemoryPool:
         return torch.cat(self._memory)
 
 
-@LossRegistry.register_()
+@ODKDLossRegistry.register_()
 class CKDLoss(BaseLoss):
 
     def __init__(self, *args, **kwargs) -> None:

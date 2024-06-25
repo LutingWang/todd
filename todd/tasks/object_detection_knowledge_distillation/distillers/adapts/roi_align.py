@@ -8,11 +8,12 @@ from torch import nn
 
 import todd.tasks.knowledge_distillation as kd
 
-KDAdaptRegistry = kd.distillers.KDAdaptRegistry
+from ..registries import ODKDAdaptRegistry
+
 BaseAdapt = kd.distillers.adapts.BaseAdapt
 
 
-@KDAdaptRegistry.register_()
+@ODKDAdaptRegistry.register_()
 class RoIAlign(BaseAdapt):
 
     def __init__(self, strides: list[int], *args, **kwargs) -> None:

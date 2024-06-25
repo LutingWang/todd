@@ -7,11 +7,12 @@ import torch
 import todd.tasks.knowledge_distillation as kd
 import todd.tasks.object_detection as od
 
-KDAdaptRegistry = kd.distillers.KDAdaptRegistry
+from ..registries import ODKDAdaptRegistry
+
 BaseAdapt = kd.distillers.adapts.BaseAdapt
 
 
-@KDAdaptRegistry.register_()
+@ODKDAdaptRegistry.register_()
 class IoU(BaseAdapt):
 
     def __init__(

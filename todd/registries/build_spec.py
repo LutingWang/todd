@@ -11,7 +11,7 @@ from ..patches.py import classproperty
 if TYPE_CHECKING:
     from ..configs import Config
 
-F = Callable[['Config'], Any]
+F = Callable[['Config'], Any]  # TODO: implement as a struct
 
 
 class BuildSpec(UserDict[str, F]):

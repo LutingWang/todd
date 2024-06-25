@@ -13,7 +13,8 @@ import torch
 
 import todd.tasks.knowledge_distillation as kd
 
-KDAdaptRegistry = kd.distillers.KDAdaptRegistry
+from ..registries import ODKDAdaptRegistry
+
 BaseAdapt = kd.distillers.adapts.BaseAdapt
 
 
@@ -93,7 +94,7 @@ class SingleLevelMask(MultiLevelMask, ABC):
         return masks[0]
 
 
-@KDAdaptRegistry.register_()
+@ODKDAdaptRegistry.register_()
 class DeFeatMask(MultiLevelMask, BaseAdapt):
 
     def __init__(
@@ -172,7 +173,7 @@ class DeFeatMask(MultiLevelMask, BaseAdapt):
         return masks + neg_masks
 
 
-@KDAdaptRegistry.register_()
+@ODKDAdaptRegistry.register_()
 class FGDMask(DeFeatMask):
 
     def _normalize_pos(self, masks: torch.Tensor) -> torch.Tensor:
@@ -204,7 +205,7 @@ class FGDMask(DeFeatMask):
         return mask
 
 
-@KDAdaptRegistry.register_()
+@ODKDAdaptRegistry.register_()
 class FGFIMask(BaseAdapt):
 
     def __init__(self, *args, thresh: float = 0.5, **kwargs) -> None:
@@ -274,7 +275,7 @@ class FGFIMask(BaseAdapt):
 #         return masks
 
 
-@KDAdaptRegistry.register_()
+@ODKDAdaptRegistry.register_()
 class FRSMask(BaseAdapt):
 
     def __init__(self, *args, with_logits: bool = True, **kwargs) -> None:

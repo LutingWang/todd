@@ -5,8 +5,8 @@ __all__ = [
 
 from typing import Any, Iterable
 
+from todd import Config
 from todd.colors import RGB, Color
-from todd.configs import Config
 from todd.visuals import BaseVisual
 
 from ..bboxes import BBoxes, BBoxesXYWH

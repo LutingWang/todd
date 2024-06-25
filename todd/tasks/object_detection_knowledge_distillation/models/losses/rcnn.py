@@ -10,11 +10,12 @@ import torch.nn.functional as F
 from mmcv.cnn import ConvModule
 from torch import nn
 
-from todd.models import LossRegistry
 from todd.models.losses import MSELoss
 
+from ..registries import ODKDLossRegistry
 
-@LossRegistry.register_()
+
+@ODKDLossRegistry.register_()
 class SGFILoss(MSELoss):
 
     def __init__(

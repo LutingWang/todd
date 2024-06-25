@@ -6,7 +6,7 @@ from typing import Any
 
 import torch
 
-from todd.configs import Config
+from todd import Config
 
 from ..optical_flow import Flo5OpticalFlow
 from ..registries import OFEDatasetRegistry

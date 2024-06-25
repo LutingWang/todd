@@ -11,12 +11,10 @@ from typing import Generic, Iterable, Mapping, TypeVar
 
 from torch import nn
 
-from todd.configs import Config
+from todd import Config
 
 from ..registries import KDDistillerRegistry
 from .base import BaseDistiller
-
-Pipelines = Iterable[Config] | Mapping[str, Config]
 
 
 class SingleStudentDistiller(BaseDistiller, ABC):
@@ -26,8 +24,8 @@ class SingleStudentDistiller(BaseDistiller, ABC):
         *args,
         student: nn.Module,
         teachers: Iterable[nn.Module],
-        student_hook: Pipelines,
-        teacher_hooks: Iterable[Pipelines],
+        student_hook: Config,
+        teacher_hooks: Iterable[Config],
         **kwargs,
     ) -> None:
         models = (student, ) + tuple(teachers)
@@ -47,8 +45,8 @@ class MultiTeacherDistiller(SingleStudentDistiller, ABC):
         *args,
         online_teachers: Iterable[nn.Module],
         offline_teachers: Iterable[nn.Module],
-        online_teacher_hooks: Iterable[Pipelines],
-        offline_teacher_hooks: Iterable[Pipelines],
+        online_teacher_hooks: Iterable[Config],
+        offline_teacher_hooks: Iterable[Config],
         **kwargs,
     ) -> None:
         online_teachers = tuple(online_teachers)
@@ -90,7 +88,7 @@ class SingleTeacherDistiller(SingleStudentDistiller, ABC):
         self,
         *args,
         teacher: nn.Module,
-        teacher_hook: Pipelines,
+        teacher_hook: Config,
         online: bool = False,
         **kwargs,
     ) -> None:

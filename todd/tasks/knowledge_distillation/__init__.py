@@ -1,2 +1,2 @@
-from . import distillers, losses, utils
+from . import distillers, models, utils
 from .registries import *

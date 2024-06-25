@@ -7,7 +7,7 @@ from typing import TypedDict
 
 import torch
 
-from todd.configs import Config
+from todd import Config
 from todd.datasets import BaseDataset
 from todd.patches.py import classproperty
 from todd.registries import BuildSpec

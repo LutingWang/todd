@@ -10,18 +10,16 @@ from typing_extensions import Self
 
 from torch import nn
 
-from todd.configs import Config
+from todd import Config
 from todd.models.losses import BaseLoss
-from todd.models.registries import LossRegistry
 from todd.utils import StoreMeta, transfer_state_dicts
 
-from ..utils import ComposedPipeline, Spec
+from ..registries import KDProcessorRegistry
+from ..utils import Pipeline, Spec
 from .adapts import BaseAdapt
 from .hooks import BaseHook
-from .registries import KDAdaptRegistry, KDHookRegistry
 
 Message = dict[str, Any]
-Pipelines = Iterable[Config] | Mapping[str, Config]
 
 
 class DistillerStore(metaclass=StoreMeta):
@@ -35,9 +33,9 @@ class BaseDistiller(nn.Module, ABC):
         self,
         *args,
         models: Iterable[nn.Module],
-        hook_pipelines: Iterable[Pipelines],
-        adapt_pipelines: Pipelines,
-        loss_pipelines: Pipelines,
+        hook_pipelines: Iterable[Config],
+        adapt_pipelines: Iterable[Config],
+        loss_pipelines: Iterable[Config],
         weight_transfer: Mapping[str, str] | None = None,
         **kwargs,
     ) -> None:
@@ -46,36 +44,36 @@ class BaseDistiller(nn.Module, ABC):
         models = tuple(models)
         self._models = models
 
-        hook_pipeline: ComposedPipeline[BaseHook] = ComposedPipeline(
-            callable_registry=KDHookRegistry,
-            pipelines=[
-                Config(type=ComposedPipeline.__name__, pipelines=pipelines)
-                for pipelines in hook_pipelines
-            ],
+        hook_pipeline: Pipeline[BaseHook] = KDProcessorRegistry.build(
+            Config(),
+            type=Pipeline.__name__,
+            processors=hook_pipelines,
         )
-        for model, pipeline in zip(models, hook_pipeline.pipelines):
-            for callable_ in pipeline.callables:
-                callable_.bind(model)
+        for model, pipeline in zip(models, hook_pipeline.processors):
+            for atom in pipeline.atoms:
+                atom.bind(model)
         self._hook_pipeline = hook_pipeline
 
-        adapt_pipeline: ComposedPipeline[BaseAdapt] = ComposedPipeline(
-            callable_registry=KDAdaptRegistry,
-            pipelines=adapt_pipelines,
+        adapt_pipeline: Pipeline[BaseAdapt] = KDProcessorRegistry.build(
+            Config(),
+            type=Pipeline.__name__,
+            processors=adapt_pipelines,
         )
         adapts = nn.ModuleList(
-            nn.ModuleList(pipeline.callables)
-            for pipeline in adapt_pipeline.pipelines
+            nn.ModuleList(pipeline.atoms)
+            for pipeline in adapt_pipeline.processors
         )
         self.add_module('_adapts', adapts)
         self._adapt_pipeline = adapt_pipeline
 
-        loss_pipeline: ComposedPipeline[BaseLoss] = ComposedPipeline(
-            callable_registry=LossRegistry,
-            pipelines=loss_pipelines,
+        loss_pipeline: Pipeline[BaseLoss] = KDProcessorRegistry.build(
+            Config(),
+            type=Pipeline.__name__,
+            processors=loss_pipelines,
         )
         losses = nn.ModuleList(
-            nn.ModuleList(pipeline.callables)
-            for pipeline in loss_pipeline.pipelines
+            nn.ModuleList(pipeline.atoms)
+            for pipeline in loss_pipeline.processors
         )
         self.add_module('_losses', losses)
         self._loss_pipeline = loss_pipeline
@@ -84,7 +82,7 @@ class BaseDistiller(nn.Module, ABC):
             transfer_state_dicts(self, weight_transfer)
 
         outputs: set[str] = set()
-        for pipeline in self._hook_pipeline.pipelines:
+        for pipeline in self._hook_pipeline.processors:
             spec = pipeline.spec
             assert len(spec.inputs) == 0
             assert outputs.isdisjoint(spec.outputs)
@@ -138,9 +136,9 @@ class BaseDistiller(nn.Module, ABC):
         return tensors
 
     def reset(self) -> None:
-        for callable_ in self._hook_pipeline.callables:
+        for callable_ in self._hook_pipeline.atoms:
             callable_.reset()
 
     def step(self) -> None:
-        for callable_ in self._loss_pipeline.callables:
+        for callable_ in self._loss_pipeline.atoms:
             callable_.step()

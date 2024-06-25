@@ -11,7 +11,7 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Callable,
-    NoReturn,
+    Never,
     Protocol,
     TypeVar,
     no_type_check,
@@ -156,7 +156,7 @@ class RegistryMeta(  # type: ignore[misc]
 
     # Retrieval
 
-    def __missing__(cls, key: str) -> NoReturn:
+    def __missing__(cls, key: str) -> Never:
         """Missing key.
 
         Args:

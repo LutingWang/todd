@@ -11,7 +11,7 @@ __all__ = [
 ]
 
 import builtins
-from typing import Any, Callable, NoReturn
+from typing import Any, Callable, Never
 
 try:
     import ipdb
@@ -20,7 +20,7 @@ except ImportError:
     pass
 
 
-def get_(obj, attr: str, default=...):
+def get_(obj: Any, attr: str, default: Any = ...) -> Any:
     try:
         return eval('__o' + attr, dict(__o=obj))  # nosec B307
     except Exception:
@@ -29,7 +29,7 @@ def get_(obj, attr: str, default=...):
         raise
 
 
-def has_(obj, name: str) -> bool:
+def has_(obj: Any, name: str) -> bool:
     """Check if an object has an attribute.
 
     Args:
@@ -43,7 +43,7 @@ def has_(obj, name: str) -> bool:
     return get_(obj, name, default) is not default
 
 
-def set_(obj, attr: str, value) -> None:
+def set_(obj: Any, attr: str, value: Any) -> None:
     """Set an attribute of an object.
 
     Args:
@@ -60,7 +60,7 @@ def set_(obj, attr: str, value) -> None:
         raise ValueError(f"{attr} is invalid. Consider prepending a dot.")
 
 
-def del_(obj, attr: str) -> None:
+def del_(obj: Any, attr: str) -> None:
     """Delete an attribute of an object.
 
     Args:
@@ -76,7 +76,7 @@ def exec_(source: str, **kwargs) -> dict[str, Any]:
     return locals_
 
 
-def map_(data, f: Callable[[Any], Any]):
+def map_(data: Any, f: Callable[[Any], Any]) -> Any:
     if isinstance(data, (list, tuple, set)):
         return data.__class__(map_(v, f) for v in data)
     if isinstance(data, dict):
@@ -89,7 +89,7 @@ class classproperty:  # noqa: N801 pylint: disable=invalid-name
     def __init__(self, method: Callable[[Any], Any]) -> None:
         self._method = method
 
-    def __get__(self, instance, cls):
+    def __get__(self, instance: Any, cls: Any) -> Any:
         return self._method(cls)
 
 
@@ -103,5 +103,5 @@ def descendant_classes(cls: type) -> list[type]:
 
 class NonInstantiableMeta(type):
 
-    def __call__(cls, *args, **kwargs) -> NoReturn:
+    def __call__(cls, *args, **kwargs) -> Never:
         raise RuntimeError(f"{cls.__name__} is instantiated")

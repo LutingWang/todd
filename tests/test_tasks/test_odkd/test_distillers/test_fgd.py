@@ -67,7 +67,7 @@ class TestFGD:
         config = PyConfig.load(data_dir / 'fgd.py')
         result = torch.load(data_dir / 'fgd.pth', map_location='cpu')
 
-        distiller = BaseDistiller(**config)
+        distiller = BaseDistiller(**config.distiller)
         distiller.load_state_dict(result['state_dict'])
 
         assert not DistillerStore.INTERMEDIATE_OUTPUTS

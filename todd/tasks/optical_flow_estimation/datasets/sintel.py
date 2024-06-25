@@ -6,7 +6,7 @@ from typing import Any
 
 import torch
 
-from todd.configs import Config
+from todd import Config
 from todd.datasets.access_layers import CV2AccessLayer
 
 from ..optical_flow import FloOpticalFlow

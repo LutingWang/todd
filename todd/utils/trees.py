@@ -15,6 +15,8 @@ import torch
 from ..patches.torch import all_close
 from ..registries import Registry
 
+# TODO: refactor
+
 T = TypeVar('T')
 
 
