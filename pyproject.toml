@@ -64,6 +64,7 @@ lint = [
     'docformatter[tomli]',
     'flake8',
     'flake8-bugbear',
+    'flake8-commas',
     'flake8-docstrings',
     'mccabe',
     'mypy',

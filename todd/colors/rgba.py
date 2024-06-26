@@ -43,7 +43,9 @@ class RGB(Color):
         if isinstance(color, str):
             assert len(color) == 7 and color[0] == '#'
             return cls(
-                int(color[1:3], 16), int(color[3:5], 16), int(color[5:], 16)
+                int(color[1:3], 16),
+                int(color[3:5], 16),
+                int(color[5:], 16),
             )
         return super().from_(color)
 

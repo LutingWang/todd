@@ -29,7 +29,7 @@ class SGFILoss(MSELoss):
         super().__init__(*args, **kwargs)
         self._embed: Callable[..., torch.Tensor] = nn.Sequential(
             ConvModule(in_channels, hidden_channels, 3, stride=2),
-            ConvModule(hidden_channels, out_channels, 3, stride=2)
+            ConvModule(hidden_channels, out_channels, 3, stride=2),
         )
         self._tau = nn.Parameter(torch.tensor([1.0], dtype=torch.float32))
 

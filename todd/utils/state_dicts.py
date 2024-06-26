@@ -39,15 +39,17 @@ class StateDictMixin:
 
 
 def transfer_state_dict(
-    target: nn.Module | StateDictMixin, source: nn.Module | StateDictMixin
+    target: nn.Module | StateDictMixin,
+    source: nn.Module | StateDictMixin,
 ) -> None:
     state_dict = source.state_dict()
     keys = target.load_state_dict(state_dict, strict=False)
     if keys is not None:
         missing, unexpected = keys
         master_logger.info(
-            "\nMissing keys: %s\nUnexpected keys: %s", ', '.join(missing),
-            ', '.join(unexpected)
+            "\nMissing keys: %s\nUnexpected keys: %s",
+            ', '.join(missing),
+            ', '.join(unexpected),
         )
 
 

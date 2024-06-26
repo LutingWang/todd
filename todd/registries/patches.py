@@ -120,7 +120,7 @@ for c in get_classes(dataset, data.Dataset):
 DatasetRegistry.register_(
     force=True,
     build_spec=BuildSpec(
-        datasets=NestedCollectionBuilder(DatasetRegistry.build)
+        datasets=NestedCollectionBuilder(DatasetRegistry.build),
     ),
 )(data.ConcatDataset)
 

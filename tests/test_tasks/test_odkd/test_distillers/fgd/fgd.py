@@ -67,7 +67,7 @@ distiller = dict(
                     type=kd_adapt_scope + 'mmcv_ContextBlock',
                     in_channels=4,
                     ratio=0.5,
-                )
+                ),
             ] * 5,
         ),
         dict(
@@ -79,7 +79,7 @@ distiller = dict(
                     type=kd_adapt_scope + 'mmcv_ContextBlock',
                     in_channels=4,
                     ratio=0.5,
-                )
+                ),
             ] * 5,
         ),
     ],

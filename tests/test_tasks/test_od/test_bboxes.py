@@ -53,17 +53,20 @@ tensor2 = torch.tensor([
     [42., 60., 45., 105.],
     [42., 102., 45., 105.],
 ])
+
+# yapf: disable
 intersections = torch.tensor([
     0., 0., 0., 0., 0., 0., 0., 600., 1200., 300., 600., 0., 0., 1200., 2400.,
     600., 1200., 0., 0., 400., 800., 200., 400., 0., 0., 600., 1200., 300.,
-    600., 0., 0., 0., 0., 0., 0., 0.
+    600., 0., 0., 0., 0., 0., 0., 0.,
 ])
 unions = torch.tensor([
     2409., 2535., 2670., 2460., 2535., 2409., 2460., 2700., 3000., 2500.,
     2700., 2460., 2520., 3000., 3600., 2600., 3000., 2520., 2430., 2450.,
     2500., 2400., 2450., 2430., 2460., 2700., 3000., 2500., 2700., 2460.,
-    2409., 2535., 2670., 2460., 2535., 2409.
+    2409., 2535., 2670., 2460., 2535., 2409.,
 ])
+# yapf: enable
 
 
 class ConcreteBBoxes(BBoxes):
@@ -148,7 +151,7 @@ class TestBBoxes:
     @pytest.fixture(scope='class')
     def bboxes2(self) -> BBoxesXYXY:
         return BBoxesXYXY(
-            torch.tensor([[10., 20., 30., 50.], [100., 200., 300., 500.]])
+            torch.tensor([[10., 20., 30., 50.], [100., 200., 300., 500.]]),
         )
 
     @pytest.fixture(scope='class')
@@ -329,7 +332,8 @@ class TestBBoxes:
         bboxes6: BBoxesXYXY,
     ) -> None:
         assert torch.allclose(
-            bboxes5.pairwise_intersections(bboxes6), intersections
+            bboxes5.pairwise_intersections(bboxes6),
+            intersections,
         )
 
     def test__pairwise_unions(

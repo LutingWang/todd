@@ -122,7 +122,7 @@ class RegistryMeta(  # type: ignore[misc]
                 raise ValueError(f"{child_name} is not a child of {child}")
             if len(subclasses) > 1:
                 raise ValueError(
-                    f"{child_name} matches multiple children of {child}"
+                    f"{child_name} matches multiple children of {child}",
                 )
             child, = subclasses
         return child

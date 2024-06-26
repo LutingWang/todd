@@ -93,7 +93,7 @@ class LRScaleCallback(BaseCallback):
                 param_group['lr'] *= lr_scaler
         if get_rank() == 0:
             runner.logger.info(
-                f"{base_batch_size=} {batch_size=} {lr_scaler=:.3f}"
+                f"{base_batch_size=} {batch_size=} {lr_scaler=:.3f}",
             )
 
     def init(self, *args, **kwargs) -> None:

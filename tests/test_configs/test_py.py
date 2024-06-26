@@ -20,8 +20,8 @@ class TestPyConfig:
         assert PyConfig.load(data_dir / 'config1.py') == PyConfig(a=dict(c=3))
 
     def test_load2(self, data_dir: pathlib.Path) -> None:
-        assert PyConfig.load(data_dir / 'config2.py'
-                             ) == PyConfig(a=[dict(b=3)])
+        assert PyConfig.load(data_dir / 'config2.py') == \
+            PyConfig(a=[dict(b=3)])
 
     def test_load2_1(self, data_dir: pathlib.Path) -> None:
         assert PyConfig.load(data_dir / 'config2_1.py') == \
