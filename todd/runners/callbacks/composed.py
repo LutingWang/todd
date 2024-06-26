@@ -4,7 +4,6 @@ __all__ = [
 
 from typing import Any, Iterable, Iterator, Literal, Mapping
 
-from ...bases.configs import Config
 from ..registries import CallbackRegistry
 from ..utils import PriorityQueue
 from .base import BaseCallback
@@ -18,15 +17,15 @@ KT = Literal['init', 'should_break', 'should_continue', 'before_run_iter',
 @CallbackRegistry.register_()
 class ComposedCallback(BaseCallback):
 
-    # TODO: move this logic to Callback registry
-    def __init__(self, *args, callbacks: Iterable[Config], **kwargs) -> None:
+    def __init__(
+        self,
+        *args,
+        priorities: Iterable[Mapping[KT, int]],
+        callbacks: Iterable[BaseCallback],
+        **kwargs,
+    ) -> None:
         super().__init__(*args, **kwargs)
-        priorities = [c.pop('priority', dict()) for c in callbacks]
-        queue = [
-            CallbackRegistry.build(c, runner=self.runner) for c in callbacks
-        ]
-        self._callbacks: PriorityQueue[KT, BaseCallback] = \
-            PriorityQueue(priorities, queue)
+        self._callbacks = PriorityQueue(priorities, callbacks)
 
     @property
     def callbacks(self) -> PriorityQueue[KT, BaseCallback]:

@@ -28,7 +28,7 @@ from ..registries import (
 )
 from ..utils import StateDictMixin
 from .memo import Memo
-from .registries import StrategyRegistry
+from .registries import CallbackRegistry, StrategyRegistry
 
 if TYPE_CHECKING:
     from .callbacks import ComposedCallback
@@ -152,13 +152,16 @@ class BaseRunner(BuildSpecMixin, StateDictMixin, Generic[T]):
     def _build_callbacks(
         self,
         *args,
-        callbacks: Iterable[Config] | None = None,
+        callbacks: Iterable[Config],
         **kwargs,
     ) -> None:
         from .callbacks import ComposedCallback
-        if callbacks is None:
-            callbacks = []
-        self._callbacks = ComposedCallback(runner=self, callbacks=callbacks)
+        self._callbacks = CallbackRegistry.build(
+            Config(),
+            type=ComposedCallback.__name__,
+            runner=self,
+            callbacks=callbacks,
+        )
 
     @classproperty
     def build_spec(self) -> BuildSpec:

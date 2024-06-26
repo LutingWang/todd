@@ -21,6 +21,7 @@ from torch.optim import lr_scheduler
 from torch.utils import data
 from torch.utils.data import dataset
 
+from ..bases.configs import Config
 from ..bases.registries import (
     BuildSpec,
     Item,
@@ -33,7 +34,6 @@ from ..patches.py import descendant_classes, get_classes
 from .partial import PartialRegistry
 
 if TYPE_CHECKING:
-    from ..bases.configs import Config
     from ..models.filters import NamedParametersFilter
 
 
@@ -68,7 +68,7 @@ ClipGradRegistry.register_()(utils.clip_grad_value_)
 class LRSchedulerRegistry(Registry):
 
     @classmethod
-    def _build(cls, item: Item, config: 'Config') -> Any:
+    def _build(cls, item: Item, config: Config) -> Any:
         if item is lr_scheduler.SequentialLR:
             config.schedulers = [
                 cls.build(scheduler, optimizer=config.optimizer)
@@ -84,7 +84,7 @@ for c in descendant_classes(lr_scheduler.LRScheduler):
 class OptimizerRegistry(Registry):
 
     @staticmethod
-    def params(model: nn.Module, config: 'Config') -> 'Config':
+    def params(model: nn.Module, config: Config) -> Config:
         from ..models import FilterRegistry
         config = config.copy()
         params = config.pop('params')
@@ -95,7 +95,7 @@ class OptimizerRegistry(Registry):
         return config
 
     @classmethod
-    def _build(cls, item: Item, config: 'Config') -> Any:
+    def _build(cls, item: Item, config: Config) -> Any:
         model: nn.Module = config.pop('model')
         params = config.pop('params', None)
         if params is None:
@@ -166,7 +166,7 @@ TransformRegistry.register_(
 class DataLoaderRegistry(Registry):
 
     @classmethod
-    def _build(cls, item: Item, config: 'Config') -> Any:
+    def _build(cls, item: Item, config: Config) -> Any:
         sampler = config.pop('sampler', None)
         if sampler is not None:
             config.sampler = SamplerRegistry.build(
