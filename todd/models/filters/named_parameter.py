@@ -6,8 +6,8 @@ from typing import Generator, Iterable
 
 from torch import nn
 
+from ...bases.registries import BuildSpec, BuildSpecMixin
 from ...patches.py import classproperty
-from ...registries import BuildSpec, BuildSpecMixin
 from ..registries import FilterRegistry
 from .named_member import NamedMembersFilter
 from .named_module import NamedModulesFilter

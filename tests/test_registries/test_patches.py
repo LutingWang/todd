@@ -5,7 +5,7 @@ from custom_types import CustomModule
 from torch import nn
 
 from todd import Config
-from todd.registries.patches import OptimizerRegistry
+from todd.registries import OptimizerRegistry
 
 
 class TestOptimizerRegistry:

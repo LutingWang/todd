@@ -8,8 +8,8 @@ from typing import cast
 import einops.layers.torch
 from torch import nn
 
+from todd.bases.registries import Item
 from todd.patches.py import get_classes, get_named_classes, import_module
-from todd.registries import Item
 
 from ..registries import KDDistillerRegistry
 

@@ -4,13 +4,13 @@ __all__ = [
 ]
 
 from abc import ABC
-from typing import TYPE_CHECKING, Any, Callable, Optional, cast
+from typing import TYPE_CHECKING, Any, Callable, cast
 
 from torch import nn
 
+from ..bases.registries import Item, Registry, RegistryMeta
 from ..loggers import master_logger
 from ..patches.py import descendant_classes
-from .registry import Item, Registry, RegistryMeta
 
 if TYPE_CHECKING:
     from ..configs import Config
@@ -30,7 +30,7 @@ class ModelRegistry(Registry):
     def init_weights(
         cls,
         model: nn.Module,
-        config: Optional['Config'],
+        config: 'Config | None',
         prefix: str = '',
     ) -> None:
         weights = f"{model.__class__.__name__} ({prefix}) weights"

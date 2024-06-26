@@ -9,8 +9,8 @@ from typing import TYPE_CHECKING
 import torch
 from torch import nn
 
+from ...bases.registries import BuildSpec, BuildSpecMixin
 from ...patches.py import classproperty
-from ...registries import BuildSpec, BuildSpecMixin
 from .schedulers import BaseScheduler, SchedulerRegistry
 
 

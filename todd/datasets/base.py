@@ -8,9 +8,9 @@ from typing import Generator, Generic, TypeVar
 
 from torch.utils.data import Dataset
 
+from ..bases.registries import BuildSpec, BuildSpecMixin
 from ..loggers import logger
 from ..patches.py import classproperty
-from ..registries import BuildSpec, BuildSpecMixin
 from .access_layers import BaseAccessLayer
 from .registries import AccessLayerRegistry
 

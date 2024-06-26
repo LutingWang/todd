@@ -5,8 +5,12 @@ __all__ = [
 from abc import ABC
 from typing import Generator, Mapping, TypeVar
 
+from ...bases.registries import (
+    BuildSpec,
+    BuildSpecMixin,
+    NestedCollectionBuilder,
+)
 from ...patches.py import classproperty
-from ...registries import BuildSpec, BuildSpecMixin
 from ..registries import AccessLayerRegistry
 from .base import BaseAccessLayer
 
@@ -35,7 +39,9 @@ class ConcatAccessLayer(BuildSpecMixin, BaseAccessLayer[str, VT], ABC):
 
     @classproperty
     def build_spec(self) -> BuildSpec:
-        build_spec = BuildSpec({'*access_layers': AccessLayerRegistry.build})
+        build_spec = BuildSpec(
+            access_layers=NestedCollectionBuilder(AccessLayerRegistry.build),
+        )
         return super().build_spec | build_spec
 
     def _parse(self, key: str) -> tuple[BaseAccessLayer[str, VT], str]:

@@ -3,6 +3,7 @@
 __version__ = '0.5.1'
 
 from . import (
+    bases,
     colors,
     configs,
     datasets,
@@ -14,8 +15,8 @@ from . import (
     utils,
     visuals,
 )
+from .bases.registries import Registry
 from .configs import Config
 from .loggers import logger
 from .patches import *
-from .registries import Registry
 from .utils import Store

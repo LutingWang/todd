@@ -27,8 +27,8 @@ from typing import (
 import einops
 import torch
 
+from ..bases.registries import Registry
 from ..patches.torch import all_close
-from ..registries import Registry
 
 T = TypeVar('T')
 T_contra = TypeVar('T_contra', contravariant=True)
@@ -130,22 +130,16 @@ class NestedCollectionUtils:
     def __init__(
         self,
         *args,
-        handlers: Iterable[type[BaseHandler[Any]]] | None = None,
         atomic_types: Iterable[type[Any]] | None = None,
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
-
-        if handlers is None:
-            handlers = cast(
-                Iterable[type[BaseHandler[Any]]],
-                HandlerRegistry.values(),
-            )
-        self._handlers = tuple(handlers)
-
         if atomic_types is None:
             atomic_types = [str]
         self._atomic_types = tuple(atomic_types)
+
+    def add_atomic_type(self, *types: type[Any]) -> None:
+        self._atomic_types = tuple(set(self._atomic_types) | set(types))
 
     def get_handler(self, *objs: Any) -> type[BaseHandler[Any]] | None:
         """Find a utility class for all the given object.
@@ -174,7 +168,13 @@ class NestedCollectionUtils:
         if any(isinstance(obj, self._atomic_types) for obj in objs):
             return None
         handlers = set(
-            handler for handler in self._handlers
+            cast(
+                Iterable[type[BaseHandler[Any]]],
+                HandlerRegistry.values(),
+            ),
+        )
+        handlers = set(
+            handler for handler in handlers
             if all(map(handler.can_handle, objs))
         )
         if len(handlers) == 0:
@@ -354,7 +354,7 @@ class NestedTensorCollectionUtils(NestedCollectionUtils):
         elements = handler.elements(obj)
         return self.new_empty(elements[0], *args, **kwargs)
 
-    # TODO: support negative depth
+    # TODO: support range depth
     def shape(self, obj: Any, depth: int = 0) -> tuple[int, ...]:
         handler = self.get_handler(obj)
         if handler is None:

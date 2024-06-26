@@ -19,9 +19,14 @@ from typing import Any, Callable, Generic, Iterable, NamedTuple, TypeVar, cast
 import pandas as pd
 
 from todd import Config
+from todd.bases.registries import (
+    BuildSpec,
+    BuildSpecMixin,
+    NestedCollectionBuilder,
+    Registry,
+)
 from todd.loggers import logger
 from todd.patches.py import classproperty, exec_
-from todd.registries import BuildSpec, BuildSpecMixin, Registry
 from todd.utils import Args, ArgsKwargs, Kwargs, SerializeMixin
 
 from ..registries import KDProcessorRegistry
@@ -166,7 +171,7 @@ class MultipleMixin(Operator[T_co], ABC):
 
     @classproperty
     def build_spec(self) -> BuildSpec:
-        build_spec = BuildSpec({'*atoms': Registry.build})
+        build_spec = BuildSpec(atoms=NestedCollectionBuilder(Registry.build))
         return super().build_spec | build_spec
 
     @property
@@ -241,7 +246,9 @@ class Pipeline(Processor[T_co]):
 
     @classproperty
     def build_spec(self) -> BuildSpec:
-        build_spec = BuildSpec({'*processors': KDProcessorRegistry.build})
+        build_spec = BuildSpec(
+            processors=NestedCollectionBuilder(KDProcessorRegistry.build),
+        )
         return super().build_spec | build_spec
 
     def __getstate__(self) -> ArgsKwargs:

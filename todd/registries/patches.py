@@ -21,10 +21,16 @@ from torch.optim import lr_scheduler
 from torch.utils import data
 from torch.utils.data import dataset
 
+from ..bases.registries import (
+    BuildSpec,
+    Item,
+    NestedCollectionBuilder,
+    Registry,
+    RegistryMeta,
+)
 from ..loggers import logger
 from ..patches.py import descendant_classes, get_classes
 from .partial import PartialRegistry
-from .registry import BuildSpec, Item, Registry, RegistryMeta
 
 if TYPE_CHECKING:
     from ..configs import Config
@@ -113,7 +119,9 @@ for c in get_classes(dataset, data.Dataset):
 
 DatasetRegistry.register_(
     force=True,
-    build_spec=BuildSpec({'*datasets': DatasetRegistry.build}),
+    build_spec=BuildSpec(
+        datasets=NestedCollectionBuilder(DatasetRegistry.build)
+    ),
 )(data.ConcatDataset)
 
 
@@ -149,7 +157,9 @@ for c in get_classes(tf):
 
 TransformRegistry.register_(
     force=True,
-    build_spec=BuildSpec({'*transforms': TransformRegistry.build}),
+    build_spec=BuildSpec(
+        transforms=NestedCollectionBuilder(TransformRegistry.build),
+    ),
 )(tf.Compose)
 
 

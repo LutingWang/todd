@@ -4,9 +4,10 @@ __all__ = [
 ]
 
 from functools import partial
-from typing import TYPE_CHECKING, no_type_check
+from typing import TYPE_CHECKING, Any, no_type_check
 
-from .registry import Any, Item, NonInstantiableMeta, RegistryMeta
+from ..bases.registries import Item, RegistryMeta
+from ..patches.py import NonInstantiableMeta
 
 if TYPE_CHECKING:
     from ..configs import Config

@@ -4,9 +4,9 @@ __all__ = [
 
 from typing import TypeVar
 
+from todd.bases.registries import BuildSpec, BuildSpecMixin
 from todd.datasets.access_layers import FolderAccessLayer, SuffixMixin
 from todd.patches.py import classproperty
-from todd.registries import BuildSpec, BuildSpecMixin
 
 from ...optical_flow import SerializeMixin
 from ...registries import OFEOpticalFlowRegistry

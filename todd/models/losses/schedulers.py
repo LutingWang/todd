@@ -18,8 +18,12 @@ from typing import Iterable, cast
 import torch
 from torch import nn
 
+from ...bases.registries import (
+    BuildSpec,
+    BuildSpecMixin,
+    NestedCollectionBuilder,
+)
 from ...patches.py import classproperty
-from ...registries import BuildSpec, BuildSpecMixin
 from .registries import SchedulerRegistry
 
 
@@ -275,7 +279,9 @@ class ComposedScheduler(BuildSpecMixin, BaseScheduler):
 
     @classproperty
     def build_spec(self) -> BuildSpec:
-        build_spec = BuildSpec({'*schedulers': SchedulerRegistry.build})
+        build_spec = BuildSpec(
+            schedulers=NestedCollectionBuilder(SchedulerRegistry),
+        )
         return super().build_spec | build_spec
 
 

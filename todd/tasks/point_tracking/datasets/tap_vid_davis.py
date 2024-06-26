@@ -8,9 +8,9 @@ from typing import TypedDict
 import torch
 
 from todd import Config
+from todd.bases.registries import BuildSpec
 from todd.datasets import BaseDataset
 from todd.patches.py import classproperty
-from todd.registries import BuildSpec
 
 from .access_layers import VT, TAPVidDAVISAccessLayer
 

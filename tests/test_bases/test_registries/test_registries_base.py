@@ -1,7 +1,7 @@
 import pytest
 
 from todd import Config
-from todd.registries.registry import Registry, RegistryMeta
+from todd.bases.registries import Registry, RegistryMeta
 
 
 class Registry1(metaclass=RegistryMeta):

@@ -5,9 +5,9 @@ __all__ = [
 from abc import abstractmethod
 from typing import Any, TypeVar
 
+from todd.bases.registries import BuildSpec
 from todd.datasets import BaseDataset as BaseDataset_
 from todd.patches.py import classproperty
-from todd.registries import BuildSpec
 
 from ..optical_flow import OpticalFlow
 from ..registries import OFEDatasetRegistry

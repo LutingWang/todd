@@ -17,12 +17,12 @@ from typing import (
     no_type_check,
 )
 
-from ..loggers import logger
-from ..patches.py import NonInstantiableMeta
-from .build_spec import BuildSpec
+from ...loggers import logger
+from ...patches.py import NonInstantiableMeta
+from .build_specs import BuildSpec
 
 if TYPE_CHECKING:
-    from ..configs import Config
+    from ...configs import Config
 
 F = Callable[['Config'], Any]
 
@@ -93,7 +93,7 @@ class RegistryMeta(  # type: ignore[misc]
     # Inheritance
 
     @no_type_check
-    def __subclasses__(cls=...) -> Any:
+    def __subclasses__(cls: Any = ...) -> Any:
         """Fetch subclasses of the current class.
 
         For more details, refer to `ABC subclassed by meta classes`_.
@@ -385,7 +385,7 @@ class RegistryMeta(  # type: ignore[misc]
         If the object has a property named ``build_spec``, the config is
         converted before construction:
 
-            >>> from ..patches.py import classproperty
+            >>> from ...patches.py import classproperty
             >>> @Cat.register_()
             ... class Persian:
             ...     def __init__(self, friend: str) -> None:
@@ -400,7 +400,7 @@ class RegistryMeta(  # type: ignore[misc]
             >>> persian.friend
             'Siamese'
         """
-        from ..configs import Config, PyConfig
+        from ...configs import Config, PyConfig
         config = Config(kwargs) | config
         py_config = PyConfig(config)
 
