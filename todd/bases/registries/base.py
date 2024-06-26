@@ -395,7 +395,7 @@ class RegistryMeta(  # type: ignore[misc]
         registry, item = cls.parse(config_type)
 
         if (build_spec := getattr(item, 'build_spec', None)) is not None:
-            config = build_spec(config)
+            config = build_spec(config, _registry_=registry, _item_=item)
 
         try:
             return registry._build(item, config)

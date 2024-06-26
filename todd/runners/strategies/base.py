@@ -9,7 +9,7 @@ from torch import nn
 
 from ...bases.configs import Config
 from ...patches.torch import get_rank
-from ...registries import ModelRegistry, OptimizerRegistry
+from ...registries import OptimizerRegistry
 from ...utils import StateDictMixin
 from ..registries import StrategyRegistry
 from ..utils import RunnerHolderMixin
@@ -33,9 +33,6 @@ class BaseStrategy(RunnerHolderMixin[T], StateDictMixin):
 
     def setup(self, config: Config) -> None:
         pass
-
-    def build_model(self, config: Config) -> nn.Module:
-        return ModelRegistry.build(config)
 
     def map_model(self, model: nn.Module, config: Config) -> nn.Module:
         return model

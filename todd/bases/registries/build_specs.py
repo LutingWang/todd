@@ -6,6 +6,7 @@ __all__ = [
 from collections import Counter, UserDict
 from typing import Any, Callable, Generator, Mapping
 
+from ...loggers import logger
 from ...patches.py import classproperty
 from ..configs import Config
 from .builders import BaseBuilder, Builder
@@ -91,7 +92,9 @@ class BuildSpec(UserDict[str, BaseBuilder | F]):
             in_degrees.subtract(out_nodes)
             queue = queue.union(k for k in out_nodes if in_degrees[k] == 0)
 
-    def __call__(self, config: 'Config') -> 'Config':
+    def __call__(self, config: Config, **meta) -> Config:
+        config = config.copy()
+
         builders: dict[str, BaseBuilder] = dict()
         for k, builder in self.items():
             if k not in config:
@@ -109,15 +112,20 @@ class BuildSpec(UserDict[str, BaseBuilder | F]):
         }
         for k in self.sort(graph):
             builder = builders.pop(k)
-            v = config[k]
-            requires = {
-                require: config[require]
-                for require in builder.requires
-            }
-            config[k] = builder(v, **requires)
+            requires: dict[str, Any] = dict()
+            for require in builder.requires:
+                if require in config:
+                    requires[require] = config[require]
+                    continue
+                if require in meta:
+                    requires[require] = meta[require]
+                    continue
+                logger.debug("Missing required key: %s", require)
+            config[k] = builder(config[k], **requires)
 
         if builders:
             raise ValueError(f"Unresolved dependencies: {builders.keys()}")
+
         return config
 
 

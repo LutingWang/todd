@@ -5,19 +5,27 @@ __all__ = [
 import contextlib
 import getpass
 import logging
-import os
 import pathlib
 import socket
 from abc import abstractmethod
+from functools import partial
 from typing import TYPE_CHECKING, Any, Generic, Iterable, Mapping, TypeVar
+from typing_extensions import Self
 
 from torch import nn
 from torch.utils.data import DataLoader, Dataset
 
 from ..bases.configs import Config
+from ..bases.registries import Builder, BuildSpec, BuildSpecMixin
 from ..loggers import logger as base_logger
+from ..patches.py import classproperty
 from ..patches.torch import get_rank
-from ..registries import DataLoaderRegistry, DatasetRegistry, RunnerRegistry
+from ..registries import (
+    DataLoaderRegistry,
+    DatasetRegistry,
+    ModelRegistry,
+    RunnerRegistry,
+)
 from ..utils import StateDictMixin
 from .memo import Memo
 from .registries import StrategyRegistry
@@ -30,17 +38,25 @@ T = TypeVar('T', bound=nn.Module)
 
 
 @RunnerRegistry.register_()
-class BaseRunner(StateDictMixin, Generic[T]):
+class BaseRunner(BuildSpecMixin, StateDictMixin, Generic[T]):
 
     def __init__(
         self,
         name: str,
         *args,
+        dataset: Dataset,
+        dataloader: DataLoader,
+        work_dir: pathlib.Path,
+        logger: logging.Logger,
         load_from: str | None = None,
         auto_resume: bool = False,
         **kwargs,
     ) -> None:
         self._name = name
+        self._dataset = dataset
+        self._dataloader = dataloader
+        self._work_dir = work_dir
+        self._logger = logger
         self._load_from = load_from
         self._auto_resume = auto_resume
 
@@ -117,13 +133,10 @@ class BaseRunner(StateDictMixin, Generic[T]):
             runner=self,
         )
 
-    def _build_dataset(self, *args, dataset: Config, **kwargs) -> None:
-        self._dataset: Dataset = DatasetRegistry.build(dataset)
-
     def _build_model(
         self,
         *args,
-        model: Config,
+        model: nn.Module,
         map_model: Config | None = None,
         wrap_model: Config | None = None,
         **kwargs,
@@ -132,22 +145,9 @@ class BaseRunner(StateDictMixin, Generic[T]):
             map_model = Config()
         if wrap_model is None:
             wrap_model = Config()
-        model_ = self._strategy.build_model(model)
-        model_ = self._strategy.map_model(model_, map_model)
-        model_ = self._strategy.wrap_model(model_, wrap_model)
-        self._model = model_
-
-    def _build_dataloader(self, *args, dataloader: Config, **kwargs) -> None:
-        """Build the dataloader.
-
-        Args:
-            dataloader: dataloader config.
-        """
-        dataloader.setdefault('type', 'DataLoader')
-        self._dataloader = DataLoaderRegistry.build(
-            dataloader,
-            dataset=self._dataset,
-        )
+        model = self._strategy.map_model(model, map_model)
+        model = self._strategy.wrap_model(model, wrap_model)
+        self._model = model
 
     def _build_callbacks(
         self,
@@ -160,42 +160,43 @@ class BaseRunner(StateDictMixin, Generic[T]):
             callbacks = []
         self._callbacks = ComposedCallback(runner=self, callbacks=callbacks)
 
-    def _build_work_dir(
-        self,
-        *args,
-        work_dir: Config | None = None,
-        **kwargs,
-    ) -> None:
-        if work_dir is None:
-            work_dir = Config()
-        root = work_dir.get('root', 'work_dirs')
-        name = work_dir.get('name', self._name)
-        path = os.path.join(root, name)
-        self._work_dir = pathlib.Path(path)
-        self._work_dir.mkdir(parents=True, exist_ok=True)
+    @classproperty
+    def build_spec(self) -> BuildSpec:
 
-    def _build_logger(
-        self,
-        *args,
-        logger: Config | None = None,
-        **kwargs,
-    ) -> None:
-        if logger is None:
-            logger = Config()
-        name = logger.get(
-            'name',
-            f'{self.__class__.__name__}.{self._name}',
+        def build_work_dir(work_dir: Config, name: str) -> pathlib.Path:
+            root = work_dir.get('root', 'work_dirs')
+            name = work_dir.get('name', name)
+            path = pathlib.Path(root) / name
+            path.mkdir(parents=True, exist_ok=True)
+            return path
+
+        def build_logger(
+            logger: Config,
+            _item_: type[Self],
+            name: str,
+        ) -> logging.Logger:
+            name = logger.get('name', f'{_item_.__name__}.{name}')
+            return logging.getLogger(f'{base_logger.name}.{name}')
+
+        build_spec = BuildSpec(
+            model=ModelRegistry.build,
+            dataset=DatasetRegistry.build,
+            dataloader=Builder(
+                partial(DataLoaderRegistry.build, type='DataLoader'),
+                requires=dict(dataset='dataset'),
+            ),
+            work_dir=Builder(build_work_dir, requires=dict(name='name')),
+            logger=Builder(
+                build_logger,
+                requires=dict(_item_='_item_', name='name'),
+            ),
         )
-        self._logger = logging.getLogger(f'{base_logger.name}.{name}')
+        return super().build_spec | build_spec
 
     def _build(self, *args, **kwargs) -> None:
         self._build_strategy(*args, **kwargs)
-        self._build_dataset(*args, **kwargs)
         self._build_model(*args, **kwargs)
-        self._build_dataloader(*args, **kwargs)
         self._build_callbacks(*args, **kwargs)
-        self._build_work_dir(*args, **kwargs)
-        self._build_logger(*args, **kwargs)
 
     def _init_callbacks(self) -> None:
         self._callbacks.init()

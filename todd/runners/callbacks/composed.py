@@ -18,6 +18,7 @@ KT = Literal['init', 'should_break', 'should_continue', 'before_run_iter',
 @CallbackRegistry.register_()
 class ComposedCallback(BaseCallback):
 
+    # TODO: move this logic to Callback registry
     def __init__(self, *args, callbacks: Iterable[Config], **kwargs) -> None:
         super().__init__(*args, **kwargs)
         priorities = [c.pop('priority', dict()) for c in callbacks]
