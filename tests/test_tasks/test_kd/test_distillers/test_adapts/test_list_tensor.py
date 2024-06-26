@@ -1,7 +1,7 @@
 import pytest
 import torch
 
-from todd.utils import TensorTreeUtil, TreeUtil
+from todd.utils import NestedTensorCollectionUtils
 
 
 @pytest.fixture(scope='module')
@@ -67,8 +67,9 @@ class TestStack:
         ['tensor_feat', 'list_feat', 'hybrid_feat'],
     )
     def test_normal(self, feat: str, request: pytest.FixtureRequest) -> None:
+        utils = NestedTensorCollectionUtils()
         feat_ = request.getfixturevalue(feat)
-        stacked_feat: torch.Tensor = TreeUtil.reduce(torch.stack, feat_)
+        stacked_feat: torch.Tensor = utils.stack(feat_)
         stacked_feat = stacked_feat.reshape(-1)
         # stacked_feat = ListTensor.stack(feat_).reshape(-1)
         assert torch.arange(720).eq(stacked_feat).all()
@@ -81,20 +82,23 @@ class TestIndex:
         ['tensor_feat', 'list_feat', 'hybrid_feat'],
     )
     def test_empty_pos(
-        self, feat: str, request: pytest.FixtureRequest
+        self,
+        feat: str,
+        request: pytest.FixtureRequest,
     ) -> None:
+        utils = NestedTensorCollectionUtils()
         feat_ = request.getfixturevalue(feat)
-        indexed_feat = TensorTreeUtil.index(feat_, torch.zeros([0, 0]))
+        indexed_feat = utils.index(feat_, torch.zeros([0, 0]))
         assert indexed_feat.shape == (0, 6, 5, 4, 3, 2)
-        indexed_feat = TensorTreeUtil.index(feat_, torch.zeros([0, 1]))
+        indexed_feat = utils.index(feat_, torch.zeros([0, 1]))
         assert indexed_feat.shape == (0, 5, 4, 3, 2)
-        indexed_feat = TensorTreeUtil.index(feat_, torch.zeros([0, 2]))
+        indexed_feat = utils.index(feat_, torch.zeros([0, 2]))
         assert indexed_feat.shape == (0, 4, 3, 2)
-        indexed_feat = TensorTreeUtil.index(feat_, torch.zeros([0, 3]))
+        indexed_feat = utils.index(feat_, torch.zeros([0, 3]))
         assert indexed_feat.shape == (0, 3, 2)
-        indexed_feat = TensorTreeUtil.index(feat_, torch.zeros([0, 4]))
+        indexed_feat = utils.index(feat_, torch.zeros([0, 4]))
         assert indexed_feat.shape == (0, 2)
-        indexed_feat = TensorTreeUtil.index(feat_, torch.zeros([100, 0]))
+        indexed_feat = utils.index(feat_, torch.zeros([100, 0]))
         assert indexed_feat.shape == (100, 6, 5, 4, 3, 2)
 
     @pytest.mark.parametrize(
@@ -103,8 +107,9 @@ class TestIndex:
     )
     def test_normal(self, feat: str, request: pytest.FixtureRequest) -> None:
         feat_ = request.getfixturevalue(feat)
+        utils = NestedTensorCollectionUtils()
         pos = torch.Tensor([[0, 1], [1, 0], [1, 2]])
-        indexed_feat = TensorTreeUtil.index(feat_, pos)
+        indexed_feat = utils.index(feat_, pos)
         assert torch.stack([
             torch.arange(24, 48).reshape(4, 3, 2),
             torch.arange(120, 144).reshape(4, 3, 2),

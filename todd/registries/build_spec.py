@@ -64,14 +64,15 @@ class BuildSpec(UserDict[str, F]):
 
     def build(self, f: F, v: Any, star: bool) -> Any:
         from ..configs import Config
-        from ..utils import TreeUtil
+        from ..utils import NestedCollectionUtils
         if not star:
             return f(v) if isinstance(v, Config) else v
-        util = TreeUtil.get_util(v)
-        assert util is not None  # user makes sure v is a collection
-        if not all(isinstance(e, Config) for e in util.elements(v)):
+        utils = NestedCollectionUtils()
+        handler = utils.get_handler(v)
+        assert handler is not None  # user makes sure v is a collection
+        if not all(isinstance(e, Config) for e in handler.elements(v)):
             return v
-        return util.map(f, v)
+        return handler.map(f, v)  # type: ignore[arg-type]
 
     def _items(self) -> Generator[tuple[str, F, bool], None, None]:
         for k, v in self.items():

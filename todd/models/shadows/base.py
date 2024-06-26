@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Any
 import torch
 from torch import nn
 
-from ...utils import StateDict, TensorTreeUtil
+from ...utils import NestedTensorCollectionUtils, StateDict
 from ..norms import BATCHNORMS
 
 
@@ -40,10 +40,9 @@ class BaseShadow(nn.Module, ABC):
     def _to_device(self, state_dict: StateDict) -> StateDict:
         if self._device is None:
             return state_dict
-        return TensorTreeUtil.map(
-            partial(torch.Tensor.to, device=self._device),
-            state_dict,
-        )
+        utils = NestedTensorCollectionUtils()
+        f = partial(torch.Tensor.to, device=self._device)
+        return utils.map(f, state_dict)
 
     def _state_dict_to_device(self, module: nn.Module) -> StateDict:
         return self._to_device(module.state_dict())
@@ -53,8 +52,9 @@ class BaseShadow(nn.Module, ABC):
         pass
 
     def forward(self, module: nn.Module) -> None:
-        self._shadow = TensorTreeUtil.map(
-            self._forward,
+        utils = NestedTensorCollectionUtils()
+        self._shadow = utils.map(
+            self._forward,  # type: ignore[arg-type]
             self._shadow,
             self._state_dict_to_device(module),
         )

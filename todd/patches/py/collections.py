@@ -3,9 +3,10 @@ __all__ = [
 ]
 
 from collections import UserDict
+from typing import Any
 
 
-class AttrDict(UserDict):
+class AttrDict(UserDict[Any, Any]):
 
     @classmethod
     def _map(cls, item):

@@ -1,4 +1,4 @@
-# pylint: disable=invalid-name
+# pylint: disable=invalid-name,duplicate-code
 
 loss_scope = 'ModelRegistry.LossRegistry.'
 kd_scope = 'TaskRegistry.KDRegistry.'

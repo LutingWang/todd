@@ -5,10 +5,12 @@ __all__ = [
 
 import torch
 
-from todd.utils import TensorTreeUtil
+from todd.utils import NestedTensorCollectionUtils
 
 from ..registries import KDAdaptRegistry
 from .base import BaseAdapt
+
+utils = NestedTensorCollectionUtils()
 
 
 class ListTensorAdapt(BaseAdapt):
@@ -20,9 +22,9 @@ class ListTensorAdapt(BaseAdapt):
 
 @KDAdaptRegistry.register_()
 class Stack(ListTensorAdapt):
-    func = staticmethod(TensorTreeUtil.stack)
+    func = staticmethod(utils.stack)
 
 
 @KDAdaptRegistry.register_()
 class Index(ListTensorAdapt):
-    func = staticmethod(TensorTreeUtil.index)
+    func = staticmethod(utils.index)

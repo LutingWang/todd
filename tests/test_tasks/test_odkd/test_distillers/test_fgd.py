@@ -8,7 +8,7 @@ from todd.tasks.knowledge_distillation.distillers import (
     BaseDistiller,
     DistillerStore,
 )
-from todd.utils import TensorTreeUtil
+from todd.utils import NestedTensorCollectionUtils
 
 
 class TestFGD:
@@ -76,8 +76,9 @@ class TestFGD:
         DistillerStore.INTERMEDIATE_OUTPUTS = ''
         tensors = losses.pop('_debug_')
 
-        assert TensorTreeUtil.all_close(result['tensors'], tensors)
-        assert TensorTreeUtil.all_close(result['losses'], losses)
+        utils = NestedTensorCollectionUtils()
+        assert utils.all_close(result['tensors'], tensors)
+        assert utils.all_close(result['losses'], losses)
 
 
 if __name__ == '__main__':

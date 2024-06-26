@@ -4,7 +4,7 @@ import torch
 
 import todd.tasks.knowledge_distillation as kd
 from todd.configs import PyConfig
-from todd.utils import TensorTreeUtil
+from todd.utils import NestedTensorCollectionUtils
 
 BaseDistiller = kd.distillers.BaseDistiller
 DistillerStore = kd.distillers.DistillerStore
@@ -133,8 +133,9 @@ class TestCKD:
             tensors = losses.pop('_debug_')
             tensors.pop('bbox_ids')
 
-            assert TensorTreeUtil.all_close(rank_result['tensors'], tensors)
-            assert TensorTreeUtil.all_close(rank_result['losses'], losses)
+            utils = NestedTensorCollectionUtils()
+            assert utils.all_close(rank_result['tensors'], tensors)
+            assert utils.all_close(rank_result['losses'], losses)
 
 
 # if __name__ == '__main__':
