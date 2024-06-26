@@ -9,24 +9,24 @@ from typing import Any
 class AttrDict(UserDict[Any, Any]):
 
     @classmethod
-    def _map(cls, item):
+    def __map(cls, item: Any) -> Any:
         if isinstance(item, (list, tuple, set)):
-            return item.__class__(map(cls._map, item))
+            return item.__class__(map(cls.__map, item))
         if isinstance(item, dict):
             return cls(item)
         return item
 
-    def __setitem__(self, name: str, value) -> None:
-        value = self._map(value)
+    def __setitem__(self, name: str, value: Any) -> None:
+        value = self.__map(value)
         super().__setitem__(name, value)
 
-    def __setattr__(self, name: str, value) -> None:
+    def __setattr__(self, name: str, value: Any) -> None:
         if name == 'data' or hasattr(self.__class__, name):
             super().__setattr__(name, value)
             return
         self[name] = value
 
-    def __getattr__(self, name: str):
+    def __getattr__(self, name: str) -> Any:
         if name == 'data':  # triggered in `copy.deepcopy`
             raise AttributeError(name)
         try:
