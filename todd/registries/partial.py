@@ -10,7 +10,7 @@ from ..bases.registries import Item, RegistryMeta
 from ..patches.py import NonInstantiableMeta
 
 if TYPE_CHECKING:
-    from ..configs import Config
+    from ..bases.configs import Config
 
 
 class PartialRegistryMeta(RegistryMeta):

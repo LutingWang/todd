@@ -4,13 +4,11 @@ __all__ = [
 ]
 
 from collections import Counter, UserDict
-from typing import TYPE_CHECKING, Any, Callable, Generator, Mapping
+from typing import Any, Callable, Generator, Mapping
 
 from ...patches.py import classproperty
+from ..configs import Config
 from .builders import BaseBuilder, Builder
-
-if TYPE_CHECKING:
-    from ...configs import Config
 
 F = Callable[..., Any]
 
@@ -28,7 +26,6 @@ class BuildSpec(UserDict[str, BaseBuilder | F]):
     the corresponding value is a `Config` object, the function will be applied
     to the value:
 
-        >>> from todd import Config
         >>> config = Config(age=Config(value=3))
         >>> build_spec(config)
         {'age': 3}

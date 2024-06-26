@@ -7,7 +7,7 @@ from typing import Any, Mapping, TypeVar, cast
 import torch
 from torch import nn
 
-from ...configs import Config
+from ...bases.configs import Config
 from ...patches.torch import get_rank
 from ...registries import ModelRegistry, OptimizerRegistry
 from ...utils import StateDictMixin

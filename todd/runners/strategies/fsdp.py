@@ -8,7 +8,7 @@ import torch
 from torch import nn
 from torch.distributed.fsdp import FullyShardedDataParallel as FSDP
 
-from ...configs import Config
+from ...bases.configs import Config
 from ...registries import OptimizerRegistry
 from ..registries import StrategyRegistry
 from .cuda import CUDAStrategy

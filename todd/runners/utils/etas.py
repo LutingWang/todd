@@ -9,7 +9,7 @@ import datetime
 from abc import ABC, abstractmethod
 from typing import NamedTuple
 
-from ...configs import Config
+from ...bases.configs import Config
 from ...utils import EMA
 from ..registries import ETARegistry
 

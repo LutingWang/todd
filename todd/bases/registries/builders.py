@@ -8,6 +8,8 @@ from abc import ABC, abstractmethod
 from functools import partial
 from typing import TYPE_CHECKING, Any, Callable, Mapping
 
+from ..configs import Config
+
 if TYPE_CHECKING:
     from ...utils import NestedCollectionUtils
 
@@ -23,7 +25,6 @@ class BaseBuilder(ABC):
         requires: Mapping[str, str] | None = None,
         **kwargs,
     ) -> None:
-        from ...configs import Config
         super().__init__(*args, **kwargs)
         self._f = f
         self._requires = Config(requires)
@@ -48,7 +49,6 @@ class BaseBuilder(ABC):
 class Builder(BaseBuilder):
 
     def should_build(self, obj: Any) -> bool:
-        from ...configs import Config
         return isinstance(obj, Config)
 
     def build(self, obj: Any, **kwargs) -> Any:
@@ -63,7 +63,6 @@ class NestedCollectionBuilder(BaseBuilder):
         utils: 'NestedCollectionUtils | None' = None,
         **kwargs,
     ) -> None:
-        from ...configs import Config
         from ...utils import NestedCollectionUtils
         super().__init__(*args, **kwargs)
         if utils is None:

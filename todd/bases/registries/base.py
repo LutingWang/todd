@@ -7,22 +7,12 @@ __all__ = [
 ]
 
 from collections import UserDict
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    Never,
-    Protocol,
-    TypeVar,
-    no_type_check,
-)
+from typing import Any, Callable, Never, Protocol, TypeVar, no_type_check
 
 from ...loggers import logger
 from ...patches.py import NonInstantiableMeta
+from ..configs import Config
 from .build_specs import BuildSpec
-
-if TYPE_CHECKING:
-    from ...configs import Config
 
 F = Callable[['Config'], Any]
 
@@ -64,7 +54,6 @@ class RegistryMeta(  # type: ignore[misc]
         >>> class Persian: pass
         >>> Cat.register_('persian')(Persian)
         <class '...Persian'>
-        >>> from todd import Config
         >>> Cat.build(Config(type='persian'))
         <...Persian object at ...>
 
@@ -322,7 +311,6 @@ class RegistryMeta(  # type: ignore[misc]
         To customize the build process of instances, registries must overload
         `_build` with a class method:
 
-            >>> from todd import Config
             >>> class Cat(metaclass=RegistryMeta):
             ...     @classmethod
             ...     def _build(cls, item: Item, config: Config):
@@ -359,7 +347,6 @@ class RegistryMeta(  # type: ignore[misc]
             >>> @Cat.register_()
             ... def tabby(name: str) -> str:
             ...     return f'Tabby {name}'
-            >>> from todd import Config
             >>> Cat.build(Config(type='tabby', name='Garfield'))
             'Tabby Garfield'
 
@@ -400,7 +387,7 @@ class RegistryMeta(  # type: ignore[misc]
             >>> persian.friend
             'Siamese'
         """
-        from ...configs import Config, PyConfig
+        from ...configs import PyConfig
         config = Config(kwargs) | config
         py_config = PyConfig(config)
 

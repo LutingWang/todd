@@ -13,7 +13,7 @@ from ..loggers import master_logger
 from ..patches.py import descendant_classes
 
 if TYPE_CHECKING:
-    from ..configs import Config
+    from ..bases.configs import Config
 
 
 class InitWeightsMixin(nn.Module, ABC):
@@ -63,7 +63,7 @@ class ModelRegistry(Registry):
 
     @classmethod
     def _build(cls, item: Item, config: 'Config') -> Any:
-        from ..configs import Config
+        from ..bases.configs import Config
         config = config.copy()
         init_weights = config.pop('init_weights', Config())
         model = RegistryMeta._build(cls, item, config)

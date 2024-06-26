@@ -8,7 +8,7 @@ from typing import Any, Mapping, TypeVar
 import torch
 from torch import nn
 
-from ..configs import Config
+from ..bases.configs import Config
 from ..registries import RunnerRegistry
 from .base import BaseRunner
 from .memo import Memo

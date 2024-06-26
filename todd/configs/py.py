@@ -6,9 +6,9 @@ import importlib
 
 import yapf.yapflib.yapf_api as yapf
 
+from ..bases.configs import Config
 from ..patches.py import exec_
 from ..registries import ConfigRegistry
-from .config import Config
 from .serialize import SerializeMixin
 
 

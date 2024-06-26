@@ -1,1 +1,1 @@
-from . import registries
+from . import configs, registries

@@ -20,8 +20,8 @@ import pptx.shapes.shapetree
 import pptx.slide
 import pptx.util
 
+from ..bases.configs import Config
 from ..colors import RGB, Color
-from ..configs import Config
 from ..registries import VisualRegistry
 from .base import BaseVisual
 

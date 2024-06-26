@@ -13,8 +13,8 @@ from typing_extensions import Self
 import torch
 from torch import nn
 
+from ..bases.configs import Config
 from ..bases.registries import BuildSpec, BuildSpecMixin
-from ..configs import Config
 from ..patches.py import classproperty
 from ..registries import InitWeightsMixin
 from ..utils import Store

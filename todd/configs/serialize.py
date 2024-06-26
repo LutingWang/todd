@@ -7,7 +7,7 @@ import pathlib
 from abc import abstractmethod
 from typing_extensions import Self
 
-from .config import Config
+from ..bases.configs import Config
 
 
 class SerializeMixin(Config):

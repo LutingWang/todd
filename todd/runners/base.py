@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING, Any, Generic, Iterable, Mapping, TypeVar
 from torch import nn
 from torch.utils.data import DataLoader, Dataset
 
-from ..configs import Config
+from ..bases.configs import Config
 from ..loggers import logger as base_logger
 from ..patches.torch import get_rank
 from ..registries import DataLoaderRegistry, DatasetRegistry, RunnerRegistry

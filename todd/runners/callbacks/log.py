@@ -8,7 +8,7 @@ from typing import Any
 
 import torch
 
-from ...configs import Config
+from ...bases.configs import Config
 from ...loggers import Formatter
 from ...patches.torch import get_rank
 from ...utils import Store, collect_env_, get_timestamp

@@ -15,8 +15,8 @@ from . import (
     utils,
     visuals,
 )
+from .bases.configs import Config
 from .bases.registries import Registry
-from .configs import Config
 from .loggers import logger
 from .patches import *
 from .utils import Store

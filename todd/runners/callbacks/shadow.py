@@ -4,7 +4,7 @@ __all__ = [
 
 from typing import Any, Mapping
 
-from ...configs import Config
+from ...bases.configs import Config
 from ...models.shadows import EMAShadow
 from ...patches.torch import get_rank
 from ..registries import CallbackRegistry

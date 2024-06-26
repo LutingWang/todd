@@ -33,7 +33,7 @@ from ..patches.py import descendant_classes, get_classes
 from .partial import PartialRegistry
 
 if TYPE_CHECKING:
-    from ..configs import Config
+    from ..bases.configs import Config
     from ..models.filters import NamedParametersFilter
 
 
