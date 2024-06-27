@@ -29,7 +29,14 @@ class BaseDataset(BuildSpecMixin, Dataset[T], Generic[T, KT, VT], ABC):
     ) -> None:
         super().__init__(*args, **kwargs)
         self._access_layer = access_layer
-        self.build_keys()
+
+        logger.debug("Initializing keys.")
+        self._keys = self.build_keys()
+        logger.debug(
+            "Keys %s initialized with length %d",
+            reprlib.repr(self._keys),
+            len(self),
+        )
 
     @classproperty
     def build_spec(self) -> BuildSpec:
@@ -40,17 +47,8 @@ class BaseDataset(BuildSpecMixin, Dataset[T], Generic[T, KT, VT], ABC):
     def access_layer(self) -> BaseAccessLayer[KT, VT]:
         return self._access_layer
 
-    def _build_keys(self) -> list[KT]:
+    def build_keys(self) -> list[KT]:
         return list(self._access_layer)
-
-    def build_keys(self) -> None:
-        logger.debug("Initializing keys.")
-        self._keys = self._build_keys()
-        logger.debug(
-            "Keys %s initialized with length %d",
-            reprlib.repr(self._keys),
-            len(self),
-        )
 
     def __len__(self) -> int:
         return len(self._keys)

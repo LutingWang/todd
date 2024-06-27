@@ -18,7 +18,7 @@ class CallbackRegistry(RunnerRegistry):
         from .callbacks import ComposedCallback
         if item is ComposedCallback:
             callbacks = config.callbacks
-            runner = config.runner
+            runner = config.get('runner')
             config.priorities = [c.pop('priority', dict()) for c in callbacks]
             config.callbacks = [cls.build(c, runner=runner) for c in callbacks]
         return RegistryMeta._build(cls, item, config)

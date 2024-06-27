@@ -3,21 +3,54 @@ __all__ = [
 ]
 
 from abc import ABC
-from typing import Any, Mapping, TypeVar
+from typing import TYPE_CHECKING, Any, Mapping, TypeVar
 
 import torch
 from torch import nn
 
 from ..bases.configs import Config
+from ..bases.registries import Builder, BuildSpec
+from ..patches.py import classproperty
 from ..registries import RunnerRegistry
 from .base import BaseRunner
 from .memo import Memo
+
+if TYPE_CHECKING:
+    from .strategies import BaseStrategy
 
 T = TypeVar('T', bound=nn.Module)
 
 
 @RunnerRegistry.register_()
 class Trainer(BaseRunner[T], ABC):
+
+    def __init__(
+        self,
+        *args,
+        optimizer: torch.optim.Optimizer,
+        **kwargs,
+    ) -> None:
+        self._optimizer = optimizer
+        super().__init__(*args, **kwargs)
+
+    @classproperty
+    def build_spec(self) -> BuildSpec:
+
+        def build_optimizer(
+            config: Config,
+            strategy: 'BaseStrategy[T]',
+            model: nn.Module,
+        ) -> torch.optim.Optimizer:
+            return strategy.build_optimizer(config, model)
+
+        build_spec = BuildSpec(
+            optimizer=Builder(
+                build_optimizer,
+                requires=dict(strategy='strategy', model='model'),
+            ),
+        )
+
+        return super().build_spec | build_spec
 
     @property
     def iters_per_epoch(self) -> int:
@@ -34,18 +67,6 @@ class Trainer(BaseRunner[T], ABC):
     @property
     def optimizer(self) -> torch.optim.Optimizer:
         return self._optimizer
-
-    def _build_optimizer(
-        self,
-        *args,
-        optimizer: Config,
-        **kwargs,
-    ) -> None:
-        self._optimizer = self._strategy.build_optimizer(optimizer)
-
-    def _build(self, *args, **kwargs) -> None:
-        super()._build(*args, **kwargs)
-        self._build_optimizer(*args, **kwargs)
 
     def _setup(self) -> Memo:
         self._model.train()

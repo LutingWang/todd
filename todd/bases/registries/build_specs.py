@@ -107,7 +107,7 @@ class BuildSpec(UserDict[str, BaseBuilder | F]):
             builders[k] = builder
 
         graph = {
-            k: builders.keys() & builder.requires
+            k: builders.keys() & builder.priors
             for k, builder in builders.items()
         }
         for k in self.sort(graph):

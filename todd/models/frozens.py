@@ -91,7 +91,11 @@ class CheckMixin(nn.Module, ABC):
         pass
 
 
-class NoGradMixin(CheckMixin, InitWeightsMixin, BuildSpecMixin):
+# `CheckMixin` uses `nn.Module` as base class, so it should be the last mixin,
+# in order to avoid MRO resolution failures.
+
+
+class NoGradMixin(InitWeightsMixin, BuildSpecMixin, CheckMixin):
     """A mixin class that excludes specific parameters from gradient \
     computation.
 
@@ -229,7 +233,7 @@ class NoGradMixin(CheckMixin, InitWeightsMixin, BuildSpecMixin):
         return state_dict
 
 
-class EvalMixin(CheckMixin, InitWeightsMixin, BuildSpecMixin):
+class EvalMixin(InitWeightsMixin, BuildSpecMixin, CheckMixin):
     """A mixin class that provides evaluation functionality for a model.
 
     This mixin class is intended to be used as a base class for models that

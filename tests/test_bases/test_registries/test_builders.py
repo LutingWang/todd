@@ -27,7 +27,7 @@ class TestBaseBuilder:
                 'arg2': 'key2',
             },
         )
-        assert builder.requires == ('arg1', 'arg2')
+        assert builder.requires == {'arg1', 'arg2'}
 
 
 class TestBuilder:

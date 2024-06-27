@@ -1,3 +1,5 @@
+# pylint: disable=pointless-statement
+
 __all__ = [
     'LRScheduleCallback',
     'LRScaleCallback',
@@ -28,11 +30,11 @@ class LRScheduleCallback(IntervalMixin, BaseCallback):
         **kwargs,
     ) -> None:
         super().__init__(*args, interval=interval, **kwargs)
-        assert isinstance(self.runner, Trainer)
         self._lr_scheduler_config = lr_scheduler
 
     def init(self, *args, **kwargs) -> None:
         super().init(*args, **kwargs)
+        self.trainer
         self._build_lr_scheduler()
 
     def _build_lr_scheduler(self) -> None:
@@ -77,7 +79,6 @@ class LRScaleCallback(BaseCallback):
 
     def __init__(self, *args, lr_scaler: Config, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        assert isinstance(self.runner, Trainer)
         self._lr_scaler_config = lr_scaler
 
     def _scale_lr(self, config: Config) -> None:
@@ -98,4 +99,5 @@ class LRScaleCallback(BaseCallback):
 
     def init(self, *args, **kwargs) -> None:
         super().init(*args, **kwargs)
+        self.trainer
         self._scale_lr(self._lr_scaler_config)

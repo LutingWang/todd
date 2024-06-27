@@ -6,7 +6,7 @@ __all__ = [
 
 from abc import ABC, abstractmethod
 from functools import partial
-from typing import TYPE_CHECKING, Any, Callable, Mapping
+from typing import TYPE_CHECKING, Any, Callable, Iterable, Mapping
 
 from ..configs import Config
 
@@ -22,16 +22,22 @@ class BaseBuilder(ABC):
         self,
         f: F,
         *args,
+        priors: Iterable[str] | None = None,
         requires: Mapping[str, str] | None = None,
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
-        self._f = f
+        self.f = f
+        self._priors = set() if priors is None else set(priors)
         self._requires = Config(requires)
 
     @property
-    def requires(self) -> tuple[str, ...]:
-        return tuple(self._requires.keys())
+    def priors(self) -> set[str]:
+        return self._priors | self.requires
+
+    @property
+    def requires(self) -> set[str]:
+        return set(self._requires.keys())
 
     @abstractmethod
     def should_build(self, obj: Any) -> bool:
@@ -52,7 +58,7 @@ class Builder(BaseBuilder):
         return isinstance(obj, Config)
 
     def build(self, obj: Any, **kwargs) -> Any:
-        return self._f(obj, **kwargs)
+        return self.f(obj, **kwargs)
 
 
 class NestedCollectionBuilder(BaseBuilder):
@@ -74,5 +80,5 @@ class NestedCollectionBuilder(BaseBuilder):
         return self._utils.can_handle(obj)
 
     def build(self, obj: Any, **kwargs) -> Any:
-        f = partial(self._f, **kwargs)
+        f = partial(self.f, **kwargs)
         return self._utils.map(f, obj)

@@ -28,11 +28,14 @@ class OptimizeCallback(BuildSpecMixin, BaseCallback):
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
-        self.trainer
         if grad_scaler is not None:
             self._grad_scaler = grad_scaler
         if grad_clipper is not None:
             self._grad_clipper = grad_clipper
+
+    def init(self, *args, **kwargs) -> None:
+        super().init(*args, **kwargs)
+        self.trainer
 
     @classproperty
     def build_spec(self) -> BuildSpec:

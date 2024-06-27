@@ -36,8 +36,8 @@ class SpringDataset(BaseDataset[VT]):
         self._frame = SpringCV2AccessLayer(**frame_access_layer)  # noqa: E501 pylint: disable=abstract-class-instantiated
         super().__init__(*args, access_layer=flo_access_layer, **kwargs)
 
-    def _build_keys(self) -> list[str]:
-        keys = super()._build_keys()
+    def build_keys(self) -> list[str]:
+        keys = super().build_keys()
         frame_keys = list(self._frame)
         return [
             key for key in keys

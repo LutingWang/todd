@@ -2,12 +2,19 @@ __all__ = [
     'ComposedCallback',
 ]
 
-from typing import Any, Iterable, Iterator, Literal, Mapping
+from typing import Any, Iterable, Iterator, Literal, Mapping, TypeVar
 
+from torch import nn
+
+from ..base import BaseRunner
 from ..registries import CallbackRegistry
 from ..utils import PriorityQueue
 from .base import BaseCallback
 
+# TODO: merge priority queue
+# TODO: rename init to bind
+
+T = TypeVar('T', bound=nn.Module)
 KT = Literal['init', 'should_break', 'should_continue', 'before_run_iter',
              'run_iter_context', 'after_run_iter', 'should_break_epoch',
              'should_continue_epoch', 'before_run_epoch', 'run_epoch_context',
@@ -30,6 +37,11 @@ class ComposedCallback(BaseCallback):
     @property
     def callbacks(self) -> PriorityQueue[KT, BaseCallback]:
         return self._callbacks
+
+    def bind(self, instance: BaseRunner[T]) -> None:
+        super().bind(instance)
+        for callback in self._callbacks.queue:
+            callback.bind(instance)
 
     def __iter__(self) -> Iterator[BaseCallback]:
         return iter(self._callbacks.queue)

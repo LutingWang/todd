@@ -9,7 +9,7 @@ import pathlib
 import socket
 from abc import abstractmethod
 from functools import partial
-from typing import TYPE_CHECKING, Any, Generic, Iterable, Mapping, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, Mapping, TypeVar
 from typing_extensions import Self
 
 from torch import nn
@@ -17,6 +17,7 @@ from torch.utils.data import DataLoader, Dataset
 
 from ..bases.configs import Config
 from ..bases.registries import Builder, BuildSpec, BuildSpecMixin
+from ..bases.registries.builders import BaseBuilder
 from ..loggers import logger as base_logger
 from ..patches.py import classproperty
 from ..patches.torch import get_rank
@@ -44,6 +45,8 @@ class BaseRunner(BuildSpecMixin, StateDictMixin, Generic[T]):
         self,
         name: str,
         *args,
+        strategy: 'BaseStrategy[T]',
+        callbacks: 'ComposedCallback',
         dataset: Dataset,
         dataloader: DataLoader,
         work_dir: pathlib.Path,
@@ -53,6 +56,8 @@ class BaseRunner(BuildSpecMixin, StateDictMixin, Generic[T]):
         **kwargs,
     ) -> None:
         self._name = name
+        self._strategy = strategy
+        self._callbacks = callbacks
         self._dataset = dataset
         self._dataloader = dataloader
         self._work_dir = work_dir
@@ -61,8 +66,8 @@ class BaseRunner(BuildSpecMixin, StateDictMixin, Generic[T]):
         self._auto_resume = auto_resume
 
         self._iter = 0
-        self._build(*args, **kwargs)
-        self._init_callbacks()
+
+        self._init(*args, **kwargs)
 
         self._logger.debug(
             "Rank %d initialized by %s@%s",
@@ -76,6 +81,67 @@ class BaseRunner(BuildSpecMixin, StateDictMixin, Generic[T]):
             f"<{type(self).__name__} name={self._name} "
             f"load_from={self._load_from} auto_resume={self._auto_resume}>"
         )
+
+    @classproperty
+    def build_spec(self) -> BuildSpec:
+        from .callbacks import ComposedCallback
+
+        class CallbackBuilder(BaseBuilder):
+
+            def __init__(self, *args, **kwargs) -> None:
+                super().__init__(
+                    CallbackRegistry.build,
+                    *args,
+                    priors=['strategy'],
+                    **kwargs,
+                )
+
+            def should_build(self, obj: Any) -> bool:
+                return True
+
+            def build(self, obj: Any, **kwargs) -> ComposedCallback:
+                return self.f(
+                    Config(),
+                    type=ComposedCallback.__name__,
+                    callbacks=obj,
+                )
+
+        def build_work_dir(config: Config, name: str) -> pathlib.Path:
+            root = config.get('root', 'work_dirs')
+            name = config.get('name', name)
+            return pathlib.Path(root) / name
+
+        def build_logger(
+            config: Config,
+            _item_: type[Self],
+            name: str,
+        ) -> logging.Logger:
+            name = config.get('name', f'{_item_.__name__}.{name}')
+            return logging.getLogger(f'{base_logger.name}.{name}')
+
+        build_spec = BuildSpec(
+            strategy=StrategyRegistry.build,
+            model=Builder(
+                ModelRegistry.build,
+                priors=['strategy'],
+            ),
+            callbacks=CallbackBuilder(),
+            dataset=Builder(
+                DatasetRegistry.build,
+                priors=['strategy'],
+            ),
+            dataloader=Builder(
+                partial(DataLoaderRegistry.build, type='DataLoader'),
+                priors=['strategy'],
+                requires=dict(dataset='dataset'),
+            ),
+            work_dir=Builder(build_work_dir, requires=dict(name='name')),
+            logger=Builder(
+                build_logger,
+                requires=dict(_item_='_item_', name='name'),
+            ),
+        )
+        return super().build_spec | build_spec
 
     @property
     def name(self) -> str:
@@ -122,18 +188,10 @@ class BaseRunner(BuildSpecMixin, StateDictMixin, Generic[T]):
     def iters(self) -> int:
         pass
 
-    def _build_strategy(
-        self,
-        *args,
-        strategy: Config,
-        **kwargs,
-    ) -> None:
-        self._strategy: 'BaseStrategy[T]' = StrategyRegistry.build(
-            strategy,
-            runner=self,
-        )
+    def _init_strategy(self, *args, **kwargs) -> None:
+        self._strategy.bind(self)
 
-    def _build_model(
+    def _init_model(
         self,
         *args,
         model: nn.Module,
@@ -149,60 +207,18 @@ class BaseRunner(BuildSpecMixin, StateDictMixin, Generic[T]):
         model = self._strategy.wrap_model(model, wrap_model)
         self._model = model
 
-    def _build_callbacks(
-        self,
-        *args,
-        callbacks: Iterable[Config],
-        **kwargs,
-    ) -> None:
-        from .callbacks import ComposedCallback
-        self._callbacks = CallbackRegistry.build(
-            Config(),
-            type=ComposedCallback.__name__,
-            runner=self,
-            callbacks=callbacks,
-        )
-
-    @classproperty
-    def build_spec(self) -> BuildSpec:
-
-        def build_work_dir(work_dir: Config, name: str) -> pathlib.Path:
-            root = work_dir.get('root', 'work_dirs')
-            name = work_dir.get('name', name)
-            path = pathlib.Path(root) / name
-            path.mkdir(parents=True, exist_ok=True)
-            return path
-
-        def build_logger(
-            logger: Config,
-            _item_: type[Self],
-            name: str,
-        ) -> logging.Logger:
-            name = logger.get('name', f'{_item_.__name__}.{name}')
-            return logging.getLogger(f'{base_logger.name}.{name}')
-
-        build_spec = BuildSpec(
-            model=ModelRegistry.build,
-            dataset=DatasetRegistry.build,
-            dataloader=Builder(
-                partial(DataLoaderRegistry.build, type='DataLoader'),
-                requires=dict(dataset='dataset'),
-            ),
-            work_dir=Builder(build_work_dir, requires=dict(name='name')),
-            logger=Builder(
-                build_logger,
-                requires=dict(_item_='_item_', name='name'),
-            ),
-        )
-        return super().build_spec | build_spec
-
-    def _build(self, *args, **kwargs) -> None:
-        self._build_strategy(*args, **kwargs)
-        self._build_model(*args, **kwargs)
-        self._build_callbacks(*args, **kwargs)
-
-    def _init_callbacks(self) -> None:
+    def _init_callbacks(self, *args, **kwargs) -> None:
+        self._callbacks.bind(self)
         self._callbacks.init()
+
+    def _init_work_dir(self, *args, **kwargs) -> None:
+        self._work_dir.mkdir(parents=True, exist_ok=True)
+
+    def _init(self, *args, **kwargs) -> None:
+        self._init_work_dir(*args, **kwargs)
+        self._init_strategy(*args, **kwargs)
+        self._init_model(*args, **kwargs)
+        self._init_callbacks(*args, **kwargs)
 
     def _run_iter(self, batch, memo: Memo, *args, **kwargs) -> Memo:
         """Run iteration.

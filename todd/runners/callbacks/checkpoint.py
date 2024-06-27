@@ -27,7 +27,6 @@ class CheckpointCallback(IntervalMixin, BaseCallback):
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
-        self.trainer
         if state_dict is None:
             state_dict = Config()
         self._state_dict = state_dict
@@ -37,6 +36,8 @@ class CheckpointCallback(IntervalMixin, BaseCallback):
 
     def init(self, *args, **kwargs) -> None:
         super().init(*args, **kwargs)
+        self.trainer
+
         self._checkpoint_dir = self.runner.work_dir / 'checkpoints'
         self._latest_checkpoint_dir = self._checkpoint_dir / 'latest'
 

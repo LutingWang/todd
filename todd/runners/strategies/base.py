@@ -40,8 +40,12 @@ class BaseStrategy(RunnerHolderMixin[T], StateDictMixin):
     def wrap_model(self, model: nn.Module, config: Config) -> T:
         return cast(T, model)
 
-    def build_optimizer(self, config: Config) -> torch.optim.Optimizer:
-        return OptimizerRegistry.build(config, model=self.module)
+    def build_optimizer(
+        self,
+        config: Config,
+        model: nn.Module,
+    ) -> torch.optim.Optimizer:
+        return OptimizerRegistry.build(config, model=model)
 
     @property
     def module(self) -> nn.Module:

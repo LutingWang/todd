@@ -18,7 +18,12 @@ T = TypeVar('T', bound=nn.Module)
 
 class RunnerHolderMixin(HolderMixin[BaseRunner[T]]):
 
-    def __init__(self, *args, runner: BaseRunner[T], **kwargs) -> None:
+    def __init__(
+        self,
+        *args,
+        runner: BaseRunner[T] | None = None,
+        **kwargs,
+    ) -> None:
         super().__init__(*args, instance=runner, **kwargs)
 
     @property
