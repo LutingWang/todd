@@ -38,9 +38,10 @@ class OpticalFlowAccessLayer(
         item: Item,
     ) -> Config:
         config = super().build_pre_hook(config, registry, item)
-        optical_flow_type: Config = config.optical_flow_type
-        config.optical_flow_type = \
-            OFEOpticalFlowRegistry[optical_flow_type.type]  # TODO: simplify
+        optical_flow_type = config.optical_flow_type
+        if isinstance(optical_flow_type, str):
+            config.optical_flow_type = \
+                OFEOpticalFlowRegistry[optical_flow_type]
         return config
 
     def __getitem__(self, key: str) -> VT:
