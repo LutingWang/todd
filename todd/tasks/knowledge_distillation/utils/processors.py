@@ -20,13 +20,13 @@ import pandas as pd
 
 from todd import Config
 from todd.bases.registries import (
-    BuildSpec,
-    BuildSpecMixin,
-    NestedCollectionBuilder,
+    BuildPreHookMixin,
+    Item,
     Registry,
+    RegistryMeta,
 )
 from todd.loggers import logger
-from todd.patches.py import classproperty, exec_
+from todd.patches.py import exec_
 from todd.utils import Args, ArgsKwargs, Kwargs, SerializeMixin
 
 from ..registries import KDProcessorRegistry
@@ -41,7 +41,7 @@ class Spec(NamedTuple):
     outputs: set[str]
 
 
-class Processor(BuildSpecMixin, SerializeMixin, ABC, Generic[T_co]):
+class Processor(BuildPreHookMixin, SerializeMixin, ABC, Generic[T_co]):
 
     @abstractmethod
     def __call__(self, message: Message) -> Message:
@@ -144,10 +144,16 @@ class SingleMixin(Operator[T_co], ABC):
         super().__init__(*args, **kwargs)
         self._atom = atom
 
-    @classproperty
-    def build_spec(self) -> BuildSpec:
-        build_spec = BuildSpec(atom=Registry.build)
-        return super().build_spec | build_spec
+    @classmethod
+    def build_pre_hook(
+        cls,
+        config: Config,
+        registry: RegistryMeta,
+        item: Item,
+    ) -> Config:
+        config = super().build_pre_hook(config, registry, item)
+        config.atom = Registry.build_or_return(config.atom)
+        return config
 
     @property
     def atoms(self) -> tuple[T_co, ...]:
@@ -169,10 +175,16 @@ class MultipleMixin(Operator[T_co], ABC):
         super().__init__(*args, **kwargs)
         self._atoms = tuple(atoms)
 
-    @classproperty
-    def build_spec(self) -> BuildSpec:
-        build_spec = BuildSpec(atoms=NestedCollectionBuilder(Registry.build))
-        return super().build_spec | build_spec
+    @classmethod
+    def build_pre_hook(
+        cls,
+        config: Config,
+        registry: RegistryMeta,
+        item: Item,
+    ) -> Config:
+        config = super().build_pre_hook(config, registry, item)
+        config.atoms = [Registry.build_or_return(c) for c in config.atoms]
+        return config
 
     @property
     def atoms(self) -> tuple[T_co, ...]:
@@ -244,12 +256,18 @@ class Pipeline(Processor[T_co]):
         super().__init__(*args, **kwargs)
         self._processors = tuple(processors)
 
-    @classproperty
-    def build_spec(self) -> BuildSpec:
-        build_spec = BuildSpec(
-            processors=NestedCollectionBuilder(KDProcessorRegistry.build),
-        )
-        return super().build_spec | build_spec
+    @classmethod
+    def build_pre_hook(
+        cls,
+        config: Config,
+        registry: RegistryMeta,
+        item: Item,
+    ) -> Config:
+        config = super().build_pre_hook(config, registry, item)
+        config.processors = [
+            KDProcessorRegistry.build_or_return(c) for c in config.processors
+        ]
+        return config
 
     def __getstate__(self) -> ArgsKwargs:
         args, kwargs = super().__getstate__()

@@ -6,6 +6,8 @@ from typing import Any, Iterable, Iterator, Literal, Mapping, TypeVar
 
 from torch import nn
 
+from ...bases.configs import Config
+from ...bases.registries import BuildPreHookMixin, Item, RegistryMeta
 from ..base import BaseRunner
 from ..registries import CallbackRegistry
 from ..utils import PriorityQueue
@@ -20,7 +22,7 @@ Priority = Mapping[KT, int]
 
 
 @CallbackRegistry.register_()
-class ComposedCallback(BaseCallback[T]):
+class ComposedCallback(BuildPreHookMixin, BaseCallback[T]):
 
     def __init__(
         self,
@@ -31,6 +33,19 @@ class ComposedCallback(BaseCallback[T]):
     ) -> None:
         super().__init__(*args, **kwargs)
         self._priority_queue = PriorityQueue(priorities, callbacks)
+
+    @classmethod
+    def build_pre_hook(
+        cls,
+        config: Config,
+        registry: RegistryMeta,
+        item: Item,
+    ) -> Config:
+        config = super().build_pre_hook(config, registry, item)
+        callbacks: Iterable[Config] = config.callbacks
+        config.priorities = [c.pop('priority', dict()) for c in callbacks]
+        config.callbacks = [registry.build_or_return(c) for c in callbacks]
+        return config
 
     @property
     def callbacks(self) -> list[BaseCallback[T]]:

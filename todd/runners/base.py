@@ -8,18 +8,14 @@ import logging
 import pathlib
 import socket
 from abc import abstractmethod
-from functools import partial
 from typing import TYPE_CHECKING, Any, Generic, Mapping, TypeVar
-from typing_extensions import Self
 
 from torch import nn
 from torch.utils.data import DataLoader, Dataset
 
 from ..bases.configs import Config
-from ..bases.registries import Builder, BuildSpec, BuildSpecMixin
-from ..bases.registries.builders import BaseBuilder
+from ..bases.registries import BuildPreHookMixin, Item, RegistryMeta
 from ..loggers import logger as base_logger
-from ..patches.py import classproperty
 from ..patches.torch import get_rank
 from ..registries import (
     DataLoaderRegistry,
@@ -39,7 +35,7 @@ T = TypeVar('T', bound=nn.Module)
 
 
 @RunnerRegistry.register_()
-class BaseRunner(BuildSpecMixin, StateDictMixin, Generic[T]):
+class BaseRunner(BuildPreHookMixin, StateDictMixin, Generic[T]):
 
     def __init__(
         self,
@@ -82,66 +78,106 @@ class BaseRunner(BuildSpecMixin, StateDictMixin, Generic[T]):
             f"load_from={self._load_from} auto_resume={self._auto_resume}>"
         )
 
-    @classproperty
-    def build_spec(self) -> BuildSpec:
+    @classmethod
+    def strategy_build_pre_hook(
+        cls,
+        config: Config,
+        registry: RegistryMeta,
+        item: Item,
+    ) -> Config:
+        config.strategy = StrategyRegistry.build_or_return(config.strategy)
+        return config
+
+    @classmethod
+    def model_build_pre_hook(
+        cls,
+        config: Config,
+        registry: RegistryMeta,
+        item: Item,
+    ) -> Config:
+        config.model = ModelRegistry.build_or_return(config.model)
+        return config
+
+    @classmethod
+    def callbacks_build_pre_hook(
+        cls,
+        config: Config,
+        registry: RegistryMeta,
+        item: Item,
+    ) -> Config:
         from .callbacks import ComposedCallback
-
-        class CallbackBuilder(BaseBuilder):
-
-            def __init__(self, *args, **kwargs) -> None:
-                super().__init__(
-                    CallbackRegistry.build,
-                    *args,
-                    priors=['strategy'],
-                    **kwargs,
-                )
-
-            def should_build(self, obj: Any) -> bool:
-                return True
-
-            def build(self, obj: Any, **kwargs) -> ComposedCallback:
-                return self.f(
-                    Config(),
-                    type=ComposedCallback.__name__,
-                    callbacks=obj,
-                )
-
-        def build_work_dir(config: Config, name: str) -> pathlib.Path:
-            root = config.get('root', 'work_dirs')
-            name = config.get('name', name)
-            return pathlib.Path(root) / name
-
-        def build_logger(
-            config: Config,
-            _item_: type[Self],
-            name: str,
-        ) -> logging.Logger:
-            name = config.get('name', f'{_item_.__name__}.{name}')
-            return logging.getLogger(f'{base_logger.name}.{name}')
-
-        build_spec = BuildSpec(
-            strategy=StrategyRegistry.build,
-            model=Builder(
-                ModelRegistry.build,
-                priors=['strategy'],
-            ),
-            callbacks=CallbackBuilder(),
-            dataset=Builder(
-                DatasetRegistry.build,
-                priors=['strategy'],
-            ),
-            dataloader=Builder(
-                partial(DataLoaderRegistry.build, type='DataLoader'),
-                priors=['strategy'],
-                requires=dict(dataset='dataset'),
-            ),
-            work_dir=Builder(build_work_dir, requires=dict(name='name')),
-            logger=Builder(
-                build_logger,
-                requires=dict(_item_='_item_', name='name'),
-            ),
+        config.callbacks = CallbackRegistry.build_or_return(
+            Config(),
+            type=ComposedCallback.__name__,
+            callbacks=config.callbacks,
         )
-        return super().build_spec | build_spec
+        return config
+
+    @classmethod
+    def dataset_build_pre_hook(
+        cls,
+        config: Config,
+        registry: RegistryMeta,
+        item: Item,
+    ) -> Config:
+        config.dataset = DatasetRegistry.build_or_return(config.dataset)
+        return config
+
+    @classmethod
+    def dataloader_build_pre_hook(
+        cls,
+        config: Config,
+        registry: RegistryMeta,
+        item: Item,
+    ) -> Config:
+        dataset: Dataset = config.dataset
+        config.dataloader = DataLoaderRegistry.build_or_return(
+            config.dataloader,
+            dataset=dataset,
+        )
+        return config
+
+    @classmethod
+    def work_dir_build_pre_hook(
+        cls,
+        config: Config,
+        registry: RegistryMeta,
+        item: Item,
+    ) -> Config:
+        work_dir: Config = config.work_dir
+        root = work_dir.get('root', 'work_dirs')
+        name = work_dir.get('name', config.name)
+        config.work_dir = pathlib.Path(root) / name
+        return config
+
+    @classmethod
+    def logger_build_pre_hook(
+        cls,
+        config: Config,
+        registry: RegistryMeta,
+        item: Item,
+    ) -> Config:
+        logger: Config = config.get('logger', Config())
+        name = logger.get('name', f'{item.__name__}.{config.name}')
+        config.logger = logging.getLogger(f'{base_logger.name}.{name}')
+        return config
+
+    @classmethod
+    def build_pre_hook(
+        cls,
+        config: Config,
+        registry: RegistryMeta,
+        item: Item,
+    ) -> Config:
+        config = super().build_pre_hook(config, registry, item)
+        config = cls.strategy_build_pre_hook(config, registry, item)
+        config = cls.model_build_pre_hook(config, registry, item)
+        config = cls.callbacks_build_pre_hook(config, registry, item)
+        config = cls.dataset_build_pre_hook(config, registry, item)
+        config = cls.dataloader_build_pre_hook(config, registry, item)
+        config = cls.work_dir_build_pre_hook(config, registry, item)
+        config = cls.logger_build_pre_hook(config, registry, item)
+        return config
 
     @property
     def name(self) -> str:

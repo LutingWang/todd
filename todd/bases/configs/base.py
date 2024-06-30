@@ -7,7 +7,7 @@ from typing import Any, Mapping, MutableMapping
 from ...patches.py import AttrDict, set_
 
 
-class Config(AttrDict, dict):  # type: ignore[misc]
+class Config(AttrDict, dict[Any, Any]):  # type: ignore[misc]
 
     def __setitem__(self, name: str, value) -> None:
         """Set item.

@@ -6,15 +6,18 @@ from typing import Generator, Iterable
 
 from torch import nn
 
-from ...bases.registries import BuildSpec, BuildSpecMixin
-from ...patches.py import classproperty
+from ...bases.configs import Config
+from ...bases.registries import BuildPreHookMixin, Item, RegistryMeta
 from ..registries import FilterRegistry
 from .named_member import NamedMembersFilter
 from .named_module import NamedModulesFilter
 
 
 @FilterRegistry.register_()
-class NamedParametersFilter(NamedMembersFilter[nn.Parameter], BuildSpecMixin):
+class NamedParametersFilter(
+    BuildPreHookMixin,
+    NamedMembersFilter[nn.Parameter],
+):
 
     def __init__(
         self,
@@ -26,10 +29,17 @@ class NamedParametersFilter(NamedMembersFilter[nn.Parameter], BuildSpecMixin):
         assert self._names is None or modules is None
         self._named_modules_filter = modules
 
-    @classproperty
-    def build_spec(self) -> BuildSpec:
-        build_spec = BuildSpec(modules=FilterRegistry.build)
-        return super().build_spec | build_spec
+    @classmethod
+    def build_pre_hook(
+        cls,
+        config: Config,
+        registry: RegistryMeta,
+        item: Item,
+    ) -> Config:
+        config = super().build_pre_hook(config, registry, item)
+        if 'modules' in config:
+            config.modules = FilterRegistry.build_or_return(config.modules)
+        return config
 
     @property
     def named_modules_filter(self) -> NamedModulesFilter:

@@ -14,8 +14,7 @@ import torch
 from torch import nn
 
 from ..bases.configs import Config
-from ..bases.registries import BuildSpec, BuildSpecMixin
-from ..patches.py import classproperty
+from ..bases.registries import BuildPreHookMixin, Item, RegistryMeta
 from ..registries import InitWeightsMixin
 from ..utils import Store
 from .filters import NamedModulesFilter, NamedParametersFilter
@@ -95,7 +94,7 @@ class CheckMixin(nn.Module, ABC):
 # in order to avoid MRO resolution failures.
 
 
-class NoGradMixin(InitWeightsMixin, BuildSpecMixin, CheckMixin):
+class NoGradMixin(InitWeightsMixin, BuildPreHookMixin, CheckMixin):
     """A mixin class that excludes specific parameters from gradient \
     computation.
 
@@ -199,10 +198,17 @@ class NoGradMixin(InitWeightsMixin, BuildSpecMixin, CheckMixin):
         self._no_grad = no_grad
         self._filter_state_dict = filter_state_dict
 
-    @classproperty
-    def build_spec(self) -> BuildSpec:
-        build_spec = BuildSpec(no_grad=FilterRegistry.build)
-        return super().build_spec | build_spec
+    @classmethod
+    def build_pre_hook(
+        cls,
+        config: Config,
+        registry: RegistryMeta,
+        item: Item,
+    ) -> Config:
+        config = super().build_pre_hook(config, registry, item)
+        if 'no_grad' in config:
+            config.no_grad = FilterRegistry.build_or_return(config.no_grad)
+        return config
 
     def check(self, *args, **kwargs) -> None:
         super().check(*args, **kwargs)
@@ -233,7 +239,7 @@ class NoGradMixin(InitWeightsMixin, BuildSpecMixin, CheckMixin):
         return state_dict
 
 
-class EvalMixin(InitWeightsMixin, BuildSpecMixin, CheckMixin):
+class EvalMixin(InitWeightsMixin, BuildPreHookMixin, CheckMixin):
     """A mixin class that provides evaluation functionality for a model.
 
     This mixin class is intended to be used as a base class for models that
@@ -316,10 +322,17 @@ class EvalMixin(InitWeightsMixin, BuildSpecMixin, CheckMixin):
         super().__init__(*args, **kwargs)
         self._eval = eval_
 
-    @classproperty
-    def build_spec(self) -> BuildSpec:
-        build_spec = BuildSpec(eval_=FilterRegistry.build)
-        return super().build_spec | build_spec
+    @classmethod
+    def build_pre_hook(
+        cls,
+        config: Config,
+        registry: RegistryMeta,
+        item: Item,
+    ) -> Config:
+        config = super().build_pre_hook(config, registry, item)
+        if 'eval_' in config:
+            config.eval_ = FilterRegistry.build_or_return(config.eval_)
+        return config
 
     def check(self, *args, **kwargs) -> None:
         super().check(*args, **kwargs)
@@ -380,10 +393,17 @@ class FreezeMixin(NoGradMixin, EvalMixin):
             **kwargs,
         )
 
-    @classproperty
-    def build_spec(self) -> BuildSpec:
-        build_spec = BuildSpec(freeze=FilterRegistry.build)
-        return super().build_spec | build_spec
+    @classmethod
+    def build_pre_hook(
+        cls,
+        config: Config,
+        registry: RegistryMeta,
+        item: Item,
+    ) -> Config:
+        config = super().build_pre_hook(config, registry, item)
+        if 'freeze' in config:
+            config.freeze = FilterRegistry.build_or_return(config.freeze)
+        return config
 
 
 class FrozenMixin(FreezeMixin):

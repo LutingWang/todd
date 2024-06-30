@@ -18,12 +18,8 @@ from typing import Iterable, cast
 import torch
 from torch import nn
 
-from ...bases.registries import (
-    BuildSpec,
-    BuildSpecMixin,
-    NestedCollectionBuilder,
-)
-from ...patches.py import classproperty
+from ...bases.configs import Config
+from ...bases.registries import BuildPreHookMixin, Item, RegistryMeta
 from .registries import SchedulerRegistry
 
 
@@ -266,7 +262,7 @@ class CosineAnnealingScheduler(BaseScheduler):
         )
 
 
-class ComposedScheduler(BuildSpecMixin, BaseScheduler):
+class ComposedScheduler(BuildPreHookMixin, BaseScheduler):
 
     def __init__(
         self,
@@ -277,12 +273,18 @@ class ComposedScheduler(BuildSpecMixin, BaseScheduler):
         super().__init__(*args, **kwargs)
         self._schedulers = tuple(schedulers)
 
-    @classproperty
-    def build_spec(self) -> BuildSpec:
-        build_spec = BuildSpec(
-            schedulers=NestedCollectionBuilder(SchedulerRegistry),
-        )
-        return super().build_spec | build_spec
+    @classmethod
+    def build_pre_hook(
+        cls,
+        config: Config,
+        registry: RegistryMeta,
+        item: Item,
+    ) -> Config:
+        config = super().build_pre_hook(config, registry, item)
+        config.schedulers = [
+            SchedulerRegistry.build_or_return(c) for c in config.schedulers
+        ]
+        return config
 
 
 @SchedulerRegistry.register_()

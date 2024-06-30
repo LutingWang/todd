@@ -22,13 +22,7 @@ from torch.utils import data
 from torch.utils.data import dataset
 
 from ..bases.configs import Config
-from ..bases.registries import (
-    BuildSpec,
-    Item,
-    NestedCollectionBuilder,
-    Registry,
-    RegistryMeta,
-)
+from ..bases.registries import Item, Registry, RegistryMeta
 from ..loggers import logger
 from ..patches.py import descendant_classes, get_classes
 from .partial import PartialRegistry
@@ -117,11 +111,21 @@ class DatasetRegistry(Registry):
 for c in get_classes(dataset, data.Dataset):
     DatasetRegistry.register_()(cast(Item, c))
 
+
+def datasets_build_pre_hook(
+    config: Config,
+    registry: RegistryMeta,
+    item: Item,
+) -> Config:
+    config.datasets = [
+        DatasetRegistry.build_or_return(d) for d in config.datasets
+    ]
+    return config
+
+
 DatasetRegistry.register_(
     force=True,
-    build_spec=BuildSpec(
-        datasets=NestedCollectionBuilder(DatasetRegistry.build),
-    ),
+    build_pre_hook=datasets_build_pre_hook,
 )(data.ConcatDataset)
 
 
@@ -155,11 +159,21 @@ class TransformRegistry(Registry):
 for c in get_classes(tf):
     TransformRegistry.register_()(cast(Item, c))
 
+
+def transformers_build_pre_hook(
+    config: Config,
+    registry: RegistryMeta,
+    item: Item,
+) -> Config:
+    config.transforms = [
+        TransformRegistry.build_or_return(t) for t in config.transforms
+    ]
+    return config
+
+
 TransformRegistry.register_(
     force=True,
-    build_spec=BuildSpec(
-        transforms=NestedCollectionBuilder(TransformRegistry.build),
-    ),
+    build_pre_hook=transformers_build_pre_hook,
 )(tf.Compose)
 
 

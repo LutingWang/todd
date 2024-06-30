@@ -8,9 +8,9 @@ from typing import Generator, Generic, TypeVar
 
 from torch.utils.data import Dataset
 
-from ..bases.registries import BuildSpec, BuildSpecMixin
+from ..bases.configs import Config
+from ..bases.registries import BuildPreHookMixin, Item, RegistryMeta
 from ..loggers import logger
-from ..patches.py import classproperty
 from .access_layers import BaseAccessLayer
 from .registries import AccessLayerRegistry
 
@@ -19,7 +19,7 @@ VT = TypeVar('VT')
 T = TypeVar('T')
 
 
-class BaseDataset(BuildSpecMixin, Dataset[T], Generic[T, KT, VT], ABC):
+class BaseDataset(BuildPreHookMixin, Dataset[T], Generic[T, KT, VT], ABC):
 
     def __init__(
         self,
@@ -38,10 +38,19 @@ class BaseDataset(BuildSpecMixin, Dataset[T], Generic[T, KT, VT], ABC):
             len(self),
         )
 
-    @classproperty
-    def build_spec(self) -> BuildSpec:
-        build_spec = BuildSpec(access_layer=AccessLayerRegistry.build)
-        return super().build_spec | build_spec
+    @classmethod
+    def build_pre_hook(
+        cls,
+        config: Config,
+        registry: RegistryMeta,
+        item: Item,
+    ) -> Config:
+        config = super().build_pre_hook(config, registry, item)
+        if 'access_layer' in config:
+            config.access_layer = AccessLayerRegistry.build_or_return(
+                config.access_layer,
+            )
+        return config
 
     @property
     def access_layer(self) -> BaseAccessLayer[KT, VT]:

@@ -4,9 +4,9 @@ __all__ = [
 
 from typing import TypeVar
 
-from todd.bases.registries import BuildSpec, BuildSpecMixin
+from todd import Config
+from todd.bases.registries import BuildPreHookMixin, Item, RegistryMeta
 from todd.datasets.access_layers import FolderAccessLayer, SuffixMixin
-from todd.patches.py import classproperty
 
 from ...optical_flow import SerializeMixin
 from ...registries import OFEOpticalFlowRegistry
@@ -17,7 +17,7 @@ VT = TypeVar('VT', bound=SerializeMixin)
 
 @OFEAccessLayerRegistry.register_()
 class OpticalFlowAccessLayer(
-    BuildSpecMixin,
+    BuildPreHookMixin,
     SuffixMixin[VT],
     FolderAccessLayer[VT],
 ):
@@ -30,12 +30,18 @@ class OpticalFlowAccessLayer(
         )
         self._optical_flow_type = optical_flow_type
 
-    @classproperty
-    def build_spec(self) -> BuildSpec:
-        build_spec = BuildSpec(
-            optical_flow_type=lambda c: OFEOpticalFlowRegistry[c.type],
-        )
-        return super().build_spec | build_spec
+    @classmethod
+    def build_pre_hook(
+        cls,
+        config: Config,
+        registry: RegistryMeta,
+        item: Item,
+    ) -> Config:
+        config = super().build_pre_hook(config, registry, item)
+        optical_flow_type: Config = config.optical_flow_type
+        config.optical_flow_type = \
+            OFEOpticalFlowRegistry[optical_flow_type.type]  # TODO: simplify
+        return config
 
     def __getitem__(self, key: str) -> VT:
         return self._optical_flow_type.load(self._file(key))

@@ -12,9 +12,6 @@ from typing import Any, Callable, Never, Protocol, TypeVar, no_type_check
 from ...loggers import logger
 from ...patches.py import NonInstantiableMeta
 from ..configs import Config
-from .build_specs import BuildSpec
-
-F = Callable[[Config], Any]
 
 
 class Item(Protocol):
@@ -26,6 +23,8 @@ class Item(Protocol):
 
 
 T = TypeVar('T', bound=Item)
+
+BuildPreHook = Callable[[Config, 'RegistryMeta', Any], Config]
 
 
 class RegistryMeta(  # type: ignore[misc]
@@ -209,7 +208,7 @@ class RegistryMeta(  # type: ignore[misc]
         cls,
         *args: str,
         force: bool = False,
-        build_spec: BuildSpec | None = None,
+        build_pre_hook: BuildPreHook | None = None,
     ) -> Callable[[T], T]:
         """Register classes or functions to the registry.
 
@@ -269,12 +268,12 @@ class RegistryMeta(  # type: ignore[misc]
             >>> Cat['Munchkin']
             <class '...AnotherMunchkin'>
 
-        `BuildSpec` instances can be bind to objects during registration:
+        `build_pre_hook` can be bind to objects during registration:
 
-            >>> build_spec = BuildSpec()
-            >>> @Cat.register_(build_spec=build_spec)
+            >>> build_pre_hook = lambda c, r, i: c
+            >>> @Cat.register_(build_pre_hook=build_pre_hook)
             ... class Maine: pass
-            >>> Maine.build_spec is build_spec
+            >>> Maine.build_pre_hook is build_pre_hook
             True
         """
 
@@ -284,8 +283,8 @@ class RegistryMeta(  # type: ignore[misc]
                 if force:
                     cls.pop(key, None)
                 cls[key] = item  # noqa: E501 pylint: disable=unsupported-assignment-operation
-            if build_spec is not None:
-                item.build_spec = build_spec  # type: ignore[attr-defined]
+            if build_pre_hook is not None:
+                item.build_pre_hook = build_pre_hook  # type: ignore[attr-defined] # noqa: E501 pylint: disable=line-too-long
             return item
 
         return wrapper_func
@@ -369,17 +368,22 @@ class RegistryMeta(  # type: ignore[misc]
             >>> DomesticCat.build(Config(type='Maine', name='maine'), age=1.2)
             (<class '...Maine'>, {'age': 1.2, 'name': 'maine'})
 
-        If the object has a property named ``build_spec``, the config is
+        If the object has a property named ``build_pre_hook``, the config is
         converted before construction:
 
-            >>> from ...patches.py import classproperty
             >>> @Cat.register_()
             ... class Persian:
             ...     def __init__(self, friend: str) -> None:
             ...         self.friend = friend
-            ...     @classproperty
-            ...     def build_spec(self) -> BuildSpec:
-            ...         return BuildSpec(friend=lambda config: config.type)
+            ...     @classmethod
+            ...     def build_pre_hook(
+            ...         cls,
+            ...         config: Config,
+            ...         registry: RegistryMeta,
+            ...         item: Item,
+            ...     ) -> Config:
+            ...         config.friend = config.friend.type
+            ...         return config
             >>> persian = Cat.build(
             ...     Config(type='Persian'),
             ...     friend=dict(type='Siamese'),
@@ -387,22 +391,50 @@ class RegistryMeta(  # type: ignore[misc]
             >>> persian.friend
             'Siamese'
         """
-        from ...configs import PyConfig
         config = Config(kwargs) | config
-        py_config = PyConfig(config)
 
         config_type = config.pop('type')
         registry, item = cls.parse(config_type)
 
-        if (build_spec := getattr(item, 'build_spec', None)) is not None:
-            config = build_spec(config, _registry_=registry, _item_=item)
+        build_pre_hook: BuildPreHook | None = getattr(
+            item,
+            'build_pre_hook',
+            None,
+        )
+        if build_pre_hook is not None:
+            try:
+                config = build_pre_hook(config.copy(), registry, item)
+            except Exception:
+                from ...configs import PyConfig
+                logger.error(
+                    "Failed to preprocess\n%s: %s",
+                    config_type,
+                    PyConfig(config).dumps(),
+                )
+                raise
 
         try:
-            return registry._build(item, config)
-        except Exception as e:
-            # config may be altered
-            logger.error("Failed to build\n%s", py_config.dumps())
-            raise e
+            return registry._build(item, config.copy())
+        except Exception:
+            from ...configs import PyConfig
+            logger.error(
+                "Failed to build\n%s: %s",
+                config_type,
+                PyConfig(config).dumps(),
+            )
+            raise
+
+    def build_or_return(
+        cls,
+        config: Any,
+        predicate: Callable[[Any], bool] | None = None,
+        **kwargs,
+    ) -> Any:
+        build = (
+            isinstance(config, Config)
+            if predicate is None else predicate(config)
+        )
+        return cls.build(config, **kwargs) if build else config
 
 
 class Registry(metaclass=RegistryMeta):

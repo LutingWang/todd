@@ -21,6 +21,7 @@
     "xywh",
     "xyxy"
   ],
+  "files.trimTrailingWhitespace": true,
   "python.analysis.extraPaths": [
     "tests/helpers"
   ],

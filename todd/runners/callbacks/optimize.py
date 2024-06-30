@@ -7,8 +7,8 @@ from typing import Any, Mapping, TypeVar
 import torch
 from torch import nn
 
-from ...bases.registries import BuildSpec, BuildSpecMixin
-from ...patches.py import classproperty
+from ...bases.configs import Config
+from ...bases.registries import BuildPreHookMixin, Item, RegistryMeta
 from ...registries import ClipGradRegistry
 from ..memo import Memo
 from ..registries import CallbackRegistry
@@ -18,14 +18,14 @@ T = TypeVar('T', bound=nn.Module)
 
 
 @CallbackRegistry.register_()
-class OptimizeCallback(BuildSpecMixin, BaseCallback[T]):
+class OptimizeCallback(BuildPreHookMixin, BaseCallback[T]):
 
     # TODO: add accumulate
     def __init__(
         self,
         *args,
         grad_scaler: torch.cuda.amp.GradScaler | None = None,
-        grad_clipper=None,
+        grad_clipper: Any = None,
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
@@ -34,13 +34,21 @@ class OptimizeCallback(BuildSpecMixin, BaseCallback[T]):
         if grad_clipper is not None:
             self._grad_clipper = grad_clipper
 
-    @classproperty
-    def build_spec(self) -> BuildSpec:
-        build_spec = BuildSpec(
-            grad_scaler=lambda c: torch.cuda.amp.GradScaler(**c),
-            grad_clipper=ClipGradRegistry.build,
-        )
-        return super().build_spec | build_spec
+    @classmethod
+    def build_pre_hook(
+        cls,
+        config: Config,
+        registry: RegistryMeta,
+        item: Item,
+    ) -> Config:
+        config = super().build_pre_hook(config, registry, item)
+        if isinstance(grad_scaler := config.get('grad_scaler'), Config):
+            config.grad_scaler = torch.cuda.amp.GradScaler(**grad_scaler)
+        if 'grad_clipper' in config:
+            config.grad_clipper = ClipGradRegistry.build_or_return(
+                config.grad_clipper,
+            )
+        return config
 
     @property
     def with_grad_scaler(self) -> bool:

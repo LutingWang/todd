@@ -9,8 +9,8 @@ from typing import TYPE_CHECKING
 import torch
 from torch import nn
 
-from ...bases.registries import BuildSpec, BuildSpecMixin
-from ...patches.py import classproperty
+from ...bases.configs import Config
+from ...bases.registries import BuildPreHookMixin, Item, RegistryMeta
 from .schedulers import BaseScheduler, SchedulerRegistry
 
 
@@ -21,7 +21,7 @@ class Reduction(StrEnum):
     PROD = 'prod'
 
 
-class BaseLoss(BuildSpecMixin, nn.Module, ABC):
+class BaseLoss(BuildPreHookMixin, nn.Module, ABC):
 
     def __init__(
         self,
@@ -42,10 +42,17 @@ class BaseLoss(BuildSpecMixin, nn.Module, ABC):
         self._bound = bound
         self.register_forward_hook(lambda m, i, o: self._scale(o))
 
-    @classproperty
-    def build_spec(self) -> BuildSpec:
-        build_spec = BuildSpec(weight=SchedulerRegistry.build)
-        return super().build_spec | build_spec
+    @classmethod
+    def build_pre_hook(
+        cls,
+        config: Config,
+        registry: RegistryMeta,
+        item: Item,
+    ) -> Config:
+        config = super().build_pre_hook(config, registry, item)
+        if 'weight' in config:
+            config.weight = SchedulerRegistry.build_or_return(config.weight)
+        return config
 
     @property
     def reduction(self) -> Reduction:

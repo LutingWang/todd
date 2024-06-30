@@ -9,8 +9,7 @@ import torch
 from torch import nn
 
 from ..bases.configs import Config
-from ..bases.registries import Builder, BuildSpec
-from ..patches.py import classproperty
+from ..bases.registries import Item, RegistryMeta
 from ..registries import RunnerRegistry
 from .base import BaseRunner
 from .memo import Memo
@@ -33,24 +32,27 @@ class Trainer(BaseRunner[T], ABC):
         self._optimizer = optimizer
         super().__init__(*args, **kwargs)
 
-    @classproperty
-    def build_spec(self) -> BuildSpec:
+    @classmethod
+    def optimizer_build_pre_hook(
+        cls,
+        config: Config,
+        item: Item,
+    ) -> Config:
+        strategy: 'BaseStrategy' = config.strategy
+        model: nn.Module = config.model
+        config.optimizer = strategy.build_optimizer(config, model)
+        return config
 
-        def build_optimizer(
-            config: Config,
-            strategy: 'BaseStrategy[T]',
-            model: nn.Module,
-        ) -> torch.optim.Optimizer:
-            return strategy.build_optimizer(config, model)
-
-        build_spec = BuildSpec(
-            optimizer=Builder(
-                build_optimizer,
-                requires=dict(strategy='strategy', model='model'),
-            ),
-        )
-
-        return super().build_spec | build_spec
+    @classmethod
+    def build_pre_hook(
+        cls,
+        config: Config,
+        registry: RegistryMeta,
+        item: Item,
+    ) -> Config:
+        config = super().build_pre_hook(config, registry, item)
+        config = cls.optimizer_build_pre_hook(config, item)
+        return config
 
     @property
     def iters_per_epoch(self) -> int:

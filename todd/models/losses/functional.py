@@ -15,8 +15,8 @@ from typing import Callable
 import torch
 import torch.nn.functional as F
 
-from ...bases.registries import BuildSpec
-from ...patches.py import classproperty
+from ...bases.configs import Config
+from ...bases.registries import Item, RegistryMeta
 from ...registries import ModelRegistry
 from ..registries import LossRegistry
 from .base import BaseLoss, Reduction
@@ -34,10 +34,17 @@ class FunctionalLoss(BaseLoss):
         super().__init__(*args, **kwargs)
         self._func = func
 
-    @classproperty
-    def build_spec(self) -> BuildSpec:
-        build_spec = BuildSpec(func=ModelRegistry.build)
-        return super().build_spec | build_spec
+    @classmethod
+    def build_pre_hook(
+        cls,
+        config: Config,
+        registry: RegistryMeta,
+        item: Item,
+    ) -> Config:
+        config = super().build_pre_hook(config, registry, item)
+        if 'func' in config:
+            config.func = ModelRegistry.build_or_return(config.func)
+        return config
 
     def forward(  # pylint: disable=arguments-differ
         self,

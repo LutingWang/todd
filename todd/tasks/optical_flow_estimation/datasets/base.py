@@ -5,9 +5,9 @@ __all__ = [
 from abc import abstractmethod
 from typing import Any, TypeVar
 
-from todd.bases.registries import BuildSpec
+from todd import Config
+from todd.bases.registries import Item, RegistryMeta
 from todd.datasets import BaseDataset as BaseDataset_
-from todd.patches.py import classproperty
 
 from ..optical_flow import OpticalFlow
 from ..registries import OFEDatasetRegistry
@@ -19,11 +19,17 @@ VT = TypeVar('VT', bound=OpticalFlow)
 @OFEDatasetRegistry.register_()
 class BaseDataset(BaseDataset_[T, str, VT]):
 
-    @classproperty
-    def build_spec(self) -> BuildSpec:
-        build_spec: BuildSpec = super().build_spec
-        build_spec.pop('access_layer')
-        return build_spec
+    @classmethod
+    def build_pre_hook(
+        cls,
+        config: Config,
+        registry: RegistryMeta,
+        item: Item,
+    ) -> Config:
+        access_layer = config.pop('access_layer')
+        config = super().build_pre_hook(config, registry, item)
+        config.access_layer = access_layer
+        return config
 
     @abstractmethod
     def _next_key(self, key: str) -> str:

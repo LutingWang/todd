@@ -3,7 +3,7 @@ __all__ = [
     'ModelRegistry',
 ]
 
-from abc import ABC
+from abc import ABC, abstractmethod
 from typing import Any, Callable, cast
 
 from torch import nn
@@ -16,6 +16,7 @@ from ..patches.py import descendant_classes
 
 class InitWeightsMixin(nn.Module, ABC):
 
+    @abstractmethod
     def init_weights(self, config: Config) -> bool:
         if hasattr(super(), 'init_weights'):
             return super().init_weights(config)  # type: ignore[misc]

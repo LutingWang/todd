@@ -8,9 +8,8 @@ from typing import TypedDict
 import torch
 
 from todd import Config
-from todd.bases.registries import BuildSpec
+from todd.bases.registries import Item, RegistryMeta
 from todd.datasets import BaseDataset
-from todd.patches.py import classproperty
 
 from .access_layers import VT, TAPVidDAVISAccessLayer
 
@@ -26,11 +25,17 @@ class T(TypedDict):
 
 class TAPVidDAVISDataset(BaseDataset[T, str, VT]):
 
-    @classproperty
-    def build_spec(self) -> BuildSpec:
-        build_spec: BuildSpec = super().build_spec
-        build_spec.pop('access_layer')
-        return build_spec
+    @classmethod
+    def build_pre_hook(
+        cls,
+        config: Config,
+        registry: RegistryMeta,
+        item: Item,
+    ) -> Config:
+        access_layer = config.pop('access_layer')
+        config = super().build_pre_hook(config, registry, item)
+        config.access_layer = access_layer
+        return config
 
     def __init__(  # pylint: disable=useless-super-delegation
         self,

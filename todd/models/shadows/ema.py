@@ -4,15 +4,15 @@ __all__ = [
 
 import torch
 
-from ...bases.registries import BuildSpec, BuildSpecMixin
-from ...patches.py import classproperty
+from ...bases.configs import Config
+from ...bases.registries import BuildPreHookMixin, Item, RegistryMeta
 from ...utils import EMA
 from ..registries import ShadowRegistry
 from .base import BaseShadow
 
 
 @ShadowRegistry.register_()
-class EMAShadow(BuildSpecMixin, BaseShadow):
+class EMAShadow(BuildPreHookMixin, BaseShadow):
     """Exponential Moving Average (EMA) Shadow.
 
     This class represents a shadow model that applies exponential moving
@@ -43,10 +43,17 @@ class EMAShadow(BuildSpecMixin, BaseShadow):
         super().__init__(*args, **kwargs)
         self._ema = ema
 
-    @classproperty
-    def build_spec(self) -> BuildSpec:
-        build_spec = BuildSpec(ema=lambda c: EMA(**c))
-        return super().build_spec | build_spec
+    @classmethod
+    def build_pre_hook(
+        cls,
+        config: Config,
+        registry: RegistryMeta,
+        item: Item,
+    ) -> Config:
+        config = super().build_pre_hook(config, registry, item)
+        if isinstance(ema := config.ema, Config):
+            config.ema = EMA(**ema)
+        return config
 
     def _forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
         """Apply exponential moving average to the input data.

@@ -3,14 +3,10 @@ __all__ = [
 ]
 
 from abc import ABC
-from typing import Generator, Mapping, TypeVar
+from typing import Any, Generator, Mapping, TypeVar
 
-from ...bases.registries import (
-    BuildSpec,
-    BuildSpecMixin,
-    NestedCollectionBuilder,
-)
-from ...patches.py import classproperty
+from ...bases.configs import Config
+from ...bases.registries import BuildPreHookMixin, Item, RegistryMeta
 from ..registries import AccessLayerRegistry
 from .base import BaseAccessLayer
 
@@ -18,7 +14,7 @@ VT = TypeVar('VT')
 
 
 @AccessLayerRegistry.register_()
-class ConcatAccessLayer(BuildSpecMixin, BaseAccessLayer[str, VT], ABC):
+class ConcatAccessLayer(BuildPreHookMixin, BaseAccessLayer[str, VT], ABC):
     KEY_SEPARATOR = ':'
     DATA_ROOT_SEPARATOR = '|'
 
@@ -37,12 +33,20 @@ class ConcatAccessLayer(BuildSpecMixin, BaseAccessLayer[str, VT], ABC):
 
         self._access_layers = access_layers
 
-    @classproperty
-    def build_spec(self) -> BuildSpec:
-        build_spec = BuildSpec(
-            access_layers=NestedCollectionBuilder(AccessLayerRegistry.build),
-        )
-        return super().build_spec | build_spec
+    @classmethod
+    def build_pre_hook(
+        cls,
+        config: Config,
+        registry: RegistryMeta,
+        item: Item,
+    ) -> Config:
+        config = super().build_pre_hook(config, registry, item)
+        access_layers: dict[str, Any] = config.access_layers
+        config.access_layers = {
+            k: AccessLayerRegistry.build_or_return(v)
+            for k, v in access_layers.items()
+        }
+        return config
 
     def _parse(self, key: str) -> tuple[BaseAccessLayer[str, VT], str]:
         name, key = key.split(self.KEY_SEPARATOR, maxsplit=1)
