@@ -2,6 +2,10 @@ __all__ = [
     'CheckCallback',
 ]
 
+from typing import TypeVar
+
+from torch import nn
+
 from ...patches.torch import get_rank
 from ..memo import Memo
 from ..registries import CallbackRegistry
@@ -9,9 +13,11 @@ from .base import BaseCallback
 
 # TODO: check if the model has grad after each iteration
 
+T = TypeVar('T', bound=nn.Module)
+
 
 @CallbackRegistry.register_()
-class CheckCallback(BaseCallback):
+class CheckCallback(BaseCallback[T]):
 
     def before_run(self, memo: Memo) -> None:
         if get_rank() == 0:

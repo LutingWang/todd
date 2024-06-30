@@ -14,7 +14,7 @@ from ...patches.py import NonInstantiableMeta
 from ..configs import Config
 from .build_specs import BuildSpec
 
-F = Callable[['Config'], Any]
+F = Callable[[Config], Any]
 
 
 class Item(Protocol):
@@ -298,7 +298,7 @@ class RegistryMeta(  # type: ignore[misc]
 
     # Construction
 
-    def _build(cls, item: Item, config: 'Config') -> Any:
+    def _build(cls, item: Item, config: Config) -> Any:
         """Build an instance according to the given config.
 
         Args:
@@ -328,7 +328,7 @@ class RegistryMeta(  # type: ignore[misc]
         """
         return item(**config)
 
-    def build(cls, config: 'Config', **kwargs) -> Any:
+    def build(cls, config: Config, **kwargs) -> Any:
         """Call the registered object to construct a new instance.
 
         Args:

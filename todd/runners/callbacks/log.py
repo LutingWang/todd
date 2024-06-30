@@ -4,9 +4,10 @@ __all__ = [
 
 import datetime
 import logging
-from typing import Any
+from typing import Any, TypeVar
 
 import torch
+from torch import nn
 
 from ...bases.configs import Config
 from ...loggers import Formatter
@@ -18,9 +19,11 @@ from ..utils import BaseETA
 from .base import BaseCallback
 from .interval import IntervalMixin
 
+T = TypeVar('T', bound=nn.Module)
+
 
 @CallbackRegistry.register_()
-class LogCallback(IntervalMixin, BaseCallback):
+class LogCallback(IntervalMixin[T], BaseCallback[T]):
 
     def __init__(
         self,
@@ -35,8 +38,9 @@ class LogCallback(IntervalMixin, BaseCallback):
         self._with_file_handler = with_file_handler
         self._eta_config = eta
 
-    def init(self, *args, **kwargs) -> None:
-        super().init(*args, **kwargs)
+    def bind(self, *args, **kwargs) -> None:
+        super().bind(*args, **kwargs)
+
         if get_rank() > 0:
             return
         if self._with_file_handler:

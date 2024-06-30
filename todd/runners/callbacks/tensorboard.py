@@ -2,6 +2,9 @@ __all__ = [
     'TensorBoardCallback',
 ]
 
+from typing import TypeVar
+
+from torch import nn
 from torch.utils.tensorboard import SummaryWriter
 
 from ...bases.configs import Config
@@ -11,9 +14,11 @@ from ..registries import CallbackRegistry
 from .base import BaseCallback
 from .interval import IntervalMixin
 
+T = TypeVar('T', bound=nn.Module)
+
 
 @CallbackRegistry.register_()
-class TensorBoardCallback(IntervalMixin, BaseCallback):
+class TensorBoardCallback(IntervalMixin[T], BaseCallback[T]):
 
     def __init__(
         self,
@@ -28,8 +33,9 @@ class TensorBoardCallback(IntervalMixin, BaseCallback):
         self._summary_writer_config = summary_writer
         self._main_tag = main_tag
 
-    def init(self, *args, **kwargs) -> None:
-        super().init(*args, **kwargs)
+    def bind(self, *args, **kwargs) -> None:
+        super().bind(*args, **kwargs)
+
         if get_rank() > 0:
             return
         log_dir = self.runner.work_dir / 'tensorboard'

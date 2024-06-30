@@ -4,13 +4,11 @@ __all__ = [
 ]
 
 from functools import partial
-from typing import TYPE_CHECKING, Any, no_type_check
+from typing import Any, no_type_check
 
+from ..bases.configs import Config
 from ..bases.registries import Item, RegistryMeta
 from ..patches.py import NonInstantiableMeta
-
-if TYPE_CHECKING:
-    from ..bases.configs import Config
 
 
 class PartialRegistryMeta(RegistryMeta):
@@ -21,7 +19,7 @@ class PartialRegistryMeta(RegistryMeta):
             return NonInstantiableMeta.__subclasses__(PartialRegistryMeta)
         return super().__subclasses__()
 
-    def _build(cls, item: Item, config: 'Config') -> Any:
+    def _build(cls, item: Item, config: Config) -> Any:
         return partial(item, **config)
 
 

@@ -3,17 +3,21 @@ __all__ = [
 ]
 
 import contextlib
+from typing import TypeVar
 
 import torch
+from torch import nn
 
 from ...bases.configs import Config
 from ..memo import Memo
 from ..registries import CallbackRegistry
 from .base import BaseCallback
 
+T = TypeVar('T', bound=nn.Module)
+
 
 @CallbackRegistry.register_()
-class AutocastCallback(BaseCallback):
+class AutocastCallback(BaseCallback[T]):
 
     def __init__(self, *args, autocast: Config, **kwargs) -> None:
         super().__init__(*args, **kwargs)

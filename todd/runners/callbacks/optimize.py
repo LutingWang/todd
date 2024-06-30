@@ -1,12 +1,11 @@
-# pylint: disable=pointless-statement
-
 __all__ = [
     'OptimizeCallback',
 ]
 
-from typing import Any, Mapping
+from typing import Any, Mapping, TypeVar
 
 import torch
+from torch import nn
 
 from ...bases.registries import BuildSpec, BuildSpecMixin
 from ...patches.py import classproperty
@@ -15,9 +14,11 @@ from ..memo import Memo
 from ..registries import CallbackRegistry
 from .base import BaseCallback
 
+T = TypeVar('T', bound=nn.Module)
+
 
 @CallbackRegistry.register_()
-class OptimizeCallback(BuildSpecMixin, BaseCallback):
+class OptimizeCallback(BuildSpecMixin, BaseCallback[T]):
 
     # TODO: add accumulate
     def __init__(
@@ -32,10 +33,6 @@ class OptimizeCallback(BuildSpecMixin, BaseCallback):
             self._grad_scaler = grad_scaler
         if grad_clipper is not None:
             self._grad_clipper = grad_clipper
-
-    def init(self, *args, **kwargs) -> None:
-        super().init(*args, **kwargs)
-        self.trainer
 
     @classproperty
     def build_spec(self) -> BuildSpec:

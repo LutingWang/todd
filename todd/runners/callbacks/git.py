@@ -3,6 +3,9 @@ __all__ = [
 ]
 
 import subprocess  # nosec B404
+from typing import TypeVar
+
+from torch import nn
 
 from ...patches.py import run
 from ...patches.torch import get_rank
@@ -10,9 +13,11 @@ from ...utils import get_timestamp
 from ..registries import CallbackRegistry
 from .base import BaseCallback
 
+T = TypeVar('T', bound=nn.Module)
+
 
 @CallbackRegistry.register_()
-class GitCallback(BaseCallback):
+class GitCallback(BaseCallback[T]):
 
     def __init__(
         self,
@@ -23,8 +28,9 @@ class GitCallback(BaseCallback):
         super().__init__(*args, **kwargs)
         self._diff = diff
 
-    def init(self, *args, **kwargs) -> None:
-        super().init(*args, **kwargs)
+    def bind(self, *args, **kwargs) -> None:
+        super().bind(*args, **kwargs)
+
         if get_rank() > 0:
             return
         if self._diff is not None:

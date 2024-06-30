@@ -5,19 +5,20 @@ __all__ = [
 ]
 
 import contextlib
-from typing import Any
+from typing import Any, TypeVar
+
+from torch import nn
 
 from ...utils import StateDictMixin
 from ..memo import Memo
 from ..registries import CallbackRegistry
 from ..utils import RunnerHolderMixin
 
+T = TypeVar('T', bound=nn.Module)
+
 
 @CallbackRegistry.register_()
-class BaseCallback(RunnerHolderMixin, StateDictMixin):
-
-    def init(self, *args, **kwargs) -> None:
-        pass
+class BaseCallback(RunnerHolderMixin[T], StateDictMixin):
 
     def should_break(self, batch: Any, memo: Memo) -> bool:
         """Determine whether to break the run loop.

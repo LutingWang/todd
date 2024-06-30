@@ -4,10 +4,15 @@ __all__ = [
 
 import contextlib
 import logging
+from typing import TypeVar
+
+from torch import nn
 
 from ..memo import Memo
 from ..registries import CallbackRegistry
 from .base import BaseCallback
+
+T = TypeVar('T', bound=nn.Module)
 
 
 class Context:
@@ -27,7 +32,7 @@ class Context:
 
 
 @CallbackRegistry.register_()
-class MonitorCallback(BaseCallback):
+class MonitorCallback(BaseCallback[T]):
 
     def run_iter_context(
         self,

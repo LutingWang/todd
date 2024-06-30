@@ -1,26 +1,26 @@
-# pylint: disable=pointless-statement
-
 __all__ = [
     'LRScheduleCallback',
     'LRScaleCallback',
 ]
 
-from typing import Any, Mapping, cast
+from typing import Any, Mapping, TypeVar
 
 import torch
+from torch import nn
 
 from ...bases.configs import Config
 from ...patches.torch import get_rank, get_world_size
 from ...registries import LRSchedulerRegistry
 from ..memo import Memo
 from ..registries import CallbackRegistry
-from ..trainer import Trainer
 from .base import BaseCallback
 from .interval import IntervalMixin
 
+T = TypeVar('T', bound=nn.Module)
+
 
 @CallbackRegistry.register_()
-class LRScheduleCallback(IntervalMixin, BaseCallback):
+class LRScheduleCallback(IntervalMixin[T], BaseCallback[T]):
 
     def __init__(
         self,
@@ -32,17 +32,13 @@ class LRScheduleCallback(IntervalMixin, BaseCallback):
         super().__init__(*args, interval=interval, **kwargs)
         self._lr_scheduler_config = lr_scheduler
 
-    def init(self, *args, **kwargs) -> None:
-        super().init(*args, **kwargs)
-        self.trainer
-        self._build_lr_scheduler()
+    def bind(self, *args, **kwargs) -> None:
+        super().bind(*args, **kwargs)
 
-    def _build_lr_scheduler(self) -> None:
-        runner = cast(Trainer, self.runner)
         self._lr_scheduler: torch.optim.lr_scheduler.LRScheduler = \
             LRSchedulerRegistry.build(
                 self._lr_scheduler_config,
-                optimizer=runner.optimizer,
+                optimizer=self.trainer.optimizer,
             )
 
     def after_run_iter(self, batch, memo: Memo) -> None:
@@ -75,29 +71,27 @@ class LRScheduleCallback(IntervalMixin, BaseCallback):
 
 
 @CallbackRegistry.register_()
-class LRScaleCallback(BaseCallback):
+class LRScaleCallback(BaseCallback[T]):
 
     def __init__(self, *args, lr_scaler: Config, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._lr_scaler_config = lr_scaler
 
-    def _scale_lr(self, config: Config) -> None:
-        runner = cast(Trainer, self.runner)
-        assert runner.dataloader.batch_size is not None
-        base_batch_size = config.base_batch_size
-        batch_size = get_world_size() * runner.dataloader.batch_size
+    def bind(self, *args, **kwargs) -> None:
+        super().bind(*args, **kwargs)
+
+        base_batch_size = self._lr_scaler_config.base_batch_size
+        batch_size = get_world_size() * self.runner.dataloader.batch_size
         lr_scaler = batch_size / base_batch_size
-        if 'lr' in runner.optimizer.defaults:
-            runner.optimizer.defaults['lr'] *= lr_scaler
-        for param_group in runner.optimizer.param_groups:
+
+        optimizer = self.trainer.optimizer
+        if 'lr' in optimizer.defaults:
+            optimizer.defaults['lr'] *= lr_scaler
+        for param_group in optimizer.param_groups:
             if 'lr' in param_group:
                 param_group['lr'] *= lr_scaler
+
         if get_rank() == 0:
-            runner.logger.info(
+            self.runner.logger.info(
                 f"{base_batch_size=} {batch_size=} {lr_scaler=:.3f}",
             )
-
-    def init(self, *args, **kwargs) -> None:
-        super().init(*args, **kwargs)
-        self.trainer
-        self._scale_lr(self._lr_scaler_config)

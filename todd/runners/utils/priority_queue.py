@@ -16,8 +16,6 @@ class PriorityQueue(UserList[tuple[Mapping[KT, int], VT]]):
         priorities: Iterable[Mapping[KT, int]],
         queue: Iterable[VT],
     ) -> None:
-        priorities = list(priorities)
-        queue = list(queue)
         super().__init__(zip(priorities, queue))
 
     @property
@@ -29,11 +27,4 @@ class PriorityQueue(UserList[tuple[Mapping[KT, int], VT]]):
         return [q for _, q in self]
 
     def __call__(self, key: KT) -> list[VT]:
-        if len(self) == 0:
-            return []
-        priorities = [p.get(key, 0) for p in self.priorities]
-        priority_index = [(p, i) for i, p in enumerate(priorities)]
-        priority_index = sorted(priority_index)
-        _, indices = zip(*priority_index)
-        queue = [self.queue[i] for i in indices]
-        return queue
+        return [q for _, q in sorted(self, key=lambda x: x[0].get(key, 0))]

@@ -209,7 +209,6 @@ class BaseRunner(BuildSpecMixin, StateDictMixin, Generic[T]):
 
     def _init_callbacks(self, *args, **kwargs) -> None:
         self._callbacks.bind(self)
-        self._callbacks.init()
 
     def _init_work_dir(self, *args, **kwargs) -> None:
         self._work_dir.mkdir(parents=True, exist_ok=True)

@@ -2,7 +2,9 @@ __all__ = [
     'ShadowCallback',
 ]
 
-from typing import Any, Mapping
+from typing import Any, Mapping, TypeVar
+
+from torch import nn
 
 from ...bases.configs import Config
 from ...models.shadows import EMAShadow
@@ -11,9 +13,11 @@ from ..registries import CallbackRegistry
 from .base import BaseCallback
 from .interval import IntervalMixin
 
+T = TypeVar('T', bound=nn.Module)
+
 
 @CallbackRegistry.register_()
-class ShadowCallback(IntervalMixin, BaseCallback):
+class ShadowCallback(IntervalMixin[T], BaseCallback[T]):
 
     def __init__(
         self,
@@ -24,8 +28,9 @@ class ShadowCallback(IntervalMixin, BaseCallback):
         super().__init__(*args, **kwargs)
         self._shadow_config = shadow
 
-    def init(self, *args, **kwargs) -> None:
-        super().init(*args, **kwargs)
+    def bind(self, *args, **kwargs) -> None:
+        super().bind(*args, **kwargs)
+
         if get_rank() == 0:
             self._shadow = EMAShadow(
                 module=self.runner.strategy.module,

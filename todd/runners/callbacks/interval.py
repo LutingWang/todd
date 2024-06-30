@@ -2,10 +2,16 @@ __all__ = [
     'IntervalMixin',
 ]
 
+from typing import TypeVar
+
+from torch import nn
+
 from .base import BaseCallback
 
+T = TypeVar('T', bound=nn.Module)
 
-class IntervalMixin(BaseCallback):
+
+class IntervalMixin(BaseCallback[T]):
 
     def __init__(
         self,

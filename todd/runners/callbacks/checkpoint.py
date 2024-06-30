@@ -1,12 +1,12 @@
-# pylint: disable=pointless-statement
-
 __all__ = [
     'CheckpointCallback',
 ]
 
 import pathlib
+from typing import TypeVar
 
 import torch
+from torch import nn
 
 from ...bases.configs import Config
 from ...patches.torch import get_rank
@@ -15,9 +15,11 @@ from ..registries import CallbackRegistry
 from .base import BaseCallback
 from .interval import IntervalMixin
 
+T = TypeVar('T', bound=nn.Module)
+
 
 @CallbackRegistry.register_()
-class CheckpointCallback(IntervalMixin, BaseCallback):
+class CheckpointCallback(IntervalMixin[T], BaseCallback[T]):
 
     def __init__(
         self,
@@ -34,9 +36,8 @@ class CheckpointCallback(IntervalMixin, BaseCallback):
             load_state_dict = Config()
         self._load_state_dict = load_state_dict
 
-    def init(self, *args, **kwargs) -> None:
-        super().init(*args, **kwargs)
-        self.trainer
+    def bind(self, *args, **kwargs) -> None:
+        super().bind(*args, **kwargs)
 
         self._checkpoint_dir = self.runner.work_dir / 'checkpoints'
         self._latest_checkpoint_dir = self._checkpoint_dir / 'latest'
