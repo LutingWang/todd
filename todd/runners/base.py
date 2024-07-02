@@ -133,6 +133,7 @@ class BaseRunner(BuildPreHookMixin, StateDictMixin, Generic[T]):
         dataset: Dataset = config.dataset
         config.dataloader = DataLoaderRegistry.build_or_return(
             config.dataloader,
+            type='DataLoader',
             dataset=dataset,
         )
         return config

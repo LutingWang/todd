@@ -40,7 +40,7 @@ class Trainer(BaseRunner[T], ABC):
     ) -> Config:
         strategy: 'BaseStrategy' = config.strategy
         model: nn.Module = config.model
-        config.optimizer = strategy.build_optimizer(config, model)
+        config.optimizer = strategy.build_optimizer(config.optimizer, model)
         return config
 
     @classmethod
