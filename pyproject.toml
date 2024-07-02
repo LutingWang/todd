@@ -140,15 +140,11 @@ plugins = 'numpy.typing.mypy_plugin'
 [[tool.mypy.overrides]]
 module = [
     'custom_types.*',
-    'cv2.*',
-    'lmdb.*',
-    'lvis.*',
-    'ipdb.*',
+    'ffmpeg.*',
+    'h5py.*',
     'mmcv.*',
     'pptx.*',
-    'setuptools.*',
     'torchvision.*',
-    'transformers.*',
     'yapf.*',
 ]
 ignore_missing_imports = true

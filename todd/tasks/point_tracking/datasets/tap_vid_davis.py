@@ -1,5 +1,4 @@
 __all__ = [
-    'T',
     'TAPVidDAVISDataset',
 ]
 
@@ -11,7 +10,8 @@ from todd import Config
 from todd.bases.registries import Item, RegistryMeta
 from todd.datasets import BaseDataset
 
-from .access_layers import VT, TAPVidDAVISAccessLayer
+from .access_layers import TAPVidDAVISAccessLayer
+from .access_layers.tap_vid_davis import VT
 
 
 class T(TypedDict):

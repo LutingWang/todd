@@ -5,7 +5,10 @@ __all__ = [
 
 import pathlib
 from pathlib import Path
-from typing import Iterator
+from typing import Iterator, TypeVar
+
+import numpy as np
+import numpy.typing as npt
 
 from todd.datasets.access_layers import CV2AccessLayer, FolderAccessLayer
 
@@ -13,10 +16,10 @@ from ...optical_flow import Flo5OpticalFlow
 from ..registries import OFEAccessLayerRegistry
 from .optical_flow import OpticalFlowAccessLayer
 
-VT = Flo5OpticalFlow
+VT = TypeVar('VT')
 
 
-class SpringMixin(FolderAccessLayer):
+class SpringMixin(FolderAccessLayer[VT]):
 
     def __init__(self, *args, modality: str, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -41,14 +44,17 @@ class SpringMixin(FolderAccessLayer):
 
 
 @OFEAccessLayerRegistry.register_()
-class SpringOpticalFlowAccessLayer(SpringMixin, OpticalFlowAccessLayer[VT]):
+class SpringOpticalFlowAccessLayer(
+    SpringMixin[Flo5OpticalFlow],
+    OpticalFlowAccessLayer[Flo5OpticalFlow],
+):
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, optical_flow_type=Flo5OpticalFlow, **kwargs)
 
 
 @OFEAccessLayerRegistry.register_()
-class SpringCV2AccessLayer(SpringMixin, CV2AccessLayer):
+class SpringCV2AccessLayer(SpringMixin[npt.NDArray[np.uint8]], CV2AccessLayer):
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, suffix='png', **kwargs)

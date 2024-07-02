@@ -3,7 +3,7 @@ __all__ = [
 ]
 
 from abc import abstractmethod
-from typing import Any, TypeVar
+from typing import TypeVar
 
 from todd import Config
 from todd.bases.registries import Item, RegistryMeta
@@ -12,7 +12,7 @@ from todd.datasets import BaseDataset as BaseDataset_
 from ..optical_flow import OpticalFlow
 from ..registries import OFEDatasetRegistry
 
-T = dict[str, Any]
+T = TypeVar('T')
 VT = TypeVar('VT', bound=OpticalFlow)
 
 

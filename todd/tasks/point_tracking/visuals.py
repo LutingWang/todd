@@ -1,5 +1,6 @@
 __all__ = [
     'Visual',
+    'TAPVidDAVISVisual',
 ]
 
 from itertools import starmap
@@ -16,27 +17,30 @@ from todd.colors import BGR, Color
 from todd.patches.cv2 import ColorMap, VideoWriter
 from todd.visuals import CV2Visual
 
-from .datasets import T
+from .datasets.tap_vid_davis import T as TAPVidDAVISDataType  # noqa: N811
 from .points import Points
 
 
 class Visual:
 
-    def __init__(self, t: T) -> None:
-        video = t['video']
-        t_, h, w, c = video.shape
-        wh = (w, h)
-        self._wh = wh
+    def __init__(
+        self,
+        *args,
+        video: torch.Tensor,
+        target_points: Points,
+        occluded: torch.Tensor,
+        **kwargs,
+    ) -> None:
+        super().__init__(*args, **kwargs)
 
+        t_, h, w, c = video.shape
         visuals = [CV2Visual(w, h, c) for _ in range(t_)]
         for frame, visual in zip(video, visuals):
             visual.image(frame.numpy())
         self._visuals = visuals
 
-        target_points = Points(t['target_points'], normalized=True, divisor=wh)
         self._target_points = target_points.denormalize()  # p * t
-
-        self._occluded = t['occluded']  # p * t
+        self._occluded = occluded  # p * t
 
     def colorize(self, color_map: int = cv2.COLORMAP_JET) -> list[BGR]:
         tensor = self._target_points.to_tensor()
@@ -102,3 +106,24 @@ class Visual:
             frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
             video_writer.write(frame)
         video_writer.dump(path)
+
+
+class TAPVidDAVISVisual(Visual):
+
+    def __init__(self, t: TAPVidDAVISDataType) -> None:
+        video = t['video']
+        _, h, w, _ = video.shape
+
+        target_points = Points(
+            t['target_points'],
+            normalized=True,
+            divisor=(w, h),
+        )
+
+        occluded = t['occluded']
+
+        super().__init__(
+            video=video,
+            target_points=target_points,
+            occluded=occluded,
+        )

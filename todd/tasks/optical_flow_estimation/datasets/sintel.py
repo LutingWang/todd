@@ -2,7 +2,7 @@ __all__ = [
     'SintelDataset',
 ]
 
-from typing import Any
+from typing import TypedDict
 
 import torch
 
@@ -14,12 +14,20 @@ from ..registries import OFEDatasetRegistry
 from .access_layers import OpticalFlowAccessLayer
 from .base import BaseDataset
 
-T = dict[str, Any]
 VT = FloOpticalFlow
 
 
+class T(TypedDict):
+    id_: str
+    of: torch.Tensor
+    frame1: torch.Tensor
+    frame2: torch.Tensor
+    invalid: torch.Tensor
+    occlusion: torch.Tensor
+
+
 @OFEDatasetRegistry.register_()
-class SintelDataset(BaseDataset[VT]):
+class SintelDataset(BaseDataset[T, VT]):
 
     def __init__(
         self,
@@ -62,7 +70,7 @@ class SintelDataset(BaseDataset[VT]):
 
     def __getitem__(self, index: int) -> T:
         key, of = self._access(index)
-        return dict(
+        return T(
             id_=key,
             of=of.to_tensor(),
             frame1=torch.tensor(self._frame[key]),
