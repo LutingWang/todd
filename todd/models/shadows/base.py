@@ -4,7 +4,7 @@ __all__ = [
 
 from abc import ABC, abstractmethod
 from functools import partial
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import torch
 from torch import nn
@@ -58,6 +58,3 @@ class BaseShadow(nn.Module, ABC):
             self._shadow,
             self._state_dict_to_device(module),
         )
-
-    if TYPE_CHECKING:
-        __call__ = forward

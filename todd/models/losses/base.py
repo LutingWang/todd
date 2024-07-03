@@ -4,7 +4,6 @@ __all__ = [
 
 from abc import ABC, abstractmethod
 from enum import StrEnum
-from typing import TYPE_CHECKING
 
 import torch
 from torch import nn
@@ -86,6 +85,3 @@ class BaseLoss(BuildPreHookMixin, nn.Module, ABC):
     @abstractmethod
     def forward(self, *args, **kwargs) -> torch.Tensor:
         pass
-
-    if TYPE_CHECKING:
-        __call__ = forward

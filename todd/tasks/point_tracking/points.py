@@ -4,7 +4,7 @@ __all__ = [
     'FlattenPoints',
 ]
 
-from dataclasses import dataclass
+from dataclasses import astuple, dataclass
 
 import torch
 
@@ -17,8 +17,7 @@ class Point:
     y: int
 
     def inside(self, image_wh: tuple[int, int]) -> bool:
-        w, h = image_wh
-        return 0 <= self.x < w and 0 <= self.y < h
+        return (0, 0) <= astuple(self) <= image_wh
 
 
 class Points(NormalizeMixin[Point], TensorWrapper[Point]):
@@ -42,6 +41,10 @@ class Points(NormalizeMixin[Point], TensorWrapper[Point]):
     def flatten(self) -> 'FlattenPoints':
         args, kwargs = self.copy(self._flatten()).__getstate__()
         return FlattenPoints(*args, **kwargs)
+
+    def inside(self) -> torch.Tensor:
+        tensor = self.normalize().to_tensor()
+        return 0 <= tensor.min(-1) & tensor.max(-1) <= 1
 
 
 class FlattenPoints(FlattenMixin[Point], Points):
