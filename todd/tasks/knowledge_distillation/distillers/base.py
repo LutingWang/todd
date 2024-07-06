@@ -11,10 +11,11 @@ from typing_extensions import Self
 from torch import nn
 
 from todd import Config
+from todd.bases.registries import BuildPreHookMixin, Item, RegistryMeta
 from todd.models.losses import BaseLoss
 from todd.utils import StoreMeta, transfer_state_dicts
 
-from ..registries import KDProcessorRegistry
+from ..registries import KDDistillerRegistry, KDProcessorRegistry
 from ..utils import Pipeline, Spec
 from .adapts import BaseAdapt
 from .hooks import BaseHook
@@ -27,73 +28,81 @@ class DistillerStore(metaclass=StoreMeta):
     INTERMEDIATE_OUTPUTS: str
 
 
-class BaseDistiller(nn.Module, ABC):
+@KDDistillerRegistry.register_()
+class BaseDistiller(BuildPreHookMixin, nn.Module, ABC):
 
     def __init__(
         self,
         *args,
         models: Iterable[nn.Module],
-        hook_pipelines: Iterable[Config],
-        adapt_pipelines: Iterable[Config],
-        loss_pipelines: Iterable[Config],
+        hook_pipelines: Pipeline[BaseHook],
+        adapt_pipeline: Pipeline[BaseAdapt],
+        loss_pipeline: Pipeline[BaseLoss],
         weight_transfer: Mapping[str, str] | None = None,
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
+        self._models = tuple(models)
+        self._hook_pipelines = hook_pipelines
+        self._adapt_pipeline = adapt_pipeline
+        self._loss_pipeline = loss_pipeline
 
-        models = tuple(models)
-        self._models = models
+        outputs: set[str] = set()
+        for pipeline in self._hook_pipelines.processors:
+            spec = pipeline.spec
+            assert len(spec.inputs) == 0
+            assert outputs.isdisjoint(spec.outputs)
+            outputs |= spec.outputs
 
-        hook_pipeline: Pipeline[BaseHook] = KDProcessorRegistry.build(
-            Config(),
-            type=Pipeline.__name__,
-            processors=hook_pipelines,
-        )
-        for model, pipeline in zip(models, hook_pipeline.processors):
+        for model, pipeline in zip(models, hook_pipelines.processors):
             for atom in pipeline.atoms:
                 atom.bind(model)
-        self._hook_pipeline = hook_pipeline
 
-        adapt_pipeline: Pipeline[BaseAdapt] = KDProcessorRegistry.build(
-            Config(),
-            type=Pipeline.__name__,
-            processors=adapt_pipelines,
-        )
         adapts = nn.ModuleList(
             nn.ModuleList(pipeline.atoms)
             for pipeline in adapt_pipeline.processors
         )
         self.add_module('_adapts', adapts)
-        self._adapt_pipeline = adapt_pipeline
 
-        loss_pipeline: Pipeline[BaseLoss] = KDProcessorRegistry.build(
-            Config(),
-            type=Pipeline.__name__,
-            processors=loss_pipelines,
-        )
         losses = nn.ModuleList(
             nn.ModuleList(pipeline.atoms)
             for pipeline in loss_pipeline.processors
         )
         self.add_module('_losses', losses)
-        self._loss_pipeline = loss_pipeline
 
         if weight_transfer is not None:
             transfer_state_dicts(self, weight_transfer)
 
-        outputs: set[str] = set()
-        for pipeline in self._hook_pipeline.processors:
-            spec = pipeline.spec
-            assert len(spec.inputs) == 0
-            assert outputs.isdisjoint(spec.outputs)
-            outputs |= spec.outputs
+    @classmethod
+    def build_pre_hook(
+        cls,
+        config: Config,
+        registry: RegistryMeta,
+        item: Item,
+    ) -> Config:
+        config = super().build_pre_hook(config, registry, item)
+        hook_pipelines = [
+            KDProcessorRegistry.build_or_return(
+                Config(type=Pipeline.__name__, processors=hook_pipeline),
+            ) for hook_pipeline in config.hook_pipelines
+        ]
+        config.hook_pipelines = KDProcessorRegistry.build_or_return(
+            Config(type=Pipeline.__name__, processors=hook_pipelines),
+        )
+        config.adapt_pipeline = KDProcessorRegistry.build_or_return(
+            Config(type=Pipeline.__name__, processors=config.adapt_pipeline),
+        )
+        config.loss_pipeline = KDProcessorRegistry.build_or_return(
+            Config(type=Pipeline.__name__, processors=config.loss_pipeline),
+        )
+        return config
 
     def forward(self, message: Message | None = None) -> Message:
         if message is None:
             message = dict()
 
         if DistillerStore.CHECK_INPUTS:
-            hook_spec = self._hook_pipeline.spec
+            hook_spec = self._hook_pipelines.spec
             adapt_spec = self._adapt_pipeline.spec
             loss_spec = self._loss_pipeline.spec
             spec = Spec(
@@ -132,11 +141,11 @@ class BaseDistiller(nn.Module, ABC):
 
     def tensors(self) -> Message:
         tensors: Message = dict()
-        self._hook_pipeline(tensors)
+        self._hook_pipelines(tensors)
         return tensors
 
     def reset(self) -> None:
-        for callable_ in self._hook_pipeline.atoms:
+        for callable_ in self._hook_pipelines.atoms:
             callable_.reset()
 
     def step(self) -> None:

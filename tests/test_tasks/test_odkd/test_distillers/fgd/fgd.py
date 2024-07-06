@@ -9,48 +9,43 @@ odkd_adapt_scope = odkd_scope + 'ODKDDistillerRegistry.ODKDAdaptRegistry.'
 odkd_loss_scope = odkd_scope + 'ODKDModelRegistry.ODKDLossRegistry.'
 distiller = dict(
     models=[],
-    hook_pipelines=dict(),
-    adapt_pipelines=[
-        dict(
+    hook_pipelines=[],
+    adapt_pipeline=dict(
+        attn_spatial=dict(
             type='SingleParallelOperator',
             args=('neck', ),
-            outputs='attn_spatial',
             atom=dict(
                 type=kd_adapt_scope + 'SpatialAttention',
                 temperature=0.5,
             ),
         ),
-        dict(
+        teacher_attn_spatial=dict(
             type='SingleParallelOperator',
             args=('teacher_neck', ),
-            outputs='teacher_attn_spatial',
             atom=dict(
                 type=kd_adapt_scope + 'SpatialAttention',
                 temperature=0.5,
             ),
         ),
-        dict(
+        attn_channel=dict(
             type='SingleParallelOperator',
             args=('neck', ),
-            outputs='attn_channel',
             atom=dict(
                 type=kd_adapt_scope + 'ChannelAttention',
                 temperature=0.5,
             ),
         ),
-        dict(
+        teacher_attn_channel=dict(
             type='SingleParallelOperator',
             args=('teacher_neck', ),
-            outputs='teacher_attn_channel',
             atom=dict(
                 type=kd_adapt_scope + 'ChannelAttention',
                 temperature=0.5,
             ),
         ),
-        dict(
+        masks=dict(
             type='SingleOperator',
             args=('img_shape', 'gt_bboxes'),
-            outputs='masks',
             atom=dict(
                 type=odkd_adapt_scope + 'FGDMask',
                 neg_gain=0.5,
@@ -58,10 +53,9 @@ distiller = dict(
                 ceil_mode=True,
             ),
         ),
-        dict(
+        global_=dict(
             type='MultipleParallelOperator',
             args=('neck', ),
-            outputs='global_',
             atoms=[
                 dict(
                     type=kd_adapt_scope + 'mmcv_ContextBlock',
@@ -70,10 +64,9 @@ distiller = dict(
                 ),
             ] * 5,
         ),
-        dict(
+        teacher_global=dict(
             type='MultipleParallelOperator',
             args=('teacher_neck', ),
-            outputs='teacher_global',
             atoms=[
                 dict(
                     type=kd_adapt_scope + 'mmcv_ContextBlock',
@@ -82,12 +75,11 @@ distiller = dict(
                 ),
             ] * 5,
         ),
-    ],
-    loss_pipelines=[
-        dict(
+    ),
+    loss_pipeline=dict(
+        loss_feat=dict(
             type='SingleParallelOperator',
             args=('neck', 'teacher_neck'),
-            outputs='loss_feat',
             kwargs=dict(
                 attn_spatial='teacher_attn_spatial',
                 attn_channel='teacher_attn_channel',
@@ -99,35 +91,32 @@ distiller = dict(
                 reduction='sum',
             ),
         ),
-        dict(
+        loss_attn_spatial=dict(
             type='SingleParallelOperator',
             args=('attn_spatial', 'teacher_attn_spatial'),
-            outputs='loss_attn_spatial',
             atom=dict(
                 type=loss_scope + 'L1Loss',
                 weight=2.5e-4,
                 reduction='sum',
             ),
         ),
-        dict(
+        loss_attn_channel=dict(
             type='SingleParallelOperator',
             args=('attn_channel', 'teacher_attn_channel'),
-            outputs='loss_attn_channel',
             atom=dict(
                 type=loss_scope + 'L1Loss',
                 weight=2.5e-4,
                 reduction='sum',
             ),
         ),
-        dict(
+        loss_global=dict(
             type='SingleParallelOperator',
             args=('global_', 'teacher_global'),
-            outputs='loss_global',
             atom=dict(
                 type=loss_scope + 'MSELoss',
                 weight=2.5e-6,
                 reduction='sum',
             ),
         ),
-    ],
+    ),
 )

@@ -9,36 +9,32 @@ odkd_adapt_scope = odkd_scope + 'ODKDDistillerRegistry.ODKDAdaptRegistry.'
 odkd_loss_scope = odkd_scope + 'ODKDModelRegistry.ODKDLossRegistry.'
 distiller = dict(
     models=[],
-    hook_pipelines=dict(),
-    adapt_pipelines=[
-        dict(
+    hook_pipelines=[],
+    adapt_pipeline={
+        'pred_reshaped': dict(
             type='SingleParallelOperator',
             args=('preds', ),
-            outputs='pred_reshaped',
             atom=dict(
                 type=kd_adapt_scope + 'Rearrange',
                 pattern='bs dim h w -> bs h w dim',
             ),
         ),
-        dict(
+        'targets, bboxes, bbox_poses, anchor_ids': dict(
             type='SingleOperator',
             args=('targets', 'bboxes', 'bbox_ids'),
-            outputs='targets, bboxes, bbox_poses, anchor_ids',
             atom=dict(
                 type=kd_adapt_scope + 'CustomAdapt',
                 stride=1,
             ),
         ),
-        dict(
+        'pred_indexed': dict(
             type='SingleOperator',
             args=('pred_reshaped', 'bbox_poses'),
-            outputs='pred_indexed',
             atom=dict(type=kd_adapt_scope + 'Index'),
         ),
-        dict(
+        'preds': dict(
             type='SingleOperator',
             args=('pred_indexed', 'anchor_ids'),
-            outputs='preds',
             atom=dict(
                 type=kd_adapt_scope + 'Decouple',
                 num=9,
@@ -47,16 +43,15 @@ distiller = dict(
                 bias=False,
             ),
         ),
-    ],
-    loss_pipelines=[
-        dict(
+    },
+    loss_pipeline={
+        'loss_ckd': dict(
             type='SingleOperator',
             args=('preds', 'targets', 'bboxes'),
-            outputs='loss_ckd',
             atom=dict(
                 type=odkd_loss_scope + 'CKDLoss',
                 weight=0.5,
             ),
         ),
-    ],
+    },
 )

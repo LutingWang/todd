@@ -18,6 +18,7 @@ class Reduction(StrEnum):
     MEAN = 'mean'
     SUM = 'sum'
     PROD = 'prod'
+    WEIGHTED = 'weighted'
 
 
 class BaseLoss(BuildPreHookMixin, nn.Module, ABC):
@@ -71,9 +72,16 @@ class BaseLoss(BuildPreHookMixin, nn.Module, ABC):
     ) -> torch.Tensor:
         if mask is not None:
             loss = loss * mask
-        if self._reduction is not Reduction.NONE:
-            loss = getattr(loss, self._reduction.value)()
-        return loss
+
+        if self._reduction is Reduction.NONE:
+            return loss
+        if self._reduction is Reduction.WEIGHTED:
+            assert mask is not None
+            weight = mask.sum()
+            if weight.abs() < 1e-6:
+                return loss.new_zeros([])
+            return loss.sum() / weight
+        return getattr(loss, self._reduction.value)()
 
     def _scale(self, loss: torch.Tensor) -> torch.Tensor:
         weight = self.weight

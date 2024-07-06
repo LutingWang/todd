@@ -5,6 +5,7 @@ __all__ = [
 import contextlib
 import getpass
 import logging
+import os
 import pathlib
 import socket
 from abc import abstractmethod
@@ -23,7 +24,7 @@ from ..registries import (
     ModelRegistry,
     RunnerRegistry,
 )
-from ..utils import StateDictMixin
+from ..utils import StateDictMixin, Store
 from .memo import Memo
 from .registries import CallbackRegistry, StrategyRegistry
 
@@ -42,7 +43,7 @@ class BaseRunner(BuildPreHookMixin, StateDictMixin, Generic[T]):
         name: str,
         *args,
         strategy: 'BaseStrategy[T]',
-        callbacks: 'ComposedCallback',
+        callbacks: 'ComposedCallback[T]',
         dataset: Dataset,
         dataloader: DataLoader,
         work_dir: pathlib.Path,
@@ -130,11 +131,14 @@ class BaseRunner(BuildPreHookMixin, StateDictMixin, Generic[T]):
         registry: RegistryMeta,
         item: Item,
     ) -> Config:
-        dataset: Dataset = config.dataset
+        dataloader: Config = config.dataloader
+        if Store.DRY_RUN:
+            dataloader.update(batch_size=1, num_workers=0)
+
         config.dataloader = DataLoaderRegistry.build_or_return(
-            config.dataloader,
+            dataloader,
             type='DataLoader',
-            dataset=dataset,
+            dataset=config.dataset,
         )
         return config
 
@@ -145,9 +149,14 @@ class BaseRunner(BuildPreHookMixin, StateDictMixin, Generic[T]):
         registry: RegistryMeta,
         item: Item,
     ) -> Config:
+        default_root = 'work_dirs'
+        default_name = config.name
+        if Store.DRY_RUN:
+            default_name = os.path.join('dry_run', default_name)
+
         work_dir: Config = config.work_dir
-        root = work_dir.get('root', 'work_dirs')
-        name = work_dir.get('name', config.name)
+        root = work_dir.get('root', default_root)
+        name = work_dir.get('name', default_name)
         config.work_dir = pathlib.Path(root) / name
         return config
 
@@ -209,7 +218,7 @@ class BaseRunner(BuildPreHookMixin, StateDictMixin, Generic[T]):
         return self._dataloader
 
     @property
-    def callbacks(self) -> 'ComposedCallback':
+    def callbacks(self) -> 'ComposedCallback[T]':
         return self._callbacks
 
     @property

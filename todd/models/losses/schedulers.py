@@ -109,16 +109,60 @@ class WarmupScheduler(BaseScheduler):
         1.0
     """
 
-    def __init__(self, *args, end: int, **kwargs) -> None:
+    def __init__(self, *args, start: int = 0, end: int, **kwargs) -> None:
         super().__init__(*args, **kwargs)
+        self._start = start
         self._end = end
 
     def forward(self) -> float:
-        return min(self.steps / self._end, 1.0)
+        if self.steps <= self._start:
+            return 0.0
+        if self.steps >= self._end:
+            return 1.0
+        return (self.steps - self._start) / (self._end - self._start)
 
 
 @SchedulerRegistry.register_()
-class EarlyStopScheduler(BaseScheduler):
+class DecayScheduler(WarmupScheduler):
+    """Decay scheduler.
+
+    Before or at ``start``, the value is 1.
+    After or at ``end``, the value is 0.
+    In between, the value is interpolated.
+
+        >>> decay = DecayScheduler(start=2, end=7)
+        >>> for _ in range(8):
+        ...     print(round(decay(), 1))
+        ...     decay.step()
+        1.0
+        1.0
+        0.8
+        0.6
+        0.4
+        0.2
+        0.0
+        0.0
+    """
+
+    def forward(self) -> float:
+        return 1 - super().forward()
+
+
+class JumpMixin(WarmupScheduler):
+
+    def __init__(self, *args, at: int, **kwargs) -> None:
+        super().__init__(*args, start=at - 1, end=at, **kwargs)
+
+
+@SchedulerRegistry.register_()
+class DeferScheduler(JumpMixin, WarmupScheduler):
+
+    def __init__(self, *args, to: int, **kwargs) -> None:
+        super().__init__(*args, at=to, **kwargs)
+
+
+@SchedulerRegistry.register_()
+class EarlyStopScheduler(JumpMixin, DecayScheduler):
     """Early stop.
 
     At some point, the value drops to 0 from 1.
@@ -133,59 +177,6 @@ class EarlyStopScheduler(BaseScheduler):
         0.0
         0.0
     """
-
-    def __init__(self, *args, at: int, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        self._at = at
-
-    def forward(self) -> float:
-        return float(self.steps < self._at)
-
-
-@SchedulerRegistry.register_()
-class DeferScheduler(BaseScheduler):
-
-    def __init__(self, *args, to: int, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        self._to = to
-
-    def forward(self) -> float:
-        return float(self.steps >= self._to)
-
-
-@SchedulerRegistry.register_()
-class DecayScheduler(BaseScheduler):
-    """Decay scheduler.
-
-    Before or at ``start``, the value is 1.
-    After or at ``end``, the value is 0.
-    In between, the value is interpolated.
-
-        >>> decay = DecayScheduler(start=2, end=7)
-        >>> for _ in range(8):
-        ...     print(decay())
-        ...     decay.step()
-        1.0
-        1.0
-        0.8
-        0.6
-        0.4
-        0.2
-        0.0
-        0.0
-    """
-
-    def __init__(self, *args, start: int = 1, end: int, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        self._start = start
-        self._end = end
-
-    def forward(self) -> float:
-        if self.steps <= self._start:
-            return 1.0
-        if self.steps >= self._end:
-            return 0.0
-        return (self._end - self.steps) / (self._end - self._start)
 
 
 @SchedulerRegistry.register_()

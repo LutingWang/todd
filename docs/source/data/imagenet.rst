@@ -11,12 +11,12 @@ ImageNet-1k
     root=data/imagenet
     mkdir -p ${root} && cd ${root}
     f=ILSVRC2012_devkit_t12.tar.gz
-    wget https://image-net.org/data/ILSVRC/2012/${f} -P ${DATA_ROOT}
+    wget https://image-net.org/data/ILSVRC/2012/${f} -P ${root}
     tar -zxf ${f}
 
     mkdir annotations train val
-    wget https://image-net.org/data/ILSVRC/2012/ILSVRC2012_img_train.tar -P ${DATA_ROOT}
-    wget https://image-net.org/data/ILSVRC/2012/ILSVRC2012_img_val.tar -P ${DATA_ROOT}
+    wget https://image-net.org/data/ILSVRC/2012/ILSVRC2012_img_train.tar -P ${root}
+    wget https://image-net.org/data/ILSVRC/2012/ILSVRC2012_img_val.tar -P ${root}
     cd ../..
 
     python imagenet.py

@@ -51,6 +51,15 @@ class ComposedCallback(BuildPreHookMixin, BaseCallback[T]):
     def callbacks(self) -> list[BaseCallback[T]]:
         return self._priority_queue.queue
 
+    def put(
+        self,
+        callback: BaseCallback[T],
+        priority: Priority | None = None,
+    ) -> None:
+        if priority is None:
+            priority = dict()
+        self._priority_queue.append((priority, callback))
+
     def __iter__(self) -> Iterator[BaseCallback[T]]:
         return iter(self._priority_queue.queue)
 

@@ -3,6 +3,7 @@ import pathlib
 
 import torch
 
+import todd.tasks.knowledge_distillation as kd
 from todd.configs import PyConfig
 from todd.tasks.knowledge_distillation.distillers import (
     BaseDistiller,
@@ -67,7 +68,10 @@ class TestFGD:
         config = PyConfig.load(data_dir / 'fgd.py')
         result = torch.load(data_dir / 'fgd.pth', map_location='cpu')
 
-        distiller = BaseDistiller(**config.distiller)
+        distiller = kd.KDDistillerRegistry.build(
+            config.distiller,
+            type=BaseDistiller.__name__,
+        )
         distiller.load_state_dict(result['state_dict'])
 
         assert not DistillerStore.INTERMEDIATE_OUTPUTS

@@ -6,6 +6,7 @@ from typing import TypeVar
 
 from torch import nn
 
+from ...utils import Store
 from .base import BaseCallback
 
 T = TypeVar('T', bound=nn.Module)
@@ -21,6 +22,9 @@ class IntervalMixin(BaseCallback[T]):
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
+        if Store.DRY_RUN:
+            interval = 1
+
         self._interval = interval
         self._by_epoch = by_epoch
 

@@ -4,17 +4,22 @@ __all__ = [
     'SingleTeacherDistiller',
     'SelfDistiller',
     'StudentMixin',
+    'distiller_decorator',
 ]
 
+import functools
 from abc import ABC
 from typing import Generic, Iterable, Mapping, TypeVar
 
 from torch import nn
 
 from todd import Config
+from todd.bases.registries import Item, RegistryMeta
 
-from ..registries import KDDistillerRegistry
+from ..registries import KDDistillerRegistry, KDProcessorRegistry
+from ..utils import Pipeline
 from .base import BaseDistiller
+from .hooks import BaseHook
 
 
 class SingleStudentDistiller(BaseDistiller, ABC):
@@ -24,17 +29,50 @@ class SingleStudentDistiller(BaseDistiller, ABC):
         *args,
         student: nn.Module,
         teachers: Iterable[nn.Module],
-        student_hook: Config,
-        teacher_hooks: Iterable[Config],
+        student_hook_pipeline: Pipeline[BaseHook],
+        teachers_hook_pipelines: Pipeline[BaseHook],
         **kwargs,
     ) -> None:
         models = (student, ) + tuple(teachers)
-        hooks = (student_hook, ) + tuple(teacher_hooks)
-        super().__init__(*args, models=models, hook_pipelines=hooks, **kwargs)
+        hook_pipelines = Pipeline(
+            processors=(student_hook_pipeline, )
+            + teachers_hook_pipelines.processors,
+        )
+        super().__init__(
+            *args,
+            models=models,
+            hook_pipelines=hook_pipelines,
+            **kwargs,
+        )
 
     @property
     def student(self) -> nn.Module:
         return self._models[0]
+
+    @classmethod
+    def build_pre_hook(
+        cls,
+        config: Config,
+        registry: RegistryMeta,
+        item: Item,
+    ) -> Config:
+        assert 'hook_pipelines' not in config
+        config.hook_pipelines = None
+        config = super().build_pre_hook(config, registry, item)
+        config.pop('hook_pipelines')
+        config.student_hook_pipeline = KDProcessorRegistry.build_or_return(
+            Config(
+                type=Pipeline.__name__,
+                processors=config.student_hook_pipeline,
+            ),
+        )
+        config.teachers_hook_pipelines = KDProcessorRegistry.build_or_return(
+            Config(
+                type=Pipeline.__name__,
+                processors=config.teachers_hook_pipelines,
+            ),
+        )
+        return config
 
 
 @KDDistillerRegistry.register_()
@@ -45,20 +83,21 @@ class MultiTeacherDistiller(SingleStudentDistiller, ABC):
         *args,
         online_teachers: Iterable[nn.Module],
         offline_teachers: Iterable[nn.Module],
-        online_teacher_hooks: Iterable[Config],
-        offline_teacher_hooks: Iterable[Config],
+        online_teachers_hook_pipelines: Pipeline[BaseHook],
+        offline_teachers_hook_pipelines: Pipeline[BaseHook],
         **kwargs,
     ) -> None:
         online_teachers = tuple(online_teachers)
         offline_teachers = tuple(offline_teachers)
         teachers = online_teachers + offline_teachers
-        online_teacher_hooks = tuple(online_teacher_hooks)
-        offline_teacher_hooks = tuple(offline_teacher_hooks)
-        teacher_hooks = online_teacher_hooks + offline_teacher_hooks
+        teachers_hook_pipelines = Pipeline(
+            processors=online_teachers_hook_pipelines.processors
+            + offline_teachers_hook_pipelines.processors,
+        )
         super().__init__(
             *args,
             teachers=teachers,
-            teacher_hooks=teacher_hooks,
+            teachers_hook_pipelines=teachers_hook_pipelines,
             **kwargs,
         )
         self._num_online_teachers = len(online_teachers)
@@ -80,6 +119,36 @@ class MultiTeacherDistiller(SingleStudentDistiller, ABC):
     def offline_teachers(self) -> tuple[nn.Module, ...]:
         return self.models[1 + self._num_online_teachers:]
 
+    @classmethod
+    def build_pre_hook(
+        cls,
+        config: Config,
+        registry: RegistryMeta,
+        item: Item,
+    ) -> Config:
+        assert 'hook_pipelines' not in config
+        assert 'teachers_hook_pipelines' not in config
+        config.hook_pipelines = None
+        config.teachers_hook_pipelines = None
+        config = super().build_pre_hook(config, registry, item)
+        config.pop('hook_pipelines')
+        config.pop('teachers_hook_pipelines')
+        config.online_teachers_hook_pipelines = \
+            KDProcessorRegistry.build_or_return(
+                Config(
+                    type=Pipeline.__name__,
+                    processors=config.online_teachers_hook_pipelines,
+                ),
+            )
+        config.offline_teachers_hook_pipelines = \
+            KDProcessorRegistry.build_or_return(
+                Config(
+                    type=Pipeline.__name__,
+                    processors=config.offline_teachers_hook_pipelines,
+                ),
+            )
+        return config
+
 
 @KDDistillerRegistry.register_()
 class SingleTeacherDistiller(SingleStudentDistiller, ABC):
@@ -88,16 +157,16 @@ class SingleTeacherDistiller(SingleStudentDistiller, ABC):
         self,
         *args,
         teacher: nn.Module,
-        teacher_hook: Config,
+        teacher_hook_pipeline: Pipeline[BaseHook],
         online: bool = False,
         **kwargs,
     ) -> None:
         teachers = (teacher, )
-        teacher_hooks = (teacher_hook, )
+        teachers_hook_pipelines = Pipeline(processors=[teacher_hook_pipeline])
         super().__init__(
             *args,
             teachers=teachers,
-            teacher_hooks=teacher_hooks,
+            teachers_hook_pipelines=teachers_hook_pipelines,
             **kwargs,
         )
         if online:
@@ -109,6 +178,29 @@ class SingleTeacherDistiller(SingleStudentDistiller, ABC):
     @property
     def teacher(self) -> nn.Module:
         return self.models[1]
+
+    @classmethod
+    def build_pre_hook(
+        cls,
+        config: Config,
+        registry: RegistryMeta,
+        item: Item,
+    ) -> Config:
+        assert 'hook_pipelines' not in config
+        assert 'teachers_hook_pipelines' not in config
+        config.hook_pipelines = None
+        config.teachers_hook_pipelines = None
+        config = super().build_pre_hook(config, registry, item)
+        config.pop('hook_pipelines')
+        config.pop('teachers_hook_pipelines')
+        config.teacher_hook_pipeline = \
+            KDProcessorRegistry.build_or_return(
+                Config(
+                    type=Pipeline.__name__,
+                    processors=config.teacher_hook_pipeline,
+                ),
+            )
+        return config
 
 
 @KDDistillerRegistry.register_()
@@ -127,8 +219,8 @@ class SelfDistiller(SingleStudentDistiller, ABC):
             }
         super().__init__(
             *args,
-            teachers=tuple(),
-            teacher_hooks=tuple(),
+            teachers=[],
+            teachers_hooks=Pipeline(processors=[]),
             weight_transfer=weight_transfer,
             **kwargs,
         )
@@ -138,13 +230,7 @@ T = TypeVar('T', bound=SingleStudentDistiller)
 
 
 class StudentMixin(Generic[T]):
-
-    def __init__(self, *args, distiller: Config, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        self._build_distiller(distiller)
-
-    def _build_distiller(self, config: Config) -> None:
-        self._distiller: T = KDDistillerRegistry.build(config, student=self)
+    _distiller: T
 
     @property
     def distiller(self) -> T:
@@ -153,3 +239,22 @@ class StudentMixin(Generic[T]):
     @property
     def sync_apply(self) -> bool:
         return False
+
+
+def distiller_decorator(func):
+
+    @functools.wraps(func)
+    def wrapper(
+        self: StudentMixin[T],
+        *args,
+        distiller: Config | None = None,
+        **kwargs,
+    ) -> None:
+        func(self, *args, **kwargs)
+        if distiller is not None:
+            self._distiller = KDDistillerRegistry.build(
+                distiller,
+                student=self,
+            )
+
+    return wrapper

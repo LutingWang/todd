@@ -264,9 +264,17 @@ class Pipeline(Processor[T_co]):
         item: Item,
     ) -> Config:
         config = super().build_pre_hook(config, registry, item)
-        config.processors = [
-            KDProcessorRegistry.build_or_return(c) for c in config.processors
-        ]
+        processors = config.processors
+        if isinstance(processors, Config):
+            processors = [
+                KDProcessorRegistry.build_or_return(v, outputs=k)
+                for k, v in processors.items()
+            ]
+        else:
+            processors = [
+                KDProcessorRegistry.build_or_return(c) for c in processors
+            ]
+        config.processors = [p for p in processors if p is not None]
         return config
 
     def __getstate__(self) -> ArgsKwargs:
