@@ -16,7 +16,7 @@ from torch import nn
 from todd import Config
 from todd.bases.registries import Item, RegistryMeta
 
-from ..registries import KDDistillerRegistry, KDProcessorRegistry
+from ..registries import KDDistillerRegistry
 from ..utils import Pipeline
 from .base import BaseDistiller
 from .hooks import BaseHook
@@ -60,17 +60,11 @@ class SingleStudentDistiller(BaseDistiller, ABC):
         config.hook_pipelines = None
         config = super().build_pre_hook(config, registry, item)
         config.pop('hook_pipelines')
-        config.student_hook_pipeline = KDProcessorRegistry.build_or_return(
-            Config(
-                type=Pipeline.__name__,
-                processors=config.student_hook_pipeline,
-            ),
+        config.student_hook_pipeline = cls.build_or_return_pipeline(
+            config.student_hook_pipeline,
         )
-        config.teachers_hook_pipelines = KDProcessorRegistry.build_or_return(
-            Config(
-                type=Pipeline.__name__,
-                processors=config.teachers_hook_pipelines,
-            ),
+        config.teachers_hook_pipelines = cls.build_or_return_pipeline(
+            config.teachers_hook_pipelines,
         )
         return config
 
@@ -133,20 +127,12 @@ class MultiTeacherDistiller(SingleStudentDistiller, ABC):
         config = super().build_pre_hook(config, registry, item)
         config.pop('hook_pipelines')
         config.pop('teachers_hook_pipelines')
-        config.online_teachers_hook_pipelines = \
-            KDProcessorRegistry.build_or_return(
-                Config(
-                    type=Pipeline.__name__,
-                    processors=config.online_teachers_hook_pipelines,
-                ),
-            )
-        config.offline_teachers_hook_pipelines = \
-            KDProcessorRegistry.build_or_return(
-                Config(
-                    type=Pipeline.__name__,
-                    processors=config.offline_teachers_hook_pipelines,
-                ),
-            )
+        config.online_teachers_hook_pipelines = cls.build_or_return_pipeline(
+            config.online_teachers_hook_pipelines,
+        )
+        config.offline_teachers_hook_pipelines = cls.build_or_return_pipeline(
+            config.offline_teachers_hook_pipelines,
+        )
         return config
 
 
@@ -193,13 +179,9 @@ class SingleTeacherDistiller(SingleStudentDistiller, ABC):
         config = super().build_pre_hook(config, registry, item)
         config.pop('hook_pipelines')
         config.pop('teachers_hook_pipelines')
-        config.teacher_hook_pipeline = \
-            KDProcessorRegistry.build_or_return(
-                Config(
-                    type=Pipeline.__name__,
-                    processors=config.teacher_hook_pipeline,
-                ),
-            )
+        config.teacher_hook_pipeline = cls.build_or_return_pipeline(
+            config.teacher_hook_pipeline,
+        )
         return config
 
 
