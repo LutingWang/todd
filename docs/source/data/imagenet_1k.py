@@ -3,6 +3,7 @@ import pathlib
 import tarfile
 from typing import Any, TypedDict, cast
 
+import numpy as np
 import numpy.typing as npt
 import scipy.io
 import tqdm
@@ -27,8 +28,7 @@ Synsets = dict[int, Synset]
 
 class Annotation(TypedDict):
     name: str
-    wnid: str
-    label: int
+    synset_id: int
 
 
 def parse_synset(array: npt.NDArray[Any]) -> tuple[int, Synset]:
@@ -77,13 +77,15 @@ def val(tar: tarfile.TarFile, synsets: Synsets) -> None:
         data_root / 'ILSVRC2012_devkit_t12' / 'data'
         / 'ILSVRC2012_validation_ground_truth.txt'
     )
-    gt = list(map(int, gt_path.read_text().splitlines()))
+    gt = np.loadtxt(gt_path, np.uint16).tolist()
+
+    for synset_id in set(gt):
+        path = data_root / 'val' / synsets[synset_id]['WNID']
+        path.mkdir(parents=True, exist_ok=True)
 
     for image, synset_id in zip(tqdm.tqdm(tar.getmembers()), gt):
         assert image.isfile() and image.name.endswith('.JPEG')
-        wnid = synsets[synset_id]['WNID']
-        path = data_root / 'val' / wnid
-        path.mkdir(parents=True, exist_ok=True)
+        path = data_root / 'val' / synsets[synset_id]['WNID']
         image_file = tar.extractfile(image)
         assert image_file is not None
         image_path = (
@@ -93,15 +95,13 @@ def val(tar: tarfile.TarFile, synsets: Synsets) -> None:
 
 
 def annotations(split_name: str, synsets: Synsets) -> None:
+    split_root = data_root / split_name
     json_dump(
         [
-            Annotation(
-                name=image.name,
-                wnid=synset['WNID'],
-                label=synset_id - 1,
-            ) for synset_id, synset in synsets.items()
-            if (synset_path := data_root / split_name
-                / synset['WNID']).exists() for image in synset_path.iterdir()
+            Annotation(name=image.name, synset_id=synset_id)
+            for synset_id, synset in synsets.items()
+            if (synset_path := split_root / synset['WNID']).exists()
+            for image in synset_path.iterdir()
         ],
         data_root / 'annotations' / f'{split_name}.json',
     )

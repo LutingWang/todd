@@ -108,9 +108,7 @@ class BaseRunner(BuildPreHookMixin, StateDictMixin, Generic[T]):
     ) -> Config:
         from .callbacks import ComposedCallback
         config.callbacks = CallbackRegistry.build_or_return(
-            Config(),
-            type=ComposedCallback.__name__,
-            callbacks=config.callbacks,
+            Config(type=ComposedCallback.__name__, callbacks=config.callbacks),
         )
         return config
 
@@ -154,7 +152,7 @@ class BaseRunner(BuildPreHookMixin, StateDictMixin, Generic[T]):
         if Store.DRY_RUN:
             default_name = os.path.join('dry_run', default_name)
 
-        work_dir: Config = config.work_dir
+        work_dir = config.get('work_dir', Config())
         root = work_dir.get('root', default_root)
         name = work_dir.get('name', default_name)
         config.work_dir = pathlib.Path(root) / name

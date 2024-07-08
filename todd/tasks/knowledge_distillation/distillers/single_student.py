@@ -60,11 +60,12 @@ class SingleStudentDistiller(BaseDistiller, ABC):
         config.hook_pipelines = None
         config = super().build_pre_hook(config, registry, item)
         config.pop('hook_pipelines')
-        config.student_hook_pipeline = cls.build_or_return_pipeline(
-            config.student_hook_pipeline,
-        )
-        config.teachers_hook_pipelines = cls.build_or_return_pipeline(
+
+        config.teachers_hook_pipelines = cls.build_pipelines(
             config.teachers_hook_pipelines,
+        )
+        config.student_hook_pipeline = cls.build_pipeline(
+            config.student_hook_pipeline,
         )
         return config
 
@@ -120,17 +121,15 @@ class MultiTeacherDistiller(SingleStudentDistiller, ABC):
         registry: RegistryMeta,
         item: Item,
     ) -> Config:
-        assert 'hook_pipelines' not in config
         assert 'teachers_hook_pipelines' not in config
-        config.hook_pipelines = None
         config.teachers_hook_pipelines = None
         config = super().build_pre_hook(config, registry, item)
-        config.pop('hook_pipelines')
         config.pop('teachers_hook_pipelines')
-        config.online_teachers_hook_pipelines = cls.build_or_return_pipeline(
+
+        config.online_teachers_hook_pipelines = cls.build_pipelines(
             config.online_teachers_hook_pipelines,
         )
-        config.offline_teachers_hook_pipelines = cls.build_or_return_pipeline(
+        config.offline_teachers_hook_pipelines = cls.build_pipelines(
             config.offline_teachers_hook_pipelines,
         )
         return config
@@ -172,14 +171,12 @@ class SingleTeacherDistiller(SingleStudentDistiller, ABC):
         registry: RegistryMeta,
         item: Item,
     ) -> Config:
-        assert 'hook_pipelines' not in config
         assert 'teachers_hook_pipelines' not in config
-        config.hook_pipelines = None
         config.teachers_hook_pipelines = None
         config = super().build_pre_hook(config, registry, item)
-        config.pop('hook_pipelines')
         config.pop('teachers_hook_pipelines')
-        config.teacher_hook_pipeline = cls.build_or_return_pipeline(
+
+        config.teacher_hook_pipeline = cls.build_pipeline(
             config.teacher_hook_pipeline,
         )
         return config
@@ -202,10 +199,23 @@ class SelfDistiller(SingleStudentDistiller, ABC):
         super().__init__(
             *args,
             teachers=[],
-            teachers_hooks=Pipeline(processors=[]),
+            teachers_hook_pipelines=Pipeline(processors=[]),
             weight_transfer=weight_transfer,
             **kwargs,
         )
+
+    @classmethod
+    def build_pre_hook(
+        cls,
+        config: Config,
+        registry: RegistryMeta,
+        item: Item,
+    ) -> Config:
+        assert 'teachers_hook_pipelines' not in config
+        config.teachers_hook_pipelines = None
+        config = super().build_pre_hook(config, registry, item)
+        config.pop('teachers_hook_pipelines')
+        return config
 
 
 T = TypeVar('T', bound=SingleStudentDistiller)

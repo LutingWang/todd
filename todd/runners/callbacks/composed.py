@@ -8,7 +8,6 @@ from torch import nn
 
 from ...bases.configs import Config
 from ...bases.registries import BuildPreHookMixin, Item, RegistryMeta
-from ..base import BaseRunner
 from ..registries import CallbackRegistry
 from ..utils import PriorityQueue
 from .base import BaseCallback
@@ -63,10 +62,10 @@ class ComposedCallback(BuildPreHookMixin, BaseCallback[T]):
     def __iter__(self) -> Iterator[BaseCallback[T]]:
         return iter(self._priority_queue.queue)
 
-    def bind(self, instance: BaseRunner[T]) -> None:
-        super().bind(instance)
+    def bind(self, *args, **kwargs) -> None:
+        super().bind(*args, **kwargs)
         for c in self._priority_queue('bind'):
-            c.bind(instance)
+            c.bind(*args, **kwargs)
 
     def should_break(self, *args, **kwargs) -> bool:
         return super().should_break(*args, **kwargs) or any(

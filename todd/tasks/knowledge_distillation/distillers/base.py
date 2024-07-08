@@ -74,10 +74,18 @@ class BaseDistiller(BuildPreHookMixin, nn.Module, ABC):
             transfer_state_dicts(self, weight_transfer)
 
     @classmethod
-    def build_or_return_pipeline(cls, processors: Any) -> Pipeline:
-        return KDProcessorRegistry.build_or_return(
-            Config(type=Pipeline.__name__, processors=processors),
+    def build_pipeline(cls, pipeline: Any) -> Pipeline | None:
+        if pipeline is None:
+            return None
+        return KDProcessorRegistry.build(
+            Config(type=Pipeline.__name__, processors=pipeline),
         )
+
+    @classmethod
+    def build_pipelines(cls, pipelines: Any) -> Pipeline | None:
+        if pipelines is None:
+            return None
+        return cls.build_pipeline(map(cls.build_pipeline, pipelines))
 
     @classmethod
     def build_pre_hook(
@@ -87,17 +95,13 @@ class BaseDistiller(BuildPreHookMixin, nn.Module, ABC):
         item: Item,
     ) -> Config:
         config = super().build_pre_hook(config, registry, item)
-        hook_pipelines = [
-            cls.build_or_return_pipeline(hook_pipeline)
-            for hook_pipeline in config.hook_pipelines
-        ]
-        config.hook_pipelines = cls.build_or_return_pipeline(
-            hook_pipelines,
+        config.hook_pipelines = cls.build_pipelines(
+            config.hook_pipelines,
         )
-        config.adapt_pipeline = cls.build_or_return_pipeline(
+        config.adapt_pipeline = cls.build_pipeline(
             config.adapt_pipeline,
         )
-        config.loss_pipeline = cls.build_or_return_pipeline(
+        config.loss_pipeline = cls.build_pipeline(
             config.loss_pipeline,
         )
         return config
