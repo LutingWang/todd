@@ -44,8 +44,8 @@ class BaseRunner(BuildPreHookMixin, StateDictMixin, Generic[T]):
         *args,
         strategy: 'BaseStrategy[T]',
         callbacks: 'ComposedCallback[T]',
-        dataset: Dataset,
-        dataloader: DataLoader,
+        dataset: Dataset[Any],
+        dataloader: DataLoader[Any],
         work_dir: pathlib.Path,
         logger: logging.Logger,
         load_from: str | None = None,
@@ -204,7 +204,7 @@ class BaseRunner(BuildPreHookMixin, StateDictMixin, Generic[T]):
         return self._strategy
 
     @property
-    def dataset(self) -> Dataset:
+    def dataset(self) -> Dataset[Any]:
         return self._dataset
 
     @property
@@ -212,7 +212,7 @@ class BaseRunner(BuildPreHookMixin, StateDictMixin, Generic[T]):
         return self._model
 
     @property
-    def dataloader(self) -> DataLoader:
+    def dataloader(self) -> DataLoader[Any]:
         return self._dataloader
 
     @property
@@ -263,7 +263,7 @@ class BaseRunner(BuildPreHookMixin, StateDictMixin, Generic[T]):
         self._init_model(*args, **kwargs)
         self._init_callbacks(*args, **kwargs)
 
-    def _run_iter(self, batch, memo: Memo, *args, **kwargs) -> Memo:
+    def _run_iter(self, batch: Any, memo: Memo, *args, **kwargs) -> Memo:
         """Run iteration.
 
         Args:

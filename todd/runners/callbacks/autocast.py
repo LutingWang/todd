@@ -3,7 +3,7 @@ __all__ = [
 ]
 
 import contextlib
-from typing import TypeVar
+from typing import Any, TypeVar
 
 import torch
 from torch import nn
@@ -26,7 +26,7 @@ class AutocastCallback(BaseCallback[T]):
     def run_iter_context(
         self,
         exit_stack: contextlib.ExitStack,
-        batch,
+        batch: Any,
         memo: Memo,
     ) -> None:
         exit_stack.enter_context(torch.autocast(**self._autocast))

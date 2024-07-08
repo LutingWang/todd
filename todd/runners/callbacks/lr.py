@@ -41,7 +41,7 @@ class LRScheduleCallback(IntervalMixin[T], BaseCallback[T]):
                 optimizer=self.trainer.optimizer,
             )
 
-    def after_run_iter(self, batch, memo: Memo) -> None:
+    def after_run_iter(self, batch: Any, memo: Memo) -> None:
         super().after_run_iter(batch, memo)
         if 'log' in memo:
             memo['log']['lr'] = [

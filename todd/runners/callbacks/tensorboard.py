@@ -2,7 +2,7 @@ __all__ = [
     'TensorBoardCallback',
 ]
 
-from typing import TypeVar
+from typing import Any, TypeVar
 
 from torch import nn
 from torch.utils.tensorboard import SummaryWriter
@@ -56,11 +56,11 @@ class TensorBoardCallback(IntervalMixin[T], BaseCallback[T]):
         assert tag
         return self._main_tag + '/' + tag
 
-    def before_run_iter(self, batch, memo: Memo) -> None:
+    def before_run_iter(self, batch: Any, memo: Memo) -> None:
         super().before_run_iter(batch, memo)
         if get_rank() == 0 and self._should_run_iter():
             memo['tensorboard'] = self
 
-    def after_run_iter(self, batch, memo: Memo) -> None:
+    def after_run_iter(self, batch: Any, memo: Memo) -> None:
         super().after_run_iter(batch, memo)
         memo.pop('tensorboard', None)

@@ -62,12 +62,12 @@ class LogCallback(IntervalMixin[T], BaseCallback[T]):
             )
         )
 
-    def before_run_iter(self, batch, memo: Memo) -> None:
+    def before_run_iter(self, batch: Any, memo: Memo) -> None:
         super().before_run_iter(batch, memo)
         if get_rank() == 0 and self._should_run_iter():
             memo['log'] = dict()
 
-    def after_run_iter(self, batch, memo: Memo) -> None:
+    def after_run_iter(self, batch: Any, memo: Memo) -> None:
         super().after_run_iter(batch, memo)
         if 'log' not in memo:
             return

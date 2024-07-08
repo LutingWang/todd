@@ -39,7 +39,7 @@ class Trainer(BaseRunner[T], ABC):
         registry: RegistryMeta,
         item: Item,
     ) -> Config:
-        strategy: 'BaseStrategy' = config.strategy
+        strategy: 'BaseStrategy[T]' = config.strategy
         model: nn.Module = config.model
         config.optimizer = strategy.build_optimizer(config.optimizer, model)
         return config

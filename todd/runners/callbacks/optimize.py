@@ -77,7 +77,7 @@ class OptimizeCallback(BuildPreHookMixin, BaseCallback[T]):
         else:
             optimizer.step()
 
-    def after_run_iter(self, batch, memo: Memo) -> None:
+    def after_run_iter(self, batch: Any, memo: Memo) -> None:
         super().after_run_iter(batch, memo)
         log: dict[str, Any] | None = memo.get('log')
 

@@ -4,7 +4,7 @@ __all__ = [
 
 import contextlib
 import logging
-from typing import TypeVar
+from typing import Any, TypeVar
 
 from torch import nn
 
@@ -37,7 +37,7 @@ class MonitorCallback(BaseCallback[T]):
     def run_iter_context(
         self,
         exit_stack: contextlib.ExitStack,
-        batch,
+        batch: Any,
         memo: Memo,
     ) -> None:
         super().run_iter_context(exit_stack, batch, memo)
