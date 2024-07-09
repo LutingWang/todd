@@ -6,11 +6,13 @@ import reprlib
 from abc import ABC, abstractmethod
 from typing import Generator, Generic, Iterator, Protocol, TypeVar
 
+import torchvision.transforms as tf
 from torch.utils.data import Dataset
 
 from ..bases.configs import Config
 from ..bases.registries import BuildPreHookMixin, Item, RegistryMeta
 from ..loggers import logger
+from ..registries import TransformRegistry
 from .access_layers import BaseAccessLayer
 from .registries import AccessLayerRegistry
 
@@ -37,10 +39,12 @@ class BaseDataset(BuildPreHookMixin, Dataset[T], Generic[T, KT_co, VT], ABC):
         self,
         *args,
         access_layer: BaseAccessLayer[KT_co, VT],
+        transforms: tf.Compose | None = None,
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
         self._access_layer = access_layer
+        self._transforms = transforms
 
         logger.debug("Initializing keys.")
         self._keys = self.build_keys()
@@ -58,10 +62,12 @@ class BaseDataset(BuildPreHookMixin, Dataset[T], Generic[T, KT_co, VT], ABC):
         item: Item,
     ) -> Config:
         config = super().build_pre_hook(config, registry, item)
-        if 'access_layer' in config:
+        if (access_layer := config.get('access_layer')) is not None:
             config.access_layer = AccessLayerRegistry.build_or_return(
-                config.access_layer,
+                access_layer,
             )
+        if (transforms := config.get('transforms')) is not None:
+            config.transforms = TransformRegistry.build_or_return(transforms)
         return config
 
     @property

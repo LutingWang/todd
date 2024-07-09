@@ -7,6 +7,8 @@ import os
 import pathlib
 from typing import Iterator, Literal, TypedDict
 
+import torch
+import torchvision.transforms.functional as F
 from PIL import Image
 
 from ..registries import DatasetRegistry
@@ -16,6 +18,7 @@ from .base import BaseDataset
 DATA_ROOT = pathlib.Path('data/imagenet')
 ANNOTATIONS_ROOT = DATA_ROOT / 'annotations'
 SYNSETS_FILE = DATA_ROOT / 'synsets.json'
+SUFFIX = 'JPEG'
 
 Split = Literal['train', 'val']
 
@@ -58,7 +61,7 @@ class Keys:
         annotation = self._annotations[index]
         return os.path.join(
             self._synsets[annotation['synset_id']]['WNID'],
-            annotation['name'],
+            annotation['name'].removesuffix(f'.{SUFFIX}'),
         )
 
     def __iter__(self) -> Iterator[str]:
@@ -71,7 +74,7 @@ VT = Image.Image
 
 class T(TypedDict):
     id_: str
-    image: VT
+    image: torch.Tensor
     category: int
 
 
@@ -84,7 +87,10 @@ class ImageNetDataset(BaseDataset[T, str, VT]):
             self._annotations: Annotations = json.load(f)
 
         with SYNSETS_FILE.open() as f:
-            self._synsets: Synsets = json.load(f)
+            self._synsets: Synsets = {
+                int(k): v
+                for k, v in json.load(f).items()
+            }
 
         self._categories = {
             synset_id: i
@@ -94,7 +100,7 @@ class ImageNetDataset(BaseDataset[T, str, VT]):
         access_layer = PILAccessLayer(
             data_root=str(DATA_ROOT),
             task_name=split,
-            suffix='JPEG',
+            suffix=SUFFIX,
             subfolder_action='walk',
         )
         super().__init__(*args, access_layer=access_layer, **kwargs)
@@ -104,6 +110,10 @@ class ImageNetDataset(BaseDataset[T, str, VT]):
 
     def __getitem__(self, index: int) -> T:
         key, image = self._access(index)
+        tensor = (
+            F.pil_to_tensor(image)
+            if self._transforms is None else self._transforms(image)
+        )
         synset_id = self._annotations[index]['synset_id']
         category = self._categories[synset_id]
-        return T(id_=key, image=image, category=category)
+        return T(id_=key, image=tensor, category=category)

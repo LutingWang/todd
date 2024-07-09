@@ -1,25 +1,24 @@
 __all__ = [
-    'DatasetRegistry',
-    'ClipGradRegistry',
-    'CollateRegistry',
-    'WorkerInitRegistry',
     'InitRegistry',
+    'ClipGradRegistry',
     'LRSchedulerRegistry',
     'OptimizerRegistry',
-    'SamplerRegistry',
     'TransformRegistry',
+    'DatasetRegistry',
+    'SamplerRegistry',
+    'CollateRegistry',
+    'WorkerInitRegistry',
     'DataLoaderRegistry',
 ]
 
 from typing import TYPE_CHECKING, Any, cast
 
 import torch
+import torch.utils.data.dataset
 import torchvision.transforms as tf
 from torch import nn
 from torch.nn import init, utils
 from torch.optim import lr_scheduler
-from torch.utils import data
-from torch.utils.data import dataset
 
 from ..bases.configs import Config
 from ..bases.registries import Item, Registry, RegistryMeta
@@ -104,54 +103,6 @@ for c in descendant_classes(torch.optim.Optimizer):
         OptimizerRegistry.register_()(cast(Item, c))
 
 
-class DatasetRegistry(Registry):
-    pass
-
-
-for c in get_classes(dataset, data.Dataset):
-    DatasetRegistry.register_()(cast(Item, c))
-
-
-def datasets_build_pre_hook(
-    config: Config,
-    registry: RegistryMeta,
-    item: Item,
-) -> Config:
-    config.datasets = [
-        DatasetRegistry.build_or_return(d) for d in config.datasets
-    ]
-    return config
-
-
-DatasetRegistry.register_(
-    force=True,
-    build_pre_hook=datasets_build_pre_hook,
-)(data.ConcatDataset)
-
-
-class SamplerRegistry(Registry):
-    pass
-
-
-for c in descendant_classes(data.Sampler):
-    SamplerRegistry.register_()(cast(Item, c))
-
-
-class CollateRegistry(PartialRegistry):
-    pass
-
-
-class WorkerInitRegistry(PartialRegistry):
-    pass
-
-
-@WorkerInitRegistry.register_('default')
-def default_worker_init(worker_id: int) -> None:
-    from ..utils import init_seed
-    logger.debug("Initializing worker %d", worker_id)
-    init_seed(torch.initial_seed())
-
-
 class TransformRegistry(Registry):
     pass
 
@@ -177,39 +128,93 @@ TransformRegistry.register_(
 )(tf.Compose)
 
 
+class DatasetRegistry(Registry):
+    pass
+
+
+for c in get_classes(torch.utils.data.dataset, torch.utils.data.Dataset):
+    DatasetRegistry.register_()(cast(Item, c))
+
+
+def datasets_build_pre_hook(
+    config: Config,
+    registry: RegistryMeta,
+    item: Item,
+) -> Config:
+    config.datasets = [
+        DatasetRegistry.build_or_return(d) for d in config.datasets
+    ]
+    return config
+
+
+DatasetRegistry.register_(
+    force=True,
+    build_pre_hook=datasets_build_pre_hook,
+)(torch.utils.data.ConcatDataset)
+
+
+class SamplerRegistry(Registry):
+    pass
+
+
+for c in descendant_classes(torch.utils.data.Sampler):
+    SamplerRegistry.register_()(cast(Item, c))
+
+
+class CollateRegistry(PartialRegistry):
+    pass
+
+
+class WorkerInitRegistry(PartialRegistry):
+    pass
+
+
+@WorkerInitRegistry.register_('default')
+def default_worker_init(worker_id: int) -> None:
+    from ..utils import init_seed
+    logger.debug("Initializing worker %d", worker_id)
+    init_seed(torch.initial_seed())
+
+
 class DataLoaderRegistry(Registry):
-
-    @classmethod
-    def _build(cls, item: Item, config: Config) -> Any:
-        sampler = config.pop('sampler', None)
-        if sampler is not None:
-            config.sampler = SamplerRegistry.build(
-                sampler,
-                dataset=config.dataset,
-            )
-
-        batch_sampler = config.pop('batch_sampler', None)
-        if batch_sampler is not None:
-            config.batch_sampler = SamplerRegistry.build(
-                batch_sampler,
-                sampler=config.pop('sampler'),
-            )
-
-        collate_fn = config.pop('collate_fn', None)
-        if collate_fn is not None:
-            config.collate_fn = CollateRegistry.build(collate_fn)
-
-        worker_init_fn = config.pop('worker_init_fn', None)
-        if worker_init_fn is None:
-            logger.info(
-                "`worker_init_fn` is recommended to be `%s`, instead of `%s`.",
-                'default',
-                None,
-            )
-        else:
-            config.worker_init_fn = WorkerInitRegistry.build(worker_init_fn)
-
-        return RegistryMeta._build(cls, item, config)
+    pass
 
 
-DataLoaderRegistry.register_()(data.DataLoader)
+def dataloader_build_pre_hook(
+    config: Config,
+    registry: RegistryMeta,
+    item: Item,
+) -> Config:
+    dataset = DatasetRegistry.build_or_return(config.dataset)
+    config.dataset = dataset
+
+    if (sampler := config.get('sampler')) is not None:
+        config.sampler = SamplerRegistry.build(sampler, dataset=dataset)
+
+    if (batch_sampler := config.get('batch_sampler')) is not None:
+        sampler = config.pop('sampler')
+        config.batch_sampler = SamplerRegistry.build_or_return(
+            batch_sampler,
+            sampler=sampler,
+        )
+
+    if (collate_fn := config.get('collate_fn')) is not None:
+        config.collate_fn = CollateRegistry.build_or_return(collate_fn)
+
+    if (worker_init_fn := config.get('worker_init_fn')) is not None:
+        config.worker_init_fn = WorkerInitRegistry.build(worker_init_fn)
+    else:
+        logger.info(
+            "`worker_init_fn` is recommended to be '%s', instead of %s.",
+            'default',
+            None,
+        )
+
+    return config
+
+
+# yapf: disable
+DataLoaderRegistry.register_(
+    build_pre_hook=dataloader_build_pre_hook,
+)(torch.utils.data.DataLoader)
+# yapf: enable

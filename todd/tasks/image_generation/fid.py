@@ -18,10 +18,10 @@ from torch import nn
 
 import todd
 from todd import Config
+from todd.patches.torch import all_gather_object
 from todd.registries import InitWeightsMixin
 from todd.utils import set_temp
 
-from ...patches.torch import all_gather_object
 from .registries import IGModelRegistry
 
 
@@ -80,6 +80,7 @@ class Statistics(NamedTuple):
 class Statistician:
 
     def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
         self._inception = InceptionRegistry.build(
             Config(type=Inception.__name__),
         )
