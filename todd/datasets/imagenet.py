@@ -110,6 +110,7 @@ class ImageNetDataset(BaseDataset[T, str, VT]):
 
     def __getitem__(self, index: int) -> T:
         key, image = self._access(index)
+        image = image.convert('RGB')
         tensor = (
             F.pil_to_tensor(image)
             if self._transforms is None else self._transforms(image)

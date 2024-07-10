@@ -67,7 +67,9 @@ class BaseDataset(BuildPreHookMixin, Dataset[T], Generic[T, KT_co, VT], ABC):
                 access_layer,
             )
         if (transforms := config.get('transforms')) is not None:
-            config.transforms = TransformRegistry.build_or_return(transforms)
+            config.transforms = TransformRegistry.build(
+                Config(type=tf.Compose.__name__, transforms=transforms),
+            )
         return config
 
     @property

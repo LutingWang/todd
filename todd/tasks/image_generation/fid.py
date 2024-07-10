@@ -30,7 +30,11 @@ class InceptionRegistry(IGModelRegistry):
 
 
 @InceptionRegistry.register_()
-class Inception(todd.models.FrozenMixin, InitWeightsMixin):
+class Inception(
+    todd.models.MeanStdMixin,
+    todd.models.FrozenMixin,
+    InitWeightsMixin,
+):
 
     class InceptionE(torchvision.models.inception.InceptionE):
 
@@ -39,7 +43,12 @@ class Inception(todd.models.FrozenMixin, InitWeightsMixin):
             return super().forward(*args, **kwargs)
 
     def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
+        super().__init__(
+            *args,
+            mean=(127.5, 127.5, 127.5),
+            std=(127.5, 127.5, 127.5),
+            **kwargs,
+        )
         inception = torchvision.models.inception_v3(
             num_classes=1008,
             aux_logits=False,
@@ -61,7 +70,7 @@ class Inception(todd.models.FrozenMixin, InitWeightsMixin):
 
     @torch.no_grad()
     def forward(self, image: torch.Tensor) -> torch.Tensor:
-        image = image / 127.5 - 1.0
+        image = self.normalize(image)
         image = F.interpolate(image, size=(299, 299), mode='bilinear')
 
         with set_temp(
@@ -77,7 +86,7 @@ class Statistics(NamedTuple):
     sigma: npt.NDArray[np.float32]
 
 
-class Statistician:
+class Statistician(nn.Module):
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -86,7 +95,7 @@ class Statistician:
         )
         self._features: list[torch.Tensor] = []
 
-    def process(self, images: torch.Tensor) -> None:
+    def forward(self, images: torch.Tensor) -> None:
         features = self._inception(images)
         self._features.append(features)
 

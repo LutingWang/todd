@@ -107,7 +107,7 @@ class BaseRunner(BuildPreHookMixin, StateDictMixin, Generic[T]):
         item: Item,
     ) -> Config:
         from .callbacks import ComposedCallback
-        config.callbacks = CallbackRegistry.build_or_return(
+        config.callbacks = CallbackRegistry.build(
             Config(type=ComposedCallback.__name__, callbacks=config.callbacks),
         )
         return config
