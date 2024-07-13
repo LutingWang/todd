@@ -24,6 +24,7 @@ from ..bases.configs import Config
 from ..bases.registries import Item, Registry, RegistryMeta
 from ..loggers import logger
 from ..patches.py import descendant_classes, get_classes
+from ..patches.torch import get_world_size
 from .partial import PartialRegistry
 
 if TYPE_CHECKING:
@@ -187,6 +188,13 @@ def dataloader_build_pre_hook(
 ) -> Config:
     dataset = DatasetRegistry.build_or_return(config.dataset)
     config.dataset = dataset
+
+    if config.pop('batch_size_in_total', False):
+        assert 'batch_size' in config
+        batch_size = config.batch_size
+        world_size = get_world_size()
+        assert batch_size % world_size == 0
+        config.batch_size = batch_size // world_size
 
     if (sampler := config.get('sampler')) is not None:
         config.sampler = SamplerRegistry.build(sampler, dataset=dataset)
