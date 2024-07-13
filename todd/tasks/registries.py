@@ -5,6 +5,7 @@ __all__ = [
     'ODKDRegistry',
     'OFERegistry',
     'PTRegistry',
+    'LMMRegistry',
 ]
 
 from ..registries import TaskRegistry
@@ -31,4 +32,8 @@ class OFERegistry(TaskRegistry):
 
 
 class PTRegistry(TaskRegistry):
+    pass
+
+
+class LMMRegistry(TaskRegistry):
     pass

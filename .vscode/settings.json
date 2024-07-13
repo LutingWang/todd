@@ -1,8 +1,10 @@
 {
   "cSpell.words": [
     "batchnorms",
+    "codebooks",
     "cxcy",
     "cxcywh",
+    "debias",
     "denormalize",
     "denormalized",
     "deregistration",
