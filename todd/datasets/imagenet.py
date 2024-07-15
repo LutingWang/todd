@@ -10,8 +10,8 @@ from typing import Iterator, Literal, TypedDict
 
 import torch
 
-from ..bases.configs import Config
 from ..registries import DatasetRegistry
+from .access_layers import PILAccessLayer
 from .pil import PILDataset
 
 Split = Literal['train', 'val']
@@ -92,7 +92,12 @@ class ImageNetDataset(PILDataset[T], ABC):
             for i, synset_id in enumerate(sorted(self._synsets))
         }
 
-        access_layer = Config(task_name=split, subfolder_action='walk')
+        access_layer = PILAccessLayer(
+            data_root=str(self.DATA_ROOT),
+            task_name=split,
+            subfolder_action='walk',
+            suffix=self.SUFFIX,
+        )
         super().__init__(*args, access_layer=access_layer, **kwargs)
 
     def build_keys(self) -> Keys:

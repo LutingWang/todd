@@ -13,7 +13,7 @@ from typing_extensions import Self
 
 import torch
 
-from todd.utils.serialize import ArgsKwargs, SerializeMixin
+from todd.utils import ArgsKwargs, SerializeMixin
 
 T = TypeVar('T')
 

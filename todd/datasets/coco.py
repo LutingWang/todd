@@ -8,8 +8,8 @@ from typing import Iterator, Literal, TypedDict
 import torch
 from pycocotools.coco import COCO
 
-from ..bases.configs import Config
 from ..registries import DatasetRegistry
+from .access_layers import PILAccessLayer
 from .pil import PILDataset
 
 Split = Literal['train', 'val']
@@ -55,7 +55,11 @@ class COCODataset(PILDataset[T]):
         )
         self._coco = COCO(annotations_file)
 
-        access_layer = Config(task_name=split_year)
+        access_layer = PILAccessLayer(
+            data_root=str(self.DATA_ROOT),
+            task_name=split_year,
+            suffix=self.SUFFIX,
+        )
         super().__init__(*args, access_layer=access_layer, **kwargs)
 
     def build_keys(self) -> Keys:

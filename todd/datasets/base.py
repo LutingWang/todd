@@ -12,7 +12,9 @@ from torch.utils.data import Dataset
 from ..bases.configs import Config
 from ..bases.registries import BuildPreHookMixin, Item, RegistryMeta
 from ..loggers import logger
+from ..patches.torch import get_world_size
 from ..registries import TransformRegistry
+from ..utils import Store
 from .access_layers import BaseAccessLayer
 from .registries import AccessLayerRegistry
 
@@ -80,6 +82,8 @@ class BaseDataset(BuildPreHookMixin, Dataset[T], Generic[T, KT_co, VT], ABC):
         return list(self._access_layer)
 
     def __len__(self) -> int:
+        if Store.DRY_RUN:
+            return 4 * get_world_size()
         return len(self._keys)
 
     def __iter__(self) -> Generator[T, None, None]:

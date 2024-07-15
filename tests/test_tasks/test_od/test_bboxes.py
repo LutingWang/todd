@@ -4,7 +4,6 @@ import einops
 import pytest
 import torch
 
-from todd.tasks import FlattenMixin
 from todd.tasks.object_detection.bboxes import (
     BBox,
     BBoxes,
@@ -13,6 +12,7 @@ from todd.tasks.object_detection.bboxes import (
     BBoxesXYXY,
     FlattenBBoxesXYXY,
 )
+from todd.tasks.utils import FlattenMixin
 
 tensor1 = torch.tensor([10., 20., 40., 100.])
 tensor2 = torch.tensor([
