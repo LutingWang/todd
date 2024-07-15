@@ -21,6 +21,7 @@ dependencies = [
     'opencv-python',
     'pandas',
     'python-pptx',
+    'pycocotools',
     'tensorboard',
     'timm',
     'toml',
@@ -74,6 +75,7 @@ lint = [
     'pydocstyle',
     'pylint',
     'types-Pillow',
+    'types-pycocotools',
     'types-toml',
     'types-tqdm',
 ]

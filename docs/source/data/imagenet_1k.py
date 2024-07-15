@@ -7,7 +7,8 @@ import numpy.typing as npt
 import scipy.io
 import tqdm
 
-from todd.datasets.imagenet import DATA_ROOT, Annotation, Synset, Synsets
+from todd.datasets import ImageNetDataset
+from todd.datasets.imagenet import Annotation, Synset, Synsets
 from todd.patches.py import json_dump
 
 
@@ -26,14 +27,17 @@ def parse_synset(array: npt.NDArray[Any]) -> tuple[int, Synset]:
 
 def parse_synsets() -> Synsets:
     meta = scipy.io.loadmat(
-        str(DATA_ROOT / 'ILSVRC2012_devkit_t12' / 'data' / 'meta.mat'),
+        str(
+            ImageNetDataset.DATA_ROOT / 'ILSVRC2012_devkit_t12' / 'data'
+            / 'meta.mat',
+        ),
     )
     return dict(parse_synset(synset[0]) for synset in meta['synsets'])
 
 
 def train_synset(wnid: str, tar: tarfile.TarFile) -> None:
     prefix = wnid + '_'
-    path = DATA_ROOT / 'train' / wnid
+    path = ImageNetDataset.DATA_ROOT / 'train' / wnid
     path.mkdir(parents=True, exist_ok=True)
     for image in tqdm.tqdm(tar.getmembers(), leave=False):
         assert image.isfile() and image.name.startswith(prefix)
@@ -54,18 +58,21 @@ def train(tar: tarfile.TarFile) -> None:
 
 def val(tar: tarfile.TarFile, synsets: Synsets) -> None:
     gt_path = (
-        DATA_ROOT / 'ILSVRC2012_devkit_t12' / 'data'
+        ImageNetDataset.DATA_ROOT / 'ILSVRC2012_devkit_t12' / 'data'
         / 'ILSVRC2012_validation_ground_truth.txt'
     )
     gt = np.loadtxt(gt_path, np.uint16).tolist()
 
     for synset_id in set(gt):
-        path = DATA_ROOT / 'val' / synsets[synset_id]['WNID']
+        path = ImageNetDataset.DATA_ROOT / 'val' / synsets[synset_id]['WNID']
         path.mkdir(parents=True, exist_ok=True)
 
     for image, synset_id in zip(tqdm.tqdm(tar.getmembers()), gt):
-        assert image.isfile() and image.name.endswith('.JPEG')
-        path = DATA_ROOT / 'val' / synsets[synset_id]['WNID']
+        assert (
+            image.isfile()
+            and image.name.endswith(f'.{ImageNetDataset.SUFFIX}')
+        )
+        path = ImageNetDataset.DATA_ROOT / 'val' / synsets[synset_id]['WNID']
         image_file = tar.extractfile(image)
         assert image_file is not None
         image_path = (
@@ -74,8 +81,8 @@ def val(tar: tarfile.TarFile, synsets: Synsets) -> None:
         image_path.write_bytes(image_file.read())
 
 
-def annotations(split_name: str, synsets: Synsets) -> None:
-    split_root = DATA_ROOT / split_name
+def annotations(split: str, synsets: Synsets) -> None:
+    split_root = ImageNetDataset.DATA_ROOT / split
     json_dump(
         [
             Annotation(name=image.name, synset_id=synset_id)
@@ -83,16 +90,20 @@ def annotations(split_name: str, synsets: Synsets) -> None:
             if (synset_path := split_root / synset['WNID']).exists()
             for image in synset_path.iterdir()
         ],
-        DATA_ROOT / 'annotations' / f'{split_name}.json',
+        ImageNetDataset.ANNOTATIONS_ROOT / f'{split}.json',
     )
 
 
 def main() -> None:
     synsets = parse_synsets()
-    json_dump(synsets, DATA_ROOT / 'synsets.json')
-    with tarfile.open(DATA_ROOT / 'ILSVRC2012_img_train.tar') as tar:
+    json_dump(synsets, ImageNetDataset.SYNSETS_FILE)
+    with tarfile.open(
+        ImageNetDataset.DATA_ROOT / 'ILSVRC2012_img_train.tar',
+    ) as tar:
         train(tar)
-    with tarfile.open(DATA_ROOT / 'ILSVRC2012_img_val.tar') as tar:
+    with tarfile.open(
+        ImageNetDataset.DATA_ROOT / 'ILSVRC2012_img_val.tar',
+    ) as tar:
         val(tar, synsets)
     annotations('train', synsets)
     annotations('val', synsets)

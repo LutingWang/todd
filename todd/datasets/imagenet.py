@@ -5,20 +5,14 @@ __all__ = [
 import json
 import os
 import pathlib
+from abc import ABC
 from typing import Iterator, Literal, TypedDict
 
 import torch
-import torchvision.transforms.functional as F
-from PIL import Image
 
+from ..bases.configs import Config
 from ..registries import DatasetRegistry
-from .access_layers import PILAccessLayer
-from .base import BaseDataset
-
-DATA_ROOT = pathlib.Path('data/imagenet')
-ANNOTATIONS_ROOT = DATA_ROOT / 'annotations'
-SYNSETS_FILE = DATA_ROOT / 'synsets.json'
-SUFFIX = 'JPEG'
+from .pil import PILDataset
 
 Split = Literal['train', 'val']
 
@@ -50,9 +44,11 @@ class Keys:
         self,
         annotations: Annotations,
         synsets: Synsets,
+        suffix: str,
     ) -> None:
         self._annotations = annotations
         self._synsets = synsets
+        self._suffix = suffix
 
     def __len__(self) -> int:
         return len(self._annotations)
@@ -61,15 +57,12 @@ class Keys:
         annotation = self._annotations[index]
         return os.path.join(
             self._synsets[annotation['synset_id']]['WNID'],
-            annotation['name'].removesuffix(f'.{SUFFIX}'),
+            annotation['name'].removesuffix(f'.{self._suffix}'),
         )
 
     def __iter__(self) -> Iterator[str]:
         for i in range(len(self)):
             yield self[i]
-
-
-VT = Image.Image
 
 
 class T(TypedDict):
@@ -79,42 +72,35 @@ class T(TypedDict):
 
 
 @DatasetRegistry.register_()
-class ImageNetDataset(BaseDataset[T, str, VT]):
+class ImageNetDataset(PILDataset[T], ABC):
+    DATA_ROOT = pathlib.Path('data/imagenet')
+    ANNOTATIONS_ROOT = DATA_ROOT / 'annotations'
+    SYNSETS_FILE = DATA_ROOT / 'synsets.json'
+    SUFFIX = 'JPEG'
 
     def __init__(self, *args, split: Split, **kwargs) -> None:
-        annotations_file = ANNOTATIONS_ROOT / f'{split}.json'
+        annotations_file = self.ANNOTATIONS_ROOT / f'{split}.json'
         with annotations_file.open() as f:
             self._annotations: Annotations = json.load(f)
 
-        with SYNSETS_FILE.open() as f:
-            self._synsets: Synsets = {
-                int(k): v
-                for k, v in json.load(f).items()
-            }
+        with self.SYNSETS_FILE.open() as f:
+            synsets: dict[str, Synset] = json.load(f)
+        self._synsets: Synsets = {int(k): v for k, v in synsets.items()}
 
         self._categories = {
             synset_id: i
             for i, synset_id in enumerate(sorted(self._synsets))
         }
 
-        access_layer = PILAccessLayer(
-            data_root=str(DATA_ROOT),
-            task_name=split,
-            suffix=SUFFIX,
-            subfolder_action='walk',
-        )
+        access_layer = Config(task_name=split, subfolder_action='walk')
         super().__init__(*args, access_layer=access_layer, **kwargs)
 
     def build_keys(self) -> Keys:
-        return Keys(self._annotations, self._synsets)
+        return Keys(self._annotations, self._synsets, self.SUFFIX)
 
     def __getitem__(self, index: int) -> T:
         key, image = self._access(index)
-        image = image.convert('RGB')
-        tensor = (
-            F.pil_to_tensor(image)
-            if self._transforms is None else self._transforms(image)
-        )
+        tensor = self._transform(image)
         synset_id = self._annotations[index]['synset_id']
         category = self._categories[synset_id]
         return T(id_=key, image=tensor, category=category)
