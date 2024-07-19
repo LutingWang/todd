@@ -5,8 +5,6 @@ __all__ = [
 from abc import ABC
 from typing import TypeVar
 
-import torch
-import torchvision.transforms.functional as F
 from PIL import Image
 
 from .base import BaseDataset
@@ -21,8 +19,3 @@ class PILDataset(BaseDataset[T, str, VT], ABC):
         key, image = super()._access(index)
         image = image.convert('RGB')
         return key, image
-
-    def _transform(self, image: VT) -> torch.Tensor:
-        if self._transforms is None:
-            return F.pil_to_tensor(image)
-        return self._transforms(image)

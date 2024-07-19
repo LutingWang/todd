@@ -14,21 +14,25 @@ class SerializeMixin(Config):
 
     @classmethod
     @abstractmethod
-    def _loads(cls, s: str) -> dict:
+    def _loads(cls, __s: str, **kwargs) -> dict:
         pass
 
     @classmethod
-    def loads(cls, s: str) -> Self:
-        return cls(cls._loads(s))  # type: ignore[abstract]
+    def loads(cls, s: str, **kwargs) -> Self:
+        return cls(cls._loads(s), **kwargs)  # type: ignore[abstract]
 
     @classmethod
-    def load(cls, file) -> Self:
-        file = pathlib.Path(file)
-        # `loads` does not support `_delete_` with `_base_`
-        config = cls._loads(file.read_text())
+    def load(cls, file: str | pathlib.Path, **kwargs) -> Self:
+        if isinstance(file, str):
+            file = pathlib.Path(file)
+        # do not use `loads`, since it does not support `_delete_` with
+        # `_base_`
+        config = cls._loads(file.read_text(), **kwargs)
         base_config = cls()  # type: ignore[abstract]
         for base in config.pop('_base_', []):
-            base_config.update(cls.load(file.parent / base))
+            if isinstance(base, str):
+                base = cls.load(file.parent / base)
+            base_config.update(base)
         base_config.update(config)
         return base_config
 
@@ -36,7 +40,7 @@ class SerializeMixin(Config):
     def dumps(self) -> str:
         pass
 
-    def dump(self, file) -> None:
+    def dump(self, file: str | pathlib.Path) -> None:
         r"""Dump the config to a file.
 
         Args:
@@ -44,7 +48,9 @@ class SerializeMixin(Config):
 
         Refer to `dumps` for more details.
         """
-        pathlib.Path(file).write_text(self.dumps())
+        if isinstance(file, str):
+            file = pathlib.Path(file)
+        file.write_text(self.dumps())
 
     def diff(self, other: Self, html: bool = False) -> str:
         """Diff configs.

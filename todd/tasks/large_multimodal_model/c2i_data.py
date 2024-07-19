@@ -1,6 +1,6 @@
 __all__ = [
-    'ClassConditionalImageEnum',
-    'ClassConditionalImageData',
+    'C2IEnum',
+    'C2IData',
 ]
 
 import enum
@@ -12,12 +12,12 @@ import torch
 from .interleaved_data import Codebook, InterleavedData, Segment
 
 
-class ClassConditionalImageEnum(enum.Enum):
+class C2IEnum(enum.Enum):
     CATEGORY = enum.auto()
     IMAGE = enum.auto()
 
 
-class ClassConditionalImageData(InterleavedData[ClassConditionalImageEnum]):
+class C2IData(InterleavedData[C2IEnum]):
 
     def __init__(
         self,
@@ -37,13 +37,10 @@ class ClassConditionalImageData(InterleavedData[ClassConditionalImageEnum]):
 
         super().__init__(
             [category_tokens, image_tokens],
-            [
-                ClassConditionalImageEnum.CATEGORY,
-                ClassConditionalImageEnum.IMAGE,
-            ],
+            [C2IEnum.CATEGORY, C2IEnum.IMAGE],
             {
-                ClassConditionalImageEnum.CATEGORY: category_codebook_size,
-                ClassConditionalImageEnum.IMAGE: image_codebook_size,
+                C2IEnum.CATEGORY: category_codebook_size,
+                C2IEnum.IMAGE: image_codebook_size,
             },
             *args,
             **kwargs,
@@ -52,24 +49,24 @@ class ClassConditionalImageData(InterleavedData[ClassConditionalImageEnum]):
         self._image_wh = (h, w)
 
     @property
-    def condition_segment(self) -> Segment[ClassConditionalImageEnum]:
+    def condition_segment(self) -> Segment[C2IEnum]:
         segment = self._segments[0]
-        assert segment.token_type is ClassConditionalImageEnum.CATEGORY
+        assert segment.token_type is C2IEnum.CATEGORY
         return segment
 
     @property
-    def image_segment(self) -> Segment[ClassConditionalImageEnum]:
+    def image_segment(self) -> Segment[C2IEnum]:
         segment = self._segments[1]
-        assert segment.token_type is ClassConditionalImageEnum.IMAGE
+        assert segment.token_type is C2IEnum.IMAGE
         return segment
 
     @property
-    def category_codebook(self) -> Codebook[ClassConditionalImageEnum]:
-        return self._codebooks[ClassConditionalImageEnum.CATEGORY]
+    def category_codebook(self) -> Codebook[C2IEnum]:
+        return self._codebooks[C2IEnum.CATEGORY]
 
     @property
-    def image_codebook(self) -> Codebook[ClassConditionalImageEnum]:
-        return self._codebooks[ClassConditionalImageEnum.IMAGE]
+    def image_codebook(self) -> Codebook[C2IEnum]:
+        return self._codebooks[C2IEnum.IMAGE]
 
     @property
     def image_wh(self) -> tuple[int, int]:

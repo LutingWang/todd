@@ -3,6 +3,7 @@ __all__ = [
 ]
 
 import importlib
+from typing import Any
 
 import yapf.yapflib.yapf_api as yapf
 
@@ -18,7 +19,7 @@ class _import_:  # noqa: N801 pylint: disable=invalid-name
         self.__name = name
         self.__module = importlib.import_module(name)
 
-    def __getattr__(self, attr: str):
+    def __getattr__(self, attr: str) -> Any:
         return getattr(self.__module, attr)
 
     def __repr__(self) -> str:
@@ -28,8 +29,8 @@ class _import_:  # noqa: N801 pylint: disable=invalid-name
 @ConfigRegistry.register_('py')
 class PyConfig(SerializeMixin, Config):  # type: ignore[misc]
 
-    @staticmethod
-    def _loads(s: str) -> dict:
+    @classmethod
+    def _loads(cls, __s: str, **kwargs) -> dict[str, Any]:
         r"""Load config from string.
 
         Args:
@@ -40,10 +41,10 @@ class PyConfig(SerializeMixin, Config):  # type: ignore[misc]
 
         Config strings are valid python codes:
 
-            >>> PyConfig.loads('a = 1\nb = dict(c=3)')
+            >>> PyConfig._loads('a = 1\nb = dict(c=3)')
             {'a': 1, 'b': {'c': 3}}
         """
-        return exec_(s, _import_=_import_)
+        return exec_(__s, PyConfig=cls, _import_=_import_, **kwargs)
 
     def dumps(self) -> str:
         """Reverse of `loads`.

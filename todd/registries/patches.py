@@ -190,7 +190,6 @@ def dataloader_build_pre_hook(
     config.dataset = dataset
 
     if config.pop('batch_size_in_total', False):
-        assert 'batch_size' in config
         batch_size = config.batch_size
         world_size = get_world_size()
         assert batch_size % world_size == 0
