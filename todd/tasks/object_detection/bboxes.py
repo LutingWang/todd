@@ -10,7 +10,7 @@ __all__ = [
     'BBoxesXYXY',
     'BBoxesXYWH',
     'BBoxesCXCYWH',
-    'FlattenMixin',
+    'FlattenBBoxesMixin',
     'FlattenBBoxesXYXY',
     'FlattenBBoxesXYWH',
     'FlattenBBoxesCXCYWH',
@@ -20,11 +20,10 @@ from abc import ABC, abstractmethod
 from typing import TypeVar
 from typing_extensions import Self
 
-import einops
+import einops.layers.torch
 import torch
 
-from ..utils import FlattenMixin as BaseFlattenMixin
-from ..utils import NormalizeMixin, TensorWrapper
+from ..utils import FlattenMixin, NormalizeMixin, TensorWrapper
 from .registries import ODBBoxesRegistry
 
 BBox = tuple[float, float, float, float]
@@ -225,6 +224,16 @@ class BBoxes(NormalizeMixin[BBox], TensorWrapper[BBox], ABC):
         unions = unions.clamp_min(eps)
         return intersections / unions
 
+    def to_mask(self) -> torch.Tensor:
+        w, h = self.divisor
+        x = torch.arange(w, device=self._tensor.device)
+        y = torch.arange(h, device=self._tensor.device)
+        rearrange = einops.layers.torch.Rearrange('... -> ... 1')
+        x_mask = (rearrange(self.left) <= x) & (x <= rearrange(self.right))
+        y_mask = (rearrange(self.top) <= y) & (y <= rearrange(self.bottom))
+        mask = x_mask & rearrange(y_mask)
+        return mask
+
 
 class BBoxesXY__(BBoxes, ABC):
 
@@ -398,9 +407,9 @@ class BBoxesCXCYWH(BBoxesCXCY__, BBoxes__WH):
         return FlattenBBoxesCXCYWH(*args, **kwargs)
 
 
-class FlattenMixin(BaseFlattenMixin[BBox], BBoxes, ABC):
+class FlattenBBoxesMixin(FlattenMixin[BBox], BBoxes, ABC):
 
-    def intersections(self, other: 'FlattenMixin') -> torch.Tensor:
+    def intersections(self, other: 'FlattenBBoxesMixin') -> torch.Tensor:
         r"""Intersections.
 
         Args:
@@ -421,12 +430,12 @@ class FlattenMixin(BaseFlattenMixin[BBox], BBoxes, ABC):
         wh = wh.clamp_min_(0)
         return wh[..., 0] * wh[..., 1]
 
-    def __and__(self, other: 'FlattenMixin') -> torch.Tensor:
+    def __and__(self, other: 'FlattenBBoxesMixin') -> torch.Tensor:
         return self.intersections(other)
 
     def _unions(
         self,
-        other: 'FlattenMixin',
+        other: 'FlattenBBoxesMixin',
         intersections: torch.Tensor,
     ) -> torch.Tensor:
         r"""Unions.
@@ -440,7 +449,7 @@ class FlattenMixin(BaseFlattenMixin[BBox], BBoxes, ABC):
         """
         return self.area[:, None] + other.area[None, :] - intersections
 
-    def unions(self, other: 'FlattenMixin') -> torch.Tensor:
+    def unions(self, other: 'FlattenBBoxesMixin') -> torch.Tensor:
         r"""Unions.
 
         Args:
@@ -452,10 +461,14 @@ class FlattenMixin(BaseFlattenMixin[BBox], BBoxes, ABC):
         intersections = self.intersections(other)
         return self._unions(other, intersections)
 
-    def __or__(self, other: 'FlattenMixin') -> torch.Tensor:
+    def __or__(self, other: 'FlattenBBoxesMixin') -> torch.Tensor:
         return self.unions(other)
 
-    def ious(self, other: 'FlattenMixin', eps: float = 1e-6) -> torch.Tensor:
+    def ious(
+        self,
+        other: 'FlattenBBoxesMixin',
+        eps: float = 1e-6,
+    ) -> torch.Tensor:
         r"""Intersections over unions.
 
         Args:
@@ -472,15 +485,15 @@ class FlattenMixin(BaseFlattenMixin[BBox], BBoxes, ABC):
 
 
 @ODBBoxesRegistry.register_()
-class FlattenBBoxesXYXY(FlattenMixin, BBoxesXYXY):
+class FlattenBBoxesXYXY(FlattenBBoxesMixin, BBoxesXYXY):
     pass
 
 
 @ODBBoxesRegistry.register_()
-class FlattenBBoxesXYWH(FlattenMixin, BBoxesXYWH):
+class FlattenBBoxesXYWH(FlattenBBoxesMixin, BBoxesXYWH):
     pass
 
 
 @ODBBoxesRegistry.register_()
-class FlattenBBoxesCXCYWH(FlattenMixin, BBoxesCXCYWH):
+class FlattenBBoxesCXCYWH(FlattenBBoxesMixin, BBoxesCXCYWH):
     pass
