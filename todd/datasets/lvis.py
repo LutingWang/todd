@@ -1,9 +1,10 @@
 __all__ = [
-    'LVISMixin',
     'LVISDataset',
 ]
 
 from typing import Any, cast
+
+from todd.datasets.access_layers.pil import PILAccessLayer
 
 from ..registries import DatasetRegistry
 from .coco import COCODataset
@@ -20,12 +21,21 @@ class Keys(COCOKeys):
         return filename.removesuffix(f'.{self._suffix}')
 
 
-class LVISMixin(COCODataset):
+@DatasetRegistry.register_()
+class LVISDataset(COCODataset):
+
+    def __init__(
+        self,
+        *args,
+        access_layer: PILAccessLayer | None = None,
+        **kwargs,
+    ) -> None:
+        if access_layer is None:
+            access_layer = PILAccessLayer(
+                data_root=str(self.DATA_ROOT),
+                suffix=self.SUFFIX,
+            )
+        super().__init__(*args, access_layer=access_layer, **kwargs)
 
     def build_keys(self) -> COCOKeys:
-        return COCOKeys(self._coco, self.SUFFIX)
-
-
-@DatasetRegistry.register_()
-class LVISDataset(LVISMixin, COCODataset):
-    pass
+        return Keys(self._coco, self.SUFFIX)

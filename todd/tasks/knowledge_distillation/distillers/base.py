@@ -10,8 +10,8 @@ from typing_extensions import Self
 
 from torch import nn
 
-from todd import Config
-from todd.bases.registries import BuildPreHookMixin, Item, RegistryMeta
+from todd import Config, RegistryMeta
+from todd.bases.registries import BuildPreHookMixin, Item
 from todd.models.losses import BaseLoss
 from todd.utils import StoreMeta, transfer_state_dicts
 

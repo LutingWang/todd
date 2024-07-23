@@ -5,8 +5,8 @@ __all__ = [
 from abc import abstractmethod
 from typing import TypeVar
 
-from todd import Config
-from todd.bases.registries import Item, RegistryMeta
+from todd import Config, RegistryMeta
+from todd.bases.registries import Item
 from todd.datasets import BaseDataset as BaseDataset_
 
 from ..optical_flow import OpticalFlow

@@ -4,8 +4,8 @@ __all__ = [
 
 from typing import TypeVar
 
-from todd import Config
-from todd.bases.registries import BuildPreHookMixin, Item, RegistryMeta
+from todd import Config, RegistryMeta
+from todd.bases.registries import BuildPreHookMixin, Item
 from todd.datasets.access_layers import FolderAccessLayer, SuffixMixin
 
 from ...optical_flow import SerializeMixin

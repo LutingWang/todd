@@ -1,14 +1,29 @@
 __all__ = [
     'BPE',
-    'Trainer',
+    'BPETrainer',
+    'BPECallback',
 ]
 
 from collections import Counter
-from typing import Iterable
+from typing import Any, Iterable, Mapping, TypeVar
+
+import torch
+from torch import nn
+
+from todd import Config, RegistryMeta
+from todd.bases.registries import Item
+from todd.runners import BaseRunner, Memo
+from todd.runners.callbacks import BaseCallback
+from todd.utils import ArgsKwargs, SerializeMixin
+
+from .registries import NLPRunnerRegistry
+from .runners import NLPCallbackRegistry
 
 Token = int
 TokenPair = tuple[Token, Token]
 TokenSequence = list[Token]
+
+T = TypeVar('T', bound=nn.Module)
 
 
 def merge(
@@ -34,7 +49,7 @@ def merge(
     return new_token_sequence, indices
 
 
-class BPE:
+class BPE(SerializeMixin):
 
     def __init__(
         self,
@@ -45,6 +60,11 @@ class BPE:
         self._token_pairs = token_pairs
         self._token_mappings = ([[i] for i in range(codebook_size)]
                                 + [None] * len(token_pairs))
+
+    def __getstate__(self) -> ArgsKwargs:
+        args, kwargs = super().__getstate__()
+        args = (self._codebook_size, self._token_pairs) + args
+        return args, kwargs
 
     def encode(self, token_sequence: TokenSequence) -> TokenSequence:
         while len(token_sequence) >= 2:
@@ -79,27 +99,86 @@ class BPE:
         return sum(map(self._decode, token_sequence), [])
 
 
-class Trainer:
+@NLPRunnerRegistry.register_()
+class BPETrainer(BaseRunner[T]):
 
     def __init__(
         self,
+        *args,
         token_sequences: Iterable[TokenSequence],
         codebook_size: int,
         max_size: int,
+        **kwargs,
     ) -> None:
-        token_sequences = list(token_sequences)
-        self._token_sequences = token_sequences
-
+        super().__init__(*args, **kwargs)
+        self._token_sequences = list(token_sequences)
         self._codebook_size = codebook_size
         self._max_size = max_size
+        self._counter = self._count()
 
+    def _count(self) -> Counter[TokenPair]:
         counter: Counter[TokenPair] = Counter()
-        for token_sequence in token_sequences:
+        for token_sequence in self._token_sequences:
             token_pairs = zip(token_sequence, token_sequence[1:])
             counter.update(token_pairs)
-        self._counter = counter
+        return counter
 
-    def merge(self, token_pair: TokenPair, token: Token) -> None:
+    @property
+    def token_sequences(self) -> list[TokenSequence]:
+        return self._token_sequences
+
+    @property
+    def codebook_size(self) -> int:
+        return self._codebook_size
+
+    @property
+    def max_size(self) -> int:
+        return self._max_size
+
+    @property
+    def counter(self) -> Counter[TokenPair]:
+        return self._counter
+
+    def _init_model(self, *args, **kwargs) -> None:
+        pass
+
+    @property
+    def iters(self) -> int:
+        return self._max_size - self._codebook_size
+
+    @classmethod
+    def model_build_pre_hook(
+        cls,
+        config: Config,
+        registry: RegistryMeta,
+        item: Item,
+    ) -> Config:
+        return config
+
+    @classmethod
+    def dataset_build_pre_hook(
+        cls,
+        config: Config,
+        registry: RegistryMeta,
+        item: Item,
+    ) -> Config:
+        config.dataset = None
+        return config
+
+    @classmethod
+    def dataloader_build_pre_hook(
+        cls,
+        config: Config,
+        registry: RegistryMeta,
+        item: Item,
+    ) -> Config:
+        config.dataloader = None
+        return config
+
+    def _run_iter(self, batch: Token, memo: Memo, *args, **kwargs) -> Memo:
+        token = batch
+        token_pair: TokenPair = memo['token_pair']
+
         previous_tokens: Counter[Token] = Counter()
         next_tokens: Counter[Token] = Counter()
 
@@ -123,17 +202,68 @@ class Trainer:
             self._counter[token, next_token] += n
             self._counter[token_pair[1], next_token] -= n
 
-        self._counter.pop(token_pair)
+        return memo
 
-    def train(self) -> BPE:
-        token_pairs: list[TokenPair] = []
-        for token in range(self._codebook_size, self._max_size):
-            most_common = self._counter.most_common(1)
-            if not most_common:
-                break
-            (token_pair, n), = most_common
-            if n <= 1:
-                break
-            token_pairs.append(token_pair)
-            self.merge(token_pair, token)
-        return BPE(self._codebook_size, token_pairs)
+    def _setup(self) -> Memo:
+        memo = super()._setup()
+        memo['dataloader'] = range(self._codebook_size, self._max_size)
+        return memo
+
+    def load_state_dict(
+        self,
+        state_dict: Mapping[str, Any],
+        *args,
+        **kwargs,
+    ) -> None:
+        super().load_state_dict(state_dict, *args, **kwargs)
+        self._token_sequences = state_dict['token_sequences']
+        self._counter = self._count()
+
+    def state_dict(self, *args, **kwargs) -> dict[str, Any]:
+        state_dict = super().state_dict(*args, **kwargs)
+        state_dict['token_sequences'] = self._token_sequences
+        return state_dict
+
+
+@NLPCallbackRegistry.register_()
+class BPECallback(BaseCallback[T]):
+    runner: BPETrainer
+
+    def before_run(self, memo: Memo) -> None:
+        super().before_run(memo)
+        memo['token_pairs'] = []
+
+    def should_break(self, batch: Token, memo: Memo) -> bool:
+        if super().should_break(batch, memo):
+            return True
+        most_common = self.runner.counter.most_common(1)
+        if not most_common:
+            return True
+        (token_pair, n), = most_common
+        if n <= 1:
+            return True
+        memo.update(token_pair=token_pair)
+
+        log: dict[str, Any] | None = memo.get('log')
+        if log is not None:
+            log.update(token_pair=token_pair, token=batch, n=n)
+
+        return False
+
+    def after_run_iter(self, batch: Token, memo: Memo) -> None:
+        super().after_run_iter(batch, memo)
+        token_pairs: list[TokenPair] = memo['token_pairs']
+        token_pair: TokenPair = memo['token_pair']
+        token_pairs.append(token_pair)
+        self.runner.counter.pop(token_pair)
+
+    def after_run(self, memo: Memo) -> None:
+        super().after_run(memo)
+        bpe = BPE(self.runner._codebook_size, memo['token_pairs'])
+        memo['bpe'] = bpe
+
+        torch.save(bpe, self.runner.work_dir / 'bpe.pth')
+        torch.save(
+            self.runner.token_sequences,
+            self.runner.work_dir / 'token_sequences.pth',
+        )
