@@ -9,6 +9,8 @@ __all__ = [
 from collections import UserDict
 from typing import Any, Callable, Never, Protocol, TypeVar, no_type_check
 
+from yapf.yapflib.errors import YapfError
+
 from ...loggers import logger
 from ...patches.py import NonInstantiableMeta
 from ..configs import Config
@@ -417,11 +419,11 @@ class RegistryMeta(  # type: ignore[misc]
             return registry._build(item, config.copy())
         except Exception:
             from ...configs import PyConfig
-            logger.error(
-                "Failed to build\n%s: %s",
-                config_type,
-                PyConfig(config).dumps(),
-            )
+            try:
+                dumps = PyConfig(config).dumps()
+            except YapfError:
+                dumps = repr(config)
+            logger.error("Failed to build\n%s: %s", config_type, dumps)
             raise
 
     def build_or_return(
