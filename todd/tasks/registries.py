@@ -6,6 +6,7 @@ __all__ = [
     'OFERegistry',
     'PTRegistry',
     'LMMRegistry',
+    'NLPRegistry',
 ]
 
 from ..registries import TaskRegistry
@@ -36,4 +37,8 @@ class PTRegistry(TaskRegistry):
 
 
 class LMMRegistry(TaskRegistry):
+    pass
+
+
+class NLPRegistry(TaskRegistry):
     pass

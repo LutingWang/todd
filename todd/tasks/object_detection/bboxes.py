@@ -231,7 +231,10 @@ class BBoxes(NormalizeMixin[BBox], TensorWrapper[BBox], ABC):
         rearrange = einops.layers.torch.Rearrange('... -> ... 1')
         x_mask = (rearrange(self.left) <= x) & (x <= rearrange(self.right))
         y_mask = (rearrange(self.top) <= y) & (y <= rearrange(self.bottom))
-        mask = x_mask & rearrange(y_mask)
+
+        x_mask = einops.rearrange(x_mask, '... d -> ... 1 d')
+        y_mask = rearrange(y_mask)
+        mask = x_mask & y_mask
         return mask
 
 

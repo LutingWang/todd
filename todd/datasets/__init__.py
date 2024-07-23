@@ -4,6 +4,7 @@ from .coco import *
 from .constants import *
 from .imagenet import *
 from .lmdb import *
+from .lvis import *
 from .pil import *
 from .registries import *
 from .zip import *
