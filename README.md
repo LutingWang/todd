@@ -46,9 +46,6 @@ pip install .\[optional,dev,lint,doc,test\]
 TODO
 
 1. Complete repr, especially for runners
-2. mypy supports recursive types
-3. add a script to prepare imagenet dataset
-4. add Any to all missing typing fields
-5. make loss registry a sub-registry of model registry
-6. refactor registries
-7. remove odpsrun
+2. add Any to all missing typing fields
+3. remove odpsrun
+4. @pytest.fixture(autouse=True)
