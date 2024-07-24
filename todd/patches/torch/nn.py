@@ -1,7 +1,10 @@
 __all__ = [
     'ModuleList',
     'ModuleDict',
+    'Sequential',
 ]
+
+from typing import Any
 
 from torch import nn
 
@@ -16,3 +19,11 @@ class ModuleDict(nn.ModuleDict):
 
     def forward(self, *args, **kwargs) -> dict[str, nn.Module]:
         return {k: m(*args, **kwargs) for k, m in self.items()}
+
+
+class Sequential(nn.Sequential):
+
+    def forward(self, *args, **kwargs) -> tuple[Any, ...]:
+        for module in self:
+            args = module(*args, **kwargs)
+        return args
