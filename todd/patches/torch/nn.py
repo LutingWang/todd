@@ -24,6 +24,6 @@ class ModuleDict(nn.ModuleDict):
 class Sequential(nn.Sequential):
 
     def forward(self, *args, **kwargs) -> tuple[Any, ...]:
-        for module in self:
-            args = module(*args, **kwargs)
+        for m in self:
+            args = m(*args, **kwargs)
         return args

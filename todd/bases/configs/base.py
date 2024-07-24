@@ -3,6 +3,7 @@ __all__ = [
 ]
 
 from typing import Any, Mapping, MutableMapping
+from typing_extensions import Self
 
 from ...patches.py import AttrDict, set_
 
@@ -87,3 +88,12 @@ class Config(AttrDict, dict[Any, Any]):  # type: ignore[misc]
                     old_v.update(v)
                 else:
                     self[k] = v
+
+    def get_config(self, key: str) -> Self:
+        if key in self:
+            config = self[key]
+            assert isinstance(config, self.__class__)
+        else:
+            config = self.__class__()
+            self[key] = config
+        return config
