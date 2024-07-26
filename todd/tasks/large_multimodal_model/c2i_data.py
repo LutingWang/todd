@@ -9,7 +9,8 @@ import einops
 import einops.layers.torch
 import torch
 
-from .interleaved_data import Codebook, InterleavedData, Segment
+from .interleaved_data import Codebook, Segment
+from .x2i_data import X2IData
 
 
 class C2IEnum(enum.Enum):
@@ -17,7 +18,7 @@ class C2IEnum(enum.Enum):
     IMAGE = enum.auto()
 
 
-class C2IData(InterleavedData[C2IEnum]):
+class C2IData(X2IData[C2IEnum]):
 
     def __init__(
         self,
@@ -32,42 +33,21 @@ class C2IData(InterleavedData[C2IEnum]):
             category_tokens = einops.rearrange(category_tokens, 'b -> b 1')
         assert category_tokens.ndim == 2
 
-        _, h, w = image_tokens.shape
-        image_tokens = einops.rearrange(image_tokens, 'b h w -> b (h w)')
-
         super().__init__(
-            [category_tokens, image_tokens],
-            [C2IEnum.CATEGORY, C2IEnum.IMAGE],
-            {
-                C2IEnum.CATEGORY: category_codebook_size,
-                C2IEnum.IMAGE: image_codebook_size,
-            },
+            category_tokens,
+            image_tokens,
+            C2IEnum.CATEGORY,
+            C2IEnum.IMAGE,
+            category_codebook_size,
+            image_codebook_size,
             *args,
             **kwargs,
         )
 
-        self._image_wh = (h, w)
-
     @property
-    def condition_segment(self) -> Segment[C2IEnum]:
-        segment = self._segments[0]
-        assert segment.token_type is C2IEnum.CATEGORY
-        return segment
-
-    @property
-    def image_segment(self) -> Segment[C2IEnum]:
-        segment = self._segments[1]
-        assert segment.token_type is C2IEnum.IMAGE
-        return segment
+    def category_segment(self) -> Segment[C2IEnum]:
+        return self.condition_segment
 
     @property
     def category_codebook(self) -> Codebook[C2IEnum]:
-        return self._codebooks[C2IEnum.CATEGORY]
-
-    @property
-    def image_codebook(self) -> Codebook[C2IEnum]:
-        return self._codebooks[C2IEnum.IMAGE]
-
-    @property
-    def image_wh(self) -> tuple[int, int]:
-        return self._image_wh
+        return self.condition_codebook

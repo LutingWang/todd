@@ -11,6 +11,8 @@ from typing import Generic, Iterable, Mapping, TypeVar
 
 import torch
 
+from todd.utils import ArgsKwargs, SerializeMixin
+
 T = TypeVar('T', bound=enum.Enum)
 
 
@@ -54,7 +56,7 @@ class Codebook(Generic[T]):
         return tokens - self.bias
 
 
-class InterleavedData(Generic[T]):
+class InterleavedData(SerializeMixin, Generic[T]):
 
     def __init__(
         self,
@@ -82,6 +84,20 @@ class InterleavedData(Generic[T]):
             codebook.token_type: codebook
             for codebook in codebooks
         }
+
+        self._share_codebook = share_codebook
+
+    def __getstate__(self) -> ArgsKwargs:
+        tokens = [segment.tokens for segment in self._segments]
+        token_types = [segment.token_type for segment in self._segments]
+        codebook_sizes = {
+            token_type: codebook.size
+            for token_type, codebook in self._codebooks.items()
+        }
+        args = (tokens, token_types, codebook_sizes)
+        share_codebook = self._share_codebook
+        kwargs = dict(share_codebook=share_codebook)
+        return args, kwargs
 
     def __len__(self) -> int:
         return self.tokens.shape[1]
