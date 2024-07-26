@@ -4,7 +4,6 @@ __all__ = [
 
 import enum
 from typing import TypeVar
-from typing_extensions import Self
 
 import einops
 import einops.layers.torch
@@ -12,22 +11,23 @@ import torch
 
 from todd.utils import ArgsKwargs
 
-from .interleaved_data import Codebook, InterleavedData, Segment
+from .image_data import ImageData
+from .interleaved_data import Codebook, Segment
 
 T = TypeVar('T', bound=enum.Enum)
 
 
-class X2IData(InterleavedData[T]):
+class X2IData(ImageData[T]):
 
     def __init__(
         self,
         condition_tokens: torch.Tensor,
         image_tokens: torch.Tensor,
-        condition_token_type: T,
-        image_token_type: T,
         condition_codebook_size: int,
         image_codebook_size: int,
         *args,
+        condition_token_type: T,
+        image_token_type: T,
         **kwargs,
     ) -> None:
         _, h, w = image_tokens.shape
@@ -40,22 +40,18 @@ class X2IData(InterleavedData[T]):
                 image_token_type: image_codebook_size,
             },
             *args,
+            image_token_type=image_token_type,
+            image_wh=(w, h),
             **kwargs,
         )
         self._condition_token_type = condition_token_type
-        self._image_token_type = image_token_type
-        self._image_wh = (h, w)
 
     def __getstate__(self) -> ArgsKwargs:
         args, kwargs = super().__getstate__()
-        tokens, token_types, codebook_sizes, *args = args  # type: ignore[assignment] # noqa: E501 pylint: disable=line-too-long
+        tokens, _, codebook_sizes, *args = args  # type: ignore[assignment] # noqa: E501 pylint: disable=line-too-long
         condition_tokens, image_tokens = tokens
-        condition_token_type, image_token_type = token_types
-        condition_codebook_size = codebook_sizes[condition_token_type]
-        image_codebook_size = codebook_sizes[image_token_type]
-
         image_tokens = einops.rearrange(
-            self.image_segment.tokens,
+            image_tokens,
             'b (h w) -> b h w',
             h=self._image_wh[1],
             w=self._image_wh[0],
@@ -63,30 +59,13 @@ class X2IData(InterleavedData[T]):
         args = (
             condition_tokens,
             image_tokens,
-            condition_token_type,
-            image_token_type,
-            condition_codebook_size,
-            image_codebook_size,
+            codebook_sizes[self._condition_token_type],
+            codebook_sizes[self._image_token_type],
         ) + args
+
+        kwargs['condition_token_type'] = self._condition_token_type
+        kwargs.pop('image_wh')
         return args, kwargs
-
-    def dropout(self, condition_tokens: torch.Tensor) -> Self:
-        args, kwargs = self.__getstate__()
-        return self.__class__(condition_tokens, *args[1:], **kwargs)
-
-    def cat(self, other: Self) -> Self:
-        args, kwargs = self.__getstate__()
-        condition_tokens, image_tokens, *args = args  # type: ignore[assignment] # noqa: E501 pylint: disable=line-too-long
-        other_args, other_kwargs = other.__getstate__()
-        other_condition_tokens, other_image_tokens, *other_args = other_args  # type: ignore[assignment] # noqa: E501 pylint: disable=line-too-long
-        condition_tokens = torch.cat([
-            condition_tokens,
-            other_condition_tokens,
-        ])
-        image_tokens = torch.cat([image_tokens, other_image_tokens])
-        assert args == other_args
-        assert kwargs == other_kwargs
-        return self.__class__(condition_tokens, image_tokens, *args, **kwargs)
 
     @property
     def condition_segment(self) -> Segment[T]:
@@ -103,11 +82,3 @@ class X2IData(InterleavedData[T]):
     @property
     def condition_codebook(self) -> Codebook[T]:
         return self._codebooks[self._condition_token_type]
-
-    @property
-    def image_codebook(self) -> Codebook[T]:
-        return self._codebooks[self._image_token_type]
-
-    @property
-    def image_wh(self) -> tuple[int, int]:
-        return self._image_wh

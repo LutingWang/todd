@@ -34,6 +34,10 @@ class Segment(Generic[T]):
     def middle(self) -> int:
         return self.start + self.length // 2
 
+    @property
+    def slice_(self) -> slice:
+        return slice(self.start, self.end)
+
 
 @dataclass(frozen=True)
 class Codebook(Generic[T]):

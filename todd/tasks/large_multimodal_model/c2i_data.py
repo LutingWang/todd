@@ -9,6 +9,8 @@ import einops
 import einops.layers.torch
 import torch
 
+from todd.utils import ArgsKwargs
+
 from .interleaved_data import Codebook, Segment
 from .x2i_data import X2IData
 
@@ -20,29 +22,24 @@ class C2IEnum(enum.Enum):
 
 class C2IData(X2IData[C2IEnum]):
 
-    def __init__(
-        self,
-        category_tokens: torch.Tensor,
-        image_tokens: torch.Tensor,
-        category_codebook_size: int,
-        image_codebook_size: int,
-        *args,
-        **kwargs,
-    ) -> None:
+    def __init__(self, category_tokens: torch.Tensor, *args, **kwargs) -> None:
         if category_tokens.ndim == 1:
             category_tokens = einops.rearrange(category_tokens, 'b -> b 1')
         assert category_tokens.ndim == 2
 
         super().__init__(
             category_tokens,
-            image_tokens,
-            C2IEnum.CATEGORY,
-            C2IEnum.IMAGE,
-            category_codebook_size,
-            image_codebook_size,
             *args,
+            condition_token_type=C2IEnum.CATEGORY,
+            image_token_type=C2IEnum.IMAGE,
             **kwargs,
         )
+
+    def __getstate__(self) -> ArgsKwargs:
+        args, kwargs = super().__getstate__()
+        kwargs.pop('condition_token_type')
+        kwargs.pop('image_token_type')
+        return args, kwargs
 
     @property
     def category_segment(self) -> Segment[C2IEnum]:
