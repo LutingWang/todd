@@ -6,6 +6,8 @@ __all__ = [
 from abc import ABC, abstractmethod
 from typing import Any, Callable, cast
 
+# include einops layers in ModelRegistry
+import einops.layers.torch  # noqa: F401 pylint: disable=unused-import
 from torch import nn
 
 from ..bases.configs import Config
@@ -71,7 +73,8 @@ class ModelRegistry(Registry):
 
 
 for c in descendant_classes(nn.Module):
-    # pylint: disable=invalid-name
-    name = '_'.join(c.__module__.split('.') + [c.__name__])
+    name = (  # pylint: disable=invalid-name
+        c.__module__.replace('.', '_') + '_' + c.__name__
+    )
     if name not in ModelRegistry:
         ModelRegistry.register_(name)(cast(Item, c))

@@ -15,8 +15,11 @@ distiller = dict(
             type='SingleParallelOperator',
             args=('preds', ),
             atom=dict(
-                type=kd_adapt_scope + 'Rearrange',
-                pattern='bs dim h w -> bs h w dim',
+                type=kd_adapt_scope + 'Model',
+                model=dict(
+                    type='einops_layers_torch_Rearrange',
+                    pattern='bs dim h w -> bs h w dim',
+                ),
             ),
         ),
         'targets, bboxes, bbox_poses, anchor_ids': dict(

@@ -131,7 +131,7 @@ class BaseRunner(BuildPreHookMixin, StateDictMixin, Generic[T]):
     ) -> Config:
         dataloader: Config = config.dataloader
         if Store.DRY_RUN:
-            dataloader.update(batch_size=1, num_workers=0)
+            dataloader.update(batch_size=2, num_workers=0)
 
         config.dataloader = DataLoaderRegistry.build_or_return(
             dataloader,

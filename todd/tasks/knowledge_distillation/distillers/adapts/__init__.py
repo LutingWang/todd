@@ -5,6 +5,5 @@ from .decouple import *
 from .detach import *
 from .dict_tensor import *
 from .list_tensor import *
+from .model import *
 from .null import *
-
-# TODO: update
