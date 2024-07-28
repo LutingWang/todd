@@ -48,7 +48,8 @@ class X2IData(ImageData[T]):
 
     def __getstate__(self) -> ArgsKwargs:
         args, kwargs = super().__getstate__()
-        tokens, _, codebook_sizes, *args = args  # type: ignore[assignment] # noqa: E501 pylint: disable=line-too-long
+        tokens, _, codebook_sizes, *args_ = args
+        args = tuple(args_)
         condition_tokens, image_tokens = tokens
         image_tokens = einops.rearrange(
             image_tokens,
