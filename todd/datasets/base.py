@@ -78,6 +78,10 @@ class BaseDataset(BuildPreHookMixin, Dataset[T], Generic[T, KT_co, VT], ABC):
     def access_layer(self) -> BaseAccessLayer[KT_co, VT]:
         return self._access_layer
 
+    @property
+    def transforms(self) -> tf.Compose | None:
+        return self._transforms
+
     def build_keys(self) -> KeysProtocol[KT_co]:
         return list(self._access_layer)
 
