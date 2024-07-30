@@ -408,10 +408,14 @@ class RegistryMeta(  # type: ignore[misc]
                 config = build_pre_hook(config.copy(), registry, item)
             except Exception:
                 from ...configs import PyConfig
+                try:
+                    dumps = PyConfig(config).dumps()
+                except YapfError:
+                    dumps = repr(config)
                 logger.error(
                     "Failed to preprocess\n%s: %s",
                     config_type,
-                    PyConfig(config).dumps(),
+                    dumps,
                 )
                 raise
 
