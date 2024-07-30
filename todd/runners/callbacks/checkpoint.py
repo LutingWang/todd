@@ -39,13 +39,10 @@ class CheckpointCallback(IntervalMixin[T], BaseCallback[T]):
     def bind(self, *args, **kwargs) -> None:
         super().bind(*args, **kwargs)
 
-        self._checkpoint_dir = self.runner.work_dir / 'checkpoints'
-        self._latest_checkpoint_dir = self._checkpoint_dir / 'latest'
+        self.checkpoint_dir.mkdir(parents=True, exist_ok=True)
 
-        self._checkpoint_dir.mkdir(parents=True, exist_ok=True)
-
-        if self.runner._auto_resume and self._latest_checkpoint_dir.exists():
-            load_from = self._latest_checkpoint_dir
+        if self.runner.auto_resume and self.latest_checkpoint_dir.exists():
+            load_from = self.latest_checkpoint_dir
         elif self.runner.load_from is not None:
             load_from = pathlib.Path(self.runner.load_from)
             assert load_from.exists()
@@ -63,14 +60,14 @@ class CheckpointCallback(IntervalMixin[T], BaseCallback[T]):
 
     @property
     def checkpoint_dir(self) -> pathlib.Path:
-        return self._checkpoint_dir
+        return self.runner.work_dir / 'checkpoints'
 
     @property
     def latest_checkpoint_dir(self) -> pathlib.Path:
-        return self._latest_checkpoint_dir
+        return self.checkpoint_dir / 'latest'
 
     def _work_dir(self, name: str) -> pathlib.Path:
-        return self._checkpoint_dir / name
+        return self.checkpoint_dir / name
 
     def _save(self, name: str) -> None:
         # for FSDP, all ranks should call state dict
@@ -84,9 +81,9 @@ class CheckpointCallback(IntervalMixin[T], BaseCallback[T]):
         for k, v in state_dict.items():
             torch.save(v, work_dir / f'{k}.pth')
 
-        if self._latest_checkpoint_dir.is_symlink():
-            self._latest_checkpoint_dir.unlink()
-        self._latest_checkpoint_dir.symlink_to(name)
+        if self.latest_checkpoint_dir.is_symlink():
+            self.latest_checkpoint_dir.unlink()
+        self.latest_checkpoint_dir.symlink_to(name)
 
     def after_run_iter(self, batch, memo: Memo) -> None:
         super().after_run_iter(batch, memo)

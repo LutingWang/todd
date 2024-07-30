@@ -196,6 +196,10 @@ class BaseRunner(BuildPreHookMixin, StateDictMixin, Generic[T]):
         return self._load_from
 
     @property
+    def auto_resume(self) -> bool:
+        return self._auto_resume
+
+    @property
     def iter_(self) -> int:
         return self._iter
 
