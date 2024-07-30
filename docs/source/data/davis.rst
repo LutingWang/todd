@@ -13,6 +13,7 @@ DAVIS 2017
     wget https://data.vision.ee.ethz.ch/csergi/share/davis/${f}
     unzip -q ${f}
     mv DAVIS davis
+    cd ..
 
 .. code::
 
