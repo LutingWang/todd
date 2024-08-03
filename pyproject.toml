@@ -14,6 +14,7 @@ classifiers = [
     'Operating System :: OS Independent',
 ]
 dependencies = [
+    'datasets',
     'einops',
     'ffmpeg-python',
     'lmdb',
@@ -142,6 +143,7 @@ plugins = 'numpy.typing.mypy_plugin'
 [[tool.mypy.overrides]]
 module = [
     'custom_types.*',
+    'datasets.*',
     'ffmpeg.*',
     'h5py.*',
     'mmcv.*',

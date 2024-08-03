@@ -8,8 +8,6 @@ from abc import ABC
 from typing import Generator, Literal, TypedDict
 
 import torch
-import torchvision.transforms.functional as F
-from PIL import Image
 
 from ..registries import DatasetRegistry
 from .access_layers import PILAccessLayer
@@ -91,11 +89,6 @@ class LAIONAestheticsDataset(PILDataset[T], ABC):
 
     def build_keys(self) -> Keys:
         return Keys(self._annotations)
-
-    def _transform(self, image: Image.Image) -> torch.Tensor:
-        if self._transforms is None:
-            return F.pil_to_tensor(image)
-        return self._transforms(image)
 
     def __getitem__(self, index: int) -> T:
         key, image = self._access(index)

@@ -9,7 +9,6 @@ from typing import TYPE_CHECKING, Generator, Literal, Mapping, TypedDict, cast
 from typing_extensions import Self
 
 import torch
-import torchvision.transforms.functional as F
 from pycocotools.coco import COCO
 
 from ..registries import DatasetRegistry
@@ -172,20 +171,13 @@ class COCODataset(PILDataset[T]):
 
     def __getitem__(self, index: int) -> T:
         key, image = self._access(index)
+
+        # NOTE: annotations are not transformed
+        tensor = self._transform(image)
+
         image_id = self._keys.image_ids[index]
         annotations = (
             Annotations.load(self._coco, image_id, self._categories)
             if self._load_annotations else Annotations()
         )
-        item: T
-        if self._transforms is None:
-            item = T(
-                id_=key,
-                image=F.pil_to_tensor(image),
-                annotations=annotations,
-            )
-        else:
-            item = self._transforms(
-                dict(id_=key, image=image, annotations=annotations),
-            )
-        return item
+        return T(id_=key, image=tensor, annotations=annotations)

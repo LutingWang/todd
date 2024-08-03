@@ -4,9 +4,8 @@ __all__ = [
 
 from typing import Any, cast
 
-from todd.datasets.access_layers.pil import PILAccessLayer
-
 from ..registries import DatasetRegistry
+from .access_layers import PILAccessLayer
 from .coco import COCODataset
 from .coco import Keys as COCOKeys
 

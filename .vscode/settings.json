@@ -1,6 +1,7 @@
 {
   "cSpell.words": [
     "batchnorms",
+    "BBoxes",
     "codebooks",
     "cxcy",
     "cxcywh",
@@ -17,7 +18,7 @@
     "LAION",
     "LLAVA",
     "LVIS",
-    "odkd",
+    "ODKD",
     "preds",
     "SGFI",
     "shorthair",

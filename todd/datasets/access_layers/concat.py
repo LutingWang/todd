@@ -31,7 +31,7 @@ class ConcatAccessLayer(BuildPreHookMixin, BaseAccessLayer[str, VT], ABC):
         )
         super().__init__(data_root, *args, **kwargs)
 
-        self._access_layers = access_layers
+        self._access_layers = dict(access_layers)
 
     @classmethod
     def build_pre_hook(
@@ -70,12 +70,12 @@ class ConcatAccessLayer(BuildPreHookMixin, BaseAccessLayer[str, VT], ABC):
 
     def __getitem__(self, key: str) -> VT:
         access_layer, key = self._parse(key)
-        return access_layer.__getitem__(key)
+        return access_layer[key]
 
     def __setitem__(self, key: str, value: VT) -> None:
         access_layer, key = self._parse(key)
-        access_layer.__setitem__(key, value)
+        access_layer[key] = value
 
     def __delitem__(self, key: str) -> None:
         access_layer, key = self._parse(key)
-        access_layer.__delitem__(key)
+        del access_layer[key]
