@@ -11,8 +11,12 @@
     "downsample",
     "FGFI",
     "frozens",
+    "ILSVRC",
+    "ImageNet",
     "IoUs",
+    "LAION",
     "LLAVA",
+    "LVIS",
     "odkd",
     "preds",
     "SGFI",
@@ -20,10 +24,16 @@
     "Sintel",
     "synset",
     "synsets",
+    "WNID",
     "xywh",
     "xyxy"
   ],
   "files.trimTrailingWhitespace": true,
+  "python.analysis.exclude": [
+    "**/data",
+    "**/pretrained",
+    "**/work_dirs"
+  ],
   "python.analysis.extraPaths": [
     "tests/helpers"
   ],

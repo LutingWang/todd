@@ -3,6 +3,7 @@ from .base import *
 from .coco import *
 from .constants import *
 from .imagenet import *
+from .laion_aesthetics import *
 from .lmdb import *
 from .lvis import *
 from .pil import *

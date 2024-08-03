@@ -14,19 +14,28 @@ VT = TypeVar('VT')
 @AccessLayerRegistry.register_()
 class SuffixMixin(FolderAccessLayer[VT]):
 
-    def __init__(self, *args, suffix: str, **kwargs) -> None:
+    def __init__(self, *args, suffix: str | None, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self._suffix = '.' + suffix
+        if suffix is not None:
+            self._suffix = '.' + suffix
+
+    @property
+    def with_suffix(self) -> bool:
+        return hasattr(self, '_suffix')
 
     def _files(self) -> Iterator[pathlib.Path]:
         files = super()._files()
-        return filter(lambda file: file.suffix == self._suffix, files)
+        if self.with_suffix:
+            files = filter(lambda file: file.suffix == self._suffix, files)
+        return files
 
     def _file(self, key: str) -> pathlib.Path:
-        return super()._file(key + self._suffix)
+        if self.with_suffix:
+            return super()._file(key + self._suffix)
+        return super()._file(key)
 
     def __iter__(self) -> Iterator[str]:
-        return map(
-            lambda file: file.removesuffix(self._suffix),
-            super().__iter__(),
-        )
+        iter_ = super().__iter__()
+        if self.with_suffix:
+            iter_ = map(lambda file: file.removesuffix(self._suffix), iter_)
+        return iter_
