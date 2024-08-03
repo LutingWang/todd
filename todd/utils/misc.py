@@ -2,15 +2,18 @@ __all__ = [
     'get_timestamp',
     'set_temp',
     'is_sync',
+    'retry',
 ]
 
 import contextlib
+import functools
 from datetime import datetime
-from typing import Generator
+from typing import Any, Generator
 
 import torch
 import torch.distributed as dist
 
+from ..loggers import logger
 from ..patches.py import del_, get_, has_, set_
 from ..patches.torch import get_world_size
 
@@ -50,3 +53,23 @@ def is_sync(x: torch.Tensor) -> bool:
     dist.all_reduce(x)
     x /= get_world_size()
     return torch.allclose(x, x_prime)
+
+
+def retry(n: int) -> Any:
+
+    def decorator(func: Any) -> Any:
+
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs) -> Any:
+            for i in range(n):
+                try:
+                    return func(*args, retry_times=i, **kwargs)
+                except Exception as e:  # noqa: E501 pylint: disable=broad-exception-caught
+                    logger.error(e)
+            raise RuntimeError(
+                f"Function {func.__name__} failed after {n} retries.",
+            )
+
+        return wrapper
+
+    return decorator
