@@ -2,6 +2,7 @@ __all__ = [
     'TensorBoardCallback',
 ]
 
+import pathlib
 from typing import Any, TypeVar
 
 from torch import nn
@@ -33,14 +34,17 @@ class TensorBoardCallback(IntervalMixin[T], BaseCallback[T]):
         self._summary_writer_config = summary_writer
         self._main_tag = main_tag
 
+    @property
+    def log_dir(self) -> pathlib.Path:
+        return self.runner.work_dir / 'tensorboard'
+
     def bind(self, *args, **kwargs) -> None:
         super().bind(*args, **kwargs)
 
         if get_rank() > 0:
             return
-        log_dir = self.runner.work_dir / 'tensorboard'
         self._summary_writer = SummaryWriter(
-            log_dir,
+            self.log_dir,
             **self._summary_writer_config,
         )
 

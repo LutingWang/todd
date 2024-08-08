@@ -67,7 +67,8 @@ def val(tar: tarfile.TarFile, synsets: Synsets) -> None:
         path = ImageNetDataset.DATA_ROOT / 'val' / synsets[synset_id]['WNID']
         path.mkdir(parents=True, exist_ok=True)
 
-    for image, synset_id in zip(tqdm.tqdm(tar.getmembers()), gt):
+    images = sorted(tar.getmembers(), key=lambda image: image.name)
+    for image, synset_id in zip(tqdm.tqdm(images), gt):
         assert (
             image.isfile()
             and image.name.endswith(f'.{ImageNetDataset.SUFFIX}')
