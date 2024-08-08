@@ -77,8 +77,8 @@ class SATINDataset(BaseDataset[T, int, dict[str, Any]]):
     def __getitem__(self, index: int) -> T:
         key, data = self._access(index)
         image = data.pop('image')
-        if self._split == 'SAT-4':
-            image = Image.open(io.BytesIO(image))
+        if not isinstance(image, Image.Image):
+            image = Image.open(io.BytesIO(image['bytes']))
         image = convert_rgb(image)
         tensor = self._transform(image)
         return T(id_=key, image=tensor, data=data)
