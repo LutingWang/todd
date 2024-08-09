@@ -1,6 +1,5 @@
 from .autocast import *
 from .base import *
-from .check import *
 from .checkpoint import *
 from .composed import *
 from .git import *

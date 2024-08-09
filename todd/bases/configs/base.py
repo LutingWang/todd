@@ -59,14 +59,16 @@ class Config(AttrDict, dict[Any, Any]):  # type: ignore[misc]
             >>> config
             {'_override_': {'.a': 1}}
         """
-        if self:
-            if name == '_delete_':
-                if value:
-                    self.clear()
-                return
-            if name == '_override_':
-                self.override(value)
-                return
+        if not self:
+            super().__setitem__(name, value)
+            return
+        if name == '_delete_':
+            if value:
+                self.clear()
+            return
+        if name == '_override_':
+            self.override(value)
+            return
         super().__setitem__(name, value)
 
     def override(self, other: Mapping[str, Any]) -> None:

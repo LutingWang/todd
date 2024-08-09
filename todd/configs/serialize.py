@@ -5,6 +5,7 @@ __all__ = [
 import difflib
 import pathlib
 from abc import abstractmethod
+from typing import Any
 from typing_extensions import Self
 
 from ..bases.configs import Config
@@ -14,12 +15,12 @@ class SerializeMixin(Config):
 
     @classmethod
     @abstractmethod
-    def _loads(cls, __s: str, **kwargs) -> dict:
+    def _loads(cls, __s: str, **kwargs) -> dict[str, Any]:
         pass
 
     @classmethod
     def loads(cls, s: str, **kwargs) -> Self:
-        return cls(cls._loads(s), **kwargs)  # type: ignore[abstract]
+        return cls(cls._loads(s, **kwargs))  # type: ignore[abstract]
 
     @classmethod
     def load(cls, file: str | pathlib.Path, **kwargs) -> Self:
@@ -31,10 +32,10 @@ class SerializeMixin(Config):
         base_config = cls()  # type: ignore[abstract]
         for base in config.pop('_base_', []):
             if isinstance(base, str):
-                base = cls.load(file.parent / base)
+                base = cls.load(file.parent / base, **kwargs)
             base_config.update(base)
         base_config.update(config)
-        return base_config
+        return base_config.get('_export_', base_config)
 
     @abstractmethod
     def dumps(self) -> str:

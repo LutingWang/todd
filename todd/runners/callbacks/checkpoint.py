@@ -81,9 +81,8 @@ class CheckpointCallback(IntervalMixin[T], BaseCallback[T]):
         for k, v in state_dict.items():
             torch.save(v, work_dir / f'{k}.pth')
 
-        if self.latest_checkpoint_dir.is_symlink():
-            self.latest_checkpoint_dir.unlink()
-        self.latest_checkpoint_dir.symlink_to(name)
+        self.latest_checkpoint_dir.unlink(True)
+        self.latest_checkpoint_dir.hardlink_to(name)
 
     def after_run_iter(self, batch, memo: Memo) -> None:
         super().after_run_iter(batch, memo)
@@ -94,5 +93,3 @@ class CheckpointCallback(IntervalMixin[T], BaseCallback[T]):
         super().after_run_epoch(epoch_memo, memo)
         if self._should_run_epoch():
             self._save(f'epoch_{self.epoch_based_trainer.epoch}')
-
-    # TODO: save the last checkpoint if not saved

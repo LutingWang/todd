@@ -2,6 +2,7 @@ __all__ = [
     'OptimizeCallback',
 ]
 
+import contextlib
 from typing import Any, Mapping, TypeVar
 
 import torch
@@ -9,6 +10,11 @@ from torch import nn
 
 from ...bases.configs import Config
 from ...bases.registries import BuildPreHookMixin, Item, RegistryMeta
+from ...patches.torch import (
+    get_rank,
+    named_trainable_parameters,
+    named_training_modules,
+)
 from ...registries import ClipGradRegistry
 from ..memo import Memo
 from ..registries import CallbackRegistry
@@ -20,12 +26,13 @@ T = TypeVar('T', bound=nn.Module)
 @CallbackRegistry.register_()
 class OptimizeCallback(BuildPreHookMixin, BaseCallback[T]):
 
-    # TODO: add accumulate
     def __init__(
         self,
         *args,
         grad_scaler: torch.cuda.amp.GradScaler | None = None,
         grad_clipper: Any = None,
+        accumulate: int = 1,
+        check: bool = True,
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
@@ -33,6 +40,8 @@ class OptimizeCallback(BuildPreHookMixin, BaseCallback[T]):
             self._grad_scaler = grad_scaler
         if grad_clipper is not None:
             self._grad_clipper = grad_clipper
+        self._accumulate = accumulate
+        self._check = check
 
     @classmethod
     def build_pre_hook(
@@ -77,21 +86,95 @@ class OptimizeCallback(BuildPreHookMixin, BaseCallback[T]):
         else:
             optimizer.step()
 
-    def after_run_iter(self, batch: Any, memo: Memo) -> None:
+    def _should_accumulate(self) -> bool:
+        return self.trainer.iter_ % self._accumulate != 0
+
+    def run_iter_context(
+        self,
+        exit_stack: contextlib.ExitStack,
+        batch: Any,
+        memo: Memo,
+    ) -> None:
+        super().run_iter_context(exit_stack, batch, memo)
+        trainer = self.trainer
+        if not self._should_accumulate():
+            return
+        no_sync = getattr(trainer.model, 'no_sync', None)
+        if no_sync is not None:
+            exit_stack.enter_context(no_sync())
+
+    def before_run(self, memo: Memo) -> None:
+        super().before_run(memo)
+        if get_rank() > 0:
+            return
+
+        trainer = self.trainer
+        logger = trainer.logger
+        module = trainer.strategy.module
+
+        training_modules = [
+            repr(name) for name, _ in named_training_modules(module)
+        ]
+        logger.debug(
+            "Training modules\n" + ", ".join(training_modules),
+        )
+
+        trainable_parameters = {
+            repr(name): parameter.numel()
+            for name, parameter in named_trainable_parameters(module)
+        }
+        logger.debug(
+            "Requires grad parameters\n"
+            + ", ".join(trainable_parameters.keys()),
+        )
+        logger.debug(
+            "Total number of requires grad parameters: %d",
+            sum(trainable_parameters.values()),
+        )
+
+    def after_run_iter(self, batch: Any, memo: Memo) -> None:  # noqa: C901
         super().after_run_iter(batch, memo)
         log: dict[str, Any] | None = memo.get('log')
 
-        optimizer = self.trainer.optimizer
+        trainer = self.trainer
+        optimizer = trainer.optimizer
+        module = trainer.strategy.module
+
         loss: torch.Tensor = memo['loss']
+
         if self.with_grad_scaler:
             loss = self._scale_grad(loss)
+
         loss.backward()
+
+        if trainer.iter_ == 1 and self._check:
+            for name, parameter in named_trainable_parameters(module):
+                if parameter.grad is None:
+                    trainer.logger.warning(
+                        "Parameter %s received no gradient",
+                        name,
+                    )
+                elif parameter.grad.isnan().any():
+                    trainer.logger.warning(
+                        "Parameter %s received NaN gradient",
+                        name,
+                    )
+
         if self.with_grad_clipper:
             grad = self._clip_grad(optimizer)
             if log is not None:
                 log['grad'] = f'{grad:.3f}'
-        self._step(optimizer)
-        optimizer.zero_grad()
+
+        if not self._should_accumulate():
+            self._step(optimizer)
+            optimizer.zero_grad()
+            if trainer.iter_ == self._accumulate and self._check:
+                for name, parameter in named_trainable_parameters(module):
+                    if parameter.grad is not None:
+                        trainer.logger.warning(
+                            "Parameter %s gradient not cleared",
+                            name,
+                        )
 
     def load_state_dict(
         self,

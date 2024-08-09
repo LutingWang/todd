@@ -413,7 +413,7 @@ class RegistryMeta(  # type: ignore[misc]
                 except YapfError:
                     dumps = repr(config)
                 logger.error(
-                    "Failed to preprocess\n%s: %s",
+                    "Failed to preprocess %s:\n%s",
                     config_type,
                     dumps,
                 )
@@ -427,7 +427,7 @@ class RegistryMeta(  # type: ignore[misc]
                 dumps = PyConfig(config).dumps()
             except YapfError:
                 dumps = repr(config)
-            logger.error("Failed to build\n%s: %s", config_type, dumps)
+            logger.error("Failed to build %s:\n%s", config_type, dumps)
             raise
 
     def build_or_return(

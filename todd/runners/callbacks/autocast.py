@@ -29,4 +29,5 @@ class AutocastCallback(BaseCallback[T]):
         batch: Any,
         memo: Memo,
     ) -> None:
+        super().run_iter_context(exit_stack, batch, memo)
         exit_stack.enter_context(torch.autocast(**self._autocast))

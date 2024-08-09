@@ -41,7 +41,7 @@ class BaseDataset(BuildPreHookMixin, Dataset[T], Generic[T, KT_co, VT], ABC):
         self,
         *args,
         access_layer: BaseAccessLayer[KT_co, VT],
-        transforms: tf.Compose | None = None,  # TODO: transforms in COCO
+        transforms: tf.Compose | None = None,
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)

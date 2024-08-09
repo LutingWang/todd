@@ -2,7 +2,6 @@ __all__ = [
     'PyConfig',
 ]
 
-import importlib
 from typing import Any
 
 import yapf.yapflib.yapf_api as yapf
@@ -11,19 +10,6 @@ from ..bases.configs import Config
 from ..patches.py import exec_
 from ..registries import ConfigRegistry
 from .serialize import SerializeMixin
-
-
-class _import_:  # noqa: N801 pylint: disable=invalid-name
-
-    def __init__(self, name: str) -> None:
-        self.__name = name
-        self.__module = importlib.import_module(name)
-
-    def __getattr__(self, attr: str) -> Any:
-        return getattr(self.__module, attr)
-
-    def __repr__(self) -> str:
-        return f"_import_({self.__name!r})"
 
 
 @ConfigRegistry.register_('py')
@@ -44,7 +30,7 @@ class PyConfig(SerializeMixin, Config):  # type: ignore[misc]
             >>> PyConfig._loads('a = 1\nb = dict(c=3)')
             {'a': 1, 'b': {'c': 3}}
         """
-        return exec_(__s, PyConfig=cls, _import_=_import_, **kwargs)
+        return exec_(__s, _load_=cls.load, _kwargs_=kwargs)
 
     def dumps(self) -> str:
         """Reverse of `loads`.
@@ -72,13 +58,6 @@ class PyConfig(SerializeMixin, Config):  # type: ignore[misc]
             l = 'mn'
             <BLANKLINE>
         """
-        imports: list[str] = []
-        others: list[str] = []
-        for k in sorted(self):
-            v = self[k]
-            items = imports if isinstance(v, _import_) else others
-            item = f'{k}={v!r}'
-            items.append(item)
-        items = imports + others
-        code, _ = yapf.FormatCode('\n'.join(items))
-        return code
+        s = '\n'.join(f'{k}={self[k]!r}' for k in sorted(self))
+        s, _ = yapf.FormatCode(s)
+        return s
