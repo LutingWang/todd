@@ -35,7 +35,7 @@ class TensorBoardCallback(IntervalMixin[T], BaseCallback[T]):
         self._main_tag = main_tag
 
     @property
-    def log_dir(self) -> pathlib.Path:
+    def work_dir(self) -> pathlib.Path:
         return self.runner.work_dir / 'tensorboard'
 
     def bind(self, *args, **kwargs) -> None:
@@ -44,7 +44,7 @@ class TensorBoardCallback(IntervalMixin[T], BaseCallback[T]):
         if get_rank() > 0:
             return
         self._summary_writer = SummaryWriter(
-            self.log_dir,
+            self.work_dir,
             **self._summary_writer_config,
         )
 
