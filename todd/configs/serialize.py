@@ -34,8 +34,8 @@ class SerializeMixin(Config):
             if isinstance(base, str):
                 base = cls.load(file.parent / base, **kwargs)
             base_config.update(base)
-        base_config.update(config)
-        return base_config.get('_export_', base_config)
+        base_config.update(config.get('_export_', config))
+        return base_config
 
     @abstractmethod
     def dumps(self) -> str:

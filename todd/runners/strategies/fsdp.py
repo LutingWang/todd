@@ -7,6 +7,7 @@ from typing import Any, Mapping, TypeVar, cast
 import torch
 from torch import nn
 from torch.distributed.fsdp import FullyShardedDataParallel as FSDP
+from torch.distributed.fsdp import MixedPrecision
 
 from ...bases.configs import Config
 from ...registries import OptimizerRegistry
@@ -23,7 +24,25 @@ class FSDPStrategy(CUDAStrategy[T]):
 
     def wrap_model(self, model: nn.Module, config: Config) -> T:
         model = super().wrap_model(model, config)
-        model = FSDP(model, **config)
+
+        mixed_precision = config.pop('mixed_precision', None)
+        if not isinstance(mixed_precision, MixedPrecision):
+            if mixed_precision is None:
+                dtype = (
+                    torch.bfloat16
+                    if torch.cuda.is_bf16_supported() else torch.float16
+                )
+            elif isinstance(mixed_precision, str):
+                dtype = getattr(torch, mixed_precision)
+            else:
+                dtype = mixed_precision
+            mixed_precision = MixedPrecision(
+                param_dtype=dtype,
+                reduce_dtype=dtype,
+                buffer_dtype=dtype,
+            )
+
+        model = FSDP(model, mixed_precision=mixed_precision, **config)
         return cast(T, model)
 
     @property
