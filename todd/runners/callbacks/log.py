@@ -14,8 +14,8 @@ from ...loggers import Formatter
 from ...patches.torch import get_rank
 from ...utils import Store, collect_env_, get_timestamp
 from ..memo import Memo
-from ..registries import CallbackRegistry, ETARegistry
-from ..utils import BaseETA
+from ..registries import CallbackRegistry
+from ..utils import BaseETA, ETARegistry
 from .base import BaseCallback
 from .interval import IntervalMixin
 

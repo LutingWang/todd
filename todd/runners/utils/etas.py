@@ -1,4 +1,5 @@
 __all__ = [
+    'ETARegistry',
     'Datum',
     'BaseETA',
     'AverageETA',
@@ -11,7 +12,11 @@ from typing import NamedTuple
 
 from ...bases.configs import Config
 from ...utils import EMA
-from ..registries import ETARegistry
+from ..registries import RunnerRegistry
+
+
+class ETARegistry(RunnerRegistry):
+    pass
 
 
 class Datum(NamedTuple):

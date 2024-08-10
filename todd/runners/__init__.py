@@ -1,4 +1,4 @@
-from . import callbacks, strategies, utils
+from . import callbacks, metrics, strategies, utils
 from .base import *
 from .epoch_based_trainer import *
 from .iter_based_trainer import *

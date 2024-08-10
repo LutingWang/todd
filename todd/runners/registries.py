@@ -1,7 +1,7 @@
 __all__ = [
     'CallbackRegistry',
     'StrategyRegistry',
-    'ETARegistry',
+    'MetricRegistry',
 ]
 
 from ..registries import RunnerRegistry
@@ -15,5 +15,5 @@ class StrategyRegistry(RunnerRegistry):
     pass
 
 
-class ETARegistry(RunnerRegistry):
+class MetricRegistry(RunnerRegistry):
     pass

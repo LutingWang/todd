@@ -80,11 +80,18 @@ class LRScaleCallback(BaseCallback[T]):
     def bind(self, *args, **kwargs) -> None:
         super().bind(*args, **kwargs)
 
+        trainer = self.trainer
+        dataloader = trainer.dataloader
+        optimizer = trainer.optimizer
+
+        batch_size = (
+            1 if dataloader.batch_size is None else dataloader.batch_size
+        )
+        batch_size = get_world_size() * batch_size
+
         base_batch_size = self._lr_scaler_config.base_batch_size
-        batch_size = get_world_size() * self.runner.dataloader.batch_size
         lr_scaler = batch_size / base_batch_size
 
-        optimizer = self.trainer.optimizer
         if 'lr' in optimizer.defaults:
             optimizer.defaults['lr'] *= lr_scaler
         for param_group in optimizer.param_groups:

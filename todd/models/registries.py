@@ -3,6 +3,7 @@ __all__ = [
     'ShadowRegistry',
     'FilterRegistry',
     'LossRegistry',
+    'TorchVisionRegistry',
 ]
 
 from ..registries import ModelRegistry
@@ -21,4 +22,8 @@ class FilterRegistry(ModelRegistry):
 
 
 class LossRegistry(ModelRegistry):
+    pass
+
+
+class TorchVisionRegistry(ModelRegistry):
     pass
