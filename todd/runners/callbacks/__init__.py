@@ -6,6 +6,7 @@ from .git import *
 from .interval import *
 from .log import *
 from .lr import *
+from .metric import *
 from .monitor import *
 from .optimize import *
 from .shadow import *

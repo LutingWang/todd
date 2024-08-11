@@ -20,11 +20,14 @@ class MetricCallback(BuildPreHookMixin, BaseCallback):
         self,
         *args,
         metrics: Iterable[BaseMetric],  # no need to use ModuleList
-        map_model_config: Config,
+        map_model_config: Config | None = None,
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
         self._metrics = list(metrics)
+
+        if map_model_config is None:
+            map_model_config = Config()
         self._map_model_config = map_model_config
 
     @classmethod
