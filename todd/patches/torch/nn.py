@@ -6,11 +6,18 @@ __all__ = [
     'named_training_modules',
     'trainable_parameters',
     'named_trainable_parameters',
+    'load_state_dict',
+    'load_state_dict_',
 ]
 
-from typing import Any, Generator
+import logging
+from typing import Any, Generator, Mapping
 
+import torch
 from torch import nn
+
+from .builtins import load
+from .distributed import get_rank
 
 
 class ModuleList(nn.ModuleList):
@@ -71,3 +78,38 @@ def named_trainable_parameters(
     for name, parameter in module.named_parameters(*args, **kwargs):
         if parameter.requires_grad:
             yield name, parameter
+
+
+def load_state_dict(
+    module: nn.Module,
+    state_dict: Mapping[str, Any],
+    *args,
+    logger: logging.Logger | None = None,
+    **kwargs,
+) -> None:
+    if logger is None:
+        from ...loggers import logger
+    assert logger is not None
+
+    incompatible_keys = module.load_state_dict(state_dict, *args, **kwargs)
+    if get_rank() == 0:
+        logger.info(incompatible_keys)
+
+
+def load_state_dict_(
+    f: torch.serialization.FILE_LIKE | list[torch.serialization.FILE_LIKE],
+    *args,
+    logger: logging.Logger | None = None,
+    **kwargs,
+) -> dict[str, Any]:
+    f_list = f if isinstance(f, list) else [f]
+    if logger is None:
+        from ...loggers import logger
+    assert logger is not None
+
+    state_dict = dict()
+    for f_ in f_list:
+        if get_rank() == 0:
+            logger.info("Loading model from %s", f_)
+        state_dict.update(load(f_, 'cpu', *args, **kwargs))
+    return state_dict

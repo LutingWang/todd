@@ -8,7 +8,7 @@ import torch
 from torch import nn
 
 from ...bases.configs import Config
-from ...patches.torch import get_rank
+from ...patches.torch import load_state_dict, load_state_dict_
 from ...registries import OptimizerRegistry
 from ...utils import StateDictMixin
 from ..registries import StrategyRegistry
@@ -60,29 +60,21 @@ class BaseStrategy(RunnerHolderMixin[T], StateDictMixin):
         *args,
         **kwargs,
     ) -> None:
-        incompatible_keys = self.module.load_state_dict(
+        load_state_dict(
+            self.module,
             state_dict,
             *args,
+            logger=self.runner.logger,
             **kwargs,
         )
-        if get_rank() == 0:
-            self.runner.logger.info(incompatible_keys)
 
     def load_model_from(
         self,
-        f: (
-            torch.serialization.FILE_LIKE
-            | list[torch.serialization.FILE_LIKE]
-        ),
+        f: torch.serialization.FILE_LIKE | list[torch.serialization.FILE_LIKE],
         *args,
         **kwargs,
     ) -> None:
-        f_list = f if isinstance(f, list) else [f]
-        model_state_dict = dict()
-        for f_ in f_list:
-            if get_rank() == 0:
-                self.runner.logger.info("Loading model from %s", f_)
-            model_state_dict.update(torch.load(f_, 'cpu'))
+        model_state_dict = load_state_dict_(f, logger=self.runner.logger)
         self.load_model_state_dict(model_state_dict, *args, **kwargs)
 
     def optim_state_dict(self, *args, **kwargs) -> dict[str, Any]:

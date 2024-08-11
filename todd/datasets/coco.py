@@ -133,6 +133,7 @@ class COCODataset(PILDataset[T]):
         self,
         *args,
         split: Split,
+        year: Literal[2014, 2017] | None = 2017,
         access_layer: PILAccessLayer | None = None,
         annotations_file: pathlib.Path | str | None = None,
         load_annotations: bool = True,
@@ -140,7 +141,10 @@ class COCODataset(PILDataset[T]):
     ) -> None:
         self._load_annotations = load_annotations
 
-        split_year = f'{split}{self.YEAR}'
+        if year is None:
+            assert access_layer is not None and annotations_file is not None
+        else:
+            split_year = f'{split}{self.YEAR}'
 
         if access_layer is None:
             access_layer = PILAccessLayer(

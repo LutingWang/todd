@@ -6,3 +6,4 @@ per-file-ignores =
     todd/__init__.py:F401,F403
     todd/**/__init__.py:F401,F403
 max-complexity = 10
+builtins = _kwargs_

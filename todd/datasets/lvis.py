@@ -3,7 +3,7 @@ __all__ = [
 ]
 
 import pathlib
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any, Literal, cast
 
 from pycocotools.coco import COCO
 
@@ -31,7 +31,6 @@ class LVIS(COCO):
 class LVISDataset(COCODataset):
     DATA_ROOT = pathlib.Path('data/lvis')
     ANNOTATIONS_ROOT = DATA_ROOT / 'annotations'
-    VERSION = 'v1'
 
     COCO_TYPE = LVIS
 
@@ -39,10 +38,13 @@ class LVISDataset(COCODataset):
         self,
         *args,
         split: Split,
+        version: Literal['v0.5', 'v1'] | None = 'v1',
         access_layer: PILAccessLayer | None = None,
         annotations_file: pathlib.Path | str | None = None,
         **kwargs,
     ) -> None:
+        if version is None:
+            assert annotations_file is not None
         if access_layer is None:
             access_layer = PILAccessLayer(
                 data_root=str(self.DATA_ROOT),
@@ -50,11 +52,12 @@ class LVISDataset(COCODataset):
             )
         if annotations_file is None:
             annotations_file = (
-                self.ANNOTATIONS_ROOT / f'lvis_{self.VERSION}_{split}.json'
+                self.ANNOTATIONS_ROOT / f'lvis_{version}_{split}.json'
             )
         super().__init__(
             *args,
             split=split,
+            year=None,
             access_layer=access_layer,
             annotations_file=annotations_file,
             **kwargs,

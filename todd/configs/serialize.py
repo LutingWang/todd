@@ -9,6 +9,7 @@ from typing import Any
 from typing_extensions import Self
 
 from ..bases.configs import Config
+from ..loggers import logger
 
 
 class SerializeMixin(Config):
@@ -24,6 +25,11 @@ class SerializeMixin(Config):
 
     @classmethod
     def load(cls, file: str | pathlib.Path, **kwargs) -> Self:
+        logger.debug(
+            "Loading config from %s with %s",
+            file,
+            ', '.join(f'{k}={v}' for k, v in kwargs.items()),
+        )
         if isinstance(file, str):
             file = pathlib.Path(file)
         # do not use `loads`, since it does not support `_delete_` with

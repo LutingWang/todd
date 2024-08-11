@@ -30,7 +30,7 @@ class PyConfig(SerializeMixin, Config):  # type: ignore[misc]
             >>> PyConfig._loads('a = 1\nb = dict(c=3)')
             {'a': 1, 'b': {'c': 3}}
         """
-        return exec_(__s, _load_=cls.load, _kwargs_=kwargs)
+        return exec_(__s, _kwargs_=kwargs)
 
     def dumps(self) -> str:
         """Reverse of `loads`.
