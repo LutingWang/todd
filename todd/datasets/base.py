@@ -57,6 +57,34 @@ class BaseDataset(BuildPreHookMixin, Dataset[T], Generic[T, KT_co, VT], ABC):
         )
 
     @classmethod
+    def access_layer_build_pre_hook(
+        cls,
+        config: Config,
+        registry: RegistryMeta,
+        item: Item,
+    ) -> Config:
+        access_layer = config.get('access_layer')
+        if access_layer is not None:
+            config.access_layer = AccessLayerRegistry.build_or_return(
+                access_layer,
+            )
+        return config
+
+    @classmethod
+    def transforms_build_pre_hook(
+        cls,
+        config: Config,
+        registry: RegistryMeta,
+        item: Item,
+    ) -> Config:
+        transforms = config.get('transforms')
+        if transforms is not None:
+            config.transforms = TransformRegistry.build(
+                Config(type=tf.Compose.__name__, transforms=transforms),
+            )
+        return config
+
+    @classmethod
     def build_pre_hook(
         cls,
         config: Config,
@@ -64,14 +92,8 @@ class BaseDataset(BuildPreHookMixin, Dataset[T], Generic[T, KT_co, VT], ABC):
         item: Item,
     ) -> Config:
         config = super().build_pre_hook(config, registry, item)
-        if (access_layer := config.get('access_layer')) is not None:
-            config.access_layer = AccessLayerRegistry.build_or_return(
-                access_layer,
-            )
-        if (transforms := config.get('transforms')) is not None:
-            config.transforms = TransformRegistry.build(
-                Config(type=tf.Compose.__name__, transforms=transforms),
-            )
+        config = cls.access_layer_build_pre_hook(config, registry, item)
+        config = cls.transforms_build_pre_hook(config, registry, item)
         return config
 
     @property
