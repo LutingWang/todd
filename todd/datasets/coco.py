@@ -29,7 +29,7 @@ from .pil import PILDataset
 if TYPE_CHECKING:
     from pycocotools.coco import _Annotation
 
-    from todd.tasks.object_detection import BBox, BBoxesXYXY
+    from todd.tasks.object_detection import BBox, FlattenBBoxesXYWH
 
 Split = Literal['train', 'val']
 
@@ -120,9 +120,9 @@ class Annotations(UserList[Annotation]):
         return torch.tensor([annotation.is_crowd for annotation in self])
 
     @property
-    def bboxes(self) -> 'BBoxesXYXY':
-        from todd.tasks.object_detection import BBoxesXYXY
-        return BBoxesXYXY(
+    def bboxes(self) -> 'FlattenBBoxesXYWH':
+        from todd.tasks.object_detection import FlattenBBoxesXYWH
+        return FlattenBBoxesXYWH(
             torch.tensor([annotation.bbox for annotation in self]),
         )
 

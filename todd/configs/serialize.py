@@ -25,11 +25,12 @@ class SerializeMixin(Config):
 
     @classmethod
     def load(cls, file: str | pathlib.Path, **kwargs) -> Self:
-        logger.debug(
-            "Loading config from %s with %s",
-            file,
-            ', '.join(f'{k}={v}' for k, v in kwargs.items()),
-        )
+        if len(kwargs) > 0:
+            kwargs_str = ', '.join(f'{k}={v}' for k, v in kwargs.items())
+            logger.debug("Loading config from %s with %s", file, kwargs_str)
+        else:
+            logger.debug("Loading config from %s", file)
+
         if isinstance(file, str):
             file = pathlib.Path(file)
         # do not use `loads`, since it does not support `_delete_` with

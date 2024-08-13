@@ -20,7 +20,7 @@ from .coco import BaseDataset as BaseCOCODataset
 from .coco import BaseKeys as COCOKeys
 
 if TYPE_CHECKING:
-    from todd.tasks.object_detection import BBox, BBoxesXYXY
+    from todd.tasks.object_detection import BBox, FlattenBBoxesXYWH
 
 Split = Literal['train', 'val']
 
@@ -68,8 +68,8 @@ class Annotations(UserList[Annotation]):
         image_id: int,
         categories: Mapping[int, int],
     ) -> Self:
-        annotation_ids, = lvis.get_ann_ids([image_id])
-        annotations, = lvis.load_anns([annotation_ids])
+        annotation_ids = lvis.get_ann_ids([image_id])
+        annotations = lvis.load_anns(annotation_ids)
         return cls(
             Annotation.load(lvis, annotation, categories)
             for annotation in annotations
@@ -84,9 +84,9 @@ class Annotations(UserList[Annotation]):
         return torch.stack([annotation.mask for annotation in self])
 
     @property
-    def bboxes(self) -> 'BBoxesXYXY':
-        from todd.tasks.object_detection import BBoxesXYXY
-        return BBoxesXYXY(
+    def bboxes(self) -> 'FlattenBBoxesXYWH':
+        from todd.tasks.object_detection import FlattenBBoxesXYWH
+        return FlattenBBoxesXYWH(
             torch.tensor([annotation.bbox for annotation in self]),
         )
 
