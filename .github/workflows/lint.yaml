@@ -19,6 +19,7 @@ jobs:
       - name: Lint
         run: |
           pip install torch==${{ matrix.torch }} torchvision==${{ matrix.torchvision }}
+          pip install git+https://github.com/lvis-dataset/lvis-api.git@lvis_challenge_2021
           pip install .[optional,lint,doc,test]
           mim install mmcv
           pre-commit install

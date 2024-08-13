@@ -4,11 +4,9 @@ __all__ = [
 
 import logging
 
-try:
-    # prevent lvis from overriding the logging config
-    import lvis  # noqa: F401 pylint: disable=unused-import
-except ImportError:
-    pass
+# prevent lvis from overriding the logging config
+import lvis  # noqa: F401 pylint: disable=unused-import
+
 logging.basicConfig(force=True)
 
 
