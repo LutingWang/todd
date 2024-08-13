@@ -6,12 +6,13 @@ import json
 import os
 import pathlib
 from abc import ABC
-from typing import Generator, Literal, TypedDict
+from typing import Literal, TypedDict
 
 import torch
 
 from ..registries import DatasetRegistry
 from .access_layers import PILAccessLayer
+from .base import KeysProtocol
 from .pil import PILDataset
 
 Split = Literal['train', 'val']
@@ -38,7 +39,7 @@ class Annotation(TypedDict):
 Annotations = list[Annotation]
 
 
-class Keys:
+class Keys(KeysProtocol[str]):  # pylint: disable=unsubscriptable-object
 
     def __init__(
         self,
@@ -59,10 +60,6 @@ class Keys:
             self._synsets[annotation['synset_id']]['WNID'],
             annotation['name'].removesuffix(f'.{self._suffix}'),
         )
-
-    def __iter__(self) -> Generator[str, None, None]:
-        for i in range(len(self)):
-            yield self[i]
 
 
 class T(TypedDict):

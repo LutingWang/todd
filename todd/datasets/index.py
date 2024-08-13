@@ -4,8 +4,10 @@ __all__ = [
 
 from typing import Iterator
 
+from .base import KeysProtocol
 
-class IndexKeys:
+
+class IndexKeys(KeysProtocol[int]):  # pylint: disable=unsubscriptable-object
 
     def __init__(self, len_: int) -> None:
         self._len = len_

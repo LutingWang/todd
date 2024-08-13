@@ -5,12 +5,13 @@ __all__ = [
 import csv
 import pathlib
 from abc import ABC
-from typing import Generator, Literal, TypedDict
+from typing import Literal, TypedDict
 
 import torch
 
 from ..registries import DatasetRegistry
 from .access_layers import PILAccessLayer
+from .base import KeysProtocol
 from .pil import PILDataset
 
 Split = Literal['v2_6.5plus']
@@ -26,7 +27,7 @@ class Annotation(TypedDict):
 Annotations = list[Annotation]
 
 
-class Keys:
+class Keys(KeysProtocol[str]):  # pylint: disable=unsubscriptable-object
 
     def __init__(self, annotations: Annotations) -> None:
         self._annotations = annotations
@@ -36,10 +37,6 @@ class Keys:
 
     def __getitem__(self, index: int) -> str:
         return self._annotations[index]['filename']
-
-    def __iter__(self) -> Generator[str, None, None]:
-        for i in range(len(self)):
-            yield self[i]
 
 
 class T(TypedDict):

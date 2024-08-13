@@ -1,10 +1,11 @@
 __all__ = [
+    'KeysProtocol',
     'BaseDataset',
 ]
 
 import reprlib
 from abc import ABC, abstractmethod
-from typing import Generator, Generic, Iterator, Protocol, TypeVar
+from typing import Generator, Generic, Iterator, Protocol, Sized, TypeVar
 
 import torchvision.transforms as tf
 from torch.utils.data import Dataset
@@ -23,16 +24,14 @@ VT = TypeVar('VT')
 T = TypeVar('T')
 
 
-class KeysProtocol(Protocol[KT_co]):
-
-    def __len__(self) -> int:
-        ...
+class KeysProtocol(Sized, Protocol[KT_co]):
 
     def __getitem__(self, index: int) -> KT_co:
         ...
 
     def __iter__(self) -> Iterator[KT_co]:
-        ...
+        for i in range(len(self)):
+            yield self[i]
 
 
 class BaseDataset(BuildPreHookMixin, Dataset[T], Generic[T, KT_co, VT], ABC):

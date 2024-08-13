@@ -27,6 +27,7 @@
     "synset",
     "synsets",
     "WNID",
+    "WordNet",
     "xywh",
     "xyxy"
   ],

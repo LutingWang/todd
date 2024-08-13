@@ -3,9 +3,19 @@ __all__ = [
 ]
 
 import pathlib
+from abc import ABC, abstractmethod
 from collections import UserList
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Generator, Literal, Mapping, TypedDict, cast
+from typing import (
+    TYPE_CHECKING,
+    Generic,
+    Iterable,
+    Literal,
+    Mapping,
+    TypedDict,
+    TypeVar,
+    cast,
+)
 from typing_extensions import Self
 
 import torch
@@ -13,6 +23,7 @@ from pycocotools.coco import COCO
 
 from ..registries import DatasetRegistry
 from .access_layers import PILAccessLayer
+from .base import KeysProtocol
 from .pil import PILDataset
 
 if TYPE_CHECKING:
@@ -23,12 +34,11 @@ if TYPE_CHECKING:
 Split = Literal['train', 'val']
 
 
-class Keys:
+class BaseKeys(KeysProtocol[str], ABC):
 
-    def __init__(self, coco: COCO, suffix: str) -> None:
-        self._coco = coco
+    def __init__(self, image_ids: Iterable[int], suffix: str) -> None:
+        self._image_ids = list(image_ids)
         self._suffix = suffix
-        self._image_ids = coco.getImgIds()
 
     @property
     def image_ids(self) -> list[int]:
@@ -37,14 +47,24 @@ class Keys:
     def __len__(self) -> int:
         return len(self._image_ids)
 
-    def __getitem__(self, index: int) -> str:
-        image_id = self._image_ids[index]
-        image, = self._coco.loadImgs(image_id)
-        return image['file_name'].removesuffix(f'.{self._suffix}')
+    @abstractmethod
+    def _getitem(self, image_id: int) -> str:
+        pass
 
-    def __iter__(self) -> Generator[str, None, None]:
-        for i in range(len(self)):
-            yield self[i]
+    def __getitem__(self, index: int) -> str:
+        item = self._getitem(self._image_ids[index])
+        return item.removesuffix(f'.{self._suffix}')
+
+
+class Keys(BaseKeys):
+
+    def __init__(self, coco: COCO, *args, **kwargs) -> None:
+        self._coco = coco
+        super().__init__(coco.getImgIds(), *args, **kwargs)
+
+    def _getitem(self, image_id: int) -> str:
+        image, = self._coco.loadImgs(image_id)
+        return image['file_name']
 
 
 @dataclass(frozen=True)
@@ -111,6 +131,33 @@ class Annotations(UserList[Annotation]):
         return torch.tensor([annotation.category for annotation in self])
 
 
+APIType = TypeVar('APIType')  # pylint: disable=invalid-name
+DataType = TypeVar('DataType')  # pylint: disable=invalid-name
+
+
+class BaseDataset(
+    PILDataset[DataType],
+    Generic[APIType, DataType],
+    ABC,
+):
+    SUFFIX = 'jpg'
+
+    def __init__(
+        self,
+        *args,
+        load_annotations: bool = True,
+        api: APIType,
+        **kwargs,
+    ) -> None:
+        self._load_annotations = load_annotations
+        self._api = api
+        super().__init__(*args, **kwargs)
+
+    @property
+    def api(self) -> APIType:
+        return self._api
+
+
 class T(TypedDict):
     id_: str
     image: torch.Tensor
@@ -118,33 +165,22 @@ class T(TypedDict):
 
 
 @DatasetRegistry.register_()
-class COCODataset(PILDataset[T]):
+class COCODataset(BaseDataset[COCO, T]):
     _keys: Keys
 
     DATA_ROOT = pathlib.Path('data/coco')
     ANNOTATIONS_ROOT = DATA_ROOT / 'annotations'
-    YEAR = 2017
-    SUFFIX = 'jpg'
-
-    COCO_TYPE = COCO
 
     def __init__(
         self,
         *args,
         split: Split,
-        year: Literal[2014, 2017] | None = 2017,
+        year: Literal[2014, 2017] = 2017,
         access_layer: PILAccessLayer | None = None,
         annotations_file: pathlib.Path | str | None = None,
-        load_annotations: bool = True,
         **kwargs,
     ) -> None:
-        self._load_annotations = load_annotations
-
-        if year is None:
-            assert access_layer is not None and annotations_file is not None
-        else:
-            split_year = f'{split}{self.YEAR}'
-
+        split_year = f'{split}{year}'
         if access_layer is None:
             access_layer = PILAccessLayer(
                 data_root=str(self.DATA_ROOT),
@@ -155,35 +191,25 @@ class COCODataset(PILDataset[T]):
             annotations_file = (
                 self.ANNOTATIONS_ROOT / f'instances_{split_year}.json'
             )
-        elif isinstance(annotations_file, str):
-            annotations_file = pathlib.Path(annotations_file)
 
-        coco = self.COCO_TYPE(annotations_file)
-        self._coco = coco
+        coco = COCO(annotations_file)
 
         self._categories = {
             category_id: i
             for i, category_id in enumerate(coco.getCatIds())
         }
 
-        super().__init__(*args, access_layer=access_layer, **kwargs)
+        super().__init__(*args, api=coco, access_layer=access_layer, **kwargs)
 
     def build_keys(self) -> Keys:
-        return Keys(self._coco, self.SUFFIX)
-
-    @property
-    def coco(self) -> COCO:
-        return self._coco
+        return Keys(self._api, self.SUFFIX)
 
     def __getitem__(self, index: int) -> T:
         key, image = self._access(index)
-
-        # annotations are not transformed
         tensor = self._transform(image)
-
         annotations = (
             Annotations.load(
-                self._coco,
+                self._api,
                 self._keys.image_ids[index],
                 self._categories,
             ) if self._load_annotations else Annotations()
