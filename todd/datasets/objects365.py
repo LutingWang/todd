@@ -1,7 +1,7 @@
 # pylint: disable=duplicate-code
 
 __all__ = [
-    'Object365Dataset',
+    'Objects365Dataset',
 ]
 
 import pathlib
@@ -127,7 +127,7 @@ class T(TypedDict):
 
 
 @DatasetRegistry.register_()
-class Object365Dataset(BaseCOCODataset[COCO, T]):
+class Objects365Dataset(BaseCOCODataset[COCO, T]):
     _keys: Keys
 
     DATA_ROOT = pathlib.Path('data/object365')

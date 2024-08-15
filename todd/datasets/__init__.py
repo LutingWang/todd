@@ -7,7 +7,7 @@ from .index import *
 from .laion_aesthetics import *
 from .lmdb import *
 from .lvis import *
-from .object365 import *
+from .objects365 import *
 from .pil import *
 from .registries import *
 from .sa_med2d import *
