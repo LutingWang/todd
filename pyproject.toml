@@ -43,11 +43,13 @@ Documentation = 'https://toddai.readthedocs.io/en/latest/'
 
 [project.optional-dependencies]
 optional = [
+    'bitsandbytes',
     'diffusers',
     'h5py',
     'matplotlib',
     'openmim',
     'scipy',
+    'sentencepiece',
     'tqdm',
     'transformers',
 ]

@@ -34,6 +34,10 @@ class BaseStrategy(RunnerHolderMixin[T], StateDictMixin):
     def setup(self, config: Config) -> None:
         pass
 
+    def compile_model(self, model: nn.Module, config: Config) -> nn.Module:
+        model.forward = torch.compile(model.forward, **config)
+        return model
+
     def map_model(self, model: nn.Module, config: Config) -> nn.Module:
         return model
 

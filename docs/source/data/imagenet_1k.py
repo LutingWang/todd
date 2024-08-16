@@ -84,11 +84,20 @@ def val(tar: tarfile.TarFile, synsets: Synsets) -> None:
 
 def annotations(split: str, synsets: Synsets) -> None:
     split_root = ImageNetDataset.DATA_ROOT / split
+    synset_paths = {
+        synset_id: split_root / synset['WNID']
+        for synset_id, synset in synsets.items()
+    }
+    synset_paths = {
+        synset_id: synset_path
+        for synset_id, synset_path in synset_paths.items()
+        if synset_path.exists()
+    }
+    synset_paths = dict(sorted(synset_paths.items(), key=lambda x: x[1]))
     json_dump(
         [
             Annotation(name=image.name, synset_id=synset_id)
-            for synset_id, synset in synsets.items()
-            if (synset_path := split_root / synset['WNID']).exists()
+            for synset_id, synset_path in synset_paths.items()
             for image in synset_path.iterdir()
         ],
         ImageNetDataset.ANNOTATIONS_ROOT / f'{split}.json',

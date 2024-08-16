@@ -247,16 +247,23 @@ class BaseRunner(BuildPreHookMixin, StateDictMixin, Generic[T]):
         self,
         *args,
         model: nn.Module,
+        compile_model: Config | None = None,
         map_model: Config | None = None,
         wrap_model: Config | None = None,
         **kwargs,
     ) -> None:
+        if compile_model is not None:
+            self._logger.info("Compiling model with %s", compile_model)
+            model = self._strategy.compile_model(model, compile_model)
+
         if map_model is None:
             map_model = Config()
+        model = self._strategy.map_model(model, map_model)
+
         if wrap_model is None:
             wrap_model = Config()
-        model = self._strategy.map_model(model, map_model)
         model = self._strategy.wrap_model(model, wrap_model)
+
         self._model = model
 
     def _init_callbacks(self, *args, **kwargs) -> None:

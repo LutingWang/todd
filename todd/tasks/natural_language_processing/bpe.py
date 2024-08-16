@@ -9,6 +9,7 @@ from multiprocessing import Pipe, Process
 from multiprocessing.connection import Connection
 from typing import Iterable, TypeVar
 
+import tqdm
 from torch import nn
 
 from todd.loggers import logger
@@ -121,6 +122,15 @@ def worker(
         connection.send((previous_tokens, next_tokens))
 
 
+def estimate_compression(
+    counter: Counter[TokenPair],
+    num_new_tokens: int,
+    corpus_size: int,
+) -> float:
+    most_common = counter.most_common(num_new_tokens)
+    return sum(n for _, n in most_common) / corpus_size
+
+
 class BPETrainer:
 
     def __init__(
@@ -139,13 +149,24 @@ class BPETrainer:
 
         logger.info("Counting...")
         counter: Counter[TokenPair] = Counter()
-        for token_sequence in token_sequences:
+        for token_sequence in tqdm.tqdm(token_sequences):
             token_pairs = zip(token_sequence, token_sequence[1:])
             counter.update(token_pairs)
         for token_pair in [
             token_pair for token_pair, n in counter.items() if n <= 1
         ]:
             counter.pop(token_pair)
+
+        estimated_compression = estimate_compression(
+            counter,
+            max_size - codebook_size,
+            sum(map(len, token_sequences)),
+        )
+        logger.info(
+            "Estimated compression: %.2f%%",
+            estimated_compression * 100,
+        )
+
         self._counter = counter
 
         cpu = os.cpu_count()

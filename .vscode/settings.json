@@ -2,6 +2,7 @@
   "cSpell.words": [
     "batchnorms",
     "BBoxes",
+    "codebook",
     "codebooks",
     "ConvNeXt",
     "cxcy",
@@ -21,6 +22,7 @@
     "LVIS",
     "ODKD",
     "preds",
+    "pretrained",
     "SGFI",
     "shorthair",
     "Sintel",
