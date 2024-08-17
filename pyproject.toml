@@ -148,6 +148,7 @@ module = [
     'datasets.*',
     'ffmpeg.*',
     'h5py.*',
+    'ipdb.*',
     'lvis.*',
     'mmcv.*',
     'pptx.*',
