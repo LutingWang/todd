@@ -3,8 +3,8 @@ from diffusers import StableDiffusion3Pipeline
 
 CACHE_DIR = 'pretrained/stable_diffusion/'
 PRETRAINED = (
-    CACHE_DIR + 'stable-diffusion-3-medium/'
-    'sd3_medium_incl_clips_t5xxlfp8.safetensors'
+    CACHE_DIR
+    + 'stable-diffusion-3-medium/sd3_medium_incl_clips_t5xxlfp8.safetensors'
 )
 PROMPT = 'a picture of a cat holding a sign that says hello world'
 

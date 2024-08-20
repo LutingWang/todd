@@ -16,6 +16,7 @@ from typing import TYPE_CHECKING, Any, cast
 import torch
 import torch.utils.data.dataset
 import torchvision.transforms as tf
+import torchvision.transforms.v2 as tf_v2
 from torch import nn
 from torch.nn import init, utils
 from torch.optim import lr_scheduler
@@ -110,6 +111,8 @@ class TransformRegistry(Registry):
 
 for c in get_classes(tf):
     TransformRegistry.register_()(cast(Item, c))
+for c in get_classes(tf_v2):
+    TransformRegistry.register_('v2_' + c.__name__)(cast(Item, c))
 
 
 def transformers_build_pre_hook(
@@ -127,6 +130,10 @@ TransformRegistry.register_(
     force=True,
     build_pre_hook=transformers_build_pre_hook,
 )(tf.Compose)
+TransformRegistry.register_(
+    force=True,
+    build_pre_hook=transformers_build_pre_hook,
+)(tf_v2.Compose)
 
 
 class DatasetRegistry(Registry):

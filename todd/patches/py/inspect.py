@@ -19,5 +19,5 @@ def get_named_classes(module: ModuleType, *args) -> dict[str, type[Any]]:
     return named_classes
 
 
-def get_classes(*args, **kwargs) -> list[type[Any]]:
-    return list(get_named_classes(*args, **kwargs).values())
+def get_classes(*args, **kwargs) -> set[type[Any]]:
+    return set(get_named_classes(*args, **kwargs).values())

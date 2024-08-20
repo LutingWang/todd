@@ -127,9 +127,13 @@ class OptimizeCallback(BuildPreHookMixin, BaseCallback[T]):
             "Requires grad parameters\n"
             + ", ".join(trainable_parameters.keys()),
         )
+
+        num_trainable_parameters = sum(trainable_parameters.values())
         logger.debug(
-            "Total number of requires grad parameters: %d",
-            sum(trainable_parameters.values()),
+            "Total number of requires grad parameters: %s",
+            f'{num_trainable_parameters / 2**30:.3f} B'
+            if num_trainable_parameters >= 2**30 else
+            f'{num_trainable_parameters / 2**20:.3f} M',
         )
 
     def after_run_iter(self, batch: Any, memo: Memo) -> None:  # noqa: C901
