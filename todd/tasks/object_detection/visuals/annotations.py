@@ -9,7 +9,7 @@ from todd import Config
 from todd.colors import RGB, Color
 from todd.visuals import BaseVisual
 
-from ..bboxes import BBoxes, BBoxesXYWH
+from ..bboxes import FlattenBBoxesMixin, FlattenBBoxesXYWH
 
 
 def annotation(
@@ -85,11 +85,11 @@ def annotation(
 
 def annotations(
     visual: BaseVisual,
-    bboxes: BBoxes,
+    bboxes: FlattenBBoxesMixin,
     texts: Iterable[str | None] | None = None,
     **kwargs,
 ) -> list[tuple[Any, Any]]:
-    bboxes = bboxes.to(BBoxesXYWH).flatten()
+    bboxes = bboxes.to(FlattenBBoxesXYWH).flatten()
     if texts is None:
         texts = [None] * len(bboxes)
     else:

@@ -17,7 +17,6 @@ import torch
 from torch import nn
 
 from .builtins import load
-from .distributed import get_rank
 
 
 class ModuleList(nn.ModuleList):
@@ -88,12 +87,11 @@ def load_state_dict(
     **kwargs,
 ) -> None:
     if logger is None:
-        from ...loggers import logger
+        from ...loggers import master_logger as logger
     assert logger is not None
 
     incompatible_keys = module.load_state_dict(state_dict, *args, **kwargs)
-    if get_rank() == 0:
-        logger.info(incompatible_keys)
+    logger.info(incompatible_keys)
 
 
 def load_state_dict_(
@@ -104,12 +102,11 @@ def load_state_dict_(
 ) -> dict[str, Any]:
     f_list = f if isinstance(f, list) else [f]
     if logger is None:
-        from ...loggers import logger
+        from ...loggers import master_logger as logger
     assert logger is not None
 
     state_dict = dict()
     for f_ in f_list:
-        if get_rank() == 0:
-            logger.info("Loading model from %s", f_)
+        logger.info("Loading model from %s", f_)
         state_dict.update(load(f_, 'cpu', *args, **kwargs))
     return state_dict

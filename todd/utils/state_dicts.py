@@ -4,8 +4,10 @@ __all__ = [
     'StateDictMixin',
     'transfer_state_dict',
     'transfer_state_dicts',
+    'StateDictConverter',
 ]
 
+from abc import ABC, abstractmethod
 from typing import Any, Mapping, NamedTuple, TypeVar
 
 import torch
@@ -13,6 +15,7 @@ from torch import nn
 
 from ..loggers import master_logger
 from ..patches.py import get_
+from ..patches.torch import load
 
 T = TypeVar('T')
 
@@ -58,3 +61,29 @@ def transfer_state_dicts(models: Any, prefixes: Mapping[str, str]) -> None:
         target = get_(models, target_prefix)
         source = get_(models, source_prefix)
         transfer_state_dict(target, source)
+
+
+class StateDictConverter(ABC):
+
+    def load(self, *args, **kwargs) -> StateDict:
+        return load(*args, **kwargs)
+
+    def _pre_convert(self, state_dict: StateDict) -> StateDict:
+        return state_dict
+
+    @abstractmethod
+    def _convert(self, key: str) -> str | None:
+        pass
+
+    def _post_convert(self, state_dict: StateDict) -> StateDict:
+        return state_dict
+
+    def convert(self, state_dict: StateDict) -> StateDict:
+        state_dict = self._pre_convert(state_dict)
+        state_dict = {
+            converted_k: v
+            for k, v in state_dict.items()
+            if (converted_k := self._convert(k)) is not None
+        }
+        state_dict = self._post_convert(state_dict)
+        return state_dict
