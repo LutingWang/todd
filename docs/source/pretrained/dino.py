@@ -14,7 +14,7 @@ transforms = tf_v2.Compose([
     Rearrange('h w c -> 1 c h w'),
     tf_v2.Resize(256, tf_v2.InterpolationMode.BICUBIC),
     tf_v2.CenterCrop(256),
-    tf_v2.ToDtype(torch.float32, scale=True),
+    tf_v2.ToDtype(torch.float32, True),
     tf_v2.Normalize(IMAGENET_MEAN, IMAGENET_STD),
 ])
 tensor = transforms(image)
