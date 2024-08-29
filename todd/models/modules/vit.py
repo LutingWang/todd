@@ -7,6 +7,7 @@ import torch
 from torch import nn
 
 from ...bases.configs import Config
+from ...patches.torch import Sequential
 from ...registries import InitWeightsMixin
 from ..utils import interpolate_position_embedding
 
@@ -88,7 +89,7 @@ class ViT(InitWeightsMixin, nn.Module):
         self._position_embedding = nn.Parameter(
             torch.empty(self.num_patches + 1, width),
         )
-        self._blocks = nn.Sequential(
+        self._blocks = Sequential(
             *[
                 self.BLOCK_TYPE(width=width, num_heads=num_heads)
                 for _ in range(depth)

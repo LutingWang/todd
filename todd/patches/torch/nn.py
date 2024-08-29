@@ -33,9 +33,17 @@ class ModuleDict(nn.ModuleDict):
 
 class Sequential(nn.Sequential):
 
+    def __init__(self, *args, unpack_args: bool = False, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self._unpack_args = unpack_args
+
     def forward(self, *args, **kwargs) -> tuple[Any, ...]:
+        if not self._unpack_args:
+            args, = args
         for m in self:
-            args = m(*args, **kwargs)
+            args = (
+                m(*args, **kwargs) if self._unpack_args else m(args, **kwargs)
+            )
         return args
 
 
