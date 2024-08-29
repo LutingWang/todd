@@ -1,7 +1,6 @@
 import os
 import pathlib
 
-import mmcv.cnn
 import pytest
 import torch
 
@@ -17,11 +16,13 @@ from todd.utils import NestedTensorCollectionUtils
 class TestFGD:
 
     @pytest.fixture(autouse=True)
-    def mmcv(self) -> None:
+    def setup(self) -> None:
+        from mmcv.cnn import ContextBlock
+
         kd.distillers.KDAdaptRegistry.register_(
             'mmcv_ContextBlock',
             force=True,
-        )(mmcv.cnn.ContextBlock)
+        )(ContextBlock)
 
     # @pytest.fixture
     # def distiller(self, data_dir: pathlib.Path) -> BaseDistiller:

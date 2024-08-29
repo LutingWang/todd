@@ -3,6 +3,7 @@ from .ema import *
 from .holders import *
 from .misc import *
 from .nested_collection_utils import *
+from .networks import *
 from .seeds import *
 from .serialize import *
 from .state_dicts import *

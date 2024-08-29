@@ -61,6 +61,7 @@ repos:
           - numpy
           - pandas-stubs
           - types-Pillow
+          - types-requests
           - types-toml
   - repo: https://github.com/codespell-project/codespell
     rev: v2.2.6

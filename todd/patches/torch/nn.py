@@ -16,7 +16,7 @@ from typing import Any, Generator, Mapping
 import torch
 from torch import nn
 
-from .builtins import load
+from .serialization import load
 
 
 class ModuleList(nn.ModuleList):

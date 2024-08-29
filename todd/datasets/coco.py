@@ -32,6 +32,7 @@ if TYPE_CHECKING:
     from todd.tasks.object_detection import BBox, FlattenBBoxesXYWH
 
 Split = Literal['train', 'val']
+Year = Literal[2014, 2017]
 
 
 class BaseKeys(KeysProtocol[str], ABC):
@@ -173,11 +174,15 @@ class COCODataset(BaseDataset[COCO, T]):
     DATA_ROOT = pathlib.Path('data/coco')
     ANNOTATIONS_ROOT = DATA_ROOT / 'annotations'
 
+    @classmethod
+    def url(cls, split: Split, year: Year, id_: int) -> str:
+        return f'http://images.cocodataset.org/{split}{year}/{id_:012d}.jpg'
+
     def __init__(
         self,
         *args,
         split: Split,
-        year: Literal[2014, 2017] = 2017,
+        year: Year = 2017,
         access_layer: PILAccessLayer | None = None,
         annotations_file: pathlib.Path | str | None = None,
         **kwargs,

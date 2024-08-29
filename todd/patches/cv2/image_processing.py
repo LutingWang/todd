@@ -7,6 +7,8 @@ import numpy as np
 import numpy.typing as npt
 import torch
 
+# https://github.com/opencv/opencv/blob/4.x/modules/imgproc/include/opencv2/imgproc.hpp
+
 
 class ColorMap:
 

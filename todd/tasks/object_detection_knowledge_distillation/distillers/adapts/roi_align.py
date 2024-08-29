@@ -2,7 +2,6 @@ __all__ = [
     'RoIAlign',
 ]
 
-import mmcv.ops
 import torch
 from torch import nn
 
@@ -17,6 +16,8 @@ BaseAdapt = kd.distillers.adapts.BaseAdapt
 class RoIAlign(BaseAdapt):
 
     def __init__(self, strides: list[int], *args, **kwargs) -> None:
+        import mmcv.ops
+
         super().__init__(*args, **kwargs)
         self._layers = nn.ModuleList([
             mmcv.ops.RoIAlign(

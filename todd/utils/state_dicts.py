@@ -15,7 +15,7 @@ from torch import nn
 
 from ..loggers import master_logger
 from ..patches.py import get_
-from ..patches.torch import load
+from ..patches.torch import load_state_dict_
 
 T = TypeVar('T')
 
@@ -66,7 +66,7 @@ def transfer_state_dicts(models: Any, prefixes: Mapping[str, str]) -> None:
 class StateDictConverter(ABC):
 
     def load(self, *args, **kwargs) -> StateDict:
-        return load(*args, **kwargs)
+        return load_state_dict_(*args, **kwargs)
 
     def _pre_convert(self, state_dict: StateDict) -> StateDict:
         return state_dict

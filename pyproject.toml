@@ -79,6 +79,7 @@ lint = [
     'pylint',
     'types-Pillow',
     'types-pycocotools',
+    'types-requests',
     'types-toml',
     'types-tqdm',
 ]

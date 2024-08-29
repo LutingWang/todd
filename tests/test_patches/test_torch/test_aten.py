@@ -1,4 +1,4 @@
-from todd.patches.torch.builtins import random_int
+from todd.patches.torch.aten import random_int
 from todd.utils import init_seed
 
 

@@ -1,5 +1,4 @@
-from . import filters, losses, shadows, utils
-from .dino import *
+from . import filters, losses, modules, shadows, utils
 from .frozens import *
 from .mean_std import *
 from .norms import *

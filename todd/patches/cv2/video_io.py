@@ -13,6 +13,8 @@ import ffmpeg
 import numpy as np
 import numpy.typing as npt
 
+# https://github.com/opencv/opencv/blob/4.x/modules/videoio/include/opencv2/videoio.hpp
+
 
 class VideoWriter:
 

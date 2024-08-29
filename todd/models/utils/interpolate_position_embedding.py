@@ -11,6 +11,7 @@ def interpolate_position_embedding(
     position_embedding: torch.Tensor,
     wh: tuple[int, int],
     new_wh: tuple[int, int],
+    offset: float | None = None,
     **kwargs,
 ) -> torch.Tensor:
     if wh == new_wh:
@@ -31,11 +32,20 @@ def interpolate_position_embedding(
         h=h,
         w=w,
     )
-    position_embedding = F.interpolate(
-        position_embedding,
-        (new_h, new_w),
-        **kwargs,
-    )
+
+    if offset is None:
+        position_embedding = F.interpolate(
+            position_embedding,
+            (new_h, new_w),
+            **kwargs,
+        )
+    else:
+        position_embedding = F.interpolate(
+            position_embedding,
+            scale_factor=((new_h + offset) / h, (new_w + offset) / w),
+            **kwargs,
+        )
+
     position_embedding = einops.rearrange(
         position_embedding,
         '1 c h w -> (h w) c',
