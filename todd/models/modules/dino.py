@@ -9,8 +9,8 @@ import einops
 import torch
 from torch import nn
 
-from ...patches.torch import load_state_dict
 from ...utils import StateDict, StateDictConverter
+from .pretrained import PretrainedMixin
 from .vit import Block, ViT
 
 
@@ -87,12 +87,7 @@ class DINOStateDictConverterMixin(StateDictConverter):
         return state_dict
 
 
-class DINOStateDictConverter(DINOStateDictConverterMixin):
-    pass
-
-
-class DINOMixin(ViT):
-    STATE_DICT_CONVERTER: type[DINOStateDictConverterMixin]
+class DINOMixin(PretrainedMixin, ViT):
 
     def _interpolate_position_embedding(
         self,
@@ -102,11 +97,9 @@ class DINOMixin(ViT):
         kwargs.setdefault('offset', 0.1)
         return super()._interpolate_position_embedding(wh, **kwargs)
 
-    def load_pretrained(self, *args, **kwargs) -> None:
-        converter = self.STATE_DICT_CONVERTER()
-        state_dict = converter.load(*args, **kwargs)
-        state_dict = converter.convert(state_dict)
-        load_state_dict(self, state_dict, strict=False)
+
+class DINOStateDictConverter(DINOStateDictConverterMixin):
+    pass
 
 
 class DINO(DINOMixin):

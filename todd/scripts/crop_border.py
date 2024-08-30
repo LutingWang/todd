@@ -5,6 +5,8 @@ import argparse
 import cv2
 import numpy as np
 
+# TODO: cv2.CropBorder or something
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser("Crop border")

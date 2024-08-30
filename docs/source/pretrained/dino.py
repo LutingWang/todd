@@ -21,6 +21,8 @@ tensor = transforms(image)
 
 dino = DINO()
 dino.load_pretrained('pretrained/dino/dino_vitbase16_pretrain.pth')
+dino.requires_grad_(False)
+dino.eval()
 cls_, x = dino(tensor, False)
 assert torch.allclose(
     cls_[:, :3],
@@ -45,6 +47,8 @@ dinov2 = DINOv2(
     num_heads=16,
 )
 dinov2.load_pretrained('pretrained/dino/dinov2_vitl14_pretrain.pth')
+dinov2.requires_grad_(False)
+dinov2.eval()
 cls_, x = dinov2(tensor, False)
 assert torch.allclose(
     cls_[:, :3],
