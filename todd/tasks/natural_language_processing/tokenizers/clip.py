@@ -21,8 +21,6 @@ class CLIPTokenizer(BaseTokenizer):
     EOW = '</w>'
 
     def __init__(self, *args, bpe_path: Any = None, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-
         byte2unicode = list(range(256))
 
         for i, byte in enumerate(
@@ -60,15 +58,18 @@ class CLIPTokenizer(BaseTokenizer):
                 token_pairs.append((word2token[word1], word2token[word2]))
                 word2token[word1 + word2] = len(word2token)
 
-        self._word2token = word2token
-        self._token2word = {v: k for k, v in word2token.items()}
-
         special_words = [self.SOS, self.EOS]
         special_word2token = {
             word: len(word2token) + i
             for i, word in enumerate(special_words)
         }
-        self._special_word2token = special_word2token
+
+        super().__init__(
+            *args,
+            word2token=word2token,
+            special_word2token=special_word2token,
+            **kwargs,
+        )
 
         self._bpe = BPE(len(self._byte2unicode) * 2, token_pairs)
 
@@ -119,7 +120,7 @@ class CLIPTokenizer(BaseTokenizer):
         return token_sequence
 
     def decode(self, token_sequence: TokenSequence) -> str:
-        text = ''.join(self._token2word[token] for token in token_sequence)
+        text = ''.join(self.token_to_word(token) for token in token_sequence)
         text = bytearray(self._unicode2byte[c] for c in text).decode('utf-8')
         text = text.replace(self.EOW, ' ')
         return text
