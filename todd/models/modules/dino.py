@@ -11,7 +11,8 @@ from torch import nn
 
 from ...utils import StateDict, StateDictConverter
 from .pretrained import PretrainedMixin
-from .vit import Block, ViT
+from .transformer import Block
+from .vit import ViT
 
 
 class DINOStateDictConverterMixin(StateDictConverter):
@@ -123,9 +124,19 @@ class DINOv2Block(Block):
         self._scaler1 = DINOv2Scaler(width=width)
         self._scaler2 = DINOv2Scaler(width=width)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(
+        self,
+        x: torch.Tensor,
+        attention_mask: torch.Tensor | None = None,
+    ) -> torch.Tensor:
         norm = self._norm1(x)
-        attention, _ = self._attention(norm, norm, norm, need_weights=False)
+        attention, _ = self._attention(
+            norm,
+            norm,
+            norm,
+            need_weights=False,
+            attn_mask=attention_mask,
+        )
         x = x + self._scaler1(attention)
         norm = self._norm2(x)
         mlp_ = self._mlp(norm)

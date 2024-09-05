@@ -1,5 +1,8 @@
+# pylint: disable=duplicate-code
+
 __all__ = [
     'CLIPViT',
+    'CLIPText',
 ]
 
 from abc import ABC, abstractmethod
@@ -9,9 +12,11 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 
+from ...bases.configs import Config
 from ...utils import StateDict, StateDictConverter
 from .pretrained import PretrainedMixin
-from .vit import Block, ViT
+from .transformer import Block, Transformer
+from .vit import ViT
 
 
 class CLIPStateDictConverterMixin(StateDictConverter):
@@ -20,6 +25,26 @@ class CLIPStateDictConverterMixin(StateDictConverter):
         f, *args = args  # type: ignore[assignment]
         module: nn.Module = torch.jit.load(f, 'cpu', *args, **kwargs)
         return module.state_dict()
+
+
+class CLIPMixin(PretrainedMixin, ABC):
+    width: int
+
+    def __init__(self, *args, out_features: int | None, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        if out_features is not None:
+            self._projector = nn.Parameter(
+                torch.empty(self.width, out_features),
+            )
+
+    @property
+    def with_projector(self) -> bool:
+        return hasattr(self, '_projector')
+
+    def _project(self, x: torch.Tensor) -> torch.Tensor:
+        if self.with_projector:
+            return x @ self._projector
+        return x
 
 
 class CLIPVisionStateDictConverterMixin(CLIPStateDictConverterMixin, ABC):
@@ -101,7 +126,7 @@ class GELU(nn.Module):
         return x * torch.sigmoid(1.702 * x)
 
 
-class CLIPViTBlock(Block):
+class CLIPBlock(Block):
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -110,15 +135,14 @@ class CLIPViTBlock(Block):
         self._mlp[1].__class__ = GELU
 
 
-class CLIPViT(PretrainedMixin, ViT):
-    BLOCK_TYPE = CLIPViTBlock
+class CLIPViT(CLIPMixin, ViT):
+    BLOCK_TYPE = CLIPBlock
     STATE_DICT_CONVERTER = CLIPViTStateDictConverter
 
-    def __init__(self, *args, out_features: int, **kwargs) -> None:
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._patch_embedding.bias = None
-        self._norm_pre = nn.LayerNorm(self._width)
-        self._projector = nn.Parameter(torch.empty(self._width, out_features))
+        self._norm_pre = nn.LayerNorm(self.width)
 
     def forward(
         self,
@@ -143,8 +167,7 @@ class CLIPViT(PretrainedMixin, ViT):
         x = self._blocks(x)
         x = self._norm(x)
 
-        if self._projector is not None:
-            x = x @ self._projector
+        x = self._project(x)
 
         x = F.normalize(x, dim=-1)
 
@@ -155,3 +178,85 @@ class CLIPViT(PretrainedMixin, ViT):
             x = einops.rearrange(x, 'b (h w) c -> b c h w', h=h, w=w)
 
         return cls_, x
+
+
+class CLIPTextStateDictConverterMixin(CLIPStateDictConverterMixin, ABC):
+
+    def _convert_transformer_block_mlp(self, key: str) -> str:
+        if key.startswith('c_fc.'):
+            key = key.removeprefix('c_fc.')
+            key = '0.' + key
+        elif key.startswith('gelu.'):
+            key = key.removeprefix('gelu.')
+            key = '1.' + key
+        elif key.startswith('c_proj.'):
+            key = key.removeprefix('c_proj.')
+            key = '2.' + key
+        else:
+            raise ValueError(f"Unknown key: {key}")
+        return f'_mlp.{key}'
+
+    def _convert_transformer_block(self, key: str) -> str:
+        if key.startswith(('ln_1.', 'ln_2.')):
+            key = key.removeprefix('ln_')
+            return f'_norm{key}'
+        if key.startswith('attn.'):
+            key = key.removeprefix('attn.')
+            return '_attention.' + key
+        if key.startswith('mlp.'):
+            key = key.removeprefix('mlp.')
+            return self._convert_transformer_block_mlp(key)
+        return key
+
+    def _convert_transformer(self, key: str) -> str:
+        assert key.startswith('resblocks.')
+        key = key.removeprefix('resblocks.')
+        index = key.index('.') + 1
+        prefix = key[:index]
+        key = key[index:]
+        return '_blocks.' + prefix + self._convert_transformer_block(key)
+
+    def _convert(self, key: str) -> str | None:
+        if key == 'text_projection':
+            return '_projector'
+        if key.startswith('token_embedding.'):
+            return '_' + key
+        if key.startswith('transformer.'):
+            key = key.removeprefix('transformer.')
+            return self._convert_transformer(key)
+        if key == 'positional_embedding':
+            return '_position_embedding'
+        if key.startswith('ln_final.'):
+            key = key.removeprefix('ln_final.')
+            return f'_norm.{key}'
+        if key.startswith('visual.'):
+            return None
+        if key in (
+            'input_resolution',
+            'context_length',
+            'vocab_size',
+            'logit_scale',
+        ):
+            return None
+        return key
+
+
+class CLIPText(CLIPMixin, Transformer):
+    BLOCK_TYPE = CLIPBlock
+    STATE_DICT_CONVERTER = CLIPTextStateDictConverterMixin
+
+    @classmethod
+    def eos(cls, text: torch.Tensor, x: torch.Tensor) -> torch.Tensor:
+        b = text.shape[0]
+        eos_indices = text.argmax(-1)  # <EOS> has the highest number
+        return x[torch.arange(b), eos_indices]
+
+    def init_weights(self, config: Config) -> bool:
+        if self.with_projector is not None:
+            nn.init.normal_(self._projector, std=self.width**-0.5)
+        return super().init_weights(config)
+
+    def forward(self, text: torch.Tensor) -> torch.Tensor:
+        x = super().forward(text)
+        x = self._project(x)
+        return x

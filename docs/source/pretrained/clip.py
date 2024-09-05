@@ -2,8 +2,9 @@ import torch
 import torchvision.transforms.v2 as tf_v2
 from einops.layers.torch import Rearrange
 
+import todd.tasks.natural_language_processing as nlp
 from todd.datasets import CLIP_MEAN, CLIP_STD, COCODataset
-from todd.models.modules import CLIPViT
+from todd.models.modules import CLIPText, CLIPViT
 from todd.utils import get_image
 
 url = COCODataset.url('val', 2017, 39769)
@@ -68,4 +69,22 @@ assert torch.allclose(
         [0.0206, 0.0198, 0.0035],
     ]]),
     atol=1e-4,
+)
+
+tokenizer = nlp.tokenizers.CLIPTokenizer()
+texts = ['hello, world']
+# tokens = clip.adaptively_tokenize(texts)
+tokens = tokenizer.encodes(texts)
+
+model = CLIPText(out_features=512)
+model.load_pretrained('pretrained/clip/ViT-B-32.pt')
+model.requires_grad_(False)
+model.eval()
+
+x = model(tokens)
+eos = CLIPText.eos(tokens, x)
+assert torch.allclose(
+    eos[:, :3],
+    torch.tensor([[7.2253e-02, 1.0570e-01, -1.0538e-01]]),
+    atol=1e-5,
 )

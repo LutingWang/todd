@@ -34,7 +34,18 @@ def merge(
 
     i = 0
     while i < len(token_sequence):
-        if token_sequence[i:i + 2] == token_pair_:
+        try:
+            j = token_sequence.index(token_pair_[0], i)
+        except ValueError:
+            new_token_sequence.extend(token_sequence[i:])
+            break
+        new_token_sequence.extend(token_sequence[i:j])
+        i = j
+
+        if (
+            i + 1 < len(token_sequence)
+            and token_sequence[i + 1] == token_pair_[1]
+        ):
             indices.add(len(new_token_sequence))
             new_token_sequence.append(token)
             i += 2
@@ -54,8 +65,12 @@ class BPE(SerializeMixin):
     ) -> None:
         self._codebook_size = codebook_size
         self._token_pairs = token_pairs
-        self._token_mappings = ([[i] for i in range(codebook_size)]
-                                + [None] * len(token_pairs))
+        self._encoder = {
+            token_pair: i
+            for i, token_pair in enumerate(token_pairs, codebook_size)
+        }
+        self._decoder = ([[i] for i in range(codebook_size)]
+                         + [None] * len(token_pairs))
 
     def __getstate__(self) -> ArgsKwargs:
         args, kwargs = super().__getstate__()
@@ -64,31 +79,28 @@ class BPE(SerializeMixin):
 
     def encode(self, token_sequence: TokenSequence) -> TokenSequence:
         while len(token_sequence) >= 2:
-            token_pairs = set(zip(token_sequence, token_sequence[1:]))
-            i = next(
-                (
-                    i for i, token_pair in enumerate(self._token_pairs)
-                    if token_pair in token_pairs
-                ),
-                None,
+            token_pairs = (  # do not put into try block
+                (token, token_pair)
+                for token_pair in zip(token_sequence, token_sequence[1:])
+                if (token := self._encoder.get(token_pair)) is not None
             )
-            if i is None:
+            try:
+                token, token_pair = min(token_pairs)
+            except ValueError:
                 break
-            token_sequence, _ = merge(
-                token_sequence,
-                self._token_pairs[i],
-                self._codebook_size + i,
-            )
+            token_sequence, _ = merge(token_sequence, token_pair, token)
         return token_sequence
 
     def _decode(self, token: Token) -> TokenSequence:
-        token_sequence = self._token_mappings[token]
+        if token >= len(self._decoder):
+            return [token]
+        token_sequence = self._decoder[token]
         if token_sequence is None:
             token_pair = self._token_pairs[token - self._codebook_size]
             token_sequence = (
                 self._decode(token_pair[0]) + self._decode(token_pair[1])
             )
-            self._token_mappings[token] = token_sequence
+            self._decoder[token] = token_sequence
         return token_sequence
 
     def decode(self, token_sequence: TokenSequence) -> TokenSequence:

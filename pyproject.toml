@@ -45,9 +45,11 @@ Documentation = 'https://toddai.readthedocs.io/en/latest/'
 optional = [
     'bitsandbytes',
     'diffusers',
+    'ftfy',
     'h5py',
     'matplotlib',
     'openmim',
+    'regex',
     'scipy',
     'sentencepiece',
     'tqdm',
@@ -79,6 +81,7 @@ lint = [
     'pylint',
     'types-Pillow',
     'types-pycocotools',
+    'types-regex',
     'types-requests',
     'types-toml',
     'types-tqdm',
@@ -106,6 +109,7 @@ include = [
 
 [tool.setuptools.package-data]
 todd = [
+    'tasks/natural_language_processing/tokenizers/clip_bpe.txt.gz',
     'py.typed',
 ]
 

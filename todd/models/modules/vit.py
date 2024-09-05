@@ -10,6 +10,7 @@ from ...bases.configs import Config
 from ...patches.torch import Sequential
 from ...registries import InitWeightsMixin
 from ..utils import interpolate_position_embedding
+from .transformer import Block
 
 
 def init_weights(module: nn.Module) -> None:
@@ -20,48 +21,6 @@ def init_weights(module: nn.Module) -> None:
     elif isinstance(module, nn.LayerNorm):
         nn.init.constant_(module.bias, 0)
         nn.init.constant_(module.weight, 1.0)
-
-
-def mlp(
-    in_features: int,
-    hidden_features: int,
-    out_features: int,
-) -> nn.Sequential:
-    return nn.Sequential(
-        nn.Linear(in_features, hidden_features),
-        nn.GELU(),
-        nn.Linear(hidden_features, out_features),
-    )
-
-
-class Block(nn.Module):
-
-    def __init__(
-        self,
-        *args,
-        width: int,
-        num_heads: int,
-        mlp_ratio: float = 4.,
-        **kwargs,
-    ) -> None:
-        super().__init__(*args, **kwargs)
-        self._norm1 = nn.LayerNorm(width, 1e-6)
-        self._attention = nn.MultiheadAttention(
-            width,
-            num_heads,
-            batch_first=True,
-        )
-        self._norm2 = nn.LayerNorm(width, 1e-6)
-        self._mlp = mlp(width, int(width * mlp_ratio), width)
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        norm = self._norm1(x)
-        attention, _ = self._attention(norm, norm, norm, need_weights=False)
-        x = x + attention
-        norm = self._norm2(x)
-        mlp_ = self._mlp(norm)
-        x = x + mlp_
-        return x
 
 
 class ViT(InitWeightsMixin, nn.Module):
@@ -80,8 +39,6 @@ class ViT(InitWeightsMixin, nn.Module):
         super().__init__(*args, **kwargs)
         self._patch_size = patch_size
         self._patch_wh = patch_wh
-        self._width = width
-        self._depth = depth
         self._num_heads = num_heads
 
         self._patch_embedding = nn.Conv2d(3, width, patch_size, patch_size)
@@ -104,7 +61,11 @@ class ViT(InitWeightsMixin, nn.Module):
 
     @property
     def width(self) -> int:
-        return self._width
+        return self._cls_token.numel()
+
+    @property
+    def depth(self) -> int:
+        return len(self._blocks)
 
     def init_weights(self, config: Config) -> bool:
         super().init_weights(config)
