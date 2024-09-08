@@ -14,3 +14,4 @@ python:
       extra_requirements:
         - optional
         - doc
+    - path: git+https://github.com/lvis-dataset/lvis-api.git@lvis_challenge_2021
