@@ -45,7 +45,13 @@ repos:
       - id: name-tests-test
         args:
           - --pytest-test-first
-        exclude: ^tests/helpers|^tests/test_configs/py/.*\.py$|^tests/test_tasks/test_odkd/test_distillers/fgd/fgd.py$|^tests/test_tasks/test_odkd/test_losses/ckd/ckd.py$
+        exclude: |
+          (?x)^(
+            tests/helpers|
+            tests/test_configs/py/.*\.py$|
+            tests/test_tasks/test_odkd/test_distillers/fgd/fgd.py$|
+            tests/test_tasks/test_odkd/test_losses/ckd/ckd.py$
+          )
       - id: pretty-format-json
         args:
           - --autofix
