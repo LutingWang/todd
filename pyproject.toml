@@ -48,6 +48,7 @@ optional = [
     'ftfy',
     'h5py',
     'matplotlib',
+    'nltk',
     'openmim',
     'regex',
     'scipy',
