@@ -6,7 +6,7 @@ build:
     python: "3.11"
   jobs:
     post_install:
-      - git install git+https://github.com/lvis-dataset/lvis-api.git@lvis_challenge_2021
+      - pip install git+https://github.com/lvis-dataset/lvis-api.git@lvis_challenge_2021
 
 sphinx:
   fail_on_warning: true
