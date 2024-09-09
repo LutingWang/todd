@@ -14,6 +14,7 @@
     "downsample",
     "FGFI",
     "frozens",
+    "HuggingFace",
     "ILSVRC",
     "ImageNet",
     "IoUs",

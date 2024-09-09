@@ -1,0 +1,26 @@
+T5
+===
+
+.. code-block:: bash
+
+    root=pretrained/t5
+    mkdir -p ${root}
+
+    base_url=git@hf.co:google-t5
+    # huggingface-cli login
+
+T5 Large
+--------
+
+.. code-block:: bash
+
+    cd ${root}
+    repo=t5-large
+    GIT_LFS_SKIP_SMUDGE=1 git clone ${base_url}/${repo}
+    git -C ${repo} lfs pull -I model.safetensors
+    cd ../..
+
+.. code::
+
+    pretrained/t5/
+    └── t5-large

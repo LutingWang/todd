@@ -159,6 +159,7 @@ module = [
     'mmcv.*',
     'pptx.*',
     'scipy.*',
+    'setuptools.*',
     'torchvision.*',
     'yapf.*',
 ]
