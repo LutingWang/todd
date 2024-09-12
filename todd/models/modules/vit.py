@@ -6,24 +6,14 @@ import einops
 import torch
 from torch import nn
 
-from ...bases.configs import Config
 from ...patches.torch import Sequential
-from ...registries import InitWeightsMixin
 from ..utils import interpolate_position_embedding
 from .transformer import Block
 
-
-def init_weights(module: nn.Module) -> None:
-    if isinstance(module, nn.Linear):
-        nn.init.trunc_normal_(module.weight, std=.02)
-        if isinstance(module, nn.Linear) and module.bias is not None:
-            nn.init.constant_(module.bias, 0)
-    elif isinstance(module, nn.LayerNorm):
-        nn.init.constant_(module.bias, 0)
-        nn.init.constant_(module.weight, 1.0)
+# TODO: merge with torchvision
 
 
-class ViT(InitWeightsMixin, nn.Module):
+class ViT(nn.Module):
     BLOCK_TYPE = Block
 
     def __init__(
@@ -66,13 +56,6 @@ class ViT(InitWeightsMixin, nn.Module):
     @property
     def depth(self) -> int:
         return len(self._blocks)
-
-    def init_weights(self, config: Config) -> bool:
-        super().init_weights(config)
-        nn.init.trunc_normal_(self._position_embedding, std=.02)
-        nn.init.trunc_normal_(self._cls_token, std=.02)
-        self.apply(init_weights)
-        return False
 
     def _interpolate_position_embedding(
         self,

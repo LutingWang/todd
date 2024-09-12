@@ -2,14 +2,10 @@ __all__ = [
     'Transformer',
 ]
 
-from typing import cast
-
 import torch
 from torch import nn
 
-from ...bases.configs import Config
 from ...patches.torch import Sequential
-from ...registries import InitWeightsMixin
 
 
 def mlp(
@@ -64,7 +60,7 @@ class Block(nn.Module):
         return x
 
 
-class Transformer(InitWeightsMixin, nn.Module):
+class Transformer(nn.Module):
     BLOCK_TYPE = Block
 
     def __init__(
@@ -107,24 +103,6 @@ class Transformer(InitWeightsMixin, nn.Module):
     @attention_mask.setter
     def attention_mask(self, value: torch.Tensor) -> None:
         self.register_buffer('_attention_mask', value, False)
-
-    def init_weights(self, config: Config) -> bool:
-        super().init_weights(config)
-        nn.init.normal_(self._token_embedding.weight, std=0.02)
-        nn.init.normal_(self._position_embedding, std=0.01)
-
-        std1 = self.width**-0.5
-        std2 = (2 * self.width)**-0.5
-        std3 = (2 * self.width * self.depth)**-0.5
-
-        block: Block
-        for block in self._blocks:
-            nn.init.normal_(block._attention.in_proj_weight, std=std1)
-            nn.init.normal_(block._attention.out_proj.weight, std=std3)
-            nn.init.normal_(cast(nn.Linear, block._mlp[0]).weight, std=std2)
-            nn.init.normal_(cast(nn.Linear, block._mlp[2]).weight, std=std3)
-
-        return False
 
     def forward(self, text: torch.Tensor) -> torch.Tensor:
         length = text.shape[1]

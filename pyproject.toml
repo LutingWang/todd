@@ -53,6 +53,7 @@ optional = [
     'regex',
     'scipy',
     'sentencepiece',
+    'tables',
     'tqdm',
     'transformers',
 ]
@@ -161,6 +162,7 @@ module = [
     'scipy.*',
     'setuptools.*',
     'torchvision.*',
+    'transformers.*',
     'yapf.*',
 ]
 ignore_missing_imports = true

@@ -75,9 +75,7 @@ repos:
       - id: codespell
         exclude_types:
           - jupyter
-        args:
-          - tests
-          - todd
+        exclude: ^docs/source/pretrained/ram.csv$
   - repo: https://github.com/commitizen-tools/commitizen
     rev: v3.14.1
     hooks:

@@ -1,3 +1,4 @@
 *.pth filter=lfs diff=lfs merge=lfs -text
 tutorials/visuals.ipynb filter=lfs diff=lfs merge=lfs -text
 todd/tasks/natural_language_processing/tokenizers/clip_bpe.txt.gz filter=lfs diff=lfs merge=lfs -text
+*.jpg filter=lfs diff=lfs merge=lfs -text

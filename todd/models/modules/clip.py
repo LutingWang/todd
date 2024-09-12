@@ -12,7 +12,6 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 
-from ...bases.configs import Config
 from ...utils import StateDict, StateDictConverter
 from .pretrained import PretrainedMixin
 from .transformer import Block, Transformer
@@ -250,11 +249,6 @@ class CLIPText(CLIPMixin, Transformer):
         b = text.shape[0]
         eos_indices = text.argmax(-1)  # <EOS> has the highest number
         return x[torch.arange(b), eos_indices]
-
-    def init_weights(self, config: Config) -> bool:
-        if self.with_projector is not None:
-            nn.init.normal_(self._projector, std=self.width**-0.5)
-        return super().init_weights(config)
 
     def forward(self, text: torch.Tensor) -> torch.Tensor:
         x = super().forward(text)

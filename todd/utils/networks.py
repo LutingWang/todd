@@ -14,4 +14,5 @@ def get_image(url: str) -> npt.NDArray[np.uint8]:
     response = requests.get(url, timeout=5)
     response.raise_for_status()
     with Image.open(BytesIO(response.content)) as image:
+        image = image.convert('RGB')
         return np.array(image)

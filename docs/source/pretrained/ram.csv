@@ -1,0 +1,4585 @@
+3D CG rendering,三维CG渲染,0.65
+3D glasses,3d眼镜,0.65
+abacus,算盘,0.65
+abalone,鲍鱼,0.65
+monastery,修道院,0.65
+belly,肚子,0.65
+academy,学院,0.65
+accessory,附件,0.8
+accident,事故,0.71
+accordion,手风琴,0.75
+acorn,橡子,0.65
+acrylic paint,丙烯颜料,0.65
+act,表演,0.65
+action,行动,0.8
+action film,动作电影,0.65
+activity,活动,0.8
+actor,演员,0.8
+adaptation,改编本,0.65
+add,添加,0.65
+adhesive tape,胶带,0.65
+adjust,调整,0.65
+adult,成人,0.8
+adventure,冒险,0.65
+advertisement,广告,0.8
+antenna,天线,0.8
+aerobics,有氧运动,0.65
+spray can,喷雾罐,0.65
+afro,爆炸头,0.65
+agriculture,农业,0.65
+aid,帮助,0.65
+air conditioner,空调,0.65
+air conditioning,空调系统,0.65
+air sock,风向标,0.65
+aircraft cabin,飞机客舱,0.65
+aircraft model,飞机模型,0.65
+air field,机场,0.65
+air line,航线,0.8
+airliner,客机,0.65
+airman,飞行员,0.65
+plane,飞机,0.9
+airplane window,飞机窗口,0.65
+airport,机场,0.9
+airport runway,机场跑道,0.65
+airport terminal,航站楼,0.65
+airship,飞艇,0.65
+airshow,航展,0.65
+aisle,过道,0.8
+alarm,警报,0.65
+alarm clock,闹钟,0.65
+mollymawk,信天翁,0.65
+album,唱片,0.65
+album cover,唱片封面,0.65
+alcohol,酒精,0.61
+alcove,壁龛,0.65
+algae,水藻,0.65
+alley,胡同/球道,0.65
+almond,杏仁,0.65
+aloe vera,芦荟,0.65
+alp,高山,0.8
+alpaca,羊驼,0.65
+alphabet,字母表,0.65
+german shepherd,德国牧羊犬,0.65
+altar,圣坛,0.65
+amber,琥珀,0.65
+ambulance,救护车,0.65
+bald eagle,秃鹰,0.65
+American shorthair,美国短毛猫,0.65
+amethyst,紫水晶,0.65
+amphitheater,圆形剧场,0.65
+amplifier,扩音器,0.65
+amusement park,游乐园,0.65
+amusement ride,游乐设施,0.65
+anchor,锚,0.65
+ancient,古老的,0.8
+anemone,海葵,0.65
+angel,天使,0.8
+angle,角,0.8
+animal,动物,0.7
+animal sculpture,动物雕塑,0.65
+animal shelter,动物收容所,0.65
+animation,动画片,0.8
+animation film,动画电影,0.65
+animator,动画师,0.65
+anime,动漫,0.8
+ankle,脚踝,0.65
+anklet,短袜,0.65
+anniversary,周年庆,0.65
+trench coat,风衣,0.65
+ant,蚂蚁,0.65
+antelope,羚羊,0.82
+antique,古董,0.8
+antler,鹿角,0.65
+anvil,铁砧,0.65
+apartment,公寓,0.8
+ape,猿,0.65
+app,应用程序,0.8
+app icon,应用图标,0.65
+appear,出现,0.65
+appearance,外观,0.65
+appetizer,开胃菜,0.65
+applause,掌声,0.65
+apple,苹果,0.9
+apple juice,苹果汁,0.65
+apple pie,苹果派,0.65
+apple tree,苹果树,0.65
+applesauce,苹果酱,0.65
+appliance,设备,0.65
+appointment,约定,0.65
+approach,通道,0.65
+apricot,杏子,0.65
+apron,围裙,0.65
+aqua,浅绿色,0.65
+aquarium,水族馆,0.8
+aquarium fish,观赏鱼,0.65
+aqueduct,渡槽,0.65
+arcade,游乐中心,0.65
+arcade machine,商场游戏机,0.65
+arch,拱门,0.8
+arch bridge,拱桥,0.65
+archaelogical excavation,考古现场,0.65
+archery,射箭,0.65
+archipelago,群岛,0.65
+architect,建筑师,0.65
+architecture,建筑设计,0.8
+archive,档案,0.65
+archway,拱门,0.65
+area,地区,0.8
+arena,竞技场,0.65
+argument,争论,0.65
+arm,手臂,0.8
+armadillo,穿山甲,0.65
+armband,臂章,0.65
+armchair,扶手椅,0.65
+armoire,衣柜,0.65
+armor,盔甲,0.65
+army,军队,0.8
+army base,军事基地,0.65
+army tank,坦克,0.65
+array,阵列,0.65
+arrest,逮捕,0.65
+arrow,箭头,0.8
+art,艺术,0.8
+art exhibition,艺术展,0.65
+art gallery,美术馆,0.85
+art print,艺术印刷品,0.8
+art school,艺术学校,0.65
+art studio,艺术工作室,0.65
+art vector illustration,艺术矢量插图,0.65
+artichoke,洋蓟,0.65
+article,文章,0.8
+artifact,手工艺品,0.65
+artist,艺术家,0.8
+artists loft,艺术阁楼,0.65
+ash,灰,0.65
+ashtray,烟灰缸,0.65
+asia temple,亚洲寺庙,0.65
+asparagus,芦笋,0.65
+asphalt road,沥青道路,0.65
+assemble,组装,0.65
+assembly,集会,0.65
+assembly line,生产流水线,0.65
+association,协会,0.65
+astronaut,宇航员,0.65
+astronomer,天文学家,0.65
+athlete,运动员,0.8
+athletic,运动,0.65
+atlas,地图集,0.65
+atm,自助取款机,0.65
+atmosphere,大气层,0.65
+atrium,中庭,0.65
+attach,连接,0.65
+fighter jet,战斗机,0.65
+attend,参加,0.8
+attraction,吸引力,0.65
+atv,全地形车,0.65
+eggplant,茄子,0.77
+auction,拍卖,0.65
+audi,奥迪汽车,0.65
+audio,音频,0.65
+auditorium,礼堂,0.9
+aurora,极光,0.65
+author,作者,0.65
+auto factory,汽车厂,0.65
+auto mechanic,汽车修理工,0.65
+auto part,汽车零件,0.65
+auto show,车展,0.65
+auto showroom,汽车展厅,0.65
+car battery,汽车电池,0.65
+automobile make,汽车制造,0.65
+automobile model,汽车模型,0.8
+motor vehicle,汽车,0.65
+autumn,秋天,0.89
+autumn forest,秋天的森林,0.65
+autumn leave,秋天的叶子,0.8
+autumn park,秋天的公园,0.65
+autumn tree,秋天的树,0.65
+avatar,阿凡达,0.65
+avenue,林荫大道,0.65
+aviator sunglasses,飞行员太阳镜,0.65
+avocado,牛油果,0.65
+award,奖品,0.8
+award ceremony,颁奖典礼,0.65
+award winner,获奖者,0.65
+shed,棚,0.65
+ax,斧头,0.65
+azalea,杜鹃花,0.65
+baboon,狒狒,0.78
+baby,婴儿,0.8
+baby bottle,奶瓶,0.65
+baby carriage,婴儿车,0.65
+baby clothe,婴儿衣服,0.65
+baby elephant,小象,0.65
+baby food,婴儿食品,0.65
+baby seat,婴儿座椅,0.65
+baby shower,迎婴派对,0.65
+back,背后/后面,0.8
+backdrop,背景,0.65
+backlight,背光,0.65
+backpack,背包,0.9
+backyard,后院,0.8
+bacon,培根,0.65
+badge,徽章,0.65
+badger,獾,0.65
+badlands,荒地,0.65
+badminton,羽毛球运动,0.65
+badminton racket,羽毛球拍,0.65
+bag,袋子,0.8
+bagel,面包圈,0.65
+bagpipe,风笛,0.65
+baguette,法棍,0.65
+bait,诱饵,0.65
+baked goods,焙烤食品,0.65
+baker,面包师,0.65
+bakery,面包店,0.65
+baking,烘焙,0.65
+baking sheet,烤盘,0.65
+balance,平衡,0.65
+balance car,平衡车,0.65
+balcony,阳台,0.8
+ball,球,0.8
+ball pit,球池,0.65
+ballerina,芭蕾舞女演员,0.65
+ballet,芭蕾舞,0.65
+ballet dancer,芭蕾舞演员,0.65
+ballet skirt,芭蕾舞裙,0.65
+balloon,气球,0.8
+balloon arch,气球拱门,0.65
+baseball player,棒球手,0.8
+ballroom,舞厅,0.65
+bamboo,竹子,0.9
+bamboo forest,竹林,0.65
+banana,香蕉,0.83
+banana bread,香蕉面包,0.65
+banana leaf,香蕉叶子,0.65
+banana tree,香蕉树,0.65
+band,乐队,0.8
+band aid,创可贴,0.65
+bandage,绷带,0.65
+headscarf,头巾,0.8
+bandeau,束发带,0.65
+bangs,刘海,0.65
+bracelet,手镯,0.79
+balustrade,栏杆,0.65
+banjo,五弦琴,0.65
+bank,银行,0.8
+bank card,银行卡,0.65
+bank vault,银行金库,0.65
+banknote,纸币,0.65
+banner,横幅/旗帜,0.89
+banquet,宴会,0.65
+banquet hall,宴会厅,0.65
+banyan tree,榕树,0.65
+baozi,包子,0.65
+baptism,洗礼,0.65
+bar,酒吧,0.9
+bar code,条形码,0.65
+bar stool,高脚凳,0.65
+barbecue,烧烤,0.86
+barbecue grill,烧烤架,0.65
+barbell,杠铃,0.65
+barber,理发师,0.65
+barber shop,理发店,0.65
+barbie,芭比娃娃,0.65
+barge,驳船,0.65
+barista,咖啡师,0.65
+bark,树皮,0.65
+barley,大麦,0.65
+barn,谷仓,0.8
+barn owl,仓鸮,0.65
+barn door,挡光板,0.65
+barrel,桶,0.8
+barricade,路障,0.65
+barrier,屏障,0.65
+handcart,手推车,0.65
+bartender,酒保,0.65
+baseball,棒球,0.79
+baseball base,棒球基地,0.65
+baseball bat,棒球棒,0.63
+baseball hat,棒球帽,0.65
+baseball stadium,棒球场,0.87
+baseball game,棒球比赛,0.8
+baseball glove,棒球手套,0.46
+baseball pitcher,棒球投手,0.65
+baseball team,棒球队,0.65
+baseball uniform,棒球制服,0.65
+basement,地下室,0.65
+basil,罗勒,0.65
+basin,水盆,0.65
+basket,篮子,0.8
+basket container,篮子,0.65
+basketball,篮球,0.9
+basketball backboard,篮球篮板,0.65
+basketball coach,篮球教练,0.65
+basketball court,篮球场,0.9
+basketball game,篮球比赛,0.65
+basketball hoop,篮球框,0.65
+basketball player,篮球运动员,0.8
+basketball stadium,篮球馆,0.65
+basketball team,篮球队,0.65
+bass,贝斯,0.65
+bass guitar,低音吉他,0.65
+bass horn,低音喇叭,0.65
+bassist,贝斯手,0.65
+bat,球棒/球拍,0.65
+bath,浴室,0.8
+bath heater,水浴加热器,0.65
+bath mat,浴垫,0.65
+bath towel,浴巾,0.65
+swimwear,泳装,0.65
+bathrobe,浴袍,0.65
+bathroom,浴室,0.8
+bathroom accessory,浴室配件,0.65
+bathroom cabinet,浴室柜,0.65
+bathroom door,浴室门,0.65
+bathroom mirror,浴室镜子,0.65
+bathroom sink,浴室水槽,0.65
+toilet paper,卫生纸,0.65
+bathroom window,浴室窗户,0.65
+batman,蝙蝠侠,0.8
+wand,棒子,0.65
+batter,接连猛打/击球员,0.65
+battery,电池,0.65
+battle,战斗,0.8
+battle rope,战绳,0.65
+battleship,战舰,0.65
+bay,海湾,0.8
+bay bridge,海湾大桥,0.65
+bay window,凸窗,0.65
+bayberry,杨梅,0.65
+bazaar,集市,0.65
+beach,海滩,0.9
+beach ball,沙滩球,0.65
+beach chair,沙滩椅,0.65
+beach house,海滨别墅,0.65
+beach hut,海滩小屋,0.65
+beach towel,沙滩毛巾,0.65
+beach volleyball,沙滩排球,0.65
+lighthouse,灯塔,0.65
+bead,珠子,0.8
+beagle,比格犬,0.65
+beak,鸟嘴,0.65
+beaker,烧杯,0.65
+beam,横梁,0.65
+bean,豆子,0.65
+bean bag chair,豆袋椅,0.65
+beanbag,豆袋,0.65
+bear,熊,0.9
+bear cub,幼熊,0.65
+beard,胡子,0.8
+beast,野兽,0.65
+beat,击打/击败,0.8
+beautiful,美丽的,0.8
+beauty,美丽,0.8
+beauty salon,美容院,0.65
+beaver,海狸,0.65
+bed,床,0.84
+bedcover,床单,0.65
+bed frame,床架,0.65
+bedroom,卧室,0.79
+bedding,床上用品,0.65
+bedpan,便盆,0.65
+bedroom window,卧室窗户,0.65
+bedside lamp,床头灯,0.65
+bee,蜜蜂,0.8
+beech tree,山毛榉,0.65
+beef,牛肉,0.65
+beekeeper,养蜂人,0.65
+beeper,蜂鸣器,0.65
+beer,啤酒,0.8
+beer bottle,啤酒瓶,0.65
+beer can,啤酒罐,0.65
+beer garden,啤酒花园,0.65
+beer glass,啤酒杯,0.65
+beer hall,啤酒馆,0.65
+beet,甜菜,0.65
+beetle,甲虫,0.65
+beige,米色,0.8
+clock,时钟,0.81
+bell pepper,甜椒,0.65
+bell tower,钟楼,0.8
+belt,皮带,0.65
+belt buckle,皮带扣,0.65
+bench,长凳,0.9
+bend,弯曲,0.65
+bengal tiger,孟加拉虎,0.65
+bento,盒饭,0.65
+beret,贝雷帽,0.65
+berry,浆果,0.8
+berth,停泊位,0.65
+beverage,饮料,0.65
+bib,围嘴,0.65
+bibimbap,拌饭,0.65
+bible,圣经,0.65
+bichon,比熊,0.65
+bicycle,自行车,0.9
+bicycle helmet,自行车头盔,0.65
+bicycle wheel,自行车车轮,0.65
+biker,自行车骑士,0.8
+bidet,坐浴盆,0.65
+big ben,大本钟,0.65
+bike lane,自行车道,0.65
+bike path,自行车道,0.65
+bike racing,自行车赛,0.65
+bike ride,骑车,0.65
+bikini,比基尼,0.9
+bikini top,比基尼上衣,0.65
+bill,账单,0.65
+billard,台球,0.65
+billboard,广告牌,0.87
+billiard table,台球台,0.65
+bin,垃圾箱,0.65
+binder,活页夹,0.65
+binocular,双筒望远镜,0.65
+biology laboratory,生物学实验室,0.65
+biplane,双翼飞机,0.65
+birch,桦木,0.65
+birch tree,桦树,0.65
+bird,鸟,0.83
+bird bath,鸟池,0.65
+bird feeder,喂鸟器,0.65
+bird house,鸟舍,0.65
+bird nest,鸟巢,0.65
+birdbath,鸟池,0.65
+bird cage,鸟笼,0.65
+birth,出生,0.65
+birthday,生日,0.77
+birthday cake,生日蛋糕,0.87
+birthday candle,生日蜡烛,0.65
+birthday card,生日贺卡,0.65
+birthday party,生日聚会,0.8
+biscuit,饼干,0.8
+bishop,主教,0.65
+bison,野牛,0.65
+bit,钻头,0.65
+bite,咬,0.65
+black,黑色,0.85
+black sheep,黑山羊,0.65
+blackberry,黑莓,0.68
+blackbird,乌鸦,0.65
+blackboard,黑板,0.8
+blacksmith,铁匠,0.65
+blade,叶片/刀片,0.65
+blanket,毯子/覆盖层,0.75
+sports coat,运动外套,0.8
+bleacher,看台,0.65
+blender,搅拌机,0.65
+blessing,祝福,0.65
+blind,窗帘,0.65
+eye mask,眼罩,0.65
+flasher,闪光,0.65
+snowstorm,暴风雪,0.65
+block,块,0.8
+blog,博客,0.65
+blood,血,0.65
+bloom,开花,0.8
+blossom,花,0.8
+blouse,女装衬衫,0.8
+blow,吹,0.8
+hair drier,吹风机,0.79
+blowfish,河豚,0.65
+blue,蓝色,0.85
+blue artist,蓝色艺术家,0.65
+blue jay,蓝松鸦,0.65
+blue sky,蓝天,0.65
+blueberry,蓝莓,0.9
+bluebird,蓝知更鸟,0.65
+pig,猪,0.89
+board,板子,0.8
+board eraser,板擦,0.65
+board game,棋盘游戏,0.65
+boardwalk,木板路,0.65
+boat,船,0.76
+boat deck,船甲板,0.65
+boat house,船屋,0.65
+paddle,桨,0.65
+boat ride,乘船,0.65
+bobfloat,浮标,0.65
+bobcat,山猫,0.65
+body,躯干,1
+bodyboard,身体冲浪板,0.65
+bodybuilder,健美运动员,0.65
+boiled egg,水煮鸡蛋,0.65
+boiler,锅炉,0.65
+bolo tie,饰扣式领带,0.65
+bolt,门闩,0.65
+bomb,炸弹,0.65
+bomber,轰炸机,0.65
+bonasa umbellu,披肩榛鸡,0.65
+bone,骨骼,0.8
+bonfire,篝火,0.65
+bonnet,阀盖,0.65
+bonsai,盆景,0.65
+book,书,0.9
+book cover,书籍封面,0.65
+bookcase,书柜,0.89
+folder,文件夹,0.7
+bookmark,书签,0.65
+bookshelf,书架,0.65
+bookstore,书店,0.65
+boom microphone,远程拾音器,0.65
+boost,推动,0.65
+boot,靴子,0.8
+border,边界,0.8
+Border collie,边境牧羊犬,0.65
+botanical garden,植物园,0.65
+bottle,瓶,0.71
+bottle cap,瓶盖,0.65
+bottle opener,开瓶器,0.65
+bottle screw,螺旋开瓶器,0.65
+bougainvillea,三角梅,0.65
+boulder,巨石,0.65
+bouquet,花束,0.8
+boutique,时装店,0.65
+boutique hotel,精品酒店,0.65
+bow,鞠躬/蝴蝶结,0.8
+bow tie,领结,0.65
+bow window,弓形窗,0.65
+bowl,碗,0.9
+bowling,保龄球运动,0.65
+bowling alley,保龄球馆,0.65
+bowling ball,保龄球,0.65
+bowling equipment,保龄球设备,0.65
+box,盒子,0.8
+box girder bridge,箱形梁桥,0.65
+box turtle,箱龟,0.65
+boxer,拳击手,0.65
+underdrawers,内裤,0.65
+boxing,拳击,0.65
+boxing glove,拳击手套,0.65
+boxing ring,拳击台,0.65
+boy,男孩,0.8
+brace,支撑物,0.65
+bracket,支架,0.65
+braid,辫子,0.8
+brain,大脑,0.8
+brake,刹车,0.65
+brake light,刹车灯,0.65
+branch,树枝,0.8
+brand,商标,0.8
+brandy,白兰地,0.65
+brass,黄铜,0.65
+brass plaque,黄铜牌匾,0.65
+bread,面包,0.8
+breadbox,面包箱,0.65
+break,休息,0.8
+breakfast,早餐,0.8
+seawall,防浪堤,0.65
+chest,胸部,0.8
+brewery,啤酒厂,0.65
+brick,砖块,0.8
+brick building,砖建筑物,0.8
+wall,墙,0.9
+brickwork,砖块,0.65
+wedding dress,婚纱,0.85
+bride,新娘,0.8
+groom,新郎,0.8
+bridesmaid,伴娘,0.8
+bridge,桥,0.9
+bridle,缰绳,0.65
+briefcase,公文包,0.65
+bright,明亮的,0.8
+brim,边沿,0.65
+broach,钻头,0.65
+broadcasting,广播,0.65
+broccoli,西兰花,0.75
+bronze,青铜,0.65
+bronze medal,铜牌,0.65
+bronze sculpture,青铜雕塑,0.65
+bronze statue,青铜雕像,0.65
+brooch,胸针,0.65
+creek,小溪,0.65
+broom,扫帚,0.65
+broth,肉汤,0.65
+brown,棕色,0.8
+brown bear,棕熊,0.65
+brownie,巧克力蛋糕,0.65
+brunch,早午餐,0.65
+brunette,浅黑肤色的女人,0.65
+brush,刷子,0.65
+coyote,郊狼,0.65
+brussels sprout,包菜,0.65
+bubble,气泡,0.65
+bubble gum,泡泡糖,0.65
+bubble tea,珍珠奶茶,0.65
+bucket cabinet,斗柜,0.65
+shield,盾牌,0.65
+bud,芽,0.65
+buddha,佛,0.65
+buffalo,水牛,0.65
+buffet,自助餐,0.65
+bug,昆虫,0.65
+build,建造,0.8
+builder,建造者,0.65
+building,建筑,0.8
+building block,积木,0.65
+building facade,建筑立面,0.65
+building material,建筑材料,0.65
+lamp,灯,0.63
+bull,牛,0.65
+bulldog,斗牛犬,0.65
+bullet,子弹,0.65
+bullet train,动车,0.65
+bulletin board,公告栏,0.65
+bulletproof vest,防弹背心,0.65
+bullfighting,斗牛,0.65
+megaphone,扩音器,0.65
+bullring,斗牛场,0.65
+bumblebee,大黄蜂,0.65
+bumper,保险杠,0.65
+roll,卷/地形起伏,0.8
+bundle,捆,0.65
+bungee,蹦极,0.65
+bunk bed,双层床,0.65
+bunker,地堡/击球,0.65
+bunny,兔子,0.8
+buoy,浮标,0.65
+bureau,书桌,0.65
+burial chamber,墓室,0.65
+burn,燃烧,0.8
+burrito,玉米煎饼,0.65
+bus,公交车,0.88
+bus driver,公交车司机,0.65
+bus interior,公交车内部,0.65
+bus station,公交车站,0.65
+bus stop,公交车站,0.65
+bus window,公交车窗户,0.65
+bush,灌木,0.8
+business,商业,0.8
+business card,名片,0.71
+business executive,业务主管,0.65
+business suit,商务西装,0.65
+business team,业务团队,0.65
+business woman,女商人,0.8
+businessman,商人,0.8
+bust,半身像,0.65
+butcher,屠夫,0.65
+butchers shop,肉铺,0.65
+butte,孤峰,0.65
+butter,黄油,0.65
+cream,奶油,0.8
+butterfly,蝴蝶,0.9
+butterfly house,蝴蝶馆,0.65
+button,按钮,0.8
+buttonwood,梧桐树,0.65
+buy,购买,0.65
+taxi,出租车,0.65
+cabana,小屋,0.65
+cabbage,卷心菜,0.65
+cabin,小屋/机舱,0.8
+cabin car,守车,0.65
+cabinet,储藏柜,0.71
+cabinetry,橱柜,0.65
+cable,电缆,0.8
+cable car,缆车,0.76
+cactus,仙人掌,0.85
+cafe,咖啡馆,0.8
+canteen,食堂,0.65
+cage,笼子,0.65
+cake,蛋糕,0.8
+cake stand,蛋糕台,0.65
+calculator,计算器,0.79
+caldron,大锅,0.65
+calendar,日历,0.75
+calf,小腿,0.65
+call,通话,0.8
+phone box,电话亭,0.65
+calligraphy,书法,0.86
+calm,平静的,0.65
+camcorder,摄像机,0.65
+camel,骆驼,0.9
+camera,相机,0.9
+camera lens,相机镜头,0.65
+camouflage,迷彩,0.65
+camp,露营,0.65
+camper,露营者,0.65
+campfire,篝火,0.65
+camping,露营,0.73
+campsite,营地,0.65
+campus,校园,0.65
+can,罐,0.65
+can opener,开罐器,0.65
+canal,运河,0.8
+canary,金丝雀,0.65
+cancer,癌症,0.65
+candle,蜡烛,0.9
+candle holder,烛台,0.65
+candy,糖果,0.85
+candy bar,块状糖,0.65
+candy cane,柺杖糖,0.65
+candy store,糖果店,0.65
+cane,拐杖,0.65
+jar,罐子,0.8
+cannon,大炮,0.75
+canopy,树冠/顶棚,0.65
+canopy bed,四柱床,0.65
+cantaloupe,香瓜,0.65
+cantilever bridge,悬臂桥,0.65
+canvas,帆布,0.8
+canyon,峡谷,0.85
+cap,帽子,0.8
+cape,斗篷,0.65
+cape cod,科德角,0.65
+cappuccino,卡布奇诺,0.65
+capsule,胶囊,0.65
+captain,队长,0.65
+capture,捕获,0.65
+car,车,0.77
+car dealership,汽车经销商,0.65
+car door,车门,0.65
+car interior,汽车内饰,0.65
+car logo,车标,0.65
+car mirror,后视镜,0.65
+parking lot,停车场,0.86
+car seat,汽车座椅,0.65
+car show,车展,0.65
+car wash,洗车,0.65
+car window,车窗,0.65
+caramel,焦糖,0.65
+card,卡片,0.8
+card game,纸牌游戏,0.65
+cardboard,纸板,0.6
+cardboard box,纸板盒,0.65
+cardigan,羊毛衫,0.65
+cardinal,红衣凤头鸟,0.65
+cargo,货物,0.65
+cargo aircraft,货运飞机,0.65
+cargo ship,货船,0.65
+caribbean,加勒比,0.65
+carnation,康乃馨,0.65
+carnival,狂欢节,0.65
+carnivore,食肉动物,0.65
+carousel,旋转木马,0.74
+carp,鲤鱼,0.65
+carpenter,木匠,0.65
+carpet,地毯,0.67
+slipper,拖鞋,0.65
+house finch,红雀,0.65
+coach,长途客车,0.8
+dalmatian,斑点狗,0.65
+aircraft carrier,航空母舰,0.65
+carrot,胡萝卜,0.85
+carrot cake,胡萝卜蛋糕,0.65
+carry,携带,0.8
+cart,手推车,0.65
+carton,纸箱/纸盒,0.65
+cartoon,卡通,0.84
+cartoon character,卡通人物,0.8
+cartoon illustration,卡通插图,0.8
+cartoon style,卡通风格,0.8
+carve,雕刻,0.8
+case,容器,0.8
+cash,现金,0.65
+cashew,腰果,0.65
+casino,赌场,0.65
+casserole,砂锅,0.65
+cassette,磁带,0.65
+cassette deck,盒式录音机,0.65
+plaster bandage,石膏绷带,0.8
+casting,铸造,0.65
+castle,城堡,0.9
+cat,猫,0.9
+cat bed,猫窝,0.65
+cat food,猫粮,0.65
+cat furniture,猫器具,0.65
+cat tree,猫架,0.65
+catacomb,地下墓穴,0.65
+catamaran,双体船,0.65
+catamount,美洲狮,0.65
+catch,握着/抓着,0.8
+catcher,捕手,0.65
+caterpillar,毛毛虫,0.65
+catfish,鲶鱼,0.65
+cathedral,教堂,0.8
+cattle,牛,0.89
+catwalk,猫步,0.65
+catwalk show,走秀,0.65
+cauliflower,菜花,0.65
+cave,洞穴,0.83
+caviar,鱼子酱,0.65
+CD,光盘,0.65
+CD player,CD播放器,0.65
+cedar,雪松,0.65
+ceiling,天花板,0.6
+ceiling fan,吊扇,0.65
+celebrate,庆祝,0.8
+celebration,庆典,0.8
+celebrity,名人,0.8
+celery,芹菜,0.65
+cello,大提琴,0.65
+smartphone,手机,0.89
+cement,水泥,0.65
+graveyard,墓地,0.65
+centerpiece,中心装饰品,0.65
+centipede,蜈蚣,0.65
+ceramic,陶瓷,0.8
+ceramic tile,瓷砖,0.65
+cereal,麦片,0.65
+ceremony,仪式,0.8
+certificate,证书,0.65
+chain,链条,0.8
+chain saw,链锯,0.65
+chair,椅子,0.77
+chairlift,升降椅,0.65
+daybed,躺椅,0.65
+chalet,木屋,0.65
+chalice,圣杯,0.65
+chalk,粉笔,0.65
+chamber,房间,0.65
+chameleon,变色龙,0.65
+champagne,香槟酒,0.65
+champagne flute,香槟杯,0.65
+champion,冠军,0.65
+championship,锦标赛,0.65
+chandelier,吊灯,0.65
+changing table,婴儿换尿布台,0.65
+channel,通道,0.65
+chap,皴裂处,0.65
+chapel,小教堂,0.65
+character sculpture,人物雕塑,0.65
+charcoal,木炭,0.65
+charge,充电,0.65
+charger,充电器,0.65
+chariot,战车,0.65
+charity,慈善机构,0.65
+charity event,慈善活动,0.65
+charm,魅力,0.65
+graph,图表,0.87
+chase,追逐,0.65
+chassis,底盘,0.65
+check,检查/支票,0.65
+checkbook,支票簿,0.65
+chessboard,棋盘,0.65
+checklist,检查表,0.65
+cheer,欢呼声,0.65
+cheerlead,鼓励/啦啦队,0.65
+cheese,奶酪,0.74
+cheeseburger,奶酪汉堡,0.65
+cheesecake,奶酪蛋糕,0.65
+cheetah,猎豹,0.66
+chef,厨师,0.89
+chemical compound,化合物,0.65
+chemist,化学家,0.65
+chemistry,化学,0.65
+chemistry lab,化学实验室,0.65
+cheongsam,旗袍,0.65
+cherry,樱桃,0.65
+cherry blossom,樱花,0.65
+cherry tomato,樱桃番茄,0.65
+cherry tree,樱桃树,0.65
+chess,国际象棋,0.65
+chestnut,栗子,0.65
+chicken,鸡,0.9
+chicken breast,鸡胸肉,0.65
+chicken coop,鸡笼,0.65
+chicken salad,鸡肉沙拉,0.65
+chicken wing,鸡翅,0.65
+garbanzo,鹰嘴豆,0.65
+chiffonier,小衣橱,0.65
+chihuahua,吉娃娃,0.65
+child,孩子,0.84
+child actor,童星,0.65
+childs room,孩子的房间,0.65
+chile,红番椒,0.65
+chili dog,辣热狗,0.65
+chimney,烟囱,0.65
+chimpanzee,黑猩猩,0.65
+chinaware,瓷器,0.65
+chinese cabbage,白菜,0.65
+chinese garden,中国园林,0.65
+chinese knot,中国结,0.65
+chinese rose,月季,0.65
+chinese tower,中国塔,0.65
+chip,炸薯条/炸薯条,0.65
+chipmunk,花栗鼠,0.65
+chisel,凿子,0.65
+chocolate,巧克力,0.8
+chocolate bar,巧克力棒,0.65
+chocolate cake,巧克力蛋糕,0.65
+chocolate chip,巧克力碎片,0.65
+chocolate chip cookie,巧克力饼干,0.65
+chocolate milk,巧克力牛奶,0.65
+chocolate mousse,巧克力慕斯,0.65
+truffle,松露,0.65
+choir,唱诗班,0.65
+kitchen knife,厨房刀,0.65
+cutting board,砧板,0.8
+chopstick,筷子,0.65
+christmas,圣诞节,0.88
+christmas ball,圣诞球,0.65
+christmas card,圣诞贺卡,0.65
+christmas decoration,圣诞装饰,0.8
+christmas dinner,圣诞晚宴,0.65
+christmas eve,平安夜,0.65
+christmas hat,圣诞帽,0.7
+christmas light,圣诞灯,0.65
+christmas market,圣诞市场,0.65
+christmas ornament,圣诞装饰,0.65
+christmas tree,圣诞树,0.9
+chrysanthemum,菊花,0.65
+church,教堂,0.9
+church tower,教堂塔,0.65
+cider,苹果酒,0.65
+cigar,雪茄,0.65
+cigar box,雪茄盒,0.65
+cigarette,香烟,0.65
+cigarette case,烟盒,0.65
+waistband,腰带,0.65
+cinema,电影院,0.8
+photographer,摄影师,0.8
+cinnamon,肉桂,0.65
+circle,圆,0.8
+circuit,电路,0.65
+circuit board,电路板,0.65
+circus,马戏团,0.65
+water tank,水箱,0.65
+citrus fruit,柑橘类水果,0.65
+city,城市,0.8
+city bus,城市公交,0.65
+city hall,市政厅,0.65
+city nightview,城市夜景,0.65
+city park,城市公园,0.65
+city skyline,城市天际线,0.65
+city square,城市广场,0.65
+city street,城市街道,0.82
+city wall,城墙,0.65
+city view,城市景观,0.65
+clam,蛤蜊,0.65
+clarinet,单簧管,0.65
+clasp,扣子,0.65
+class,班级,0.8
+classic,经典,0.8
+classroom,教室,0.9
+clavicle,锁骨,0.65
+claw,爪子,0.65
+clay,黏土,0.65
+pottery,陶器,0.65
+clean,清洁,0.8
+clean room,洁净室,0.65
+cleaner,清洁工人,0.65
+cleaning product,清洁用品,0.65
+clear,清晰的,0.8
+cleat,栓,0.65
+clementine,克莱门氏小柑橘,0.65
+client,客户端,0.65
+cliff,悬崖,0.8
+climb,爬,0.8
+climb mountain,爬山,0.65
+climber,登山者,0.65
+clinic,诊所,0.65
+clip,夹子,0.65
+clip art,剪贴画,0.65
+clipboard,剪贴板,0.65
+clipper,快速帆船,0.65
+clivia,君子兰,0.65
+cloak,斗篷,0.65
+clogs,木底鞋,0.65
+close-up,特写,0.8
+closet,壁橱,0.8
+cloth,布,0.65
+clothe,穿衣,0.8
+clothing,衣服,0.8
+clothespin,晒衣夹,0.65
+clothesline,晒衣绳,0.65
+clothing store,服装店,0.65
+cloud,云,0.75
+cloud forest,云雾森林,0.65
+cloudy,多云,0.7
+clover,三叶草,0.9
+joker,小丑,0.8
+clown fish,小丑鱼,0.65
+club,俱乐部,0.65
+clutch,离合器,0.65
+clutch bag,手拿包,0.65
+coal,煤炭,0.65
+coast,海岸,0.8
+coat,外套,0.8
+coatrack,衣帽架,0.65
+cob,玉米,0.65
+cock,公鸡,0.65
+cockatoo,凤头鹦鹉,0.65
+cocker,可卡犬,0.65
+cockpit,驾驶,0.65
+roach,蟑螂,0.65
+cocktail,鸡尾酒,0.88
+cocktail dress,小礼服,0.65
+cocktail shaker,鸡尾酒调制器,0.65
+cocktail table,鸡尾酒桌,1
+cocoa,可可,0.65
+coconut,椰子,0.65
+coconut tree,椰子树,0.65
+coffee,咖啡,0.8
+coffee bean,咖啡豆,0.65
+coffee cup,咖啡杯,0.8
+coffee machine,咖啡机,0.65
+coffee shop,咖啡店,0.65
+coffeepot,咖啡壶,0.65
+coffin,棺材,0.65
+cognac,法国白兰地,0.65
+spiral,螺旋,0.8
+coin,硬币,0.8
+coke,可口可乐,0.65
+colander,滤器,0.65
+cold,冷的,0.8
+slaw,卷心菜沙拉,0.65
+collaboration,合作,0.65
+collage,拼贴画,0.8
+collection,收藏品,0.8
+college student,大学生,0.65
+sheepdog,牧羊犬,0.65
+crash,碰撞,0.8
+color,颜色,0.8
+coloring book,涂色书,0.65
+coloring material,染色材料,0.65
+pony,矮种马,0.65
+pillar,柱子,0.65
+comb,梳子,0.65
+combination lock,密码锁,0.65
+comic,喜剧演员,0.8
+comedy,喜剧,0.65
+comedy film,喜剧电影,0.65
+comet,彗星,0.65
+comfort,舒服,0.65
+comfort food,安慰食物,0.65
+comic book,漫画书,0.65
+comic book character,漫画人物,0.65
+comic strip,连环画,0.65
+commander,指挥官,0.65
+commentator,评论员,0.65
+community,社区,0.8
+commuter,通勤,0.65
+company,公司,0.8
+compass,指南针,0.65
+compete,比赛,0.8
+contest,比赛,0.8
+competitor,竞争者,0.65
+composer,作曲家,0.8
+composition,作文,0.65
+compost,堆肥,0.65
+computer,电脑,0.71
+computer box,电脑机箱,0.65
+computer chair,电脑椅,0.65
+computer desk,电脑桌,0.65
+keyboard,键盘,0.79
+computer monitor,计算机显示器,0.65
+computer room,计算机房,0.65
+computer screen,电脑屏幕,0.65
+computer tower,机箱,0.65
+concept car,概念车,0.65
+concert,音乐会,0.89
+concert hall,音乐厅,0.65
+conch,贝壳,0.65
+concrete,混凝土,0.8
+condiment,调味品,0.65
+condom,避孕套,0.65
+condominium,独立产权的公寓,0.65
+conductor,指挥,0.65
+cone,锥形物,0.65
+meeting,会议,0.8
+conference center,会议中心,0.65
+conference hall,会议厅,0.65
+meeting room,会议室,0.9
+confetti,五彩纸屑,0.65
+conflict,冲突,0.65
+confluence,合流,0.65
+connect,连接,0.65
+connector,连接器,0.65
+conservatory,温室,0.65
+constellation,星座,0.65
+construction site,建筑工地,0.65
+construction worker,建筑工人,0.65
+contain,包含,0.8
+container,容器,0.65
+container ship,集装箱船,0.65
+continent,大陆,0.65
+profile,轮廓,0.8
+contract,合同,0.65
+control,控制,0.8
+control tower,控制塔,0.65
+convenience store,便利店,0.65
+convention,集会,0.65
+conversation,交谈,0.65
+converter,转换器,0.65
+convertible,可转换的,0.65
+transporter,输送机,0.65
+cook,厨师/烹饪,0.8
+cooking,烹饪,0.65
+cooking spray,烹饪喷雾剂,0.65
+cooker,炊具,0.65
+cool,凉的,0.8
+cooler,冷却器,0.65
+copper,铜,0.65
+copy,一本/一册,0.65
+coral,珊瑚,0.9
+coral reef,珊瑚礁,0.65
+rope,粗绳,0.8
+corded phone,有线电话,0.65
+liquor,酒,0.65
+corgi,威尔士矮脚狗,0.65
+cork,瓶塞,0.65
+corkboard,软木板,0.65
+cormorant,鸬鹚,0.65
+corn,玉米,0.88
+corn field,玉米田,0.65
+cornbread,玉米面包,0.65
+corner,角落,0.8
+trumpet,小号,0.65
+cornice,飞檐,0.65
+cornmeal,燕麦片,0.65
+corral,围栏,0.65
+corridor,走廊,0.65
+corset,紧身衣,0.65
+cosmetic,化妆品,0.65
+cosmetics brush,化妆刷,0.65
+cosmetics mirror,化妆镜,0.65
+cosplay,角色扮演,0.65
+costume,服装,0.8
+costumer film designer,服装电影设计师,0.65
+infant bed,婴儿床,0.65
+cottage,小屋,0.8
+cotton,棉花,0.65
+cotton candy,棉花糖,0.65
+couch,沙发,0.82
+countdown,倒计时,0.65
+counter,柜台,0.9
+counter top,台面,0.65
+country artist,最佳乡村歌手,0.65
+country house,乡村别墅,0.65
+country lane,乡村公路,0.65
+country pop artist,乡村流行歌手,0.65
+countryside,农村,0.8
+coupe,双门小轿车,0.65
+couple,夫妇/两人/几个,0.8
+couple photo,情侣写真,0.65
+courgette,小胡瓜,0.65
+course,课程,0.65
+court,球场,0.8
+courthouse,法院,0.65
+courtyard,院子,0.9
+cousin,堂兄弟,0.65
+coverall,工作服,0.65
+cow,奶牛,0.88
+cowbell,母牛的颈铃,0.65
+cowboy,牛仔,0.65
+cowboy boot,牛仔靴,0.65
+cowboy hat,牛仔帽,0.65
+crab,螃蟹,0.9
+crabmeat,蟹肉,0.65
+crack,裂纹,0.65
+cradle,摇篮,0.65
+craft,工艺,0.8
+craftsman,工匠,0.65
+cranberry,蔓越莓,0.65
+crane,起重机,0.65
+crape,黑纱,0.65
+crapper,厕所,0.65
+crate,板条箱,0.65
+crater lake,火山口湖,0.65
+lobster,龙虾,0.9
+crayon,蜡笔,0.65
+cream cheese,奶油乳酪,0.65
+cream pitcher,奶油罐,0.65
+create,创建,0.65
+creature,生物,0.8
+credit card,信用卡,0.65
+crescent,新月形,0.65
+croissant,新月形面包,0.65
+crest,山顶,0.65
+crew,全体船员,0.65
+cricket,蟋蟀,0.65
+cricket ball,板球用球,0.65
+cricket team,板球队,0.65
+cricketer,板球队员,0.65
+crochet,钩边,0.65
+crock pot,克罗克电锅,0.65
+crocodile,鳄鱼,0.89
+crop,庄稼,0.65
+crop top,露脐上衣,0.65
+cross,交叉,0.8
+crossbar,横木,0.65
+crossroad,十字路口,0.65
+crosstalk,相声,0.65
+crosswalk,人行横道,0.87
+crouton,油煎面包块,0.65
+crow,乌鸦,0.66
+crowbar,撬棍,0.65
+crowd,人群,0.84
+crowded,拥挤的,0.65
+crown,皇冠,0.8
+crt screen,阴极射线管屏幕,0.65
+crucifix,耶稣受难像,0.65
+cruise,巡游,0.65
+cruise ship,游轮,0.65
+cruiser,巡洋艇,0.65
+crumb,面包屑,0.65
+crush,压坏,0.65
+crutch,拐杖,0.65
+crystal,水晶,0.65
+cub,幼兽,0.65
+cube,立方体,0.65
+cucumber,黄瓜,0.84
+cue,球杆,0.65
+cuff,袖口,0.65
+cufflink,袖扣,0.65
+cuisine,烹饪,0.65
+farmland,农田,0.65
+cup,杯子,0.9
+cupcake,纸杯蛋糕,0.8
+cupid,丘比特,0.65
+curb,马路牙子,0.65
+curl,旋度,0.65
+hair roller,卷发器,0.65
+currant,无籽葡萄干,0.65
+currency,货币,0.5
+curry,咖喱,0.65
+curtain,窗帘,0.64
+curve,曲线,0.65
+pad,软垫,0.65
+customer,顾客,0.8
+cut,切,0.8
+cutlery,餐具,0.65
+cycle,自行车,0.65
+cycling,骑自行车,0.65
+cyclone,龙卷风,0.65
+cylinder,汽缸,0.65
+cymbal,铙钹,0.65
+cypress,柏树,0.65
+cypress tree,柏树,0.65
+dachshund,达克斯猎狗,0.81
+daffodil,水仙花,0.65
+dagger,匕首,0.65
+dahlia,大丽花,0.65
+daikon,萝卜,0.65
+dairy,乳制品,0.65
+daisy,雏菊,0.65
+dam,大坝,0.65
+damage,损害,0.65
+damp,潮湿的,0.65
+dance,跳舞,0.8
+dance floor,舞池,0.65
+dance room,舞蹈室,0.65
+dancer,舞者,0.8
+dandelion,蒲公英,0.65
+dark,黑暗,0.8
+darkness,黑暗,0.8
+dart,飞镖,0.65
+dartboard,圆靶,0.65
+dashboard,指示板,0.65
+date,日期,0.8
+daughter,女儿,0.8
+dawn,黎明,0.65
+day bed,天床上,0.65
+daylight,日光,0.8
+deadbolt,门栓,0.65
+death,死亡,0.65
+debate,辩论,0.65
+debris,碎片,0.65
+decanter,玻璃水瓶,0.65
+deck,甲板,0.8
+decker bus,双层巴士,0.65
+decor,装饰,0.8
+decorate,装修/装饰,0.8
+decorative picture,装饰画,0.65
+deer,鹿,0.84
+defender,后卫,0.65
+deity,神,0.65
+delicatessen,熟食,0.65
+deliver,投递,0.65
+demolition,拆迁,0.65
+monster,怪兽,0.8
+demonstration,演示,0.65
+den,兽窝/休闲室,0.65
+denim jacket,牛仔夹克,0.65
+dentist,牙医,0.65
+department store,百货商店,0.65
+depression,抑郁症,0.65
+derby,德比,0.65
+dermopathy,皮肤病,0.65
+desert,沙漠,0.9
+desert road,沙漠公路,0.65
+design,设计,0.8
+designer,设计师,0.65
+table,桌子/表格,0.85
+table lamp,台灯,0.65
+desktop,桌面,0.65
+desktop computer,台式电脑,0.65
+dessert,甜点,0.9
+destruction,破坏,0.65
+detective,侦探,0.65
+detergent,洗涤剂,0.65
+dew,露水,0.65
+dial,仪表盘,0.65
+diamond,钻石,0.8
+diaper,尿布,0.65
+diaper bag,尿布包,0.65
+journal,杂志,0.65
+die,死,0.73
+diet,饮食,0.65
+excavator,挖掘机,0.65
+number,数字,0.8
+digital clock,数字时钟,0.65
+dill,莳萝,0.65
+dinner,晚餐,0.8
+rowboat,小船,0.65
+dining room,餐厅,0.8
+dinner party,晚宴,0.65
+dinning table,餐桌,0.65
+dinosaur,恐龙,0.86
+dip,浸,0.65
+diploma,文凭,0.65
+direct,指引,0.65
+director,导演,0.65
+dirt,尘埃,0.87
+dirt bike,越野摩托车,0.65
+dirt field,泥土地,0.65
+dirt road,泥土路,0.8
+dirt track,泥路/土路,0.65
+disaster,灾难,0.65
+disciple,信徒,0.65
+disco,迪斯科舞厅,0.65
+disco ball,迪斯科灯秋,0.65
+discotheque,迪斯科舞厅,0.65
+disease,疾病,0.65
+plate,盘子,0.8
+dish antenna,碟形天线,0.65
+dish washer,洗碗机,0.65
+dishrag,抹布,0.65
+dishes,菜肴,0.65
+dishsoap,洗碗液,0.65
+Disneyland,迪斯尼乐园,0.65
+dispenser,自动售货机,0.65
+display,展示,0.8
+display window,陈列窗,0.65
+trench,壕沟,0.65
+dive,潜水,0.8
+diver,潜水员,0.65
+diving board,跳水板,0.65
+paper cup,纸杯,0.65
+dj,流行音乐播音员,0.65
+doberman,杜宾犬,0.65
+dock,码头,0.8
+doctor,医生,0.8
+document,文件,0.8
+documentary,纪录片,0.65
+dog,狗,0.9
+dog bed,狗窝,0.65
+dog breed,犬种,0.65
+dog collar,狗项圈,0.65
+dog food,狗粮,0.65
+dog house,狗窝,0.65
+doll,洋娃娃,0.65
+dollar,美元,0.8
+dollhouse,玩偶之家,0.65
+dolly,洋娃娃,0.65
+dolphin,海豚,0.82
+dome,穹顶,0.8
+domicile,住宅,0.65
+domino,多米诺骨牌,0.65
+donkey,驴,0.65
+donut,甜甜圈,0.84
+doodle,涂鸦,0.9
+door,门,0.9
+door handle,门把手,0.65
+doormat,受气包,0.65
+doorplate,门牌,0.65
+doorway,门口,0.65
+dormitory,宿舍,0.65
+dough,面团,0.65
+downtown,市中心,0.65
+dozer,推土机,0.65
+drag,拖,0.65
+dragon,龙,0.8
+dragonfly,蜻蜓,0.64
+drain,排水沟,0.65
+drama,剧本,0.65
+drama film,戏剧电影,0.65
+draw,画,0.8
+drawer,抽屉里,0.8
+drawing,图画/画画,0.87
+drawing pin,图钉,0.65
+pigtail,辫子,0.65
+dress,连衣裙/特定场合的服装,0.78
+dress hat,礼帽,0.65
+dress shirt,正装衬衫,0.65
+dress shoe,皮鞋,0.65
+dress suit,大礼服,0.65
+dresser,梳妆台,0.65
+dressing room,更衣室,0.65
+dribble,运球,0.65
+drift,漂移,0.65
+driftwood,浮木,0.65
+drill,钻,0.65
+drink,饮品/喝,0.8
+drinking water,饮用水,0.65
+drive,开车,0.8
+driver,司机,0.8
+driveway,车道,0.8
+drone,无人机,0.65
+drop,水滴/下降,0.8
+droplight,吊灯,0.65
+dropper,滴管,0.65
+drought,干旱,0.65
+medicine,药物,0.8
+pharmacy,药店,0.65
+drum,鼓,0.9
+drummer,鼓手,0.65
+drumstick,鸡腿,0.65
+dry,干的,0.8
+duchess,公爵夫人,0.65
+duck,鸭子,0.85
+duckbill,鸭嘴兽,0.65
+duckling,小鸭子,0.65
+duct tape,布基胶带,0.65
+dude,伙计,0.65
+duet,二重唱,0.65
+duffel,粗呢,0.65
+canoe,独木舟,0.65
+dumbbell,哑铃,0.74
+dumpling,饺子,0.65
+dune,沙丘,0.8
+dunk,扣篮,0.65
+durian,榴莲,0.65
+dusk,黄昏,0.8
+dust,灰尘,0.65
+garbage truck,垃圾车,0.65
+dustpan,簸箕,0.65
+duvet,羽绒被,0.65
+DVD,DVD,0.65
+dye,染料,0.65
+eagle,鹰,0.65
+ear,耳朵,0.8
+earmuff,御寒耳罩,0.65
+earphone,耳机,0.88
+earplug,耳塞,0.65
+earring,耳环,0.65
+earthquake,地震,0.65
+easel,画架,0.65
+easter,复活节,0.65
+easter bunny,复活节兔子,0.65
+easter egg,复活节彩蛋,0.83
+eat,吃,0.89
+restaurant,餐厅,0.89
+eclair,泡芙,0.65
+eclipse,日食,0.65
+ecosystem,生态系统,0.65
+edit,编辑,0.65
+education,教育,0.65
+educator,教育家,0.65
+eel,鳗鱼,0.65
+egg,蛋,0.9
+egg roll,蛋卷,0.65
+egg tart,蛋挞,0.65
+eggbeater,打蛋器,0.65
+egret,白鹭,0.65
+Eiffel tower,埃菲尔铁塔,0.65
+elastic band,橡皮筋,0.65
+senior,上级,0.8
+electric chair,电椅,0.65
+electric drill,电钻,0.65
+electrician,电工,0.65
+electricity,电,0.65
+electron,电子,0.65
+electronic,电子器件,0.65
+elephant,大象,0.86
+elevation map,高度图,0.65
+elevator,电梯,0.65
+elevator car,电梯轿厢,0.65
+elevator door,电梯门,0.65
+elevator lobby,电梯大堂,0.65
+elevator shaft,电梯井,0.65
+embankment,路堤,0.65
+embassy,大使馆,0.65
+embellishment,装饰,0.65
+ember,灰烬,0.65
+emblem,会徽,0.8
+embroidery,刺绣,0.65
+emerald,翡翠,0.65
+emergency,紧急,0.65
+emergency service,紧急服务,0.65
+emergency vehicle,紧急车辆,0.65
+emotion,情感,0.65
+Empire State Building,帝国大厦,0.65
+enamel,搪瓷,0.65
+enclosure,外壳/围墙,0.65
+side table,茶几,0.65
+energy,能源,0.65
+engagement,订婚,0.65
+engagement ring,订婚戒指,0.8
+engine,引擎,0.8
+engine room,机舱,0.65
+engineer,工程师,0.65
+engineering,工程,0.65
+english shorthair,英国短毛猫,0.65
+ensemble,乐团,0.65
+enter,回车键,0.65
+entertainer,演艺人员,0.65
+entertainment,娱乐,0.65
+entertainment center,娱乐中心,0.65
+entrance,入口,0.8
+entrance hall,入口大厅,0.65
+envelope,信封,0.65
+equestrian,马术,0.65
+equipment,设备,0.65
+eraser,橡皮擦,0.65
+erhu,二胡,0.65
+erosion,侵蚀,0.65
+escalator,自动扶梯,0.65
+escargot,食用蜗牛,0.65
+espresso,浓缩咖啡,0.65
+estate,房地产,0.8
+estuary,河口,0.65
+eucalyptus tree,桉树,0.65
+evening,晚上,0.8
+evening dress,晚礼服,0.65
+evening light,夜光,0.65
+evening sky,傍晚天空,0.65
+evening sun,晚上的太阳,0.65
+event,事件,0.8
+evergreen,常绿的,0.65
+ewe,母羊,0.65
+excavation,挖掘,0.65
+exercise,运动,0.8
+exhaust hood,排气罩,0.65
+exhibition,展览,0.8
+exit,出口,0.65
+explorer,探险者,0.65
+explosion,爆炸,0.65
+extension cord,延长线,0.65
+extinguisher,灭火器,0.65
+extractor,排气扇,0.65
+extrude,挤压,0.65
+eye,眼睛,0.8
+eye shadow,眼影,0.65
+eyebrow,眉,0.65
+eyeliner,眼线笔,0.65
+fabric,布料,0.8
+fabric store,纺织品商店,0.65
+facade,外观,0.8
+face,脸,0.8
+face close-up,脸部特写,0.65
+face powder,蜜粉,0.65
+face towel,毛巾,0.65
+facial tissue holder,面巾纸架,0.65
+facility,设施,0.65
+factory,工厂,0.8
+factory workshop,工厂车间,0.65
+fair,集市,0.65
+fairground,露天市场,0.65
+fairy,仙女,0.65
+falcon,猎鹰,0.65
+fall,秋天,0.8
+family,家庭,0.8
+family car,家庭轿车,0.65
+family photo,全家福,0.65
+family room,家庭房,0.65
+fan,风扇/扇子,0.8
+fang,尖牙,0.65
+farm,农场,0.8
+farmer,农民,0.8
+farmer market,农民市场,0.65
+farmhouse,农舍,0.65
+fashion,时尚,0.8
+fashion accessory,时尚配饰,0.65
+fashion designer,时装设计师,0.65
+fashion girl,时尚的女孩,0.65
+fashion illustration,时装插图,0.65
+fashion look,时装大片,0.65
+fashion model,时装模特,0.65
+fashion show,时装表演,0.8
+fast food,快餐,0.65
+fastfood restaurant,西式快餐,0.65
+father,父亲,0.8
+faucet,水龙头,0.85
+fault,故障,0.65
+fauna,动物,0.65
+fawn,小鹿,0.65
+fax,传真,0.65
+feast,宴会,0.65
+feather,羽毛,0.8
+fedora,软呢帽,0.65
+feed,饲料,0.8
+feedbag,一餐,0.65
+feeding,饲养,0.65
+feeding chair,喂养的椅子,0.65
+feline,猫科,0.65
+mountain lion,美洲狮,0.65
+fence,栅栏,0.8
+fender,芬达,0.65
+fern,蕨类植物,0.65
+ferret,雪貂,0.65
+ferris wheel,摩天轮,0.9
+ferry,渡船,0.65
+fertilizer,肥料,0.65
+festival,节日,0.9
+fiber,纤维,0.65
+fiction,小说,0.65
+fiction book,小说书,0.65
+field,田野/场地/野外,0.9
+field road,田间道路,0.65
+fig,无花果,0.65
+fight,打架,0.8
+figure skater,花样滑冰运动员,0.65
+figurine,小雕像,0.65
+file,文件,0.65
+file photo,档案照片,0.65
+file cabinet,文件柜,0.65
+fill,填满,0.8
+film camera,胶片相机,0.65
+film director,电影导演,0.8
+film format,电影格式,0.65
+film premiere,电影首映礼,0.65
+film producer,电影制片人,0.65
+filming,拍摄,0.65
+filter,过滤器,0.65
+fin,鳍,0.65
+hand,手,0.8
+finish line,终点线,0.65
+fir,冷杉,0.65
+fir tree,冷杉树,0.65
+fire,火,0.86
+fire alarm,火灾报警,0.65
+fire department,消防部门,0.65
+fire truck,消防车,0.65
+fire escape,消防通道,0.65
+fire hose,消防水带,0.65
+fire pit,火坑,0.65
+fire station,消防站,0.65
+firecracker,爆竹,0.65
+fireman,消防队员,0.87
+fireplace,壁炉,0.8
+firework,烟花,0.84
+firework display,烟花表演,0.65
+first-aid kit,急救箱,0.65
+fish,鱼,0.8
+fish boat,鱼船,0.65
+fish market,海鲜市场,0.65
+fish pond,鱼塘,0.65
+fishbowl,鱼缸,0.65
+fisherman,渔夫,0.8
+fishing,钓鱼,0.65
+fishing boat,渔船,0.8
+fishing net,渔网,0.65
+fishing pole,钓鱼,0.65
+fishing village,渔村,0.65
+fitness,健身,0.65
+fitness course,健身课程,0.65
+five,五个,0.8
+fixture,固定装置,0.65
+fjord,峡湾,0.65
+flag,国旗,0.8
+flag pole,旗杆,0.65
+flake,小薄片,0.65
+flame,火焰,0.8
+flamingo,火烈鸟,0.81
+flannel,法兰绒,0.65
+flap,拍打,0.65
+flare,耀斑,0.65
+flash,闪光,0.8
+flask,烧瓶,0.65
+flat,平,0.8
+flatfish,比目鱼,0.65
+flavor,风味,0.65
+flea,跳蚤,0.65
+flea market,跳蚤市场,0.65
+fleet,舰队,0.65
+flight,飞行,0.8
+flight attendant,空中乘务员,0.65
+flip,翻转,0.65
+flip-flop,触发器,0.65
+flipchart,翻转图,0.65
+float,浮动,0.8
+flock,群,0.8
+flood,洪水,0.65
+floor,地板/地面,0.7
+floor fan,落地扇,0.65
+floor mat,脚垫,0.65
+floor plan,楼层平面图,0.8
+floor window,落地窗,0.65
+floral arrangement,插花艺术,0.65
+florist,花店,0.65
+floss,牙线,0.65
+flour,面粉,0.65
+flow,流动,0.8
+flower,花,0.82
+flower basket,花篮,0.65
+flower bed,花坛,0.65
+flower box,花箱,0.65
+flower field,花田,0.65
+flower girl,花童,0.65
+flower market,花卉市场,0.65
+fluid,流体,0.65
+flush,冲洗,0.65
+flute,长笛,0.65
+fly,飞,0.8
+fly fishing,飞行钓鱼,0.65
+flyer,传单,0.65
+horse,马,0.87
+foam,泡沫,0.65
+fog,雾,0.9
+foggy,多雾的,0.8
+foie gra,鹅肝酱,0.65
+foil,箔纸,0.65
+folding chair,折椅,0.65
+leaf,树叶,0.9
+folk artist,民间艺术家,0.65
+folk dance,民间舞蹈,0.65
+folk rock artist,民间摇滚艺术家,0.65
+fondant,方旦糖,0.65
+hotpot,火锅,0.65
+font,圣洗池,0.8
+food,食物,0.7
+food coloring,食用色素,0.65
+food court,美食广场,0.65
+food processor,食品加工机,0.65
+food stand,小吃摊,0.65
+food truck,快餐车,0.65
+foosball,桌上足球,0.65
+foot,脚,0.8
+foot bridge,人行桥,0.65
+football,足球,0.9
+football coach,足球教练,0.65
+football college game,大学橄榄球赛,0.65
+football match,足球比赛,0.65
+football field,足球场,0.65
+football game,足球比赛,0.65
+football helmet,橄榄球头盔,0.65
+football player,足球运动员,0.8
+football stadium,足球场,0.65
+football team,足球队,0.8
+path,小路,0.8
+footprint,脚印,0.65
+footrest,脚踏板,0.65
+footstall,台座,0.65
+footwear,鞋子,0.65
+forbidden city,故宫,0.65
+ford,浅滩,0.65
+forehead,额头,0.65
+forest,森林,0.85
+forest fire,森林大火,0.65
+forest floor,森林地面,0.65
+forest path,森林小路,0.65
+forest road,森林公路,0.65
+forge,锻造,0.65
+fork,餐叉,0.73
+forklift,叉车,0.65
+form,表格,0.8
+formal garden,园林,0.65
+formation,队列/形成物,0.65
+formula 1,F1方程式赛车,0.65
+fort,堡垒,0.65
+fortification,碉堡,0.65
+forward,追逐,0.65
+fossil,化石,0.65
+foundation,粉底,0.65
+fountain,喷泉,0.9
+fountain pen,钢笔,0.65
+fox,狐狸,0.89
+frame,框架,0.8
+freckle,雀斑,0.65
+highway,高速公路,0.9
+lorry,卡车,0.65
+French,法国,1
+French bulldog,法国斗牛犬,0.65
+French fries,薯条,0.65
+French toast,法式吐司,0.65
+freshener,化妆水,0.65
+fridge,冰箱,0.9
+fried chicken,炸鸡,0.65
+fried egg,煎蛋,0.65
+fried rice,炒饭,0.65
+friendship,友谊,0.65
+frisbee,飞盘,0.89
+frog,青蛙,0.89
+frost,霜,0.65
+frosting,结霜,0.65
+frosty,严寒,0.65
+frozen,结冰,0.8
+fruit,水果,0.75
+fruit cake,水果蛋糕,0.65
+fruit dish,水果盘,0.65
+fruit market,水果市场,0.65
+fruit salad,水果沙拉,0.65
+fruit stand,水果摊,0.65
+fruit tree,果树,0.65
+fruits shop,水果商店,0.65
+fry,油炸食品,0.8
+frying pan,煎锅,0.65
+fudge,软糖,0.65
+fuel,燃料,0.65
+fume hood,吸烟罩,0.65
+fun,有趣的,0.8
+funeral,葬礼,0.65
+fungi,真菌,0.65
+funnel,漏斗,0.65
+fur,毛皮衣服,0.65
+fur coat,毛皮大衣,0.65
+furniture,家具,0.8
+futon,蒲团,0.65
+gadget,小工具,0.65
+muzzle,枪口,0.65
+galaxy,星云/星系,0.8
+gallery,美术馆,0.8
+game,游戏,0.8
+game board,游戏棋盘,0.65
+game controller,游戏手柄,0.65
+ham,火腿,0.88
+gang,团伙,0.65
+garage,车库,0.8
+garage door,车库门,0.65
+garage kit,手工模型,0.65
+garbage,垃圾,0.8
+garden,花园,0.85
+garden asparagus,花园芦笋,0.65
+garden hose,橡胶软管,0.65
+garden spider,花园蜘蛛,0.65
+gardener,园丁,0.65
+gardening,园艺,0.65
+garfield,加菲猫,0.65
+gargoyle,滴水嘴,0.65
+wreath,花环,0.8
+garlic,大蒜,0.65
+garment,衣服,0.65
+gas,气体,0.8
+gas station,加油站,0.9
+gas stove,煤气炉,0.57
+gasmask,防毒面具,0.65
+collect,收集,0.8
+gathering,聚集,0.65
+gauge,测量仪器,0.65
+gazebo,露台,0.65
+gear,齿轮,0.8
+gecko,壁虎,0.65
+geisha,艺妓,0.65
+gel,凝胶,0.65
+general store,百货商店,0.65
+generator,发电机,0.65
+geranium,天竺葵,0.65
+ghost,幽灵,0.65
+gift,礼物,0.8
+gift bag,礼品袋,0.65
+gift basket,礼品篮,0.65
+gift box,礼物盒,0.8
+gift card,礼品卡,0.65
+gift shop,礼品商店,0.65
+gift wrap,礼物包装,0.65
+gig,演唱会,0.65
+gin,杜松子酒,0.65
+ginger,姜,0.65
+gingerbread,姜饼,0.65
+gingerbread house,姜饼屋,0.65
+ginkgo tree,银杏树,0.65
+giraffe,长颈鹿,0.9
+girl,女孩,0.8
+give,给,0.8
+glacier,冰川,0.79
+gladiator,角斗士,0.65
+glass bead,玻璃珠,0.65
+glass bottle,玻璃瓶,0.8
+glass bowl,玻璃碗,0.65
+glass box,玻璃箱,0.65
+glass building,玻璃建筑,0.65
+glass door,玻璃门,0.65
+glass floor,玻璃地板,0.65
+glass house,玻璃屋,0.65
+glass jar,玻璃罐,0.65
+glass plate,玻璃板,0.65
+glass table,玻璃桌子,0.65
+glass vase,玻璃花瓶,0.65
+glass wall,玻璃墙,0.65
+glass window,玻璃窗,0.8
+glasses,眼镜,0.65
+glaze,光滑面,0.65
+glider,滑翔机,0.65
+earth,地球,0.8
+glove,手套,0.89
+glow,发光,0.8
+glue pudding,汤圆,0.65
+go,去,0.8
+go for,袭击,0.65
+goal,球门,0.8
+goalkeeper,守门员,0.65
+goat,山羊,0.81
+goat cheese,羊奶酪,0.65
+gobi,戈壁,0.65
+goggles,护目镜/墨镜,0.65
+gold,黄金,0.8
+gold medal,金牌,0.65
+Golden Gate Bridge,金门大桥,0.65
+golden retriever,金毛猎犬,0.65
+goldfish,金鱼,0.65
+golf,高尔夫运动,0.89
+golf cap,高尔夫球帽,0.65
+golf cart,高尔夫球车,0.65
+golf club,高尔夫球杆,0.65
+golf course,高尔夫球场,0.65
+golfer,高尔夫球手,0.65
+goose,鹅,0.89
+gorilla,大猩猩,0.84
+gothic,哥特式,0.65
+gourd,葫芦,0.65
+government,政府,0.65
+government agency,政府机构,0.65
+gown,礼服,0.8
+graduate,毕业生,0.65
+graduation,毕业典礼,0.9
+grain,谷物,0.65
+grampus,逆戟鲸,0.65
+grand prix,大奖赛,0.65
+grandfather,祖父,0.65
+grandmother,祖母,0.65
+grandparent,祖父母,0.65
+granite,花岗岩,0.65
+granola,格兰诺拉麦片,0.65
+grape,葡萄,0.89
+grapefruit,西柚,0.65
+wine,葡萄酒,0.8
+grass,草,0.83
+grasshopper,蚱蜢,0.65
+grassland,草原,0.65
+grassy,长满草的,0.8
+grater,擦菜器,0.65
+grave,坟墓,0.65
+gravel,碎石,0.72
+gravestone,墓碑,0.65
+gravy,肉汁,0.65
+gravy boat,调味汁瓶,0.65
+gray,灰色,0.8
+graze,吃草,0.8
+grazing,放牧,0.65
+green,绿色,0.8
+greenery,绿色植物,0.65
+greet,欢迎,0.65
+greeting,问候,0.65
+greeting card,贺卡,0.8
+greyhound,灰狗,0.65
+grid,网格,0.65
+griddle,筛子,0.65
+grill,烧烤架,0.8
+grille,格栅,0.65
+grilled eel,烤鳗鱼,0.65
+grind,磨,0.65
+grinder,研磨机,0.65
+grits,粗燕麦粉,0.65
+grocery bag,杂货袋,0.65
+grotto,洞穴,0.65
+ground squirrel,地松鼠,0.65
+group,群体,1
+group photo,合影,0.65
+grove,小树林,0.65
+grow,生长,0.8
+guacamole,牛油果酱,0.65
+guard,警卫,0.65
+guard dog,看门狗,0.65
+guest house,宾馆,0.65
+guest room,客房,0.65
+guide,指南,0.8
+guinea pig,豚鼠,0.65
+guitar,吉他,0.9
+guitarist,吉他手,0.65
+gulf,海湾,0.65
+gull,海鸥,0.89
+gun,枪,0.65
+gundam,高达,0.65
+gurdwara,谒师所,0.65
+guzheng,古筝,0.65
+gym,健身房,0.9
+gymnast,体操运动员,0.65
+habitat,栖息地,0.65
+hacker,黑客,0.65
+hail,冰雹,0.65
+hair,头发,0.8
+hair color,头发颜色,0.65
+hair spray,发胶,0.65
+hairbrush,毛刷,0.65
+haircut,发型,0.65
+hairgrip,发夹,0.65
+hairnet,发网,0.65
+hairpin,发夹,0.65
+hairstyle,发型,0.8
+half,一半,0.8
+hall,礼堂,0.65
+halloween,万圣节,0.69
+halloween costume,万圣节服装,0.8
+halloween pumpkin,万圣节南瓜,0.65
+halter top,露背装,0.65
+hamburg,汉堡,0.65
+hamburger,汉堡包,0.9
+hami melon,哈密瓜,0.65
+hammer,锤子,0.65
+hammock,吊床,0.65
+hamper,阻碍,0.65
+hamster,仓鼠,0.71
+hand dryer,烘手机,0.65
+hand glass,放大镜,0.65
+hand towel,擦手巾,0.65
+handbag,手提包,0.88
+handball,手球,0.65
+handcuff,手铐,0.65
+handgun,手枪,0.65
+handkerchief,手帕,0.65
+handle,把手,0.8
+handsaw,手锯,0.65
+handshake,握手,0.65
+handstand,倒立,0.65
+handwriting,手写,0.85
+hanfu,汉服,0.65
+hang,悬挂,0.8
+hangar,飞机库,0.65
+hanger,衣架,0.65
+happiness,幸福,0.65
+harbor,海港,0.8
+harbor seal,斑海豹,0.65
+hard rock artist,硬摇滚艺术家,0.65
+hardback book,精装书,0.65
+safety helmet,建筑工人,0.65
+hardware,硬件,0.65
+hardware store,五金店,0.65
+hardwood,硬木,0.65
+hardwood floor,硬木地板,0.65
+mouth organ,口琴,0.65
+pipe organ,管风琴,0.65
+harpsichord,羽管键琴,0.65
+harvest,收获,0.65
+harvester,收割机,0.65
+hassock,坐垫/搁脚凳/草丛,0.65
+hat,帽子,0.87
+hatbox,帽盒,0.65
+hautboy,双簧管,0.65
+hawthorn,山楂,0.65
+hay,干草,0.65
+hayfield,干草地,0.65
+hazelnut,榛子,0.65
+head,头,0.8
+head coach,主教练,0.65
+headlight,大灯,0.65
+headboard,床头板,0.65
+headdress,头饰,0.65
+headland,海岬,0.65
+headquarter,总部,0.65
+hearing,听力,0.65
+heart,心脏,0.8
+heart shape,心形,0.65
+heat,热能,0.65
+heater,加热器,0.65
+heather,帚石楠,0.65
+hedge,树篱,0.65
+hedgehog,刺猬,0.9
+heel,脚后跟,0.8
+helicopter,直升机,0.9
+heliport,直升机机场,0.65
+helmet,头盔,0.8
+help,帮助,0.8
+hen,母鸡,0.65
+henna,指甲花,0.65
+herb,药草,0.8
+herd,兽群,0.8
+hermit crab,寄居蟹,0.65
+hero,英雄,0.8
+heron,苍鹭,0.65
+hibiscus,芙蓉花,0.65
+hibiscus flower,芙蓉花,0.65
+hide,隐藏/隐蔽处,0.65
+high bar,高杠,0.65
+high heel,高跟鞋,0.65
+highland,高地,0.65
+highlight,突出,0.65
+hike,徒步旅行,0.8
+hiker,徒步旅行者,0.8
+hiking boot,徒步靴,0.65
+hiking equipment,登山设备,0.65
+hill,山丘,0.8
+hill country,丘陵地,0.65
+hill station,别墅,0.65
+hillside,山坡,0.65
+hindu temple,印度教寺庙,0.65
+hinge,铰链,0.65
+hip,臀部,0.65
+hip hop artist,嘻哈艺人,0.65
+hippo,河马,0.65
+historian,历史学家,0.65
+historic,历史遗迹,0.8
+history,历史,0.8
+hockey,曲棍球,0.65
+hockey arena,冰球馆,0.65
+hockey game,曲棍球比赛,0.65
+hockey player,曲棍球运动员,0.65
+hockey stick,曲棍球棒,0.65
+hoe,锄头,0.65
+hole,洞,0.8
+vacation,假日,0.8
+holly,冬青树,0.65
+holothurian,海参,0.65
+home,家/住宅,0.8
+home appliance,家用电器,0.65
+home base,基地,0.65
+home decor,家居装饰,0.8
+home interior,室内设计,0.65
+home office,内政部,0.8
+home theater,家庭影院,0.65
+homework,家庭作业,0.65
+hummus,鹰嘴豆泥,0.65
+honey,蜂蜜,0.65
+beehive,蜂窝,0.65
+honeymoon,蜜月,0.65
+hood,风帽,0.8
+hoodie,连帽衫,0.8
+hook,挂钩/勾住,0.65
+jump,跳,0.8
+horizon,地平线,0.65
+hornbill,犀鸟,0.65
+horned cow,长角牛,0.65
+hornet,大黄蜂,0.65
+horror,震惊,0.65
+horror film,恐怖电影,0.65
+horse blanket,马鞍褥,0.65
+horse cart,马车,0.65
+horse farm,马场,0.65
+horse ride,骑马,0.65
+horseback,马背,0.65
+horseshoe,马蹄铁,0.65
+hose,软管,0.65
+hospital,医院,0.8
+hospital bed,医院病床,0.65
+hospital room,病房,0.65
+host,主持人,0.65
+inn,小旅馆,0.8
+hot,热,0.8
+hot air balloon,热气球,0.65
+hot dog,热狗,0.85
+hot sauce,辣椒酱,0.65
+hot spring,温泉,0.65
+hotel,旅馆,0.8
+hotel lobby,酒店大堂,0.65
+hotel room,酒店房间,0.89
+hotplate,电炉,0.65
+hourglass,沙漏,0.65
+house,房子,0.9
+house exterior,房子外部,0.8
+houseplant,室内植物,0.65
+hoverboard,悬滑板,0.65
+howler,吼,0.65
+huddle,蜷缩,0.65
+hug,拥抱,0.8
+hula hoop,呼啦圈,0.65
+person,人,0.86
+humidifier,增湿器,0.65
+hummingbird,蜂鸟,0.77
+humpback whale,座头鲸,0.65
+hunt,打猎,0.65
+hunting lodge,狩猎小屋,0.65
+hurdle,障碍,0.65
+hurricane,飓风,0.65
+husky,哈士奇,0.65
+hut,小屋,0.65
+hyaena,鬣狗,0.65
+hybrid,混合物,0.65
+hydrangea,绣球花,0.65
+hydrant,消火栓,0.9
+seaplane,水上飞机,0.65
+ice,冰,0.8
+ice bag,冰袋,0.65
+polar bear,北极熊,0.65
+ice cave,冰洞,0.65
+icecream,冰淇淋,0.9
+ice cream cone,冰淇淋蛋卷,0.65
+ice cream parlor,冰淇淋商店,0.65
+ice cube,冰块,0.65
+ice floe,浮冰,0.65
+ice hockey player,冰球运动员,0.65
+ice hockey team,冰球队,0.65
+lollipop,棒棒糖,0.65
+ice maker,制冰机,0.65
+rink,溜冰场,0.65
+ice sculpture,冰雕,0.65
+ice shelf,冰架,0.65
+skate,溜冰鞋,0.65
+ice skating,滑冰,0.65
+iceberg,冰山,0.65
+icicle,冰柱,0.65
+icing,糖衣/酥皮,0.65
+icon,图标,0.8
+id photo,身份证照片,0.65
+identity card,身份证,0.65
+igloo,冰屋,0.65
+light,光/灯光/光线,0.9
+iguana,鬣蜥蜴,0.65
+illuminate,照亮,0.65
+illustration,插图,0.8
+image,形象,0.8
+impala,黑斑羚,0.65
+incense,熏香,0.65
+independence day,独立日,0.65
+individual,个人,0.65
+indoor,室内,0.8
+indoor rower,划船器,0.65
+induction cooker,电磁炉,0.65
+industrial area,工业区,0.65
+industry,工业,0.65
+infantry,步兵,0.65
+inflatable boat,充气艇,0.65
+information desk,服务台,0.65
+infrastructure,基础设施,0.65
+ingredient,成分,0.8
+inhalator,吸入器,0.65
+injection,注射,0.65
+injury,受伤,0.65
+ink,墨水,0.65
+inking pad,印泥,0.65
+inlet,小湖湾,0.65
+inscription,题词,0.8
+insect,昆虫,0.65
+install,安装,0.65
+instrument,乐器/器械,0.8
+insulated cup,绝缘杯,0.65
+interaction,互动,0.65
+interior design,室内设计,0.8
+website,网站,0.8
+intersection,十字路口,0.8
+interview,面试,0.65
+invertebrate,无脊椎动物,0.65
+invitation,邀请,0.65
+ipad,平板电脑,0.65
+iphone,苹果手机,0.8
+ipod,苹果音乐播放器,0.65
+iris,虹膜,0.65
+iron,铁,0.65
+ironing board,熨衣板,0.65
+irrigation system,灌溉系统,0.65
+island,岛,0.89
+islet,小岛,0.65
+isopod,等足类动物,0.65
+ivory,象牙,0.65
+ivy,常青藤,0.65
+izakaya,居酒屋,0.65
+jack,千斤顶,0.65
+jackcrab,帝王蟹/蟹,0.65
+jacket,夹克衫,0.8
+jacuzzi,按摩浴缸,0.65
+jade,玉,0.65
+jaguar,美洲虎,0.65
+jail cell,监狱牢房,0.65
+jam,果酱,0.65
+japanese garden,日式花园,0.65
+jasmine,茉莉花,0.65
+jaw,下巴,0.65
+jay,松鸦,0.65
+jazz,爵士乐,0.65
+jazz artist,爵士乐艺术家,0.65
+jazz fusion artist,爵士融合艺术家,0.65
+jeans,牛仔裤,0.8
+jeep,吉普车,0.65
+jelly,果冻,0.65
+jelly bean,果冻豆,0.65
+jellyfish,水母,0.75
+jet,喷气式飞机,0.8
+motorboat,摩托艇,0.65
+jewel,珠宝,0.8
+jewellery,珠宝,0.88
+jewelry shop,珠宝店,0.65
+jigsaw puzzle,拼图游戏,0.65
+rickshaw,人力车,0.65
+jockey,赛马骑师,0.65
+jockey cap,赛马帽,0.65
+jog,慢跑,0.65
+joint,联合的,0.65
+journalist,记者,0.65
+joystick,操纵杆,0.65
+judge,法官,0.65
+jug,水壶,0.65
+juggle,玩杂耍,0.65
+juice,果汁,0.65
+juicer,榨汁器,0.65
+jujube,枣子,0.65
+jump rope,跳绳,0.65
+jumpsuit,连身裤,0.65
+jungle,丛林,0.8
+junkyard,废品堆放场,0.65
+kale,羽衣甘蓝,0.65
+kaleidoscope,万花筒,0.65
+kangaroo,袋鼠,0.88
+karaoke,卡拉ok,0.65
+karate,空手道,0.65
+karting,卡丁车运动,0.65
+kasbah,旧城区,0.65
+kayak,皮船,0.65
+kebab,烤肉串,0.65
+key,按键/钥匙,0.65
+keycard,门卡,0.65
+khaki,卡其色,0.65
+kick,踢,0.8
+kilt,苏格兰裙,0.65
+kimono,和服,0.82
+kindergarden classroom,幼儿园教室,0.65
+kindergarten,幼儿园,0.65
+king,国王,0.8
+king crab,帝王蟹,0.65
+kiss,亲吻,0.8
+kit,工具包,0.65
+kitchen,厨房,0.9
+kitchen cabinet,厨房橱柜,0.65
+kitchen counter,厨房台面,0.65
+kitchen floor,厨房地板,0.65
+kitchen hood,厨房抽油烟机,0.65
+kitchen island,厨房岛,0.65
+kitchen sink,厨房水槽,0.65
+kitchen table,厨房桌子,0.65
+kitchen utensil,厨房用具,0.65
+kitchen window,厨房窗户,0.65
+kitchenware,厨房用具,0.65
+kite,风筝,0.83
+kiwi,猕猴桃,0.65
+knee pad,护膝,0.65
+kneel,跪下,0.92
+knife,餐刀,0.89
+rider,骑手,0.8
+knit,编织,0.8
+knitting needle,编织针,0.65
+knob,球形把手,0.65
+knocker,门环,0.65
+knot,结,0.65
+koala,考拉,0.75
+koi,锦鲤,0.65
+ktv,ktv,0.65
+laboratory,实验室,0.65
+lab coat,实验室外套,0.65
+label,标签,0.8
+labrador,拉布拉多,0.65
+maze,迷宫,0.65
+lace,网眼织物,0.8
+lace dress,蕾丝连衣裙,0.65
+ladder,梯子,0.65
+ladle,长柄杓,0.65
+ladybird,瓢虫,0.85
+lagoon,环礁湖,0.65
+lake,湖泊,0.8
+lake district,湖区,0.65
+lake house,湖边小屋,0.65
+lakeshore,湖岸,0.65
+lamb,羊肉,0.65
+lamb chop,羊排,0.65
+lamp post,灯柱,0.65
+lamp shade,灯罩,0.65
+spear,矛,0.65
+land,土地,0.8
+land vehicle,陆地车辆,0.65
+landfill,废物填埋,0.65
+landing,着陆,0.65
+landing deck,降落甲板,0.65
+landmark,地标,0.65
+landscape,风景,0.8
+landslide,山崩,0.65
+lanyard,挂带,0.65
+lantern,灯笼,0.87
+lap,腿/大腿,0.65
+laptop,笔记本电脑,0.79
+laptop keyboard,笔记本键盘,0.65
+larva,幼体,0.65
+lasagne,烤宽面条,0.65
+laser,激光,0.65
+lash,睫毛,0.65
+lasso,套索,0.65
+latch,门闩,0.65
+latex,乳胶,0.65
+latte,拿铁咖啡,0.65
+laugh,笑,0.65
+launch,发射,0.8
+launch event,发布会,0.65
+launch party,举办会议,0.65
+laundromat,自助洗衣店,0.65
+laundry,洗衣房,0.65
+laundry basket,洗衣篮,0.65
+laundry room,洗衣房,0.65
+lava,熔岩,0.65
+lavender,薰衣草,0.83
+lawn,草坪,0.8
+lawn wedding,草坪婚礼,0.65
+lawyer,律师,0.65
+lay,躺,0.8
+lead,引领,0.8
+lead singer,主唱,0.65
+lead to,通向,0.7
+leader,领袖,0.65
+leak,泄漏,0.65
+lean,倾斜/倚靠,0.8
+learn,学习,0.65
+leash,皮带,0.65
+leather,皮革,0.8
+leather jacket,皮夹克,0.8
+leather shoe,皮鞋,0.65
+speech,演讲,0.8
+lecture hall,演讲厅,0.65
+lecture room,教学室,0.65
+ledge,窗台,0.65
+leftover,剩饭,0.65
+leg,腿,0.9
+legend,传说,0.8
+legging,紧身裤/秋裤,0.65
+legislative chamber,立法院,0.65
+lego,乐高,0.65
+legume,豆类,0.65
+lemon,柠檬,0.7
+lemon juice,柠檬汁,0.65
+lemonade,柠檬水,0.65
+lemur,狐猴,0.65
+lens,镜头,0.65
+lens flare,眩光,0.65
+lentil,扁豆,0.65
+leopard,豹,0.87
+leotard,紧身连衣裤,0.65
+tights,紧身裤袜,0.65
+leprechaun,小妖精,0.65
+lesson,课程,0.65
+letter,信函,0.8
+mailbox,信箱,0.82
+letter logo,信的标志,0.65
+lettering,刻字,0.8
+lettuce,生菜,0.65
+level,水平,0.65
+library,图书馆,0.9
+license,许可证,0.65
+license plate,车牌,0.65
+lichen,地衣,0.65
+lick,舔,0.65
+lid,盖子,0.65
+lie,躺着,1
+life belt,安全带,0.65
+life jacket,救生衣,0.65
+lifeboat,救生艇,0.65
+lifeguard,救生员,0.65
+lift,提起,0.65
+light fixture,灯具,0.65
+light show,灯光秀,0.65
+light switch,电灯开关,0.65
+lighting,照明/照明设备,0.8
+lightning,闪电,0.64
+lightning rod,避雷针,0.65
+lilac,淡紫色,0.65
+lily,百合,0.63
+limb,肢体,0.65
+lime,石灰,0.65
+limestone,石灰石,0.65
+limo,豪华轿车,0.65
+line,线条,0.8
+line art,艺术线条,0.65
+line up,排队,0.65
+linen,亚麻,0.65
+liner,邮轮,0.65
+lion,狮子,0.76
+lip balm,润唇膏,0.65
+lipstick,口红,0.65
+liquid,液体,0.65
+liquor store,酒类商店,0.65
+list,列表,0.8
+litchi,荔枝,0.65
+live,生活,0.8
+livestock,家畜,0.65
+living room,客厅,0.8
+living space,生活空间,0.65
+lizard,蜥蜴,0.75
+load,负载,0.65
+loading dock,装卸码头,0.65
+loafer,游手好闲的人,0.65
+hallway,走廊,0.8
+locate,定位,0.65
+lock,锁,0.65
+lock chamber,闸室,0.65
+locker,储物柜,0.65
+loft,阁楼,0.8
+log,原木,0.65
+log cabin,小木屋,0.65
+logo,标志,0.8
+loki,洛基,0.65
+long hair,长头发,0.65
+longboard,冲浪板,0.65
+loom,隐约显现/织布机,0.65
+loop,环状,0.65
+lose,遗失,0.65
+lottery,彩票,0.65
+lotus,莲花,0.65
+love,爱,0.8
+loveseat,双人沙发,0.65
+luggage,行李,0.87
+lumber,木材,0.65
+lumberjack,伐木工人,0.65
+lunch,午餐,0.8
+lunch box,午餐盒,0.65
+lush,郁郁葱葱的,0.65
+luxury,奢侈品,0.65
+luxury yacht,豪华游艇,0.65
+mac,雨衣,0.65
+macadamia,澳洲胡桃,0.65
+macaque,短尾猿,0.65
+macaroni,通心粉,0.65
+macaw,金刚鹦鹉,0.65
+machete,弯刀,0.65
+machine,机器,0.8
+machine gun,机枪,0.65
+magazine,杂志,0.8
+magic,魔法,0.65
+magician,魔术师,0.65
+magnet,磁铁,0.65
+magnifying glass,放大镜,0.65
+magnolia,木兰花,0.65
+magpie,喜鹊,0.65
+mahjong,麻将,0.65
+mahout,象夫,0.65
+maid,女仆,0.65
+chain mail,邮件,0.65
+mail slot,邮件槽,0.65
+make,制作,0.8
+makeover,改造,0.65
+makeup artist,化妆师,0.65
+makeup tool,化妆工具,0.65
+mallard,野鸭,0.65
+mallard duck,野鸭,0.65
+mallet,槌棒,0.65
+mammal,哺乳动物,0.65
+mammoth,猛犸象,0.65
+man,男人,0.8
+management,管理,0.65
+manager,经理,0.8
+manatee,海牛,0.65
+mandala,曼荼罗,0.65
+mandarin orange,橘子,0.65
+mandarine,普通话,0.65
+mane,鬃毛,0.65
+manga,漫画,0.8
+manger,食槽,0.65
+mango,芒果,0.82
+mangosteen,山竹果,0.65
+mangrove,红树林,0.65
+manhattan,曼哈顿,0.65
+manhole,检修孔,0.65
+manhole cover,井盖,0.65
+manicure,修指甲,0.8
+mannequin,人体模型,0.89
+manor house,庄园主宅,0.65
+mansion,大厦,0.8
+mantid,螳螂,0.65
+mantle,地幔,0.65
+manufactured home,活动房层,0.65
+manufacturing,制造业,0.65
+manuscript,手稿,0.65
+map,地图,0.9
+maple,枫木,0.65
+maple leaf,枫叶,0.65
+maple syrup,枫糖浆,0.65
+maraca,沙球,0.65
+marathon,马拉松,0.65
+marble,大理石,0.65
+march,行进,0.8
+marching band,行进乐队,0.65
+mare,母马,0.65
+marigold,金盏花,0.65
+marine,水兵,0.65
+marine invertebrate,海洋无脊椎动物,0.65
+marine mammal,海洋哺乳动物,0.65
+puppet,木偶,0.65
+mark,标志,0.65
+market,集市,0.8
+market square,市场广场,0.65
+market stall,市场摊位,0.65
+marriage,结婚,0.65
+martial,武术,0.65
+martial artist,武术家,0.65
+martial arts gym,武术馆,0.65
+martini,马提尼,0.65
+martini glass,马丁尼酒杯,0.65
+mascara,睫毛膏,0.65
+mascot,吉祥物,0.8
+mashed potato,土豆泥,0.65
+masher,搅碎机,0.65
+mask,面具/口罩,0.9
+massage,按摩,0.65
+mast,桅杆,0.65
+mat,地垫,0.65
+matador,斗牛士,0.65
+match,比赛,0.8
+matchbox,火柴盒,0.65
+material,衣料,0.65
+mattress,床垫,0.9
+mausoleum,陵墓,0.65
+maxi dress,长裙,0.65
+meal,一餐,0.8
+measuring cup,量杯,0.65
+measuring tape,卷尺,0.65
+meat,肉类,0.8
+meatball,肉丸,0.65
+mechanic,机械师,0.65
+mechanical fan,机械风扇,0.65
+medal,奖牌,0.65
+media,媒体,0.8
+medical equipment,医疗设备,0.65
+medical image,医学图像,0.65
+medical staff,医务人员,0.65
+medicine cabinet,医药箱,0.65
+medieval,中世纪的,0.8
+medina,麦地那市,0.65
+meditation,冥想,0.65
+meerkat,猫鼬,0.65
+meet,赛事,0.65
+melon,香瓜,0.65
+monument,纪念碑,0.9
+menu,菜单,0.8
+mermaid,美人鱼,0.65
+net,网,0.73
+mess,肮脏,0.65
+messenger bag,信使袋,0.65
+metal,金属,0.8
+metal artist,金属艺术家,0.65
+metal detector,金属探测器,0.65
+meter,计量器,0.65
+mezzanine,中层楼,0.65
+microphone,麦克风,0.86
+microscope,显微镜,0.65
+microwave,微波炉,0.9
+midnight,午夜,0.65
+milestone,里程碑,0.65
+military uniform,军装,0.65
+milk,牛奶,0.65
+milk can,牛奶罐,0.65
+milk tea,奶茶,0.65
+milkshake,奶昔,0.65
+mill,磨坊,0.65
+mine,矿井,0.65
+miner,矿工,0.65
+mineral,矿物质,0.65
+mineral water,矿泉水,0.65
+miniskirt,迷你,0.65
+miniature,微缩模型,0.65
+minibus,面包车,0.65
+minister,部长,0.65
+minivan,小型货车,0.65
+mint,薄荷,0.65
+mint candy,薄荷糖,0.65
+mirror,镜子,0.9
+miss,小姐,0.65
+missile,投掷物,0.65
+mission,任务,0.65
+mistletoe,槲寄生,0.65
+mix,混合,0.8
+mixer,搅拌机,0.65
+mixing bowl,搅拌碗,0.65
+mixture,混合物,0.65
+moat,护城河,0.65
+mobility scooter,电动踏板车,0.65
+model,模型/模特,0.8
+model car,汽车模型,0.65
+modern,现代,0.8
+modern tower,现代大厦,0.65
+moisture,潮湿,0.65
+mold,模具,0.65
+molding,模具,0.65
+mole,鼹鼠,0.65
+monarch,君主,0.8
+money,钱,0.8
+monitor,监控器,0.9
+monk,和尚,0.65
+monkey,猴子,0.9
+monkey wrench,活动扳手,0.65
+monochrome,黑白照片,0.65
+monocycle,独轮脚踏车,0.65
+monster truck,怪物卡车,0.65
+moon,月亮,0.86
+moon cake,月饼,0.65
+moonlight,月光,0.65
+moor,沼泽,0.65
+moose,驼鹿,0.65
+swab,拖把,0.65
+moped,助力车,0.65
+morning,早晨,0.8
+morning fog,晨雾,0.65
+morning light,晨光,0.65
+morning sun,朝阳,0.65
+mortar,砂浆,0.65
+mosaic,马赛克,0.65
+mosque,清真寺,0.86
+mosquito,蚊子,0.65
+moss,藓类植物,0.8
+motel,汽车旅馆,0.8
+moth,蛾,0.65
+mother,母亲,0.8
+motherboard,主板,0.65
+motif,主题,0.65
+sport,动作,0.8
+motor,电动机,0.65
+motorbike,摩托车,0.65
+motorcycle,摩托车,0.69
+motorcycle helmet,摩托车头盔,0.65
+motorcycle racer,摩托车赛车手,0.65
+motorcyclist,骑摩托车的人,0.65
+motorsport,赛车运动,0.65
+mound,土堆,0.65
+mountain,山,0.88
+mountain bike,山地自行车,0.65
+mountain biker,山地自行车员,0.65
+mountain biking,山地自行车运动,0.65
+mountain gorilla,山地大猩猩,0.65
+mountain lake,山湖,0.65
+mountain landscape,山景观,0.65
+mountain pass,山口,0.65
+mountain path,山路,0.65
+mountain range,山脉,0.8
+mountain river,山区河流,0.65
+mountain snowy,山雪,0.65
+mountain stream,山间溪流,0.65
+mountain view,山景城,0.65
+mountain village,山村,0.65
+mountaineer,登山者,0.65
+mountaineering bag,登山包,0.65
+mouse,鼠标/鼠,0.72
+mousepad,鼠标垫,0.65
+mousetrap,捕鼠器,0.65
+mouth,嘴,0.8
+mouthwash,漱口水,0.65
+move,移动,0.8
+movie poster,电影海报,0.8
+movie ticket,电影票,0.65
+mower,割草机,0.65
+mp3 player,mp3播放器,0.65
+mr,先生,0.65
+mud,泥,0.65
+muffin,松饼,0.65
+mug,马克杯,0.9
+mulberry,桑树,0.65
+mulch,覆盖物,0.65
+mule,骡子,0.65
+municipality,直辖市,0.65
+mural,壁画,0.8
+muscle,肌肉,0.65
+muscle car,肌肉车,0.65
+museum,博物馆,0.9
+mushroom,蘑菇,0.9
+music,音乐,0.8
+music festival,音乐节,0.8
+music stool,音乐凳子,0.65
+music studio,音乐工作室,0.65
+music video performer,音乐录影带表演者,0.65
+musical keyboard,音乐键盘,0.65
+musician,音乐家,0.8
+mussel,贻贝,0.65
+mustard,芥末,0.65
+mythology,神话,0.65
+nacho,烤干酪辣味玉米片,0.65
+nail polish,指甲油,0.8
+nailfile,指甲锉,0.65
+nanny,保姆,0.65
+napkin,餐巾,0.65
+narrow,狭窄的,0.8
+national flag,国旗,0.65
+nativity scene,基督诞生的场景,0.65
+natural history museum,自然历史博物馆,0.65
+nature,自然,0.8
+nature reserve,自然保护区,0.65
+navigation,导航,0.65
+navratri,九夜节,0.65
+navy,海军,0.65
+nebula,星云,0.45
+neck,脖子,0.8
+neckband,围颈带/领口,0.65
+necklace,项链,0.88
+neckline,领口,0.65
+nectar,花蜜,0.65
+nectarine,油桃,0.65
+needle,针状物,0.65
+neighbor,邻居,0.65
+neighbourhood,与某处邻近的地区,0.65
+neon,霓虹灯,0.65
+neon light,霓虹灯,0.65
+nerve,神经,0.65
+nest,巢,0.65
+new year,新年,0.8
+newborn,新生的,0.8
+newfoundland,纽芬兰,0.65
+newlywed,新婚,0.65
+news,新闻,0.65
+news conference,记者招待会,0.8
+newsstand,报摊,0.65
+night,晚上,0.8
+night market,夜市,0.65
+night sky,夜空,0.8
+night view,夜景,0.51
+nightclub,夜总会,0.65
+nightstand,床头柜,0.65
+noodle,面条,0.8
+nose,鼻子,0.65
+noseband,鼻羁,0.65
+note,注解,0.8
+notebook,笔记本,0.8
+notepad,记事本,0.65
+notepaper,信纸,0.65
+notice,公告,0.65
+number icon,数字图标,0.65
+nun,修女,0.65
+nurse,护士,0.8
+nursery,托儿所,0.65
+nursing home,养老院,0.65
+nut,螺母,0.65
+nutcracker,胡桃夹子,0.65
+oak,橡木,0.65
+oak tree,橡树,0.65
+oar,桨,0.65
+oasis,绿洲,0.65
+oast house,烘干室,0.65
+oatmeal,燕麦片,0.65
+oats,燕麦,0.65
+obelisk,方尖塔,0.65
+observation tower,观察塔,0.65
+observatory,天文台,0.65
+obstacle course,超越障碍训练场,0.65
+sea,海洋,0.66
+octopus,章鱼,0.65
+offer,提供,0.8
+office,办公室,0.9
+office building,办公大楼,0.65
+office chair,办公椅,0.65
+office cubicle,办公室隔间,0.65
+office desk,办公桌,0.65
+office supply,办公用品,0.65
+office window,办公室的窗户,0.65
+officer,军官,0.65
+official,行政官员,0.8
+oil,石油,0.8
+oil lamp,油灯,0.65
+oil painting,油画,0.8
+oilrig,石油钻台,0.65
+okra,秋葵,0.65
+old photo,老照片,0.65
+olive,橄榄,0.65
+olive oil,橄榄油,0.65
+olive tree,橄榄树,0.65
+omelet,煎蛋卷,0.65
+onion,洋葱,0.65
+onion ring,洋葱圈,0.65
+opal,蛋白石,0.65
+open,开阔的/张开,0.8
+opening,开始,0.8
+opening ceremony,开幕式,0.65
+opera,歌剧,0.65
+opera house,歌剧院,0.65
+operate,操作,0.65
+operating room,手术室,0.65
+operation,操作,0.65
+optical shop,眼镜店,0.65
+orangutan,猩猩,0.65
+orange,橙子/橙色,0.81
+orange juice,橙汁,0.65
+orange tree,橙树,0.65
+orangery,橘园,0.65
+orbit,轨道,0.65
+orchard,果园,0.65
+orchestra pit,乐池,0.65
+orchid,兰花,0.65
+order,订单,0.8
+organization,组织,0.65
+origami,折纸,0.65
+ornament,点缀,0.8
+osprey,鱼鹰,0.65
+ostrich,鸵鸟,0.75
+otter,水獭,0.65
+out,外面的,0.65
+outcrop,露头,0.65
+outdoor,户外,0.8
+outhouse,厕所,0.65
+electric outlet,电源插头,0.65
+outline,大纲,0.8
+oval,椭圆形,0.65
+oven,烤箱,0.66
+overall,整体,0.65
+overcoat,大衣,0.65
+overpass,天桥,0.65
+owl,猫头鹰,0.65
+oyster,牡蛎,0.65
+teething ring,橡皮环,0.65
+pack,包裹,0.8
+package,包/包装/包裹,0.65
+paddock,围场,0.65
+police van,警车,0.65
+padlock,挂锁,0.65
+paella,肉菜饭,0.65
+pagoda,宝塔,0.9
+pain,疼痛,0.65
+paint brush,油漆刷,0.65
+painter,画家,0.8
+paisley bandanna,佩斯利印花大手帕,0.65
+palace,宫殿,0.65
+palette,调色板,0.65
+paling,栅栏,0.65
+pall,棺罩,0.65
+palm tree,棕榈树,0.9
+pan,平底锅,0.8
+pancake,煎饼,0.65
+panda,熊猫,0.85
+panel,面板,0.8
+panorama,全景,0.65
+pansy,三色堇,0.65
+pant,喘息,0.8
+pantry,储藏室,0.65
+pants,裤子,0.65
+pantyhose,连裤袜,0.65
+papaya,木瓜,0.65
+paper,纸,0.9
+paper bag,纸袋,0.65
+paper cutter,切纸机,0.65
+paper lantern,纸灯笼,0.65
+paper plate,纸盘子,0.65
+paper towel,纸巾,0.65
+paperback book,平装书,0.65
+paperweight,压纸器,0.65
+parachute,降落伞,0.65
+parade,游行,0.8
+paradise,天堂,0.65
+parrot,鹦鹉,0.65
+paramedic,护理人员,0.65
+paraquet,长尾小鹦鹉,0.65
+parasail,滑翔伞,0.65
+paratrooper,伞兵,0.65
+parchment,羊皮纸,0.65
+parish,教区,0.65
+park,公园,0.8
+park bench,公园长椅,0.65
+parking,停车,0.65
+parking garage,停车场,0.65
+parking meter,停车费,0.81
+parking sign,停车标志,0.65
+parliament,议会,0.65
+parsley,欧芹/香菜,0.65
+participant,参与者,0.65
+partner,合作伙伴,0.65
+partridge,帕特里奇,0.65
+party,聚会,0.89
+party hat,派对帽,0.65
+pass,通过,0.8
+passage,通道,0.65
+passbook,存折,0.65
+passenger,乘客,0.8
+passenger ship,客船,0.65
+passenger train,旅客列车,0.65
+passion fruit,百香果,0.65
+passport,护照,0.79
+pasta,面食,0.75
+paste,粘贴,0.65
+pastry,糕点,0.65
+pasture,牧场,0.8
+patch,补丁,0.65
+patient,病人,0.67
+pattern,图案/款式,0.8
+pavement,人行道/硬路面,0.8
+pavilion,大帐篷,0.86
+paw,爪子,0.65
+pay,支付,0.65
+payphone,付费电话,0.65
+pea,豌豆,0.65
+peace,和平,0.65
+peach,桃子,0.65
+peacock,孔雀,0.81
+peak,山峰/尖顶,0.8
+peanut,花生,0.65
+peanut butter,花生酱,0.65
+pear,梨,0.9
+pearl,珍珠,0.65
+pebble,卵石,0.79
+pecan,山核桃,0.65
+pedestrian,行人,0.8
+pedestrian bridge,人行天桥,0.65
+pedestrian street,步行街,0.65
+peel,果皮,0.65
+peeler,削皮器,0.65
+pegboard,小钉板,0.65
+pegleg,木质腿,0.65
+pelican,鹈鹕,0.65
+pen,笔/围栏,0.65
+penalty kick,点球,0.65
+pencil,铅笔,0.65
+pencil case,铅笔盒,0.65
+pencil sharpener,卷笔刀,0.65
+pencil skirt,铅笔裙,0.65
+pendant,吊坠,0.8
+pendulum,钟摆,0.65
+penguin,企鹅,0.77
+peninsula,半岛,0.65
+pennant,锦标旗,0.65
+penny,便士,0.65
+piggy bank,储蓄罐,0.65
+peony,牡丹,0.65
+pepper,胡椒/辣椒,0.65
+pepper grinder,胡椒研磨机,0.65
+peppercorn,胡椒子,0.65
+pepperoni,意大利辣香肠,0.65
+perch,栖息/鲈鱼,0.8
+perform,表演,0.8
+performance,表演,0.8
+performance arena,表演舞台,0.65
+perfume,香水,0.74
+pergola,绿廊,0.65
+persian cat,波斯猫,0.65
+persimmon,柿子,0.65
+personal care,个人护理,0.65
+personal flotation device,个人漂浮装置,0.65
+pest,害虫,0.65
+pet,宠物,0.6
+pet shop,宠物店,0.65
+pet store,宠物店,0.65
+petal,花瓣,0.65
+petunia,佩妮,0.65
+church bench,教堂的长椅,0.65
+pheasant,野鸡,0.65
+phenomenon,现象,0.65
+philosopher,哲学家,0.65
+phone,电话,0.8
+phonebook,电话簿,0.65
+record player,留声机,0.65
+photo,照片,0.8
+photo booth,照相亭,0.65
+photo frame,相框,0.65
+photography,摄影,0.8
+physicist,物理学家,0.65
+physics laboratory,物理实验室,0.65
+pianist,钢琴家,0.65
+piano,钢琴,0.89
+plectrum,选择,0.8
+pick up,捡起,0.65
+pickle,泡菜,0.65
+picnic,野餐,0.88
+picnic area,野餐区,0.65
+picnic basket,野餐篮,0.65
+picnic table,野餐桌,0.65
+picture,图片,0.9
+picture frame,相框,0.75
+pie,馅饼,0.65
+pigeon,鸽子,0.65
+pilgrim,朝圣者,0.65
+tablet,药片,0.8
+pillow,枕头,0.6
+pilot,飞行员,0.65
+pilot boat,领航艇,0.65
+pin,别针,0.65
+pine,松树,0.9
+pine cone,松果,0.65
+pine forest,松林,0.65
+pine nut,松子,0.65
+pineapple,菠萝,0.84
+table tennis table,乒乓球桌,0.65
+table tennis,乒乓球,0.65
+pink,粉色,0.8
+pint,一品脱的量,0.65
+pipa,琵琶,0.65
+pipe,管子,0.8
+pipe bowl,管碗,0.65
+pirate,海盗,0.65
+pirate flag,海盗旗,0.65
+pirate ship,海盗船,0.65
+pistachio,阿月浑子,0.65
+ski slope,滑雪场,0.65
+pocket bread,口袋里的面包,0.65
+pitaya,火龙果,0.65
+pitbull,斗牛犬,0.65
+pitch,球场,0.8
+pitcher,大水罐,0.65
+pitcher plant,猪笼草,0.65
+pitchfork,干草叉,0.65
+pizza,披萨,0.9
+pizza cutter,披萨刀,0.65
+pizza pan,比萨锅,0.65
+pizzeria,披萨店,0.65
+placard,招牌,0.65
+place,地方,0.8
+place mat,餐具垫,0.65
+plaid,格子,0.8
+plain,平原,0.65
+plan,示意图,0.8
+planet,行星,0.8
+planet earth,行星地球,0.8
+plank,厚木板,0.65
+plant,植物,0.8
+plantation,种植园,0.65
+planting,种植,0.65
+plaque,匾额,0.65
+plaster,石膏,0.65
+plastic,塑料,0.8
+plasticine,橡皮泥,0.65
+plateau,高原,0.65
+platform,平台,0.85
+platinum,白金,0.65
+platter,大浅盘,0.65
+play,玩/演奏/运动,0.8
+play badminton,打羽毛球,0.65
+play baseball,打棒球,0.65
+play basketball,打篮球,0.65
+play billiard,玩台球,0.65
+play football,踢足球,0.65
+play pong,玩乒乓球,0.65
+play tennis,打网球,0.65
+play volleyball,打排球,0.65
+player,选手/运动员,0.8
+playground,操场,0.8
+playhouse,剧场,0.65
+playing card,扑克牌,0.65
+playing chess,下棋,0.65
+playing golf,打高尔夫球,0.65
+playing mahjong,打麻将,0.65
+playingfield,运动场,0.63
+playpen,护栏,0.65
+playroom,游戏室,0.65
+plaza,广场,0.65
+plier,钳子,0.7
+plot,故事情节,0.65
+plow,犁,0.65
+plug,插头,0.65
+plug hat,插头帽,0.65
+plum,李子,0.65
+plumber,水管工,0.65
+plumbing fixture,卫生洁具,0.65
+plume,羽毛,0.65
+plywood,夹板,0.65
+pocket,口袋,0.65
+pocket watch,怀表,0.65
+pocketknife,随身小折刀,0.65
+pod,圆荚体,0.65
+podium,乐队指挥台,0.8
+poetry,诗歌,0.65
+poinsettia,一品红,0.65
+point,指/朝向,0.8
+pointer,指针,0.65
+poker card,扑克卡,0.65
+poker chip,筹码,0.65
+poker table,扑克表,0.65
+pole,杆/柱,0.65
+polecat,臭猫,0.65
+police,警察,0.9
+police car,警车,0.9
+police dog,警犬,0.65
+police station,警察局,0.65
+politician,政治家,0.8
+polka dot,圆点,0.65
+pollen,花粉,0.65
+pollution,污染,0.65
+polo,马球,0.65
+polo neck,马球领,0.65
+polo shirt,马球衬衫,0.65
+pomegranate,石榴,0.84
+pomeranian,波美拉尼亚的,0.65
+poncho,雨披,0.65
+pond,池塘,0.8
+ponytail,马尾辫,0.65
+poodle,贵宾犬,0.81
+pool,池,0.8
+pop,流行,0.8
+pop artist,流行艺术家,0.8
+popcorn,爆米花,0.82
+pope,教皇,0.65
+poppy,罂粟,0.65
+porcelain,瓷,0.65
+porch,玄关,0.8
+pork,猪肉,0.65
+porridge,粥,0.65
+portable battery,便携式电池,0.65
+portal,门户网站,0.65
+portfolio,投资组合,0.65
+porthole,汽门,0.65
+portrait,肖像,0.8
+portrait session,肖像会话,0.65
+pose,摆姿势拍照,0.8
+possum,负鼠,0.65
+post,帖子,0.8
+post office,邮局,0.65
+stamp,邮票,0.88
+postcard,明信片,0.65
+poster,海报,0.8
+poster page,海报页,0.65
+pot,锅/罐/陶盆,0.7
+potato,土豆,0.65
+potato chip,土豆片,0.65
+potato salad,土豆沙拉,0.65
+potholder,布垫子,0.65
+potty,便壶,0.65
+pouch,袋,0.65
+poultry,家禽,0.65
+pound,英镑,0.65
+pour,倾泻,0.8
+powder,粉末,0.65
+power line,电源线,0.65
+power plugs and sockets,电源插头及插座,0.65
+power see,权力看,0.65
+power station,电站,0.65
+practice,练习,0.8
+Prague Castle,布拉格城堡,0.65
+prayer,祈祷,0.65
+preacher,牧师,0.65
+premiere,首映,0.8
+prescription,处方,0.65
+show,显示,1
+presentation,演讲,0.8
+president,总统,0.8
+press room,新闻发布室,0.65
+pressure cooker,高压锅,0.65
+pretzel,椒盐卷饼,0.65
+prince,王子,0.8
+princess,公主,0.8
+print,打印,0.8
+printed page,打印页面,0.65
+printer,打印机,0.74
+printing,印刷,0.65
+prison,监狱,0.65
+produce,农产品/生产,0.65
+product,产品,0.8
+profession,职业,0.65
+professional,专业的,0.8
+professor,教授,0.65
+project picture,项目图片,0.65
+projection screen,投影屏幕,0.65
+projector,投影仪,0.65
+prom,毕业舞会,0.65
+promenade,散步,0.65
+propeller,螺旋桨,0.65
+prophet,先知,0.65
+proposal,建议,0.65
+protective suit,防护服,0.65
+protest,抗议,0.8
+protester,抗议者,0.8
+publication,出版,0.65
+publicity portrait,宣传画像,0.65
+ice hockey,冰上曲棍球,0.65
+pudding,布丁,0.65
+puddle,水坑,0.65
+puff,泡芙,0.65
+puffin,角嘴海雀,0.65
+pug,哈巴狗,0.65
+pull,拉,0.8
+pulpit,讲坛,0.65
+pulse,脉冲,0.65
+pump,泵,0.65
+pumpkin,南瓜,0.85
+pumpkin pie,南瓜饼,0.65
+pumpkin seed,南瓜种子,0.65
+punch bag,拳击吊袋,0.65
+punch,拳头猛击/穿孔,0.65
+student,学生,0.8
+purple,紫色,0.8
+push,推,0.65
+putt,轻轻一击,0.65
+puzzle,谜题,0.65
+tower,塔,0.8
+pyramid,金字塔,0.65
+python,大蟒,0.65
+qr code,二维码,0.65
+quail,鹌鹑,0.65
+quarry,采石场,0.65
+quarter,季度,0.8
+quartz,石英,0.65
+queen,女王,0.8
+quesadilla,油炸玉米粉饼,0.65
+queue,队列,0.65
+quiche,乳蛋饼,0.65
+quilt,被子,0.65
+quilting,绗缝,0.65
+quote,引用,0.8
+rabbit,兔子,0.9
+raccoon,浣熊,0.86
+race,比赛,0.8
+race track,赛道,0.65
+raceway,水沟/跑道,0.8
+race car,赛车,0.8
+racket,球拍,0.65
+radar,雷达,0.65
+radiator,散热器,0.65
+radio,广播,0.65
+raft,木筏/橡皮艇,0.65
+rag doll,布娃娃,0.65
+rail,栏杆/铁轨,0.65
+railcar,轨道车,0.65
+railroad,铁道,0.64
+railroad bridge,铁路桥梁,0.65
+railway line,轨道线,0.65
+railway station,火车站,0.8
+rain,雨,0.8
+rain boot,雨靴,0.65
+rainbow,彩虹,0.87
+rainbow trout,虹鳟鱼,0.65
+raincoat,雨衣,0.65
+rainforest,热带雨林,0.8
+rainy,多雨的,0.8
+raisin,葡萄干,0.65
+rake,耙子,0.65
+ram,公羊,0.65
+ramp,斜坡,0.65
+rapeseed,油菜籽,0.65
+rapid,快速,0.65
+rapper,说唱歌手,0.65
+raspberry,树莓,0.65
+rat,老鼠,0.87
+ratchet,棘轮,0.65
+raven,乌鸦,0.65
+ravine,峡谷,0.65
+ray,雷,0.65
+razor,剃须刀,0.65
+razor blade,锋利的,0.65
+read,阅读,0.8
+reading,阅读材料,0.65
+reamer,钻孔器,0.65
+rear,后面,0.8
+rear light,尾灯,0.65
+rear view,后视图,0.65
+rearview mirror,后视镜,0.65
+receipt,收据,0.7
+receive,收到,0.65
+reception,接待,0.65
+recipe,配方,0.8
+record,记录,0.65
+record producer,唱片制作人,0.65
+recorder,记录器/竖笛,0.75
+recording studio,录音室,0.65
+recreation room,娱乐室,0.65
+recreational vehicle,休闲车,0.65
+rectangle,矩形,0.65
+recycling,回收,0.65
+recycling bin,回收站,0.65
+red,红色,0.85
+red carpet,红地毯,0.8
+red flag,红旗,0.65
+red panda,红熊猫,0.65
+red wine,红酒,0.65
+redwood,红木,0.65
+reed,芦苇,0.65
+reef,礁石,0.65
+reel,卷轴,0.65
+referee,裁判,0.65
+reflect,倒影,0.8
+reflection,倒影,0.8
+reflector,反射器,0.65
+register,注册,0.65
+rein,控制,0.65
+reindeer,驯鹿,0.65
+relax,放松,0.65
+release,释放,0.65
+relief,救援,0.65
+religion,宗教,0.65
+religious,宗教的,0.8
+relish,享受,0.65
+remain,保持,0.65
+remodel,改造,0.65
+remote,遥控器,0.71
+remove,移除,0.65
+repair,修复,0.65
+repair shop,维修店,0.65
+reptile,爬行动物,0.65
+rescue,救援,0.65
+rescuer,救助者,0.65
+research,研究,0.65
+researcher,研究员,0.65
+reservoir,储层,0.65
+residence,住宅,0.65
+residential neighborhood,居民区,0.65
+resin,树脂,0.65
+resort,度假胜地,0.8
+resort town,度假小镇,0.65
+restaurant kitchen,餐厅的厨房,0.65
+restaurant patio,餐厅的露台,0.65
+restroom,厕所,0.73
+retail,零售,0.65
+retriever,寻回犬,0.65
+retro,制动火箭,0.8
+reveal,揭示,0.65
+rhinoceros,犀牛,0.65
+rhododendron,杜鹃,0.65
+rib,肋骨,0.65
+ribbon,丝带,0.8
+rice,大米,0.8
+rice cooker,电饭煲,0.65
+rice field,稻田,0.65
+ride,骑/搭乘,0.8
+ridge,脊,0.65
+riding,骑马,0.65
+rifle,步枪,0.65
+rim,边缘,0.65
+ring,环/戒指,0.9
+riot,暴乱,0.65
+ripple,涟漪,0.65
+rise,上升,0.8
+rise building,高层建筑,0.65
+river,河,0.86
+river bank,河岸,0.65
+river boat,河船,0.65
+river valley,河谷,0.65
+riverbed,河床,0.65
+road,路,0.9
+road sign,路标,0.65
+road trip,公路旅行,0.65
+roadside,路边,0.65
+roast chicken,烤鸡,0.65
+robe,长袍,0.65
+robin,罗宾,0.65
+robot,机器人,0.8
+stone,石头,0.75
+rock arch,岩石拱,0.65
+rock artist,摇滚艺术家,0.8
+rock band,摇滚乐队,0.65
+rock climber,攀岩者,0.65
+rock climbing,攀岩,0.65
+rock concert,摇滚音乐会,0.65
+rock face,岩石表面,0.65
+rock formation,岩层,0.65
+rocker,摇滚歌手,0.65
+rocket,火箭,0.65
+rocking chair,摇椅,0.65
+rocky,岩石,0.8
+rodent,啮齿动物,0.65
+rodeo,牛仔竞技表演,0.65
+rodeo arena,竞技舞台,0.65
+roe,罗伊,0.65
+roe deer,狍子,0.65
+roller,辊,0.65
+coaster,过山车,0.65
+roller skate,轮式溜冰鞋,0.65
+roller skates,溜冰鞋,0.65
+rolling pin,擀面杖,0.65
+romance,浪漫,0.65
+romantic,浪漫的,0.8
+roof,屋顶,0.88
+roof garden,屋顶花园,0.65
+room,房间,0.8
+room divider,房间分频器,0.65
+root,根,0.8
+root beer,根啤酒,0.65
+rope bridge,绳索桥,0.65
+rosary,念珠,0.65
+rose,玫瑰,0.9
+rosemary,迷迭香,0.65
+rosy cloud,玫瑰色的云,0.65
+rottweiler,罗特韦尔犬,0.65
+round table,圆桌,0.65
+router,路由器,0.65
+row,行,0.8
+rowan,罗文,0.65
+royal,皇家,0.8
+rubber stamp,橡皮图章,0.65
+rubble,废墟,0.65
+rubik's cube,魔方,0.65
+ruby,红宝石,0.65
+ruffle,莱夫,0.65
+rugby,橄榄球,0.81
+rugby ball,橄榄球,0.65
+rugby player,橄榄球运动员,0.65
+ruins,毁坏,0.8
+ruler,尺,0.65
+rum,朗姆酒,0.65
+run,跑,0.9
+runner,跑步者,0.8
+running shoe,跑步鞋,0.65
+rural,农村的,0.65
+rust,锈,0.65
+rustic,乡村的,0.8
+rye,黑麦,0.65
+sack,袋,0.65
+saddle,鞍,0.65
+saddlebag,鞍囊,0.65
+safari,旅行,0.65
+safe,安全,0.65
+safety vest,安全背心,0.65
+sage,圣人,0.65
+sail,帆,0.8
+sailboat,帆船,0.9
+sailing,航行,0.65
+sailor,水手,0.65
+squirrel monkey,松鼠猴,0.65
+sake,缘故,0.65
+salad,沙拉,0.7
+salad bowl,沙拉碗,0.65
+salamander,火蜥蜴,0.65
+salami,意大利蒜味腊肠,0.65
+sale,出售,0.8
+salmon,三文鱼,0.65
+salon,沙龙,0.65
+salsa,萨尔萨舞,0.65
+salt,盐,0.65
+salt and pepper shakers,盐和胡椒瓶,0.65
+salt lake,盐湖,0.65
+salt marsh,盐沼,0.65
+salt shaker,盐瓶,0.65
+salute,敬礼,0.65
+samoyed,萨莫耶德人,0.65
+samurai,武士,0.65
+sand,沙子,0.77
+sand bar,沙洲,0.65
+sand box,砂箱,0.65
+sand castle,沙堡,0.65
+sand sculpture,沙雕,0.65
+sandal,凉鞋,0.65
+sandwich,三明治,0.85
+sanitary napkin,卫生巾,0.65
+santa claus,圣诞老人,0.65
+sapphire,蓝宝石,0.65
+sardine,沙丁鱼,0.65
+sari,莎丽,0.65
+sashimi,生鱼片,0.65
+satay,沙爹,0.65
+satchel,书包,0.65
+satellite,卫星,0.65
+satin,缎,0.65
+sauce,酱汁,0.8
+saucer,碟子,0.65
+sauna,桑拿,0.65
+sausage,香肠,0.87
+savanna,稀树大草原,0.65
+saw,锯,0.65
+sawbuck,锯木架,0.65
+sax,萨克斯管,0.65
+saxophonist,萨克斯手,0.65
+scaffold,脚手架,0.65
+scale,秤/标尺,0.65
+scale model,比例模型,0.65
+scallop,扇贝,0.65
+scar,疤痕,0.65
+strawman,稻草人,0.65
+scarf,围巾,0.8
+scene,场景,0.8
+scenery,风景,0.65
+schnauzer,雪纳瑞犬,0.65
+school,学校,0.8
+school bus,校车,0.65
+school uniform,校服,0.65
+schoolhouse,校舍,0.65
+schooner,纵帆船,0.65
+science,科学,0.65
+science fiction film,科幻电影,0.65
+science museum,科学博物馆,0.65
+scientist,科学家,0.65
+scissors,剪刀,0.9
+wall lamp,壁灯,0.65
+scone,司康饼,0.65
+scoop,勺子,0.65
+scooter,踏板车/摩托车,0.65
+score,分数,0.8
+scoreboard,记分板,0.65
+scorpion,蝎子,0.65
+scout,童子军,0.65
+scrambled egg,炒蛋,0.65
+scrap,废弃,0.65
+scraper,刮板,0.65
+scratch,刮伤,0.65
+screen,屏幕,0.8
+screen door,纱门,0.65
+screenshot,截图,0.8
+screw,螺杆,0.65
+screwdriver,螺丝刀,0.65
+scroll,长卷纸/卷轴,0.65
+scrub,擦洗,0.65
+scrubbing brush,硬毛刷,0.65
+sculptor,雕塑家,0.65
+sculpture,雕塑,0.8
+sea cave,海洞穴,0.65
+sea ice,海冰,0.65
+sea lion,海狮,0.65
+sea turtle,海龟,0.65
+sea urchin,海胆,0.65
+seabass,尖吻鲈,0.65
+seabed,海底,0.65
+seabird,海鸟,0.65
+seafood,海鲜,0.57
+seahorse,海马,0.65
+seal,海豹,0.65
+sea view,海景,0.8
+seashell,海贝,0.65
+seaside resort,海滨度假胜地,0.65
+season,季节,0.8
+seat,座位,0.8
+seat belt,安全带,0.65
+seaweed,海藻,0.65
+secretary,秘书,0.65
+security,安全,0.65
+sedan,小轿车,0.76
+see,看到,1
+seed,种子,0.8
+seesaw,跷跷板,0.65
+segway,赛格威,0.65
+selfie,自拍,0.58
+sell,出售,0.8
+seminar,研讨会,0.65
+sense,感觉,0.65
+sensor,传感器,0.65
+server,服务器,0.65
+server room,服务器机房,0.65
+service,服务,0.8
+set,集,1
+sewing machine,缝纫机,0.65
+shadow,影子,0.8
+shake,摇,0.65
+shaker,瓶,0.65
+shampoo,洗发水,0.65
+shape,形状,0.8
+share,分享,0.65
+shark,鲨鱼,0.9
+sharpener,卷笔刀,0.65
+sharpie,记号笔,0.65
+shaver,剃须刀,0.65
+shaving cream,剃须膏,0.65
+shawl,披肩/围巾,0.65
+shear,剪切,0.65
+shears,剪刀,0.65
+sheep,羊,0.87
+sheet,床单,0.8
+sheet music,乐谱,0.9
+shelf,架子,0.8
+shell,贝壳,0.8
+shellfish,贝类,0.65
+shelter,避难所,0.65
+shelve,搁置,0.65
+shepherd,牧羊人,0.65
+sherbert,果子露,0.65
+shiba inu,柴犬,0.65
+shine,发光,0.8
+shipping,航运,0.65
+shipping container,集装箱,0.65
+shipwreck,海难,0.65
+shipyard,船厂,0.65
+shirt,衬衫,0.8
+shirtless,赤膊的,0.65
+shoal,浅滩,0.65
+shoe,鞋,0.8
+shoe box,鞋盒,0.65
+shoe shop,鞋店,0.65
+shoe tree,鞋楦,0.65
+shoot,射击,0.8
+shooting basketball guard,得分篮球后卫,0.65
+shop window,商店橱窗,0.65
+shopfront,门面,0.65
+shopper,购物者,0.65
+shopping,购物,0.65
+shopping bag,购物袋,0.65
+shopping basket,购物篮,0.65
+shopping cart,购物车,0.65
+mall,购物中心,0.65
+shopping street,购物街,0.65
+shore,海岸,0.8
+shoreline,海岸线,0.65
+short,短的,0.8
+short hair,短发,0.65
+shorts,短裤,0.65
+shot glass,小酒杯,0.65
+shotgun,散弹枪,0.65
+shoulder,肩膀,0.8
+shoulder bag,单肩包,0.65
+shovel,铲,0.65
+showcase,陈列柜,0.65
+shower,淋浴,0.8
+shower cap,浴帽,0.65
+shower curtain,浴帘,0.65
+shower door,淋浴门,0.65
+shower head,淋浴头,0.65
+shredder,碎纸机,0.65
+shrew,泼妇,0.65
+shrimp,虾,0.87
+shrine,神社,0.68
+shrub,灌木,0.8
+shutter,快门,0.65
+siamese,暹罗猫,0.65
+siberia,西伯利亚,0.65
+sibling,兄弟姐妹,0.65
+side,侧面,0.8
+side cabinet,边柜,0.65
+side dish,配菜,0.65
+sidecar,边车,0.65
+sideline,边线,0.65
+siding,壁板,0.65
+sign,标志,0.8
+signage,指示牌,0.65
+signal,信号,0.65
+signature,签名,0.65
+silk,丝绸,0.65
+silk stocking,丝袜,0.65
+silo,筒仓,0.65
+silver,银,0.8
+silver medal,银牌,0.65
+silverware,银器,0.65
+sing,唱歌,0.65
+singe,烧焦,0.99
+singer,歌手,0.8
+sink,水槽,0.77
+sip,啜,0.65
+sit,坐/放置/坐落,0.9
+sitting,坐着,0.65
+skate park,滑板公园,0.65
+skateboard,滑板,0.88
+skateboarder,滑板者,0.65
+skater,溜冰者,0.65
+skating rink,溜冰场,0.65
+skeleton,骨架,0.65
+sketch,草图,0.9
+skewer,串串,0.65
+ski,滑雪,0.88
+ski boot,滑雪靴,0.65
+ski equipment,滑雪设备,0.65
+ski jacket,滑雪服,0.65
+ski lift,滑雪缆车,0.65
+ski pole,滑雪杖,0.65
+ski resort,滑雪胜地,0.65
+snowboard,滑雪板,0.89
+skier,滑雪,0.65
+skiing shoes,滑雪鞋,0.65
+skin,皮肤,0.8
+skull,头骨,0.8
+skullcap,无边便帽,0.65
+sky,天空,0.7
+sky tower,天空塔,0.65
+skylight,天窗,0.65
+skyline,天际线,0.8
+skyscraper,摩天大楼,0.9
+slalom,激流回旋,0.65
+slate,石板,0.65
+sleigh,雪橇,0.65
+sleep,睡眠,0.8
+sleeping bag,睡袋,0.65
+sleepwear,睡衣,0.65
+sleeve,袖子,0.8
+slice,片,0.8
+slide,滑动,0.65
+slider,滑块,0.65
+sling,吊索,0.65
+slope,坡,0.8
+slot,投币口,0.65
+slot machine,老虎机,0.65
+sloth,树懒,0.65
+slow cooker,慢炖锅,0.65
+slug,鼻涕虫,0.65
+slum,贫民窟,0.65
+smell,气味,0.65
+smile,微笑,0.8
+smoke,烟雾/抽烟,0.8
+snack,零食,0.8
+snail,蜗牛,0.65
+snake,蛇,0.77
+snapper,鲷鱼,0.65
+snapshot,快照,0.65
+snorkel,通气管,0.65
+snout,鼻子,0.65
+snow,雪,0.79
+snow leopard,雪豹,0.65
+snow mountain,雪山,0.65
+snowball,雪球,0.65
+snowboarder,单板滑雪者,0.65
+snowfield,雪原,0.65
+snowflake,雪花,0.8
+snowman,雪人,0.65
+snowmobile,雪地摩托,0.65
+snowplow,雪犁,0.65
+snowshoe,雪鞋,0.65
+snowy,雪,0.8
+soap,肥皂,0.65
+soap bubble,肥皂泡,0.65
+soap dispenser,给皂器,0.65
+soccer goalkeeper,足球守门员,0.65
+socialite,社会名流,0.65
+sock,短袜,0.65
+socket,插座,0.65
+soda,苏打水,0.65
+softball,垒球,0.65
+software,软件,0.65
+solar battery,太阳能电池阵列,0.65
+soldier,士兵,0.8
+solo,独奏,0.65
+solution,解决方案,0.65
+sombrero,宽边帽,0.65
+song,歌曲,0.8
+sound,声音,0.65
+soup,汤,0.8
+soup bowl,汤碗,0.65
+soupspoon,汤匙,0.65
+sour cream,酸奶油,0.65
+souvenir,纪念品,0.65
+soybean milk,豆浆,0.65
+spa,水疗中心,0.8
+space,空间,0.8
+space shuttle,航天飞机,0.65
+space station,空间站,0.65
+spacecraft,宇宙飞船,0.65
+spaghetti,意大利面,0.85
+span,横跨,0.65
+wrench,扳手,0.65
+spark,火花,0.65
+sparkle,闪耀,0.65
+sparkler,烟火,0.65
+sparkling wine,起泡葡萄酒,0.65
+sparrow,麻雀,0.52
+spatula,抹刀,0.65
+speaker,扬声器,0.65
+spectator,观众,0.8
+speech bubble,会话框,0.65
+speed limit,速度限制,0.65
+speed limit sign,限速标志,0.65
+speedboat,快艇,0.65
+speedometer,车速表,0.65
+sphere,球,0.65
+spice,香料,0.8
+spice rack,调料架,0.65
+spider,蜘蛛,0.65
+spider web,蜘蛛网,0.65
+spike,扣球,0.65
+spin,旋转,0.65
+spinach,菠菜,0.65
+spire,尖塔,0.65
+splash,飞溅,0.8
+sponge,海绵,0.65
+spoon,勺子,0.86
+sport association,体育协会,0.65
+sport equipment,运动器材,0.65
+sport team,运动团队,0.8
+sports ball,体育球,0.56
+sports equipment,体育器材,0.65
+sports meet,运动会,0.65
+sportswear,运动服装,0.65
+dot,点,0.8
+spray,喷雾,0.65
+spread,伸展,0.8
+spring,春天,0.8
+spring roll,春卷,0.65
+sprinkle,撒,0.65
+sprinkler,洒水器,0.65
+sprout,发芽,0.65
+spruce,云杉,0.65
+spruce forest,云杉森林,0.65
+squad,队,0.65
+square,广场,0.8
+squash,南瓜,0.65
+squat,蹲,0.65
+squeeze,挤,0.65
+squid,鱿鱼,0.65
+squirrel,松鼠,0.72
+water gun,水枪,0.65
+stab,刺,0.65
+stable,稳定的,0.65
+stack,（码放整齐的）一叠,0.8
+stadium,体育场,0.8
+staff,工作人员,0.65
+stage,舞台,0.9
+stage light,舞台灯,0.65
+stagecoach,驿马车,0.65
+stain,弄脏,0.8
+stainless steel,不锈钢,0.65
+stair,楼梯,0.8
+stairs,楼梯,0.6
+stairwell,楼梯间,0.65
+stall,摊位/小隔间,0.65
+stallion,种马,0.65
+stand,站/矗立/摊位,0.8
+standing,站,0.65
+staple,主食,0.65
+stapler,订书机,0.65
+star,星星,0.8
+stare,盯着,0.65
+starfish,海星,0.88
+starfruit,杨桃,0.65
+starling,燕八哥,0.65
+state park,州立公园,0.65
+state school,公立学校,0.65
+station,车站,0.8
+stationary bicycle,固定自行车,0.65
+stationery,文具,0.65
+statue,雕像,0.89
+steak,牛排,0.85
+steak knife,牛排刀,0.65
+steam,蒸汽,0.65
+steam engine,蒸汽机,0.65
+steam locomotive,蒸汽机车,0.65
+steam train,蒸汽火车,0.65
+steamed bread,馒头,0.65
+steel,钢,0.65
+steering wheel,方向盘,0.87
+stem,（花草的）茎,0.65
+stencil,模版,0.65
+step stool,梯凳,0.65
+stereo,立体声,0.65
+stethoscope,听诊器,0.65
+stew,炖,0.65
+stick,戳/条状物,0.8
+stick insect,竹节虫,0.65
+sticker,贴纸,0.8
+still life,静物画,0.65
+stilt,高跷,0.65
+stingray,黄貂鱼,0.65
+stir,搅拌,0.65
+stirrer,搅拌器,0.65
+stirrup,镫,0.65
+sew,缝,0.65
+stock,股票,0.65
+stocking,长筒袜,0.65
+stomach,腹部,0.75
+stone building,石头建筑,0.65
+stone carving,石雕,0.65
+stone house,石屋,0.65
+stone mill,石磨,0.65
+stool,凳子,0.54
+stop,停止,1
+stop at,停在,0.65
+stop light,红灯,0.65
+stop sign,停车标志,0.75
+stop watch,秒表,0.65
+traffic light,红绿灯,0.75
+storage box,存储箱,0.65
+storage room,储藏室,0.65
+tank,罐/蓄水池,0.65
+store,商店,0.8
+storefront,店面,0.65
+stork,鹳,0.65
+storm,风暴,0.8
+storm cloud,暴风云,0.65
+stormy,狂风暴雨的,0.65
+stove,炉子,0.8
+poker,扑克,0.65
+straddle,跨骑,0.65
+strainer,过滤器,0.65
+strait,海峡,0.65
+strap,带,0.65
+straw,稻草/吸管,0.65
+straw hat,草帽,0.65
+strawberry,草莓,0.9
+stream,溪流,0.9
+street art,街头艺术,0.62
+street artist,街头艺术家,0.65
+street corner,街角,0.65
+street dog,流浪狗,0.65
+street food,街头食品,0.65
+street light,路灯,0.86
+street market,街市场,0.65
+street photography,街头摄影,0.65
+street scene,街景,0.65
+street sign,路标,0.65
+street vendor,街头小贩,0.65
+stretch,拉伸,0.65
+stretcher,担架,0.65
+strike,罢工,0.65
+striker,前锋,0.65
+string,细绳,0.65
+string cheese,芝士条,0.65
+strip,带子,0.65
+stripe,条纹,0.8
+stroll,漫步,0.65
+structure,结构,0.8
+studio,工作室,0.8
+studio shot,影棚拍摄,0.65
+stuff,材料,0.8
+stuffed animal,填充玩具动物,0.65
+stuffed toy,毛绒玩具,0.65
+stuffing,馅,0.65
+stump,树桩,0.65
+stunning,惊人的,0.65
+stunt,特技,0.65
+stupa,佛塔,0.65
+style,风格,0.8
+stylus,手写笔,0.65
+submarine,潜艇,0.82
+submarine sandwich,潜艇形大三明治,0.65
+submarine water,海底水,0.65
+suburb,郊区,0.65
+subway,地铁,0.65
+subway station,地铁站,0.65
+subwoofer,低音炮,0.65
+succulent,多肉,0.65
+suede,绒面革,0.65
+sugar,糖,0.8
+sugar bowl,糖碗,0.65
+sugar cane,甘蔗,0.65
+sugar cube,方糖,0.65
+suit,西装,0.9
+suite,套房,0.74
+summer,夏天,0.8
+summer evening,夏天傍晚,0.65
+summit,峰顶,0.8
+sun,太阳,0.8
+sun hat,太阳帽,0.7
+sunbathe,日光浴,0.65
+sunday,周日,0.65
+sundial,日晷,0.65
+sunflower,向日葵,0.89
+sunflower field,向日葵田,0.65
+sunflower seed,葵花籽,0.65
+sunglasses,太阳镜,0.8
+sunny,晴天,0.8
+sunrise,日出,0.8
+sunset,日落,0.8
+sunshade,遮阳伞,0.65
+sunshine,阳光,0.8
+super bowl,超级碗,0.65
+sports car,跑车,0.65
+superhero,超级英雄,0.65
+supermarket,超市,0.9
+supermarket shelf,超市货架,0.65
+supermodel,超模,0.65
+supporter,支持者,0.65
+surf,冲浪,0.8
+surface,表面,0.8
+surfboard,冲浪板,0.84
+surfer,冲浪者,0.8
+surgeon,外科医生,0.65
+surgery,外科手术,0.65
+surround,环绕,0.8
+sushi,寿司,0.75
+sushi bar,寿司吧,0.65
+suspenders,背带裤,0.65
+suspension,悬架,0.65
+suspension bridge,吊桥,0.89
+suv,越野车,0.65
+swallow,燕子,0.65
+swallowtail butterfly,燕尾蝶,0.65
+swamp,沼泽,0.65
+swan,天鹅,0.82
+swan boat,天鹅游艇,0.65
+sweat pant,运动裤,0.65
+sweatband,防汗带,0.65
+sweater,毛衣,0.8
+sweatshirt,运动衫,0.65
+sweet,甜的,0.8
+sweet potato,红薯,0.65
+swim,游泳,0.8
+swim cap,泳帽,0.65
+swimmer,游泳者,0.65
+swimming hole,游泳洞,0.65
+swimming pool,游泳池,0.84
+swing,摆动,0.65
+swing bridge,平转桥,0.65
+swinge,秋千,0.65
+swirl,漩涡,0.65
+switch,开关,0.65
+swivel chair,转椅,0.65
+sword,剑,0.65
+swordfish,旗鱼,0.65
+symbol,象征,0.8
+symmetry,对称,0.65
+synagogue,犹太教堂,0.65
+syringe,注射器,0.65
+syrup,糖浆,0.65
+system,系统,0.8
+t shirt,t恤,0.8
+t-shirt,t恤,0.8
+tabasco sauce,塔巴斯科辣椒酱,0.65
+tabby,虎斑,0.65
+table tennis racket,乒乓球拍,0.65
+table top,桌面,0.65
+tablecloth,桌布,0.65
+tablet computer,平板电脑,0.65
+tableware,餐具,0.65
+tachometer,转速表,0.65
+tackle,拦截,0.65
+taco,墨西哥煎玉米卷,0.65
+tae kwon do,跆拳道,0.65
+tai chi,太极,0.65
+tail,尾巴,0.65
+tailor,裁缝,0.65
+take,拍/拿,0.8
+takeoff,起飞,0.65
+talk,说话/交谈/演讲,0.8
+tambourine,手鼓,0.65
+tan,棕褐色,0.8
+tangerine,橘子,0.65
+tape,胶带/磁带/终点线,0.7
+tapestry,挂毯,0.65
+tarmac,沥青碎石路面,0.65
+taro,芋头,0.65
+tarp,篷布,0.65
+tart,果馅饼,0.65
+tassel,流苏,0.65
+taste,味道,0.65
+tatami,榻榻米,0.65
+tattoo,纹身,0.9
+tattoo artist,纹身艺术家,0.65
+tavern,酒馆,0.65
+tea,茶,0.8
+tea bag,茶包,0.65
+tea party,茶话会,0.65
+tea plantation,茶园,0.65
+tea pot,茶壶,0.65
+tea set,茶具,0.65
+teach,教,0.65
+teacher,老师,0.8
+teacup,茶杯,0.65
+teal,水鸭,0.65
+team photo,团队合影,0.65
+team presentation,团队介绍,0.65
+tear,眼泪/撕裂/划破,0.65
+technician,技术员,0.65
+technology,技术,0.8
+teddy,泰迪熊,0.74
+tee,T字形物,0.65
+teenager,青少年,0.8
+telegraph pole,电线杆,0.65
+zoom lens,变焦镜头,0.65
+telescope,望远镜,0.65
+television,电视,0.9
+television camera,电视摄像机,0.65
+television room,电视室,0.65
+television studio,电视演播室,0.65
+temperature,温度,0.65
+temple,寺庙,0.85
+tempura,天妇罗,0.65
+tennis,网球,0.9
+tennis court,网球场,0.9
+tennis match,网球比赛,0.65
+tennis net,网球网,0.65
+tennis player,网球运动员,0.65
+tennis racket,网球拍,0.63
+tent,帐篷,0.82
+tequila,龙舌兰酒,0.65
+terminal,终端/航站楼,0.65
+terrace,阳台,0.8
+terrain,地形,0.65
+terrarium,玻璃容器,0.65
+territory,领土,0.65
+test,测试,0.65
+test match,测试赛,0.65
+test tube,试管,0.65
+text,文本,0.8
+text message,短信,0.65
+textile,纺织,0.65
+texture,纹理,0.8
+thanksgiving,感恩节,0.65
+thanksgiving dinner,感恩节晚餐,0.65
+theater,剧院,0.8
+theatre actor,戏剧演员,0.65
+therapy,治疗,0.65
+thermometer,温度计,0.65
+thermos,热水瓶,0.65
+thermos bottle,暖瓶,0.65
+thermostat,恒温器,0.65
+thicket,灌木丛,0.65
+thimble,顶针,0.65
+thing,东西,0.8
+thinking,思考,0.65
+thistle,蓟,0.65
+throne,宝座,0.65
+throne room,金銮殿,0.65
+throw,扔,0.8
+throw pillow,抱枕,0.7
+thunder,雷,0.65
+thunderstorm,雷雨,0.65
+thyme,百里香,0.65
+tiara,皇冠,0.65
+tick,记号,0.65
+ticket,票,0.9
+ticket booth,售票亭,0.65
+tide pool,潮池,0.65
+tie,领带,0.74
+tiger,老虎,0.9
+tight,紧,0.65
+tile,瓦,0.8
+tile flooring,瓷砖地板,0.65
+tile roof,瓦屋顶,0.65
+tile wall,瓷砖墙,0.58
+tin,锡,0.65
+tinfoil,锡纸,0.65
+tinsel,箔,0.65
+tiramisu,提拉米苏,0.65
+tire,轮胎,0.65
+tissue,纸巾,0.65
+toast,烤面包,0.89
+toaster,烤面包机,0.75
+tobacco,烟草,0.65
+tobacco pipe,烟斗,0.65
+toddler,学步的小孩,0.8
+toe,脚趾,0.65
+tofu,豆腐,0.65
+toilet bowl,马桶,0.88
+toilet seat,马桶座圈,0.65
+toiletry,化妆包,0.65
+tokyo tower,东京铁塔,0.65
+tomato,番茄,0.8
+tomato sauce,番茄酱,0.65
+tomato soup,番茄汤,0.65
+tomb,墓,0.65
+tong,钳子,0.65
+tongs,钳子,0.65
+tool,工具,0.65
+toolbox,工具箱,0.65
+toothbrush,牙刷,0.89
+toothpaste,牙膏,0.65
+toothpick,牙签,0.65
+topiary garden,修剪成形的花园,0.65
+topping,配料,0.65
+torch,火炬/光源,0.65
+tornado,龙卷风,0.65
+tortilla,玉米粉圆饼,0.65
+tortoise,乌龟,0.65
+tote bag,大手提袋,0.65
+totem pole,图腾柱,0.65
+totoro,龙猫,0.65
+toucan,巨嘴鸟,0.65
+touch,触摸,0.8
+touchdown,触地,0.8
+tour,旅行,0.8
+tour bus,旅游巴士,0.65
+tour guide,导游,0.65
+tourist,游客,0.8
+tourist attraction,旅游景点,0.8
+tournament,锦标赛,0.65
+tow truck,拖车,0.65
+towel,毛巾,0.87
+towel bar,毛巾杆,0.65
+tower block,大厦,0.65
+tower bridge,塔桥,0.65
+town,小镇,0.8
+town square,城镇广场,0.65
+toy,玩具,0.64
+toy car,玩具车,0.65
+toy gun,玩具枪,0.65
+toyshop,玩具店,0.65
+track,跑道,0.8
+tractor,拖拉机,0.87
+trade,贸易,0.65
+tradition,传统,0.65
+traditional,传统的,0.8
+traffic,交通,0.9
+traffic cone,锥形交通路标,0.65
+traffic congestion,交通拥堵,0.65
+traffic jam,交通堵塞,0.65
+traffic sign,交通标志,0.65
+trail,小道,0.8
+trailer,预告片,0.8
+trailer truck,拖车,0.65
+train,火车,0.89
+train bridge,火车桥,0.65
+train car,火车车厢,0.65
+train interior,火车内部,0.65
+train track,火车轨道,0.65
+train window,火车窗口,0.65
+trainer,教练,0.65
+training,训练,0.8
+training bench,训练长椅,0.65
+training ground,训练场,0.65
+trolley,电车/手推车,0.65
+trampoline,蹦床,0.83
+transformer,变形金刚,0.65
+transparency,透明度,0.65
+travel,旅行,0.8
+tray,托盘/碟子,0.65
+treadmill,跑步机,0.9
+treat,美食,0.65
+tree,树,0.8
+tree branch,树枝,0.8
+tree farm,林场,0.65
+tree frog,树蛙,0.65
+tree house,树屋,0.65
+tree root,树根,0.65
+tree trunk,树干,0.65
+trial,试验,0.65
+triangle,三角形,0.8
+triathlon,铁人三项,0.65
+tribe,部落,0.65
+tributary,支流,0.65
+trick,戏法/特技,0.65
+tricycle,三轮车,0.65
+trim,修剪,0.65
+trio,三人组,0.65
+tripod,三脚架,0.65
+trombone,长号,0.65
+troop,部队,0.65
+trophy,奖杯,0.78
+trophy cup,奖杯,0.65
+tropic,热带,0.8
+trout,鳟鱼,0.65
+truck,卡车,0.9
+truck driver,卡车司机,0.65
+tub,浴缸,0.8
+tube,管子,0.65
+tugboat,拖船,0.65
+tulip,郁金香,0.65
+tuna,金枪鱼,0.65
+tundra,苔原,0.65
+tunnel,隧道,0.9
+turbine,涡轮,0.65
+turkey,火鸡,0.88
+turn,转动,0.8
+turnip,芜菁,0.65
+turquoise,绿松石,0.65
+turret,炮塔,0.65
+turtle,乌龟,0.81
+tusk,獠牙,0.65
+tv actor,电视演员,0.65
+tv cabinet,电视柜,0.65
+tv drama,电视剧,0.65
+tv genre,电视节目类型,0.65
+tv personality,电视名人,0.65
+tv show,电视节目,0.65
+tv sitcom,情景喜剧,0.65
+tv tower,电视塔,0.65
+twig,枝条,0.65
+twilight,黄昏,0.65
+twin,双胞胎,0.65
+twine,麻线,0.65
+twist,扭,0.65
+type,类型,0.8
+type on,键入,0.65
+typewriter,打字机,0.65
+ukulele,尤克里里,0.65
+ultraman,奥特曼,0.65
+umbrella,伞,0.77
+underclothes,内衣,0.65
+underwater,水下,0.65
+unicorn,独角兽,0.65
+uniform,制服,0.8
+universe,宇宙,0.8
+university,大学,0.8
+up,向上,0.8
+urban,城市,0.65
+urinal,尿壶,0.65
+urn,瓮,0.65
+use,使用,1
+utensil,用具,0.65
+utility room,杂物间,0.65
+vacuum,吸尘器/真空,0.65
+valley,谷,0.8
+valve,阀门,0.65
+vampire,吸血鬼,0.65
+van,货车,0.8
+vanilla,香草,0.65
+vanity,虚荣,0.65
+variety,种类,0.8
+vase,花瓶/瓶,0.85
+vault,金库,0.65
+vector cartoon illustration,矢量卡通插图,0.65
+vector icon,矢量图标,0.8
+vegetable,蔬菜,0.8
+vegetable garden,菜园,0.65
+vegetable market,蔬菜市场,0.65
+vegetation,植被,0.65
+vehicle,车辆,0.8
+veil,面纱,0.65
+vein,静脉,0.65
+velvet,天鹅绒,0.65
+vending machine,自动售货机,0.88
+vendor,小贩,0.65
+vent,通风孔,0.65
+vespa,胡蜂属,0.65
+vessel,船,0.65
+vest,背心,0.8
+vet,兽医,0.65
+veteran,经验丰富的,0.65
+veterinarians office,兽医办公室,0.65
+viaduct,高架桥,0.65
+video,视频,0.8
+video camera,摄像机,0.65
+video game,电子游戏,0.8
+videotape,录像带,0.65
+view mirror,视镜,0.65
+vigil,守夜,0.65
+villa,别墅,0.8
+village,村庄,0.8
+vine,藤蔓,0.8
+vinegar,醋,0.65
+vineyard,葡萄园,0.65
+violence,暴力,0.65
+violet,紫罗兰色,0.65
+violin,小提琴,0.68
+violinist,小提琴家,0.65
+violist,中提琴演奏者,0.65
+vision,愿景,0.65
+visor,遮阳板,0.65
+vodka,伏特加,0.65
+volcano,火山,0.65
+volleyball,排球,0.89
+volleyball court,排球场,0.65
+volleyball player,排球运动员,0.65
+volunteer,志愿者,0.65
+voyage,航行,0.65
+vulture,秃鹰,0.65
+waffle,华夫饼干,0.65
+waffle iron,华夫饼机,0.65
+wagon,货车,0.65
+wagon wheel,马车车轮,0.65
+waist,腰,0.65
+waiter,服务员,0.65
+waiting hall,候机室,0.65
+waiting room,等候室,0.65
+walk,走,0.8
+walking,步行,0.65
+walking cane,手杖,0.65
+wall clock,挂钟,0.65
+wallpaper,壁纸,0.8
+walnut,核桃,0.9
+walrus,海象,0.65
+war,战争,0.8
+warehouse,仓库,0.65
+warm,温暖的,0.8
+warning sign,警告标志,0.65
+warrior,战士,0.65
+warship,军舰,0.65
+warthog,疣猪,0.65
+wash,洗,0.65
+washer,洗衣机/垫圈,0.65
+washing,洗,0.65
+washing machine,洗衣机,0.81
+wasp,黄蜂,0.65
+waste,浪费,0.65
+waste container,废物容器,0.65
+watch,手表,0.8
+water,水,0.85
+water bird,水鸟,0.65
+water buffalo,水牛,0.77
+water cooler,水冷却器,0.65
+water drop,水滴,0.8
+water feature,水景,0.65
+water heater,热水器,0.65
+water level,水位,0.65
+water lily,荷花,0.65
+water park,水上乐园,0.65
+water pipe,水管,0.65
+water purifier,净水器,0.65
+water ski,滑水板,0.65
+water sport,水上运动,0.65
+water surface,水面,0.65
+water tower,水塔,0.65
+watercolor,水彩,0.8
+watercolor illustration,水彩插图,0.8
+watercolor painting,水彩画,0.8
+waterfall,瀑布,0.9
+watering can,喷壶,0.65
+watermark overlay stamp,水印叠加图章,0.65
+watermelon,西瓜,0.89
+waterproof jacket,防水外套,0.65
+waterway,水路,0.65
+wave,波浪,0.8
+wax,蜡,0.65
+weapon,武器,0.65
+wear,穿着,0.8
+weather,天气,0.8
+vane,叶片,0.65
+web,网,0.65
+webcam,摄像头,0.65
+wedding,婚礼,0.88
+wedding ring,结婚戒指,0.8
+wedding bouquet,婚礼花束,0.65
+wedding cake,结婚蛋糕,0.8
+wedding couple,新婚夫妇,0.65
+wedding invitation,婚礼请柬,0.65
+wedding party,婚礼派对,0.65
+wedding photo,婚纱照,0.65
+wedding photographer,婚礼摄影师,0.65
+wedding photography,婚纱摄影,0.65
+wedding reception,婚宴,0.8
+wedge,楔,0.65
+weed,杂草,0.65
+weight,重量,0.8
+weight scale,体重秤,0.65
+welder,焊接工,0.65
+well,井,0.65
+western food,西餐,0.65
+western restaurant,西餐厅,0.65
+wet,湿,0.8
+wet bar,吧台,0.65
+wet suit,潜水衣,0.65
+wetland,湿地,0.65
+wetsuit,潜水服,0.65
+whale,鲸鱼,0.65
+whale shark,鲸鲨,0.65
+wheat,小麦,0.82
+wheat field,麦田,0.65
+wheel,车轮,0.8
+wheelchair,轮椅,0.74
+wheelie,后轮支撑车技,0.65
+whipped cream,生奶油,0.65
+whisk,搅拌器,0.65
+whisker,胡须,0.65
+whiskey,威士忌,0.65
+whistle,哨子,0.65
+white,白色,0.85
+white house,白宫,0.65
+white wine,白葡萄酒,0.65
+whiteboard,白板,0.85
+wicket,便门,0.65
+wide,宽的,0.65
+wield,挥动,0.65
+wig,假发,0.65
+Wii,Wii,0.7
+Wii controller,Wii手柄,0.7
+wild,荒野,0.8
+wildebeest,角马,0.65
+wildfire,野火,0.65
+wildflower,野花,0.65
+wildlife,野生动物,0.65
+willow,柳树,0.87
+wind,风,0.8
+wind chime,风铃,0.65
+wind farm,风电场,0.65
+wind turbine,风力涡轮机,0.65
+windmill,风车,0.89
+window,窗户,0.85
+window box,窗台花盆箱,0.65
+window display,橱窗展示,0.65
+window frame,窗框,0.65
+window screen,纱窗,0.8
+window seat,靠窗的座位,0.65
+window sill,窗台,0.65
+wiper,雨刮器,0.65
+windshield,挡风玻璃,0.65
+windy,有风的,0.65
+wine bottle,酒瓶,0.65
+wine cooler,冷酒器,0.65
+wine cabinet,酒柜,0.65
+wine cellar,酒窖,0.65
+wine glass,酒杯,0.65
+wine rack,酒架,0.65
+wine tasting,品酒,0.65
+winery,酒庄,0.65
+wing,翅膀,0.8
+winter,冬天,0.7
+winter melon,冬瓜,0.65
+winter morning,冬天的早晨,0.65
+winter scene,冬季场景,0.65
+winter sport,冬季运动,0.65
+winter storm,冬季风暴,0.65
+wire,电线,0.8
+wisteria,紫藤,0.65
+witch,巫婆,0.65
+witch hat,女巫帽子,0.65
+wok,炒锅,0.65
+wolf,狼,0.9
+woman,女人,0.8
+wood,木头,0.8
+wood duck,林鸳鸯,0.65
+wood floor,木地板,0.66
+wood wall,木墙,0.57
+wood-burning stove,烧木炉,0.65
+wooden spoon,木匙,0.65
+woodland,林地,0.65
+woodpecker,啄木鸟,0.49
+woodworking plane,木工刨,0.65
+wool,羊毛,0.65
+job,工作,0.8
+work card,练习卡,0.65
+workbench,工作台,0.65
+worker,工人,0.8
+workplace,工作场所,0.65
+workshop,车间,0.65
+world,世界,0.8
+worm,蠕虫,0.65
+worship,敬拜,0.65
+wound,伤口,0.65
+wrap,包,0.8
+wrap dress,裹身裙,0.65
+wrapping paper,包装纸,0.65
+wrestle,搏斗,0.65
+wrestler,摔跤手,0.65
+wrinkle,皱纹,0.65
+wristband,腕带,0.65
+write,写,0.8
+writer,作家,0.65
+writing,手写/字迹,0.65
+writing brush,毛笔,0.65
+writing desk,写字桌,0.65
+yacht,游艇,0.8
+yak,牦牛,0.65
+yard,院子,0.8
+yellow,黄色,0.8
+yoga,瑜伽,0.86
+yoga mat,瑜伽垫,0.65
+yoghurt,酸奶,0.65
+yoke,轭,0.65
+yolk,蛋黄,0.65
+youth,青年,0.65
+youth hostel,青年旅馆,0.65
+yurt,蒙古包,0.65
+zebra,斑马,0.89
+zebra crossing,斑马线,0.65
+zen garden,禅意花园,0.65
+zip,拉链,0.65
+zipper,拉链,0.65
+zombie,僵尸,0.65
+zongzi,粽子,0.65
+zoo,动物园,0.76
