@@ -15,8 +15,7 @@ from typing import TYPE_CHECKING, Any, cast
 
 import torch
 import torch.utils.data.dataset
-import torchvision.transforms as tf
-import torchvision.transforms.v2 as tf_v2
+import torchvision.transforms.v2 as tf
 from torch import nn
 from torch.nn import init, utils
 from torch.optim import lr_scheduler
@@ -25,7 +24,7 @@ from ..bases.configs import Config
 from ..bases.registries import Item, Registry, RegistryMeta
 from ..loggers import logger
 from ..patches.py import descendant_classes, get_classes
-from ..patches.torch import get_world_size
+from ..patches.torch import PrefetchDataLoader, get_world_size
 from .partial import PartialRegistry
 
 if TYPE_CHECKING:
@@ -36,28 +35,30 @@ class InitRegistry(PartialRegistry):
     pass
 
 
-InitRegistry.register_()(init.uniform_)
-InitRegistry.register_()(init.normal_)
-InitRegistry.register_()(init.trunc_normal_)
-InitRegistry.register_()(init.constant_)
-InitRegistry.register_()(init.ones_)
-InitRegistry.register_()(init.zeros_)
-InitRegistry.register_()(init.eye_)
-InitRegistry.register_()(init.dirac_)
-InitRegistry.register_()(init.xavier_uniform_)
-InitRegistry.register_()(init.xavier_normal_)
-InitRegistry.register_()(init.kaiming_uniform_)
-InitRegistry.register_()(init.kaiming_normal_)
-InitRegistry.register_()(init.orthogonal_)
-InitRegistry.register_()(init.sparse_)
+register = InitRegistry.register_()
+register(init.uniform_)
+register(init.normal_)
+register(init.trunc_normal_)
+register(init.constant_)
+register(init.ones_)
+register(init.zeros_)
+register(init.eye_)
+register(init.dirac_)
+register(init.xavier_uniform_)
+register(init.xavier_normal_)
+register(init.kaiming_uniform_)
+register(init.kaiming_normal_)
+register(init.orthogonal_)
+register(init.sparse_)
 
 
 class ClipGradRegistry(PartialRegistry):
     pass
 
 
-ClipGradRegistry.register_()(utils.clip_grad_norm_)
-ClipGradRegistry.register_()(utils.clip_grad_value_)
+register = ClipGradRegistry.register_()
+register(utils.clip_grad_norm_)
+register(utils.clip_grad_value_)
 
 
 class LRSchedulerRegistry(Registry):
@@ -111,8 +112,6 @@ class TransformRegistry(Registry):
 
 for c in get_classes(tf):
     TransformRegistry.register_()(cast(Item, c))
-for c in get_classes(tf_v2):
-    TransformRegistry.register_('v2_' + c.__name__)(cast(Item, c))
 
 
 def transformers_build_pre_hook(
@@ -130,10 +129,6 @@ TransformRegistry.register_(
     force=True,
     build_pre_hook=transformers_build_pre_hook,
 )(tf.Compose)
-TransformRegistry.register_(
-    force=True,
-    build_pre_hook=transformers_build_pre_hook,
-)(tf_v2.Compose)
 
 
 class DatasetRegistry(Registry):
@@ -227,8 +222,8 @@ def dataloader_build_pre_hook(
     return config
 
 
-# yapf: disable
-DataLoaderRegistry.register_(
+register = DataLoaderRegistry.register_(
     build_pre_hook=dataloader_build_pre_hook,
-)(torch.utils.data.DataLoader)
-# yapf: enable
+)
+register(torch.utils.data.DataLoader)
+register(PrefetchDataLoader)
