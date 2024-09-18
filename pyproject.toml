@@ -111,6 +111,7 @@ include = [
 
 [tool.setuptools.package-data]
 todd = [
+    'tasks/image_classification/models/ram.csv',
     'tasks/natural_language_processing/tokenizers/clip_bpe.txt.gz',
     'py.typed',
 ]

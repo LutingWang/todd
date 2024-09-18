@@ -75,7 +75,7 @@ repos:
       - id: codespell
         exclude_types:
           - jupyter
-        exclude: ^docs/source/pretrained/ram.csv$
+        exclude: ^todd/tasks/image_classification/models/ram.csv$
   - repo: https://github.com/commitizen-tools/commitizen
     rev: v3.14.1
     hooks:

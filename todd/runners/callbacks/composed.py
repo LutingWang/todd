@@ -11,6 +11,9 @@ from ...bases.registries import BuildPreHookMixin, Item, RegistryMeta
 from ..registries import CallbackRegistry
 from ..utils import PriorityQueue
 from .base import BaseCallback
+from .log import LogCallback
+from .lr import LRScheduleCallback
+from .optimize import OptimizeCallback
 
 T = TypeVar('T', bound=nn.Module)
 KT = Literal['bind', 'should_break', 'should_continue', 'before_run_iter',
@@ -32,6 +35,39 @@ class ComposedCallback(BuildPreHookMixin, BaseCallback[T]):
     ) -> None:
         super().__init__(*args, **kwargs)
         self._priority_queue = PriorityQueue(priorities, callbacks)
+        self._check()
+
+    def _check(self) -> None:
+        assert not any(
+            isinstance(callback, ComposedCallback)
+            for callback in self._priority_queue.queue
+        )
+
+        callbacks = self._priority_queue('after_run_iter')
+        optimize_indices = [
+            i for i, callback in enumerate(callbacks)
+            if isinstance(callback, OptimizeCallback)
+        ]
+        lr_schedule_indices = [
+            i for i, callback in enumerate(callbacks)
+            if isinstance(callback, LRScheduleCallback)
+        ]
+        log_indices = [
+            i for i, callback in enumerate(callbacks)
+            if isinstance(callback, LogCallback)
+        ]
+        assert (
+            max(optimize_indices, default=-1)
+            < min(lr_schedule_indices, default=len(callbacks))
+        )
+        assert (
+            max(optimize_indices, default=-1)
+            < min(log_indices, default=len(callbacks))
+        )
+        assert (
+            max(lr_schedule_indices, default=-1)
+            < min(log_indices, default=len(callbacks))
+        )
 
     @classmethod
     def build_pre_hook(
