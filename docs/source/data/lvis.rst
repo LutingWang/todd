@@ -28,7 +28,7 @@ LVIS v0.5
     cd ${root}/annotations
     wget https://dl.fbaipublicfiles.com/LVIS/lvis_v0.5_train.json.zip
     wget https://dl.fbaipublicfiles.com/LVIS/lvis_v0.5_val.json.zip
-    unzip -q *.zip
+    for f in *.zip; do unzip -q $f; done
     cd ../../..
 
 .. code::
@@ -46,7 +46,7 @@ LVIS v1.0
     cd ${root}/annotations
     wget https://dl.fbaipublicfiles.com/LVIS/lvis_v1_train.json.zip
     wget https://dl.fbaipublicfiles.com/LVIS/lvis_v1_val.json.zip
-    unzip -q *.zip
+    for f in *.zip; do unzip -q $f; done
     cd ../../..
 
 .. code::
