@@ -7,8 +7,9 @@ http://sintel.is.tue.mpg.de/
 
     root=data/sintel
     mkdir -p ${root} && cd ${root}
-    wget http://files.is.tue.mpg.de/sintel/MPI-Sintel-complete.zip
-    unzip -q *.zip
+    f=MPI-Sintel-complete.zip
+    wget http://files.is.tue.mpg.de/sintel/${f}
+    unzip -q ${f}
     cd ../..
 
 .. literalinclude:: optical_flow.py

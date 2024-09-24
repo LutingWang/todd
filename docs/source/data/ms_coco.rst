@@ -13,7 +13,7 @@ MS-COCO 2017
     wget http://images.cocodataset.org/zips/train2017.zip
     wget http://images.cocodataset.org/zips/val2017.zip
     wget http://images.cocodataset.org/annotations/annotations_trainval2017.zip
-    unzip -q *.zip
+    for f in *.zip; do unzip -q ${f}; done
     cd ../..
 
 .. code::

@@ -7,8 +7,9 @@ https://spring-benchmark.org/
 
     # download train_frame_left.zip and train_flow_FW_left.zip from
     # https://darus.uni-stuttgart.de/dataset.xhtml?persistentId=doi:10.18419/darus-3376
-    wget https://cloud.visus.uni-stuttgart.de/index.php/s/5MtTY23RWcWfgPE/download -O spring_sample.zip
-    unzip -q *.zip
+    f=spring_sample.zip
+    wget https://cloud.visus.uni-stuttgart.de/index.php/s/5MtTY23RWcWfgPE/download -O ${f
+    unzip -q ${f}
 
 .. literalinclude:: optical_flow.py
     :language: python
