@@ -41,6 +41,6 @@ autodoc_inherit_docstrings = False
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3.11', None),
     'numpy': ('https://numpy.org/doc/stable/', None),
-    'torch': ('https://pytorch.org/docs/master/', None),
+    'torch': ('https://pytorch.org/docs/main/', None),
     'python-pptx': ('https://python-pptx.readthedocs.io/en/latest/', None),
 }
