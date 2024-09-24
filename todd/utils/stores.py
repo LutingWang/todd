@@ -7,7 +7,7 @@ import os
 from typing import Any
 
 from ..loggers import logger
-from ..patches.py import NonInstantiableMeta, classproperty
+from ..patches.py_ import NonInstantiableMeta, classproperty
 from ..patches.torch import get_device
 
 

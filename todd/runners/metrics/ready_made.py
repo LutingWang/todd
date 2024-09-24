@@ -7,7 +7,7 @@ from typing import Any, TypeVar
 import torch
 from torch import nn
 
-from ...patches.py import get_
+from ...patches.py_ import get_
 from ..memo import Memo
 from ..registries import MetricRegistry
 from .vanilla import Metric

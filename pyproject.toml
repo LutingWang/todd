@@ -180,6 +180,7 @@ filterwarnings = [
     'ignore::DeprecationWarning:pkg_resources:87',
     'ignore::DeprecationWarning:torch:4',
     'ignore::DeprecationWarning:torch:6',
+    'ignore::FutureWarning',
 ]
 testpaths = 'tests todd'
 addopts = '--doctest-modules'

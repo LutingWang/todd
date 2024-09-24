@@ -7,7 +7,7 @@ from torchvision import models
 
 from ..bases.configs import Config
 from ..bases.registries import Item, RegistryMeta
-from ..patches.py import get_
+from ..patches.py_ import get_
 from .registries import TorchVisionRegistry
 
 

@@ -12,7 +12,7 @@ from typing import Any, Callable, Never, Protocol, TypeVar, no_type_check
 from yapf.yapflib.errors import YapfError
 
 from ...loggers import logger
-from ...patches.py import NonInstantiableMeta
+from ...patches.py_ import NonInstantiableMeta
 from ..configs import Config
 
 

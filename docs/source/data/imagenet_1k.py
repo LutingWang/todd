@@ -9,7 +9,7 @@ import tqdm
 
 from todd.datasets import ImageNetDataset
 from todd.datasets.imagenet import Annotation, Synset, Synsets
-from todd.patches.py import json_dump
+from todd.patches.py_ import json_dump
 
 
 def parse_synset(array: npt.NDArray[Any]) -> tuple[int, Synset]:

@@ -3,7 +3,7 @@ import pathlib
 
 import pytest
 
-from todd.configs.py import PyConfig
+from todd.configs.py_ import PyConfig
 from todd.utils import set_temp
 
 

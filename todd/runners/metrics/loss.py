@@ -12,7 +12,7 @@ from ...bases.configs import Config
 from ...bases.registries import BuildPreHookMixin, Item, RegistryMeta
 from ...models import LossRegistry
 from ...models.losses import BaseLoss
-from ...patches.py import get_
+from ...patches.py_ import get_
 from ..memo import Memo
 from ..registries import MetricRegistry
 from .vanilla import Metric

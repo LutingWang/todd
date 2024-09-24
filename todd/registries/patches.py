@@ -23,7 +23,7 @@ from torch.optim import lr_scheduler
 from ..bases.configs import Config
 from ..bases.registries import Item, Registry, RegistryMeta
 from ..loggers import logger
-from ..patches.py import descendant_classes, get_classes
+from ..patches.py_ import descendant_classes, get_classes
 from ..patches.torch import PrefetchDataLoader, get_world_size
 from .partial import PartialRegistry
 

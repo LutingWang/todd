@@ -7,7 +7,7 @@ from typing import Iterable, Mapping
 
 import torch
 
-from todd.patches.py import classproperty
+from todd.patches.py_ import classproperty
 
 from ..bpe import TokenSequence
 

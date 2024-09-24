@@ -7,7 +7,7 @@ from typing import Any
 import yapf.yapflib.yapf_api as yapf
 
 from ..bases.configs import Config
-from ..patches.py import exec_
+from ..patches.py_ import exec_
 from ..registries import ConfigRegistry
 from .serialize import SerializeMixin
 

@@ -8,7 +8,7 @@ from typing import Any, no_type_check
 
 from ..bases.configs import Config
 from ..bases.registries import Item, RegistryMeta
-from ..patches.py import NonInstantiableMeta
+from ..patches.py_ import NonInstantiableMeta
 
 
 class PartialRegistryMeta(RegistryMeta):

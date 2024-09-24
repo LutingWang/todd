@@ -14,7 +14,7 @@ import torch
 import torch.distributed as dist
 
 from ..loggers import logger
-from ..patches.py import del_, get_, has_, set_
+from ..patches.py_ import del_, get_, has_, set_
 from ..patches.torch import get_world_size
 
 

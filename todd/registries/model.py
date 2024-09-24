@@ -13,7 +13,7 @@ from torch import nn
 from ..bases.configs import Config
 from ..bases.registries import Item, Registry, RegistryMeta
 from ..loggers import master_logger
-from ..patches.py import descendant_classes
+from ..patches.py_ import descendant_classes
 
 
 class InitWeightsMixin(nn.Module, ABC):

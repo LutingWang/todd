@@ -1,7 +1,7 @@
 import pytest
 from custom_types import CustomObject
 
-from todd.patches.py.builtins import del_, get_, has_, set_
+from todd.patches.py_.builtins import del_, get_, has_, set_
 
 
 def test_has(obj: CustomObject) -> None:
