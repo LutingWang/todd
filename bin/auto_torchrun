@@ -1,0 +1,22 @@
+#!zsh
+
+set -e
+
+if [[ -z ${nproc_per_node} ]]; then
+    if [[ -z ${CUDA_VISIBLE_DEVICES} ]]; then
+        nproc_per_node=$(nvidia-smi -L | wc -l)
+    else
+        nproc_per_node=$(echo ${CUDA_VISIBLE_DEVICES} | awk -F',' '{print NF}')
+    fi
+fi
+
+master_port=$(
+    comm -23
+        <(seq 5000 5099 | sort)
+        <(ss -Htua | awk '{print $5}' | grep -oP ':\K\d+(?=$)' | sort -u)
+    | head -n 1
+)
+
+set -x
+
+torchrun --nproc-per-node ${nproc_per_node} --master-port ${master_port} "$@"

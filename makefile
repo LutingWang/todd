@@ -1,4 +1,4 @@
-SHELL := /usr/bin/env zsh
+SHELL := zsh
 
 .PHONY: lint test coverage commit docs
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env zsh
+#!zsh
 
 doc="usage: $(basename $0) [-h] [--debug] [PARAM ...]
 
