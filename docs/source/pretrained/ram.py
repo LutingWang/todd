@@ -8,8 +8,10 @@ from todd.tasks.image_classification.models.ram import Categories
 from todd.utils import get_image
 
 url = (  # pylint: disable=invalid-name
-    'https://raw.githubusercontent.com/OPPOMKLab/recognize-anything/main/'
-    'images/demo/demo1.jpg'
+    # 'https://raw.githubusercontent.com/OPPOMKLab/recognize-anything/main/'
+    # 'images/demo/demo1.jpg'
+    'https://gitee.com/LutingWang/recognize-anything/raw/main/images/demo/'
+    'demo1.jpg'
 )
 image = get_image(url)
 
@@ -37,7 +39,7 @@ preds = categories.decode(logits)
 targets = [[
     'armchair', 'blanket', 'lamp', 'carpet', 'couch', 'dog', 'gray', 'green',
     'hassock', 'home', 'lay', 'living room', 'picture frame', 'pillow',
-    'plant', 'room', 'wall lamp', 'sit', 'wood floor'  # noqa: C812 E501 pylint: disable=line-too-long
+    'plant', 'room', 'wall lamp', 'sit', 'wood floor'  # noqa: C812
 ]]
 # yapf: enable
 

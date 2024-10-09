@@ -11,10 +11,8 @@ if [[ -z ${nproc_per_node} ]]; then
 fi
 
 master_port=$(
-    comm -23
-        <(seq 5000 5099 | sort)
-        <(ss -Htua | awk '{print $5}' | grep -oP ':\K\d+(?=$)' | sort -u)
-    | head -n 1
+    comm -23 <(seq 5000 5099 | sort) <(ss -Htua | awk '{print $5}' | grep -oP ':\K\d+(?=$)' | sort -u) |
+    head -n 1
 )
 
 set -x

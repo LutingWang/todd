@@ -24,6 +24,7 @@
     "logit",
     "LVIS",
     "multihead",
+    "Numbersbatch",
     "ODKD",
     "preds",
     "pretrained",

@@ -1,26 +1,65 @@
 __all__ = [
     'ConceptNet',
+    'ConceptNetNumbersbatch',
 ]
 
-from typing import cast
+from dataclasses import dataclass
+from typing import Any, TypedDict, cast
+from typing_extensions import Self
 
 import pandas as pd
-import torch
+
+from todd.loggers import logger
+
+DATA_ROOT = 'data/conceptnet'
 
 
-class ConceptNet:
+class Source(TypedDict):
+    contributor: str
+    process: str
 
-    def __init__(self) -> None:
-        df = pd.read_hdf('data/conceptnet/mini.h5')
-        self._embeddings = torch.from_numpy(df.to_numpy())
-        self._embedding_indices = {id_: i for i, id_ in enumerate(df.index)}
 
-    def embedding(self, key: str) -> torch.Tensor:
-        index = self._embedding_indices[key]
-        return self._embeddings[index]
+class Info(TypedDict):
+    dataset: str
+    license: str
+    sources: list[Source]
+    weight: float
 
-    def similarity(self, key1: str, key2: str) -> int:
-        embedding1 = self.embedding(key1).int()
-        embedding2 = self.embedding(key2).int()
-        similarity = torch.einsum('i, i -> ', embedding1, embedding2)
-        return cast(int, similarity.item())
+
+@dataclass(frozen=True)
+class Edge:
+    uri: str
+    relation: str
+    start: str
+    end: str
+    info: Info
+
+
+class ConceptNet(pd.DataFrame):
+
+    @classmethod
+    def load(
+        cls,
+        f: Any = f'{DATA_ROOT}/conceptnet-assertions-5.7.0.csv.gz',
+    ) -> Self:
+        logger.info("Loading %s", f)
+        df = pd.read_csv(
+            f,
+            sep='\t',
+            compression='gzip',
+            header=None,
+            names=list(Edge.__dataclass_fields__.keys()),  # noqa: E501 pylint: disable=no-member
+        )
+        df.__class__ = cls
+        return cast(Self, df)
+
+
+class ConceptNetNumbersbatch(pd.DataFrame):
+
+    @classmethod
+    def load(cls, f: Any = f'{DATA_ROOT}/mini.h5') -> Self:
+        logger.info("Loading %s", f)
+        df = pd.read_hdf(f)
+        assert isinstance(df, pd.DataFrame)
+        df.__class__ = cls
+        return cast(Self, df)

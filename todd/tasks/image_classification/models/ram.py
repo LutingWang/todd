@@ -4,8 +4,8 @@ __all__ = [
 
 import pathlib
 import re
-from collections import UserList
-from typing import Any, NamedTuple, Never, cast
+from dataclasses import dataclass
+from typing import Any, Never, cast
 from typing_extensions import Self
 
 import einops
@@ -137,13 +137,14 @@ class RAMplusStateDictConverterMixin(RAMStateDictConverterMixin):
         return key
 
 
-class Category(NamedTuple):
+@dataclass(frozen=True)
+class Category:
     name: str
     chinese_name: str
     threshold: float
 
 
-class Categories(UserList[Category]):
+class Categories(pd.DataFrame):
 
     @classmethod
     def load(cls, f: Any = None) -> Self:
@@ -152,34 +153,21 @@ class Categories(UserList[Category]):
         df = pd.read_csv(
             f,
             header=None,
-            names=Category._fields,
-            dtype=Category.__annotations__,
+            names=list(Category.__dataclass_fields__.keys()),  # noqa: E501 pylint: disable=no-member
         )
-        return cls(
-            df.itertuples(False, Category.__name__),  # type: ignore[arg-type]
-        )
-
-    @property
-    def names(self) -> list[str]:
-        return [category.name for category in self]
-
-    @property
-    def chinese_names(self) -> list[str]:
-        return [category.chinese_name for category in self]
-
-    @property
-    def thresholds(self) -> list[float]:
-        return [category.threshold for category in self]
+        df.__class__ = cls
+        return cast(Self, df)
 
     def decode(self, logits: torch.Tensor) -> list[list[str]]:
         prob = logits.sigmoid()
-        preds = prob > prob.new_tensor(self.thresholds)
-        outputs: list[list[str]] = [[] for _ in range(logits.shape[0])]
+        thresholds = torch.from_numpy(self.threshold.to_numpy()).to(logits)
+        preds = prob > thresholds
 
         i: int
         j: int
+        outputs: list[list[str]] = [[] for _ in range(logits.shape[0])]
         for i, j in preds.nonzero().tolist():
-            outputs[i].append(self[j].name)
+            outputs[i].append(self.name[j])
 
         return outputs
 
