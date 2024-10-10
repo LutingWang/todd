@@ -211,7 +211,7 @@ class NoGradMixin(InitWeightsMixin, BuildPreHookMixin, CheckMixin):
         return config
 
     def check(self, *args, **kwargs) -> None:
-        super().check(*args, **kwargs)
+        super().check(*args, **kwargs)  # type: ignore[safe-super]
         for _, parameter in self._no_grad_named_parameters():
             assert not parameter.requires_grad
 
@@ -335,7 +335,7 @@ class EvalMixin(InitWeightsMixin, BuildPreHookMixin, CheckMixin):
         return config
 
     def check(self, *args, **kwargs) -> None:
-        super().check(*args, **kwargs)
+        super().check(*args, **kwargs)  # type: ignore[safe-super]
         for _, module in self._eval_modules():
             assert not module.training
 

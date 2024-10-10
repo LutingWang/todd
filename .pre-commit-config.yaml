@@ -15,7 +15,7 @@ repos:
       - id: check-hooks-apply
       - id: check-useless-excludes
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v5.0.0
     hooks:
       - id: check-added-large-files
       - id: check-ast
@@ -59,7 +59,7 @@ repos:
       - id: trailing-whitespace
         exclude: ^tests/test_configs/py_/diff\.html$
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.8.0
+    rev: v1.11.2
     hooks:
       - id: mypy
         exclude: docs
@@ -70,14 +70,19 @@ repos:
           - types-requests
           - types-toml
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.2.6
+    rev: v2.3.0
     hooks:
       - id: codespell
         exclude_types:
           - jupyter
-        exclude: ^todd/tasks/image_classification/models/ram.csv$
+        exclude: |
+          (?x)^(
+            .github/CODE_OF_CONDUCT.md|
+            todd/tasks/image_classification/models/ram.csv|
+            CHANGELOG.md
+          )$
   - repo: https://github.com/commitizen-tools/commitizen
-    rev: v3.14.1
+    rev: v3.29.1
     hooks:
       - id: commitizen
   - repo: https://github.com/google/yapf
@@ -86,11 +91,11 @@ repos:
       - id: yapf
         require_serial: true
   - repo: https://github.com/pycqa/autoflake
-    rev: v2.2.1
+    rev: v2.3.1
     hooks:
       - id: autoflake
   - repo: https://github.com/pycqa/bandit
-    rev: 1.7.7
+    rev: 1.7.10
     hooks:
       - id: bandit
         args:
@@ -99,15 +104,15 @@ repos:
         additional_dependencies:
           - bandit[toml]
   - repo: https://github.com/pycqa/doc8
-    rev: v1.1.1
+    rev: v1.1.2
     hooks:
       - id: doc8
   - repo: https://github.com/pycqa/docformatter
-    rev: v1.7.5
+    rev: eb1df34
     hooks:
       - id: docformatter
   - repo: https://github.com/pycqa/flake8
-    rev: 7.0.0
+    rev: 7.1.1
     hooks:
       - id: flake8
         additional_dependencies:
