@@ -31,6 +31,7 @@ if TYPE_CHECKING:
 
     from todd.tasks.object_detection import BBox, FlattenBBoxesXYWH
 
+URL = 'http://images.cocodataset.org/'
 Split = Literal['train', 'val']
 Year = Literal[2014, 2017]
 
@@ -176,7 +177,7 @@ class COCODataset(BaseDataset[COCO, T]):
 
     @classmethod
     def url(cls, split: Split, year: Year, id_: int) -> str:
-        return f'http://images.cocodataset.org/{split}{year}/{id_:012d}.jpg'
+        return f'{URL}{split}{year}/{id_:012d}.jpg'
 
     def __init__(
         self,

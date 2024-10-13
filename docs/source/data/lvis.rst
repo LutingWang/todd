@@ -53,5 +53,6 @@ LVIS v1.0
 
     data/lvis/
     └── annotations
+        ├── lvis_v1_minival.json
         ├── lvis_v1_train.json
         └── lvis_v1_val.json

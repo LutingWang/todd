@@ -18,11 +18,12 @@ from ..registries import DatasetRegistry
 from .access_layers import PILAccessLayer
 from .coco import BaseDataset as BaseCOCODataset
 from .coco import BaseKeys as COCOKeys
+from .coco import URL
 
 if TYPE_CHECKING:
     from todd.tasks.object_detection import BBox, FlattenBBoxesXYWH
 
-Split = Literal['train', 'val']
+Split = Literal['train', 'val', 'minival']
 
 
 class Keys(COCOKeys):
@@ -34,7 +35,7 @@ class Keys(COCOKeys):
     def _getitem(self, image_id: int) -> str:
         image, = self._lvis.load_imgs([image_id])
         url: str = image['coco_url']
-        return url.removeprefix('http://images.cocodataset.org/')
+        return url.removeprefix(URL)
 
 
 @dataclass(frozen=True)
