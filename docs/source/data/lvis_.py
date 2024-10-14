@@ -1,5 +1,5 @@
-from typing import Any, cast
 import json
+from typing import Any, cast
 
 from todd.datasets.coco import URL
 from todd.datasets.lvis import LVISDataset

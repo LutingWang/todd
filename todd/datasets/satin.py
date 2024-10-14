@@ -6,11 +6,10 @@ import io
 import pathlib
 from typing import Any, Literal, TypedDict
 
+import datasets
 import torch
 import torchvision.transforms.functional as F
 from PIL import Image
-
-import datasets
 
 from ..bases.configs import Config
 from ..patches.pil import convert_rgb

@@ -16,9 +16,9 @@ from lvis.boundary_utils import ann_to_mask
 
 from ..registries import DatasetRegistry
 from .access_layers import PILAccessLayer
+from .coco import URL
 from .coco import BaseDataset as BaseCOCODataset
 from .coco import BaseKeys as COCOKeys
-from .coco import URL
 
 if TYPE_CHECKING:
     from todd.tasks.object_detection import BBox, FlattenBBoxesXYWH

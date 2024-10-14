@@ -128,6 +128,9 @@ split_before_arithmetic_operator = true
 extra_standard_library = [
     'typing_extensions',
 ]
+known_third_party = [
+    'datasets',
+]
 profile = 'hug'
 src_paths = [
     'tests',

@@ -7,7 +7,6 @@ https://satinbenchmark.github.io/
 
     root=data/satin
     mkdir -p ${root}
-    pip install datasets
     python satin.py
 
 .. code::
