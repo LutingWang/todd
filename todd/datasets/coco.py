@@ -1,4 +1,5 @@
 __all__ = [
+    'coco_url',
     'COCODataset',
 ]
 
@@ -34,6 +35,10 @@ if TYPE_CHECKING:
 URL = 'http://images.cocodataset.org/'
 Split = Literal['train', 'val']
 Year = Literal[2014, 2017]
+
+
+def coco_url(split: Split, year: Year, id_: int) -> str:
+    return f'{URL}{split}{year}/{id_:012d}.jpg'
 
 
 class BaseKeys(KeysProtocol[str], ABC):
@@ -84,8 +89,12 @@ class Annotation:
         annotation: '_Annotation',
         categories: Mapping[int, int],
     ) -> Self:
+        mask = (
+            torch.from_numpy(coco.annToMask(annotation))
+            if 'segmentation' in annotation else torch.zeros(1)
+        )
         return cls(
-            torch.from_numpy(coco.annToMask(annotation)),
+            mask,
             annotation['area'],
             bool(annotation['iscrowd']),
             cast('BBox', annotation['bbox']),
@@ -174,10 +183,6 @@ class COCODataset(BaseDataset[COCO, T]):
 
     DATA_ROOT = pathlib.Path('data/coco')
     ANNOTATIONS_ROOT = DATA_ROOT / 'annotations'
-
-    @classmethod
-    def url(cls, split: Split, year: Year, id_: int) -> str:
-        return f'{URL}{split}{year}/{id_:012d}.jpg'
 
     def __init__(
         self,

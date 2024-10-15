@@ -12,4 +12,5 @@ from .pil import *
 from .registries import *
 from .sa_med2d import *
 from .satin import *
+from .v3det import *
 from .zip import *

@@ -24,6 +24,7 @@ if TYPE_CHECKING:
     from todd.tasks.object_detection import BBox, FlattenBBoxesXYWH
 
 Split = Literal['train', 'val', 'minival']
+Version = Literal['v0.5', 'v1']
 
 
 class Keys(COCOKeys):
@@ -115,7 +116,7 @@ class LVISDataset(BaseCOCODataset[LVIS, T]):
         self,
         *args,
         split: Split,
-        version: Literal['v0.5', 'v1'] = 'v1',
+        version: Version = 'v1',
         access_layer: PILAccessLayer | None = None,
         annotations_file: pathlib.Path | str | None = None,
         **kwargs,
