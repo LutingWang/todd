@@ -1,11 +1,11 @@
-Object365
-=========
+Objects365
+==========
 
 https://www.objects365.org/
 
 .. code-block:: bash
 
-    root=data/object365
+    root=data/objects365
     mkdir -p ${root} && cd ${root}
         mkdir annotations train val
     cd ../..
@@ -23,10 +23,10 @@ https://www.objects365.org/
 
 .. code::
 
-    data/object365/
+    data/objects365/
 
-Object365 v1
-------------
+Objects365 v1
+-------------
 
 .. code-block:: bash
 
@@ -42,8 +42,8 @@ Object365 v1
         cd ../..
     cd ../..
 
-Object365 v2
-------------
+Objects365 v2
+-------------
 
 .. code-block:: bash
 

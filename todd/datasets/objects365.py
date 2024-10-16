@@ -130,7 +130,7 @@ class T(TypedDict):
 class Objects365Dataset(BaseCOCODataset[COCO, T]):
     _keys: Keys
 
-    DATA_ROOT = pathlib.Path('data/object365')
+    DATA_ROOT = pathlib.Path('data/objects365')
     ANNOTATIONS_ROOT = DATA_ROOT / 'annotations'
 
     IGNORE_KEYS = (
