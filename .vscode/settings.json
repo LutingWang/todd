@@ -42,7 +42,6 @@
     "xywh",
     "xyxy"
   ],
-  "files.trimTrailingWhitespace": true,
   "python.analysis.exclude": [
     "**/data",
     "**/pretrained",
