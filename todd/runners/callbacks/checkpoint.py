@@ -82,7 +82,7 @@ class CheckpointCallback(IntervalMixin[T], BaseCallback[T]):
             torch.save(v, checkpoint_dir / f'{k}.pth')
 
         self.latest_checkpoint_dir.unlink(True)
-        self.latest_checkpoint_dir.symlink_to(checkpoint_dir, True)
+        self.latest_checkpoint_dir.symlink_to(checkpoint_dir.absolute(), True)
 
     def after_run_iter(self, batch, memo: Memo) -> None:
         super().after_run_iter(batch, memo)
