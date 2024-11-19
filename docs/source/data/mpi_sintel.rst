@@ -16,7 +16,7 @@ http://sintel.is.tue.mpg.de/
     :language: python
     :linenos:
 
-.. literalinclude:: sintel.py
+.. literalinclude:: mpi_sintel.py
     :language: python
     :linenos:
 

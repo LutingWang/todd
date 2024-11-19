@@ -10,14 +10,14 @@ Welcome to todd's documentation!
 
 .. toctree::
    :glob:
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Data:
 
    data/*
 
 .. toctree::
    :glob:
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Pretrained:
 
    pretrained/*

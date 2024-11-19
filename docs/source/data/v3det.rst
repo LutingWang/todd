@@ -19,6 +19,7 @@ https://v3det.openxlab.org.cn/
     mkdir v3det & cd v3det
         ln -s ${PWD}/../${repo}/V3Det/images
         mkdir annotations && cd annotations
+            ln -s ${PWD}/../../${repo}/category_name_13204_v3det_2023_v1.txt
             ln -s ${PWD}/../../${repo}/*.json .
         cd ..
     cd ..

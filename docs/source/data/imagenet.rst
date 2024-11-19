@@ -6,6 +6,8 @@ https://image-net.org/
 ImageNet-1k
 -----------
 
+Run the following shell commands to prepare the dataset.
+
 .. code-block:: bash
 
     root=data/imagenet
@@ -22,9 +24,9 @@ ImageNet-1k
 
     python imagenet_1k.py
 
-.. literalinclude:: imagenet_1k.py
-    :language: python
-    :linenos:
+:download:`imagenet_1k.py <imagenet_1k.py>` is used to rename image files and
+generate the annotations.
+After processing, the directory structure should look like:
 
 .. code::
 
@@ -37,8 +39,21 @@ ImageNet-1k
     │   │   ├── 18.JPEG
     │   │   └── ...
     |   └── ...
-    └── val
-        ├── n1440764
-        │   ├── 293.JPEG
-        │   └── ...
-        └── ...
+    ├── val
+    │   ├── n1440764
+    │   │   ├── 293.JPEG
+    │   │   └── ...
+    |   └── ...
+    └── synsets.json
+
+Both ``train.json`` and ``val.json`` exhibit the following structure:
+
+.. code-block:: python
+
+    [{"image":"12925.JPEG","synset_id":449},...]
+
+``synsets.json`` contains the mapping from synset ID to synset information:
+
+.. code-block:: python
+
+    {"1":{"WNID":"n02119789","words":"kit fox, Vulpes macrotis",...},...}
