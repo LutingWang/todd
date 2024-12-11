@@ -26,6 +26,7 @@ Prerequisites:
 
 - torch
 - torchvision
+- torchaudio
 
 ```bash
 pip install git+https://github.com/lvis-dataset/lvis-api.git@lvis_challenge_2021

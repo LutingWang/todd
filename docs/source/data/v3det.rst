@@ -29,3 +29,12 @@ https://v3det.openxlab.org.cn/
 .. code::
 
     data/v3det/
+    └── images
+        ├── a00000066
+        │   ├── 0_2530_11591900204_c1c10c1531_c.jpg
+        │   └── ...
+        └── ...
+
+The training split contains 183,354 images, the validation split contains
+29,821 images, and the test split contains 29,863 images.
+There is a total of 13,432 categories in the images folder.
