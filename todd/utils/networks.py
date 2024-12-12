@@ -9,7 +9,8 @@ from io import BytesIO
 import numpy as np
 import numpy.typing as npt
 import requests
-import soundfile as sf
+import torch
+import torchaudio
 from PIL import Image
 
 
@@ -25,5 +26,5 @@ def get_image(url: str) -> npt.NDArray[np.uint8]:
         return np.array(image)
 
 
-def get_audio(url: str) -> tuple[npt.NDArray[np.float64], int]:
-    return sf.read(get_bytes(url))
+def get_audio(url: str) -> tuple[torch.Tensor, int]:
+    return torchaudio.load(get_bytes(url))

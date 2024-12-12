@@ -1,3 +1,4 @@
+import einops
 from transformers import AutomaticSpeechRecognitionPipeline, pipeline
 
 from todd.utils import get_audio
@@ -6,6 +7,8 @@ audio, _ = get_audio(
     'https://github.com/SWivid/F5-TTS/raw/refs/heads/main/'
     'src/f5_tts/infer/examples/basic/basic_ref_zh.wav',
 )
+audio_array = audio.numpy()
+audio_array = einops.rearrange(audio_array, '1 t -> t')
 
 pipe: AutomaticSpeechRecognitionPipeline = pipeline(
     'automatic-speech-recognition',
@@ -14,17 +17,20 @@ pipe: AutomaticSpeechRecognitionPipeline = pipeline(
     device_map='auto',
 )
 
-result = pipe(audio)
+result = pipe(audio_array)
 print(result)
 
-result = pipe(audio, generate_kwargs=dict(language='zh'))
+result = pipe(audio_array, generate_kwargs=dict(language='zh'))
 print(result)
 
-result = pipe(audio, generate_kwargs=dict(task='translate', language='en'))
+result = pipe(
+    audio_array,
+    generate_kwargs=dict(task='translate', language='en'),
+)
 print(result)
 
-result = pipe(audio, return_timestamps=True)
+result = pipe(audio_array, return_timestamps=True)
 print(result)
 
-result = pipe(audio, return_timestamps='word')
+result = pipe(audio_array, return_timestamps='word')
 print(result)
