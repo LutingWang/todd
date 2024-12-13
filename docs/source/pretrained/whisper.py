@@ -10,27 +10,24 @@ audio, _ = get_audio(
 audio_array = audio.numpy()
 audio_array = einops.rearrange(audio_array, '1 t -> t')
 
-pipe: AutomaticSpeechRecognitionPipeline = pipeline(
+p: AutomaticSpeechRecognitionPipeline = pipeline(
     'automatic-speech-recognition',
-    model='pretrained/whisper/whisper-large-v3-turbo',
+    'pretrained/whisper/whisper-large-v3-turbo',
     torch_dtype='auto',
     device_map='auto',
 )
 
-result = pipe(audio_array)
+result = p(audio_array)
 print(result)
 
-result = pipe(audio_array, generate_kwargs=dict(language='zh'))
+result = p(audio_array, generate_kwargs=dict(language='zh'))
 print(result)
 
-result = pipe(
-    audio_array,
-    generate_kwargs=dict(task='translate', language='en'),
-)
+result = p(audio_array, generate_kwargs=dict(task='translate', language='en'))
 print(result)
 
-result = pipe(audio_array, return_timestamps=True)
+result = p(audio_array, return_timestamps=True)
 print(result)
 
-result = pipe(audio_array, return_timestamps='word')
+result = p(audio_array, return_timestamps='word')
 print(result)
