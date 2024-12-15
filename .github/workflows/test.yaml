@@ -14,6 +14,7 @@ jobs:
           - python: "3.11"
             torch: "2.2.2"
             torchvision: "0.17.2"
+            torchaudio: "2.2.2"
     steps:
       - uses: LutingWang/todd/.github/actions/checkout-todd@main
         with:
@@ -24,7 +25,7 @@ jobs:
       - name: Test
         run: |
           pip install -U setuptools wheel
-          pip install torch==${{ matrix.torch }} torchvision==${{ matrix.torchvision }}
+          pip install torch==${{ matrix.torch }} torchvision==${{ matrix.torchvision }} torchaudio==${{ matrix.torchaudio }}
           pip install git+https://github.com/lvis-dataset/lvis-api.git@lvis_challenge_2021 --no-build-isolation
           pip install .[optional,test]
           mim install mmcv

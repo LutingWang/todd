@@ -64,7 +64,7 @@ repos:
       - id: mypy
         exclude: docs
         additional_dependencies:
-          - numpy
+          - numpy<2.0
           - pandas-stubs
           - types-Pillow
           - types-requests

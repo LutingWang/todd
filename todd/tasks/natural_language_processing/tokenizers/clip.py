@@ -11,8 +11,8 @@ from typing import Any
 import ftfy
 import regex as re
 
-from ..bpe import BPE, TokenSequence
-from .base import BaseTokenizer
+from ..bpe import BPE
+from .base import BaseTokenizer, TokenSequence
 
 UTF_8 = 'utf-8'
 

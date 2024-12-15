@@ -1,4 +1,7 @@
 __all__ = [
+    'Token',
+    'TokenPair',
+    'TokenSequence',
     'BaseTokenizer',
 ]
 
@@ -9,7 +12,9 @@ import torch
 
 from todd.patches.py_ import classproperty
 
-from ..bpe import TokenSequence
+Token = int
+TokenPair = tuple[Token, Token]
+TokenSequence = list[Token]
 
 
 class BaseTokenizer:

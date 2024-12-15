@@ -15,9 +15,7 @@ from torch import nn
 from todd.loggers import logger
 from todd.utils import ArgsKwargs, SerializeMixin
 
-Token = int
-TokenPair = tuple[Token, Token]
-TokenSequence = list[Token]
+from .tokenizers import Token, TokenPair, TokenSequence
 
 T = TypeVar('T', bound=nn.Module)
 
