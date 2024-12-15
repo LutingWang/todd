@@ -24,8 +24,8 @@ class BaseTokenizer:
     def __init__(
         self,
         *args,
-        text2token: Mapping[str, int],
-        special_text2token: Mapping[str, int],
+        text2token: Mapping[str, Token],
+        special_text2token: Mapping[str, Token],
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
@@ -75,7 +75,7 @@ class BaseTokenizer:
             tokens[i, :len(token_sequence)] = torch.tensor(token_sequence)
         return tokens
 
-    def _token_to_text(self, token: int) -> str:
+    def _token_to_text(self, token: Token) -> str:
         if token in self._special_token2text:
             return self._special_token2text[token]
         return self._token2text[token]
