@@ -1,11 +1,13 @@
 __all__ = [
     'BATCHNORMS',
     'AdaptiveGroupNorm',
+    'AdaptiveLayerNorm',
 ]
 
-import einops
+import math
+from abc import ABC, abstractmethod
+
 import torch
-import torch.nn.functional as F
 from torch import nn
 from torch.nn.modules import batchnorm
 
@@ -33,23 +35,76 @@ BATCHNORMS = (
 )
 
 
-@NormRegistry.register_('AGN')
-class AdaptiveGroupNorm(nn.GroupNorm):
+class AdaptiveMixin(nn.Module, ABC):
+    _linear: nn.Linear
 
     def __init__(self, *args, condition_dim: int, **kwargs) -> None:
-        super().__init__(*args, affine=False, **kwargs)  # type: ignore[misc]
-        self._linear = nn.Linear(condition_dim, self.num_channels * 2)
+        super().__init__(*args, **kwargs)
+        self._condition_dim = condition_dim
 
-    def forward(  # pylint: disable=arguments-renamed
+    @abstractmethod
+    def _forward(
         self,
         x: torch.Tensor,
-        condition: torch.Tensor | None = None,
+        condition: torch.Tensor,
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        pass
+
+    def forward(
+        self,
+        *args,
+        condition: torch.Tensor,
+        **kwargs,
     ) -> torch.Tensor:
-        x = F.group_norm(x, self.num_groups, eps=self.eps)
-        if condition is None:
-            return x
-        c: torch.Tensor = condition.mean((2, 3))
-        c = self._linear(c)
-        c = einops.rearrange(c, 'b c -> b c 1 1')
-        weight, bias = c.chunk(2, dim=1)
+        x: torch.Tensor = super().forward(*args, **kwargs)
+        condition = self._linear(condition)
+        weight, bias = self._forward(x, condition)
         return x * (1 + weight) + bias
+
+
+@NormRegistry.register_('AdaGN')
+class AdaptiveGroupNorm(AdaptiveMixin, nn.GroupNorm):  # type: ignore[misc]
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, affine=False, **kwargs)
+        self._linear = nn.Linear(self._condition_dim, self.num_channels * 2)
+
+    def _forward(
+        self,
+        x: torch.Tensor,
+        condition: torch.Tensor,
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        assert x.dim() >= 2
+        assert condition.dim() == 2
+        shape = condition.shape + (1, ) * x.dim()
+        condition = condition.reshape(shape[:x.dim()])
+        weight, bias = condition.chunk(2, 1)
+        return weight, bias
+
+
+@NormRegistry.register_('AdaLN')
+class AdaptiveLayerNorm(AdaptiveMixin, nn.LayerNorm):  # type: ignore[misc]
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(
+            *args,
+            elementwise_affine=False,
+            **kwargs,
+        )
+        self._linear = nn.Linear(
+            self._condition_dim,
+            math.prod(self.normalized_shape) * 2,
+        )
+
+    def _forward(
+        self,
+        x: torch.Tensor,
+        condition: torch.Tensor,
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        shape: tuple[int, ...] = condition.shape[:-1]
+        assert len(shape) + len(self.normalized_shape) <= x.dim()
+        shape = shape + (1, ) * x.dim()
+        shape = shape[:x.dim()]
+        shape = shape[:-len(self.normalized_shape)] + self.normalized_shape
+        weight, bias = condition.chunk(2, -1)
+        return weight.reshape(shape), bias.reshape(shape)

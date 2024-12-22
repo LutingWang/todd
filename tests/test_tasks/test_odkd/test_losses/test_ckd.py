@@ -29,7 +29,7 @@ class CustomAdapt(BaseAdapt):
         feat = feat[valid_idx]
         bboxes = bboxes[valid_idx]
         pos = pos[valid_idx]
-        bs, level, h, w, id_ = pos.split(1, 1)
+        bs, level, h, w, id_ = pos.split(1, 1)  # TODO: use torch.unbind
         bbox_list = [bboxes[bs.flatten() == i] for i in range(2)]
         h = torch.div(h, self._stride, rounding_mode='trunc')
         w = torch.div(w, self._stride, rounding_mode='trunc')

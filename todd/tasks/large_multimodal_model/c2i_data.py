@@ -23,9 +23,9 @@ class C2IEnum(enum.Enum):
 class C2IData(X2IData[C2IEnum]):
 
     def __init__(self, category_tokens: torch.Tensor, *args, **kwargs) -> None:
-        if category_tokens.ndim == 1:
+        if category_tokens.dim() == 1:
             category_tokens = einops.rearrange(category_tokens, 'b -> b 1')
-        assert category_tokens.ndim == 2
+        assert category_tokens.dim() == 2
 
         super().__init__(
             category_tokens,

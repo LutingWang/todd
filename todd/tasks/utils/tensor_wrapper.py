@@ -36,7 +36,7 @@ class TensorWrapper(SerializeMixin, ABC, Generic[T]):
         """
 
     def __init__(self, tensor: torch.Tensor, *args, **kwargs) -> None:
-        assert tensor.ndim > self.OBJECT_DIMENSIONS
+        assert tensor.dim() > self.OBJECT_DIMENSIONS
         super().__init__(*args, **kwargs)
         self._tensor = tensor
 
@@ -50,7 +50,7 @@ class TensorWrapper(SerializeMixin, ABC, Generic[T]):
 
     def __getitem__(self, key: Any) -> Self | T:
         tensor = self._tensor[key]
-        if tensor.ndim == self.OBJECT_DIMENSIONS:
+        if tensor.dim() == self.OBJECT_DIMENSIONS:
             return self.to_object(tensor)
         return self.copy(tensor)
 
@@ -92,7 +92,7 @@ class FlattenMixin(TensorWrapper[T], ABC):
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        assert self._tensor.ndim == self.OBJECT_DIMENSIONS + 1
+        assert self._tensor.dim() == self.OBJECT_DIMENSIONS + 1
 
     def __len__(self) -> int:
         return self._tensor.shape[0]

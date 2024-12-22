@@ -6,6 +6,7 @@ Whisper
     root=pretrained/whisper
     mkdir -p ${root} && cd ${root}
     git clone git@hf.co:openai/whisper-large-v3-turbo
+    cd ../..
 
 .. code::
 

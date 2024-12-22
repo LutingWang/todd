@@ -61,6 +61,8 @@ class Inception(
         self._inception = inception
 
     def init_weights(self, config: todd.Config) -> bool:
+        # https://github.com/mseitzer/pytorch-fid/releases/download/
+        # fid_weights/pt_inception-2015-12-05-6726825d.pth
         f = config.get('pretrained', 'pretrained/pytorch-fid/pt_inception.pth')
         state_dict: dict[str, torch.Tensor] = torch.load(f)
         state_dict.pop('fc.weight')

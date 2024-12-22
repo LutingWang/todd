@@ -16,7 +16,7 @@ class ColorMap:
         self._color_map = color_map
 
     def __call__(self, tensor: torch.Tensor) -> npt.NDArray[np.uint8]:
-        assert tensor.ndim == 2
+        assert tensor.dim() == 2
         tensor = tensor - tensor.min()
         tensor = tensor / tensor.max()
         tensor = tensor * 255

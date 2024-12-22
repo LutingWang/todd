@@ -10,8 +10,6 @@ from ...patches.torch import Sequential
 from ..utils import interpolate_position_embedding
 from .transformer import Block
 
-# TODO: merge with torchvision
-
 
 class ViT(nn.Module):
     BLOCK_TYPE = Block
@@ -70,7 +68,7 @@ class ViT(nn.Module):
         )
         position_embedding = einops.rearrange(
             position_embedding,
-            '... -> 1 ...',
+            'n c -> 1 n c',
         )
         return position_embedding
 

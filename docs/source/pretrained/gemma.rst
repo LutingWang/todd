@@ -7,6 +7,7 @@ Gemma
     mkdir -p ${root} && cd ${root}
     git clone git@hf.co:google/gemma-1.1-2b-it
     git clone git@hf.co:google/gemma-1.1-7b-it
+    cd ../..
 
 .. code::
 

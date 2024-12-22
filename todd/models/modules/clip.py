@@ -18,12 +18,49 @@ from .transformer import Block, Transformer
 from .vit import ViT
 
 
-class CLIPStateDictConverterMixin(StateDictConverter):
+class CLIPStateDictConverterMixin(StateDictConverter, ABC):
 
     def load(self, *args, **kwargs) -> StateDict:
         f, *args = args  # type: ignore[assignment]
         module: nn.Module = torch.jit.load(f, 'cpu', *args, **kwargs)
         return module.state_dict()
+
+
+class CLIPTransformerStateDictConverterMixin(CLIPStateDictConverterMixin, ABC):
+
+    def _convert_transformer_block_mlp(self, key: str) -> str:
+        if key.startswith('c_fc.'):
+            key = key.removeprefix('c_fc.')
+            key = '0.' + key
+        elif key.startswith('gelu.'):
+            key = key.removeprefix('gelu.')
+            key = '1.' + key
+        elif key.startswith('c_proj.'):
+            key = key.removeprefix('c_proj.')
+            key = '2.' + key
+        else:
+            raise ValueError(f"Unknown key: {key}")
+        return f'_mlp.{key}'
+
+    def _convert_transformer_block(self, key: str) -> str:
+        if key.startswith(('ln_1.', 'ln_2.')):
+            key = key.removeprefix('ln_')
+            return f'_norm{key}'
+        if key.startswith('attn.'):
+            key = key.removeprefix('attn.')
+            return '_attention.' + key
+        if key.startswith('mlp.'):
+            key = key.removeprefix('mlp.')
+            return self._convert_transformer_block_mlp(key)
+        return key
+
+    def _convert_transformer(self, key: str) -> str:
+        assert key.startswith('resblocks.')
+        key = key.removeprefix('resblocks.')
+        index = key.index('.') + 1
+        prefix = key[:index]
+        key = key[index:]
+        return '_blocks.' + prefix + self._convert_transformer_block(key)
 
 
 class CLIPMixin(PretrainedMixin, ABC):
@@ -59,43 +96,10 @@ class CLIPVisionStateDictConverterMixin(CLIPStateDictConverterMixin, ABC):
         return None
 
 
-class CLIPViTStateDictConverter(CLIPVisionStateDictConverterMixin):
-
-    def _convert_visual_transformer_block_mlp(self, key: str) -> str:
-        if key.startswith('c_fc.'):
-            key = key.removeprefix('c_fc.')
-            key = '0.' + key
-        elif key.startswith('gelu.'):
-            key = key.removeprefix('gelu.')
-            key = '1.' + key
-        elif key.startswith('c_proj.'):
-            key = key.removeprefix('c_proj.')
-            key = '2.' + key
-        else:
-            raise ValueError(f"Unknown key: {key}")
-        return f'_mlp.{key}'
-
-    def _convert_visual_transformer_block(self, key: str) -> str:
-        if key.startswith(('ln_1.', 'ln_2.')):
-            key = key.removeprefix('ln_')
-            return f'_norm{key}'
-        if key.startswith('attn.'):
-            key = key.removeprefix('attn.')
-            return '_attention.' + key
-        if key.startswith('mlp.'):
-            key = key.removeprefix('mlp.')
-            return self._convert_visual_transformer_block_mlp(key)
-        return key
-
-    def _convert_visual_transformer(self, key: str) -> str:
-        assert key.startswith('resblocks.')
-        key = key.removeprefix('resblocks.')
-        index = key.index('.') + 1
-        prefix = key[:index]
-        key = key[index:]
-        return (
-            '_blocks.' + prefix + self._convert_visual_transformer_block(key)
-        )
+class CLIPViTStateDictConverter(
+    CLIPVisionStateDictConverterMixin,
+    CLIPTransformerStateDictConverterMixin,
+):
 
     def _convert_visual(self, key: str) -> str | None:
         if key.startswith('conv1.'):
@@ -103,10 +107,10 @@ class CLIPViTStateDictConverter(CLIPVisionStateDictConverterMixin):
             return f'_patch_embedding.{key}'
         if key.startswith('transformer.'):
             key = key.removeprefix('transformer.')
-            return self._convert_visual_transformer(key)
+            return self._convert_transformer(key)
         if key.startswith('ln_pre.'):
             key = key.removeprefix('ln_pre.')
-            return f'_norm_pre.{key}'
+            return f'_norm_pre.{key}'  # TODO: rename _norm_pre
         if key.startswith('ln_post.'):
             key = key.removeprefix('ln_post.')
             return f'_norm.{key}'
@@ -179,41 +183,7 @@ class CLIPViT(CLIPMixin, ViT):
         return cls_, x
 
 
-class CLIPTextStateDictConverterMixin(CLIPStateDictConverterMixin, ABC):
-
-    def _convert_transformer_block_mlp(self, key: str) -> str:
-        if key.startswith('c_fc.'):
-            key = key.removeprefix('c_fc.')
-            key = '0.' + key
-        elif key.startswith('gelu.'):
-            key = key.removeprefix('gelu.')
-            key = '1.' + key
-        elif key.startswith('c_proj.'):
-            key = key.removeprefix('c_proj.')
-            key = '2.' + key
-        else:
-            raise ValueError(f"Unknown key: {key}")
-        return f'_mlp.{key}'
-
-    def _convert_transformer_block(self, key: str) -> str:
-        if key.startswith(('ln_1.', 'ln_2.')):
-            key = key.removeprefix('ln_')
-            return f'_norm{key}'
-        if key.startswith('attn.'):
-            key = key.removeprefix('attn.')
-            return '_attention.' + key
-        if key.startswith('mlp.'):
-            key = key.removeprefix('mlp.')
-            return self._convert_transformer_block_mlp(key)
-        return key
-
-    def _convert_transformer(self, key: str) -> str:
-        assert key.startswith('resblocks.')
-        key = key.removeprefix('resblocks.')
-        index = key.index('.') + 1
-        prefix = key[:index]
-        key = key[index:]
-        return '_blocks.' + prefix + self._convert_transformer_block(key)
+class CLIPTextStateDictConverterMixin(CLIPTransformerStateDictConverterMixin):
 
     def _convert(self, key: str) -> str | None:
         if key == 'text_projection':
