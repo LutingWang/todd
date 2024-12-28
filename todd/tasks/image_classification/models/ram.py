@@ -280,7 +280,7 @@ class Decoder(BertModel):  # pylint: disable=abstract-method
         )
 
         logits = self._out_linear(embedding)
-        logits = einops.rearrange(logits, '... 1 -> ...')  # TODO: specify ...
+        logits = einops.rearrange(logits, 'b k 1 -> b k')
         return logits
 
 

@@ -110,7 +110,7 @@ class CLIPViTStateDictConverter(
             return self._convert_transformer(key)
         if key.startswith('ln_pre.'):
             key = key.removeprefix('ln_pre.')
-            return f'_norm_pre.{key}'  # TODO: rename _norm_pre
+            return f'_pre_norm.{key}'
         if key.startswith('ln_post.'):
             key = key.removeprefix('ln_post.')
             return f'_norm.{key}'
@@ -145,7 +145,7 @@ class CLIPViT(CLIPMixin, ViT):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._patch_embedding.bias = None
-        self._norm_pre = nn.LayerNorm(self.width)
+        self._pre_norm = nn.LayerNorm(self.width)
 
     def forward(
         self,
@@ -166,7 +166,7 @@ class CLIPViT(CLIPMixin, ViT):
         )
 
         x = x + position_embedding
-        x = self._norm_pre(x)
+        x = self._pre_norm(x)
         x = self._blocks(x)
         x = self._norm(x)
 

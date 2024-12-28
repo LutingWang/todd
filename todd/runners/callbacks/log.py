@@ -73,7 +73,6 @@ class LogCallback(IntervalMixin[T], BaseCallback[T]):
             return
         prefix = f"Iter [{self.runner.iter_}/{self.runner.iters}] "
 
-        # TODO: time callback
         if self._eta is not None:
             eta = self._eta(self.runner.iter_)
             eta = round(eta)

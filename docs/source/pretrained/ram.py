@@ -8,10 +8,8 @@ from todd.tasks.image_classification.models.ram import Categories
 from todd.utils import get_image
 
 url = (  # pylint: disable=invalid-name
-    # 'https://raw.githubusercontent.com/OPPOMKLab/recognize-anything/main/'
-    # 'images/demo/demo1.jpg'
-    'https://gitee.com/LutingWang/recognize-anything/raw/main/images/demo/'
-    'demo1.jpg'
+    'https://raw.githubusercontent.com/OPPOMKLab/recognize-anything/main/'
+    'images/demo/demo1.jpg'
 )
 image = get_image(url)
 
