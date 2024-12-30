@@ -45,7 +45,7 @@ class NamedMembersFilter(BaseFilter[tuple[str, T]]):
         return self._names
 
     @property
-    def regex(self) -> re.Pattern:
+    def regex(self) -> re.Pattern[str]:
         assert self._regex is not None
         return self._regex
 

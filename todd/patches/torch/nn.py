@@ -113,7 +113,7 @@ def load_state_dict_(
         from ...loggers import master_logger as logger
     assert logger is not None
 
-    state_dict = dict()
+    state_dict: dict[str, Any] = dict()
     for f_ in f_list:
         logger.info("Loading model from %s", f_)
         state_dict.update(load(f_, 'cpu', *args, **kwargs))

@@ -1,5 +1,3 @@
-# pylint: disable=duplicate-code
-
 __all__ = [
     'DINOStateDictConverter',
     'DINO',
@@ -7,87 +5,18 @@ __all__ = [
     'DINOv2',
 ]
 
+from typing import cast
+
 import einops
 import torch
 from torch import nn
 
-from ...utils import StateDict, StateDictConverter
+from ...patches.torch import Sequential
+from ...utils import StateDict, StateDictConverter, set_temp
+from ...utils.state_dicts import parallel_conversion
 from .pretrained import PretrainedMixin
 from .transformer import Block
 from .vit import ViT
-
-
-class DINOStateDictConverterMixin(StateDictConverter):
-
-    def _convert_patch_embed(self, key: str) -> str:
-        assert key.startswith('proj.')
-        key = key.removeprefix('proj.')
-        return f'_patch_embedding.{key}'
-
-    def _convert_block_attn(self, key: str) -> str:
-        if key.startswith('qkv.'):
-            key = key.removeprefix('qkv.')
-            key = f'in_proj_{key}'
-        elif key.startswith('proj.'):
-            key = f'out_{key}'
-        return f'_attention.{key}'
-
-    def _convert_block_mlp(self, key: str) -> str:
-        if key.startswith('fc1.'):
-            key = key.removeprefix('fc1.')
-            key = '0.' + key
-        elif key.startswith('act.'):
-            key = key.removeprefix('act.')
-            key = '1.' + key
-        elif key.startswith('fc2.'):
-            key = key.removeprefix('fc2.')
-            key = '2.' + key
-        else:
-            raise ValueError(f"Unknown key: {key}")
-        return f'_mlp.{key}'
-
-    def _convert_block(self, key: str) -> str:
-        if key.startswith(('norm1.', 'norm2.')):
-            return f'_{key}'
-        if key.startswith('attn.'):
-            key = key.removeprefix('attn.')
-            return self._convert_block_attn(key)
-        if key.startswith('mlp.'):
-            key = key.removeprefix('mlp.')
-            return self._convert_block_mlp(key)
-        return key
-
-    def _convert_blocks(self, key: str) -> str:
-        index = key.index('.') + 1
-        prefix = key[:index]
-        key = key[index:]
-        return '_blocks.' + prefix + self._convert_block(key)
-
-    def _convert(self, key: str) -> str | None:
-        if key.startswith('patch_embed.'):
-            key = key.removeprefix('patch_embed.')
-            return self._convert_patch_embed(key)
-        if key.startswith('blocks'):
-            key = key.removeprefix('blocks.')
-            return self._convert_blocks(key)
-        if key.startswith('norm.'):
-            return f'_{key}'
-        if key == 'cls_token':
-            return f'_{key}'
-        if key == 'pos_embed':
-            return '_position_embedding'
-        return key
-
-    def _post_convert(self, state_dict: StateDict) -> StateDict:
-        state_dict['_cls_token'] = einops.rearrange(
-            state_dict['_cls_token'],
-            '1 1 d -> d',
-        )
-        state_dict['_position_embedding'] = einops.rearrange(
-            state_dict['_position_embedding'],
-            '1 l d -> l d',
-        )
-        return state_dict
 
 
 class DINOMixin(PretrainedMixin, ViT):
@@ -101,8 +30,56 @@ class DINOMixin(PretrainedMixin, ViT):
         return super()._interpolate_position_embedding(wh, **kwargs)
 
 
-class DINOStateDictConverter(DINOStateDictConverterMixin):
-    pass
+class DINOBlocksStateDictConverter(StateDictConverter):
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self._register_regex_converter(r'norm[12]\..*', r'_\g<0>')
+        self._register_regex_converter(
+            r'attn\.qkv\.(.*)',
+            r'_attention.in_proj_\1',
+        )
+        self._register_regex_converter(
+            r'attn\.proj\.(.*)',
+            r'_attention.out_proj.\1',
+        )
+        self._register_regex_converter(r'mlp\.fc1\.(.*)', r'_mlp.0.\1')
+        self._register_regex_converter(r'mlp\.fc2\.(.*)', r'_mlp.2.\1')
+
+    @parallel_conversion
+    def convert(self, state_dict: StateDict, prefix: str) -> StateDict:  # noqa: E501 pylint: disable=arguments-differ
+        module = cast(Sequential, self._module)
+        with set_temp(self, '._module', module[int(prefix)]):
+            return super().convert(state_dict)
+
+
+class DINOStateDictConverter(StateDictConverter):
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self._register_regex_converter(
+            r'patch_embed\.proj\.(.*)',
+            r'_patch_embedding.\1',
+        )
+        self._register_key_mapping('cls_token', '_cls_token')
+        self._register_key_mapping('pos_embed', '_position_embedding')
+        self._register_child_converter(
+            'blocks',
+            '_blocks',
+            DINOBlocksStateDictConverter,
+        )
+        self._register_regex_converter(r'norm\..*', r'_\g<0>')
+
+    def _post_convert(self, state_dict: StateDict) -> StateDict:
+        state_dict['_cls_token'] = einops.rearrange(
+            state_dict['_cls_token'],
+            '1 1 d -> d',
+        )
+        state_dict['_position_embedding'] = einops.rearrange(
+            state_dict['_position_embedding'],
+            '1 l d -> l d',
+        )
+        return state_dict
 
 
 class DINO(DINOMixin):
@@ -119,7 +96,18 @@ class DINOv2Scaler(nn.Module):
         return x * self._scaler
 
 
-class DINOv2Block(Block):
+class DINOv2BlocksStateDictConverter(DINOBlocksStateDictConverter):
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self._register_regex_converter(
+            r'ls(1|2)\.gamma',
+            r'_scaler\1._scaler',
+        )
+
+
+class DINOv2Block(PretrainedMixin, Block):
+    STATE_DICT_CONVERTER = DINOv2BlocksStateDictConverter
 
     def __init__(self, *args, width: int, **kwargs) -> None:
         super().__init__(*args, width=width, **kwargs)
@@ -146,20 +134,17 @@ class DINOv2Block(Block):
         return x
 
 
-class DINOv2StateDictConverter(DINOStateDictConverterMixin):
+class DINOv2StateDictConverter(DINOStateDictConverter):
 
-    def _convert_block(self, key: str) -> str:
-        if key.startswith(('ls1.', 'ls2.')):
-            prefix, key = key.split('.', 1)
-            assert prefix.startswith('ls')
-            assert key == 'gamma'
-            prefix = prefix.removeprefix('ls')
-            return f'_scaler{prefix}._scaler'
-        return super()._convert_block(key)
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self._register_child_converter(
+            'blocks',
+            '_blocks',
+            DINOv2BlocksStateDictConverter,
+        )
 
-    def _post_convert(self, state_dict: StateDict) -> StateDict:
-        state_dict.pop('mask_token')
-        return super()._post_convert(state_dict)
+        self._register_key_mapping('mask_token', None)
 
 
 class DINOv2(DINOMixin):

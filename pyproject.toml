@@ -259,6 +259,7 @@ enable = [
 [tool.pylint.typecheck]
 signature-mutators = [
     'all_gather_decorator',
+    # 'parallel_conversion', # does not work
 ]
 generated-members = [
     'cv2.*',

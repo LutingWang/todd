@@ -13,9 +13,9 @@ from transformers import AutomaticSpeechRecognitionPipeline, pipeline
 
 import todd
 from todd.configs import PyConfig
-from todd.models.modules import F5_TTS, Vocos
-from todd.models.modules.f5_tts import Tokenizer
+from todd.models.modules import Vocos
 from todd.patches.pydub import AudioSegment
+from todd.tasks.text_to_speech.models.f5_tts import F5_TTS, Tokenizer
 from todd.utils import get_audio, init_seed
 
 PUNCTUATION = '!,.:;?！，。：；？'
@@ -147,12 +147,12 @@ class Voices(UserDict[str, Voice]):
         })
 
     def _parse_voice(self, line: str) -> tuple[Voice, str]:
-        match = VOICE_PATTERN.match(line)
-        if match is None:
+        match_ = VOICE_PATTERN.match(line)
+        if match_ is None:
             voice = 'default'
         else:
-            voice = match[1]
-            line = line.removeprefix(match[0])
+            voice = match_[1]
+            line = line.removeprefix(match_[0])
         return self[voice], line
 
     def _parse_chunks(

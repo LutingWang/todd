@@ -35,11 +35,12 @@ class LRScheduleCallback(IntervalMixin[T], BaseCallback[T]):
     def bind(self, *args, **kwargs) -> None:
         super().bind(*args, **kwargs)
 
-        self._lr_scheduler: torch.optim.lr_scheduler.LRScheduler = \
+        self._lr_scheduler: torch.optim.lr_scheduler.LRScheduler = (
             LRSchedulerRegistry.build(
                 self._lr_scheduler_config,
                 optimizer=self.trainer.optimizer,
             )
+        )
 
     def after_run_iter(self, batch: Any, memo: Memo) -> None:
         super().after_run_iter(batch, memo)

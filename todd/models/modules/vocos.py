@@ -2,76 +2,38 @@ __all__ = [
     'Vocos',
 ]
 
+from typing import cast
+
 import einops
 import torch
 import torchaudio
 from torch import nn
 
-from ...utils import StateDictConverter
+from ...utils import StateDict, StateDictConverter, set_temp
+from ...utils.state_dicts import parallel_conversion
 from .pretrained import PretrainedMixin
 from .transformer import mlp
 
-# TODO: refactor state dict converter
+
+class ConvNeXtStateDictConverter(StateDictConverter):
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self._register_regex_converter(r'dwconv\.(.*)', r'_in_conv.\1')
+        self._register_regex_converter(r'norm\..*', r'_\g<0>')
+        self._register_regex_converter(r'pwconv1\.(.*)', r'_mlp.0.\1')
+        self._register_regex_converter(r'pwconv2\.(.*)', r'_mlp.2.\1')
+        self._register_key_mapping('gamma', '_gamma')
+
+    @parallel_conversion
+    def convert(self, state_dict: StateDict, prefix: str) -> StateDict:  # noqa: E501 pylint: disable=arguments-differ
+        module = cast(nn.Sequential, self._module)
+        with set_temp(self, '._module', module[int(prefix)]):
+            return super().convert(state_dict)
 
 
-class VocosStateDictConverter(StateDictConverter):
-
-    def _convert_backbone_convnext(self, key: str) -> str:
-        index = key.index('.') + 1
-        prefix = key[:index]
-        key = key[index:]
-
-        if key.startswith('dwconv.'):
-            key = key.removeprefix('dwconv.')
-            key = '_in_conv.' + key
-        elif key.startswith(('norm.', 'gamma')):
-            key = '_' + key
-        elif key.startswith('pwconv1.'):
-            key = key.removeprefix('pwconv1.')
-            key = '_mlp.0.' + key
-        elif key.startswith('pwconv2.'):
-            key = key.removeprefix('pwconv2.')
-            key = '_mlp.2.' + key
-        else:
-            raise ValueError(f'Unknown key: {key}')
-
-        return '_blocks.' + prefix + key
-
-    def _convert_backbone(self, key: str) -> str:
-        # return f'backbone.{key}'
-        if key.startswith('convnext.'):
-            key = key.removeprefix('convnext.')
-            return self._convert_backbone_convnext(key)
-        if key.startswith('embed.'):
-            key = key.removeprefix('embed.')
-            return f'_in_conv.{key}'
-        if key.startswith('norm.'):
-            return f'_in_{key}'
-        if key.startswith('final_layer_norm.'):
-            key = key.removeprefix('final_layer_norm.')
-            return f'_out_norm.{key}'
-        raise ValueError(f'Unknown key: {key}')
-
-    def _convert_head(self, key: str) -> str:
-        assert key.startswith('out.')
-        key = key.removeprefix('out.')
-        return f'_projector.{key}'
-
-    def _convert(self, key: str) -> str | None:
-        if key.startswith('feature_extractor.'):
-            return None
-        if key.startswith('backbone.'):
-            key = key.removeprefix('backbone.')
-            return self._convert_backbone(key)
-        if key.startswith('head.'):
-            key = key.removeprefix('head.')
-            if key.startswith('istft.'):
-                return None
-            return self._convert_head(key)
-        return key
-
-
-class ConvNeXtBlock(nn.Module):
+class ConvNeXt(PretrainedMixin):
+    STATE_DICT_CONVERTER = ConvNeXtStateDictConverter
 
     def __init__(
         self,
@@ -101,6 +63,35 @@ class ConvNeXtBlock(nn.Module):
         x = self._gamma * x
         x = einops.rearrange(x, 'b t c -> b c t')
         return identity + x
+
+
+class VocosStateDictConverter(StateDictConverter):
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self._register_regex_converter(r'embed\.(.*)', r'_in_conv.\1')
+        self._register_regex_converter(r'norm\.(.*)', r'_in_norm.\1')
+        self._register_child_converter(
+            'convnext',
+            '_blocks',
+            ConvNeXtStateDictConverter,
+        )
+        self._register_regex_converter(
+            r'final_layer_norm\.(.*)',
+            r'_out_norm.\1',
+        )
+        self._register_regex_converter(r'head\.out\.(.*)', r'_projector.\1')
+
+        self._register_regex_converter(r'feature_extractor\..*', None)
+        self._register_regex_converter(r'head\.istft\..*', None)
+
+    def _pre_convert(self, state_dict: StateDict) -> StateDict:
+        state_dict = super()._pre_convert(state_dict)
+        state_dict = {
+            k.removeprefix('backbone.'): v
+            for k, v in state_dict.items()
+        }
+        return state_dict
 
 
 class Vocos(PretrainedMixin):
@@ -133,9 +124,7 @@ class Vocos(PretrainedMixin):
         self._in_conv = nn.Conv1d(mel_channels, hidden_channels, 7, padding=3)
         self._in_norm = nn.LayerNorm(hidden_channels, 1e-6)
 
-        blocks = [
-            ConvNeXtBlock(channels=hidden_channels) for _ in range(depth)
-        ]
+        blocks = [ConvNeXt(channels=hidden_channels) for _ in range(depth)]
         self._blocks = nn.Sequential(*blocks)
 
         self._out_norm = nn.LayerNorm(hidden_channels, 1e-6)

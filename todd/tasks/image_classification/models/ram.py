@@ -3,7 +3,6 @@ __all__ = [
 ]
 
 import pathlib
-import re
 from dataclasses import dataclass
 from typing import Any, Never, cast
 from typing_extensions import Self
@@ -19,7 +18,8 @@ from transformers.models.bert import BertConfig, BertLayer, BertModel
 from transformers.models.bert.modeling_bert import BertSelfAttention
 
 from todd.models.modules import PretrainedMixin
-from todd.utils import StateDict, StateDictConverter
+from todd.utils import StateDict, StateDictConverter, set_temp
+from todd.utils.state_dicts import parallel_conversion
 
 
 class RAMStateDictConverterMixin(StateDictConverter):
@@ -27,114 +27,6 @@ class RAMStateDictConverterMixin(StateDictConverter):
     def load(self, *args, **kwargs) -> StateDict:
         checkpoint = super().load(*args, **kwargs)
         return cast(StateDict, checkpoint['model'])
-
-
-class RAMplusStateDictConverterMixin(RAMStateDictConverterMixin):
-
-    def _pre_convert(self, state_dict: StateDict) -> StateDict:
-        state_dict = super()._pre_convert(state_dict)
-
-        pattern = re.compile(
-            r'visual_encoder\.layers\.\d+\.blocks\.\d+\.attn\.'
-            r'relative_position_index',
-        )
-        for k in list(filter(pattern.match, state_dict)):
-            state_dict.pop(k)
-
-        pattern = re.compile(
-            r'visual_encoder\.layers\.\d+\.blocks\.\d+\.attn_mask',
-        )
-        for k in list(filter(pattern.match, state_dict)):
-            state_dict.pop(k)
-
-        state_dict['label_embed'] = einops.rearrange(
-            state_dict['label_embed'],
-            '(k n) c -> k n c',
-            n=RAMplus.NUM_DESCRIPTIONS,
-        )
-
-        return state_dict
-
-    def _convert_visual_encoder_patch_embed(self, key: str) -> str:
-        if key.startswith('proj.'):
-            key = key.removeprefix('proj.')
-            return 'features.0.0.' + key
-        if key.startswith('norm.'):
-            key = key.removeprefix('norm.')
-            return 'features.0.2.' + key
-        raise ValueError(f"Unknown key: {key}")
-
-    def _convert_visual_encoder_layer_block_mlp(self, key: str) -> str:
-        if key.startswith('fc1.'):
-            key = key.removeprefix('fc1.')
-            key = '0.' + key
-        elif key.startswith('fc2.'):
-            key = key.removeprefix('fc2.')
-            key = '3.' + key
-        else:
-            raise ValueError(f"Unknown key: {key}")
-        return f'mlp.{key}'
-
-    def _convert_visual_encoder_layer_block(self, key: str) -> str:
-        if key.startswith('mlp.'):
-            key = key.removeprefix('mlp.')
-            return self._convert_visual_encoder_layer_block_mlp(key)
-        return key
-
-    def _convert_visual_encoder_layer_blocks(self, key: str) -> str:
-        index = key.index('.') + 1
-        prefix = key[:index]
-        key = key[index:]
-        return prefix + self._convert_visual_encoder_layer_block(key)
-
-    def _convert_visual_encoder_layer(self, key: str, i: int) -> str:
-        if key.startswith('blocks.'):
-            key = key.removeprefix('blocks.')
-            return (
-                f'{i * 2 + 1}.'
-                + self._convert_visual_encoder_layer_blocks(key)
-            )
-        if key.startswith('downsample.'):
-            key = key.removeprefix('downsample.')
-            return f'{i * 2 + 2}.{key}'
-        raise ValueError(f"Unknown key: {key}")
-
-    def _convert_visual_encoder_layers(self, key: str) -> str:
-        index = key.index('.')
-        prefix = int(key[:index])
-        key = key[index + 1:]
-        return 'features.' + self._convert_visual_encoder_layer(key, prefix)
-
-    def _convert_visual_encoder(self, key: str) -> str:
-        if key.startswith('patch_embed.'):
-            key = key.removeprefix('patch_embed.')
-            key = self._convert_visual_encoder_patch_embed(key)
-        if key.startswith('layers.'):
-            key = key.removeprefix('layers.')
-            key = self._convert_visual_encoder_layers(key)
-        return '_encoder.' + key
-
-    def _convert(self, key: str) -> str | None:
-        if key == 'logit_scale':
-            return None
-        if key.startswith('visual_encoder.'):
-            key = key.removeprefix('visual_encoder.')
-            return self._convert_visual_encoder(key)
-        if key.startswith('image_proj.'):
-            key = key.removeprefix('image_proj.')
-            return f'_encoder.head.{key}'
-        if key.startswith('wordvec_proj.'):
-            key = key.removeprefix('wordvec_proj.')
-            return f'_decoder._in_linear.{key}'
-        if key.startswith('tagging_head.'):
-            key = key.removeprefix('tagging_head.')
-            return f'_decoder.{key}'
-        if key.startswith('fc.'):
-            key = key.removeprefix('fc.')
-            return f'_decoder._out_linear.{key}'
-        if key == 'label_embed':
-            return '_category_embedding'
-        return key
 
 
 @dataclass(frozen=True)
@@ -172,7 +64,97 @@ class Categories(pd.DataFrame):
         return outputs
 
 
-class Encoder(SwinTransformer):
+class SwinTransformerBlockStateDictConverter(StateDictConverter):
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self._register_regex_converter(r'mlp\.fc1\.(.*)', r'mlp.0.\1')
+        self._register_regex_converter(r'mlp\.fc2\.(.*)', r'mlp.3.\1')
+
+        self._register_key_mapping('attn.relative_position_index', None)
+        self._register_key_mapping('attn_mask', None)
+
+    def _convert(self, key: str) -> str | None:
+        if key in (
+            'norm1.weight',
+            'norm1.bias',
+            'attn.qkv.weight',
+            'attn.qkv.bias',
+            'attn.relative_position_bias_table',
+            'attn.proj.weight',
+            'attn.proj.bias',
+            'norm2.weight',
+            'norm2.bias',
+        ):
+            return key
+        return super()._convert(key)
+
+    @parallel_conversion
+    def convert(self, state_dict: StateDict, prefix: str) -> StateDict:  # noqa: E501 pylint: disable=arguments-differ
+        module = cast(nn.Sequential, self._module)
+        with set_temp(self, '._module', module[int(prefix)]):
+            return super().convert(state_dict)
+
+
+class EncoderStateDictConverter(StateDictConverter):
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self._register_regex_converter(
+            r'patch_embed\.proj\.(.*)',
+            r'features.0.0.\1',
+        )
+        self._register_regex_converter(
+            r'patch_embed\.norm\.(.*)',
+            r'features.0.2.\1',
+        )
+
+    def _pre_convert_layer(
+        self,
+        state_dict: StateDict,
+        i: int,
+        layer: nn.Sequential,
+    ) -> StateDict:
+        layer_state_dict: StateDict = dict()
+
+        prefix = f'layers.{i // 2}.'
+        prefix += 'blocks.' if i % 2 == 0 else 'downsample.'
+
+        for k in list(state_dict):
+            if k.startswith(prefix):
+                layer_state_dict[k.removeprefix(prefix)] = state_dict.pop(k)
+
+        if i % 2 == 0:
+            converter = SwinTransformerBlockStateDictConverter(module=layer)
+            layer_state_dict = converter.convert(layer_state_dict)  # noqa: E501 pylint: disable=no-value-for-parameter
+
+        return {
+            f'features.{i + 1}.{k}': v
+            for k, v in layer_state_dict.items()
+        }
+
+    def _pre_convert(self, state_dict: StateDict) -> StateDict:
+        state_dict = super()._pre_convert(state_dict)
+
+        layer_state_dict: StateDict = dict()
+
+        module = cast(Encoder, self._module)
+        for i, layer in enumerate(module.features[1:]):
+            # `_pre_convert_layer` removes keys from `state_dict`
+            layer_state_dict |= self._pre_convert_layer(state_dict, i, layer)
+
+        return layer_state_dict | state_dict
+
+    def _convert(self, key: str) -> str | None:
+        if key.startswith('features.'):
+            return key
+        if key in ('norm.weight', 'norm.bias'):
+            return key
+        return super()._convert(key)
+
+
+class Encoder(PretrainedMixin, SwinTransformer):
+    STATE_DICT_CONVERTER = EncoderStateDictConverter
 
     def __init__(
         self,
@@ -284,10 +266,43 @@ class Decoder(BertModel):  # pylint: disable=abstract-method
         return logits
 
 
+class RAMplusStateDictConverterMixin(RAMStateDictConverterMixin):
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self._register_child_converter(
+            'visual_encoder',
+            '_encoder',
+            EncoderStateDictConverter,
+        )
+        self._register_regex_converter(
+            r'image_proj\.(.*)',
+            r'_encoder.head.\1',
+        )
+        self._register_key_mapping('label_embed', '_category_embedding')
+        self._register_regex_converter(
+            r'wordvec_proj\.(.*)',
+            r'_decoder._in_linear.\1',
+        )
+        self._register_regex_converter(r'tagging_head\.(.*)', r'_decoder.\1')
+        self._register_regex_converter(r'fc\.(.*)', r'_decoder._out_linear.\1')
+
+        self._register_key_mapping('logit_scale', None)
+
+    def _post_convert(self, state_dict: StateDict) -> StateDict:
+        module = cast(RAMplus, self._module)
+
+        state_dict['_category_embedding'] = einops.rearrange(
+            state_dict['_category_embedding'],
+            '(k n) c -> k n c',
+            n=module.num_descriptions,
+        )
+
+        return super()._post_convert(state_dict)
+
+
 class RAMplus(PretrainedMixin, nn.Module):
     STATE_DICT_CONVERTER = RAMplusStateDictConverterMixin
-
-    NUM_DESCRIPTIONS = 51
 
     def __init__(
         self,
@@ -299,6 +314,7 @@ class RAMplus(PretrainedMixin, nn.Module):
         encoder_num_heads: tuple[int, ...] = (6, 12, 24, 48),
         hidden_channels: int = 512,
         num_categories: int,
+        num_descriptions: int = 51,
         decoder_depth: int = 2,
         decoder_num_heads: int = 4,
         **kwargs,
@@ -315,7 +331,7 @@ class RAMplus(PretrainedMixin, nn.Module):
         self._category_embedding = nn.Parameter(
             torch.empty(
                 num_categories,
-                self.NUM_DESCRIPTIONS,
+                num_descriptions,
                 hidden_channels,
             ),
         )
@@ -324,6 +340,11 @@ class RAMplus(PretrainedMixin, nn.Module):
             decoder_depth,
             decoder_num_heads,
         )
+
+    @property
+    def num_descriptions(self) -> int:
+        _, num_descriptions, _ = self._category_embedding.shape
+        return num_descriptions
 
     def forward(self, image: torch.Tensor) -> torch.Tensor:
         x: torch.Tensor = self._encoder(image)

@@ -5,62 +5,54 @@ __all__ = [
     'CLIPText',
 ]
 
-from abc import ABC, abstractmethod
+from abc import ABC
+from typing import cast
+from typing_extensions import Self
 
 import einops
 import torch
 import torch.nn.functional as F
 from torch import nn
 
-from ...utils import StateDict, StateDictConverter
+from ...patches.torch import Sequential
+from ...utils import StateDict, StateDictConverter, set_temp
+from ...utils.state_dicts import parallel_conversion
 from .pretrained import PretrainedMixin
 from .transformer import Block, Transformer
 from .vit import ViT
 
 
-class CLIPStateDictConverterMixin(StateDictConverter, ABC):
+class CLIPTransformerStateDictConverter(StateDictConverter):
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self._register_regex_converter(r'ln_(1|2)\.(.*)', r'_norm\1.\2')
+        self._register_regex_converter(r'attn\.(.*)', r'_attention.\1')
+        self._register_regex_converter(r'mlp\.c_fc\.(.*)', r'_mlp.0.\1')
+        self._register_regex_converter(r'mlp\.c_proj\.(.*)', r'_mlp.2.\1')
+
+    def convert(self, state_dict: StateDict) -> StateDict:
+        state_dict = {
+            self._remove_prefix(k, 'resblocks.'): v
+            for k, v in state_dict.items()
+        }
+        super_ = super()
+
+        @parallel_conversion
+        def func(self: Self, state_dict: StateDict, prefix: str) -> StateDict:
+            module = cast(Sequential, self._module)
+            with set_temp(self, '._module', module[int(prefix)]):
+                return super_.convert(state_dict)  # type: ignore[attr-defined]
+
+        return func(self, state_dict)  # pylint: disable=no-value-for-parameter
+
+
+class CLIPStateDictConverterMixin(StateDictConverter):
 
     def load(self, *args, **kwargs) -> StateDict:
         f, *args = args  # type: ignore[assignment]
         module: nn.Module = torch.jit.load(f, 'cpu', *args, **kwargs)
         return module.state_dict()
-
-
-class CLIPTransformerStateDictConverterMixin(CLIPStateDictConverterMixin, ABC):
-
-    def _convert_transformer_block_mlp(self, key: str) -> str:
-        if key.startswith('c_fc.'):
-            key = key.removeprefix('c_fc.')
-            key = '0.' + key
-        elif key.startswith('gelu.'):
-            key = key.removeprefix('gelu.')
-            key = '1.' + key
-        elif key.startswith('c_proj.'):
-            key = key.removeprefix('c_proj.')
-            key = '2.' + key
-        else:
-            raise ValueError(f"Unknown key: {key}")
-        return f'_mlp.{key}'
-
-    def _convert_transformer_block(self, key: str) -> str:
-        if key.startswith(('ln_1.', 'ln_2.')):
-            key = key.removeprefix('ln_')
-            return f'_norm{key}'
-        if key.startswith('attn.'):
-            key = key.removeprefix('attn.')
-            return '_attention.' + key
-        if key.startswith('mlp.'):
-            key = key.removeprefix('mlp.')
-            return self._convert_transformer_block_mlp(key)
-        return key
-
-    def _convert_transformer(self, key: str) -> str:
-        assert key.startswith('resblocks.')
-        key = key.removeprefix('resblocks.')
-        index = key.index('.') + 1
-        prefix = key[:index]
-        key = key[index:]
-        return '_blocks.' + prefix + self._convert_transformer_block(key)
 
 
 class CLIPMixin(PretrainedMixin, ABC):
@@ -85,42 +77,34 @@ class CLIPMixin(PretrainedMixin, ABC):
 
 class CLIPVisionStateDictConverterMixin(CLIPStateDictConverterMixin, ABC):
 
-    @abstractmethod
-    def _convert_visual(self, key: str) -> str | None:
-        pass
+    def _pre_convert(self, state_dict: StateDict) -> StateDict:
+        state_dict = super()._pre_convert(state_dict)
+        state_dict = {
+            k.removeprefix('visual.'): v
+            for k, v in state_dict.items()
+            if k.startswith('visual.')
+        }
+        return state_dict
 
-    def _convert(self, key: str) -> str | None:
-        if key.startswith('visual.'):
-            key = key.removeprefix('visual.')
-            return self._convert_visual(key)
-        return None
 
+class CLIPViTStateDictConverter(CLIPVisionStateDictConverterMixin):
 
-class CLIPViTStateDictConverter(
-    CLIPVisionStateDictConverterMixin,
-    CLIPTransformerStateDictConverterMixin,
-):
-
-    def _convert_visual(self, key: str) -> str | None:
-        if key.startswith('conv1.'):
-            key = key.removeprefix('conv1.')
-            return f'_patch_embedding.{key}'
-        if key.startswith('transformer.'):
-            key = key.removeprefix('transformer.')
-            return self._convert_transformer(key)
-        if key.startswith('ln_pre.'):
-            key = key.removeprefix('ln_pre.')
-            return f'_pre_norm.{key}'
-        if key.startswith('ln_post.'):
-            key = key.removeprefix('ln_post.')
-            return f'_norm.{key}'
-        if key == 'class_embedding':
-            return '_cls_token'
-        if key == 'positional_embedding':
-            return '_position_embedding'
-        if key == 'proj':
-            return '_projector'
-        return key
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self._register_regex_converter(r'conv1\.(.*)', r'_patch_embedding.\1')
+        self._register_key_mapping('class_embedding', '_cls_token')
+        self._register_key_mapping(
+            'positional_embedding',
+            '_position_embedding',
+        )
+        self._register_regex_converter(r'ln_pre\.(.*)', r'_pre_norm.\1')
+        self._register_child_converter(
+            'transformer',
+            '_blocks',
+            CLIPTransformerStateDictConverter,
+        )
+        self._register_regex_converter(r'ln_post\.(.*)', r'_norm.\1')
+        self._register_key_mapping('proj', '_projector')
 
 
 class GELU(nn.Module):
@@ -183,31 +167,28 @@ class CLIPViT(CLIPMixin, ViT):
         return cls_, x
 
 
-class CLIPTextStateDictConverterMixin(CLIPTransformerStateDictConverterMixin):
+class CLIPTextStateDictConverterMixin(CLIPStateDictConverterMixin):
 
-    def _convert(self, key: str) -> str | None:
-        if key == 'text_projection':
-            return '_projector'
-        if key.startswith('token_embedding.'):
-            return '_' + key
-        if key.startswith('transformer.'):
-            key = key.removeprefix('transformer.')
-            return self._convert_transformer(key)
-        if key == 'positional_embedding':
-            return '_position_embedding'
-        if key.startswith('ln_final.'):
-            key = key.removeprefix('ln_final.')
-            return f'_norm.{key}'
-        if key.startswith('visual.'):
-            return None
-        if key in (
-            'input_resolution',
-            'context_length',
-            'vocab_size',
-            'logit_scale',
-        ):
-            return None
-        return key
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self._register_regex_converter(r'token_embedding\..*', r'_\g<0>')
+        self._register_key_mapping(
+            'positional_embedding',
+            '_position_embedding',
+        )
+        self._register_child_converter(
+            'transformer',
+            '_blocks',
+            CLIPTransformerStateDictConverter,
+        )
+        self._register_regex_converter(r'ln_final\.(.*)', r'_norm.\1')
+        self._register_key_mapping(r'text_projection', r'_projector')
+
+        self._register_regex_converter(r'visual\..*', None)
+        self._register_key_mapping('input_resolution', None)
+        self._register_key_mapping('context_length', None)
+        self._register_key_mapping('vocab_size', None)
+        self._register_key_mapping('logit_scale', None)
 
 
 class CLIPText(CLIPMixin, Transformer):

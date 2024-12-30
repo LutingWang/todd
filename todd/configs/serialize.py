@@ -45,6 +45,7 @@ class SerializeMixin(Config):
             if isinstance(base, str):
                 base = cls.load(file.parent / base, **kwargs)
             base_config.update(base)
+        # do not use __ior__, which does not support recursive update
         base_config.update(config.get('_export_', config))
         return base_config
 
