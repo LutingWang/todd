@@ -14,6 +14,7 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 
+from ...patches.py_ import remove_prefix
 from ...patches.torch import Sequential
 from ...utils import StateDict, StateDictConverter, set_temp
 from ...utils.state_dicts import parallel_conversion
@@ -33,7 +34,7 @@ class CLIPTransformerStateDictConverter(StateDictConverter):
 
     def convert(self, state_dict: StateDict) -> StateDict:
         state_dict = {
-            self._remove_prefix(k, 'resblocks.'): v
+            remove_prefix(k, 'resblocks.'): v
             for k, v in state_dict.items()
         }
         super_ = super()

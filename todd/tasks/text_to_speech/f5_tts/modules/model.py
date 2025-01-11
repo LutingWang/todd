@@ -1,5 +1,5 @@
 __all__ = [
-    'F5_TTS',
+    'Model',
 ]
 
 from typing import cast
@@ -8,17 +8,16 @@ import einops
 import torch
 
 from todd.models.modules import PretrainedMixin
+from todd.patches.py_ import remove_prefix
 from todd.utils import StateDict, StateDictConverter
 
+from ..constants import MAX_DURATION
 from .audio_embedding import AudioEmbedding
-from .constants import MAX_DURATION
 from .dit import DiT
 from .text_embedding import TextEmbedding
 
 
-class F5_TTSStateDictConverter(  # noqa: N801 pylint: disable=invalid-name
-    StateDictConverter,
-):
+class ModelStateDictConverter(StateDictConverter):
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -47,7 +46,7 @@ class F5_TTSStateDictConverter(  # noqa: N801 pylint: disable=invalid-name
         state_dict.pop('initted')
         state_dict.pop('step')
         state_dict = {
-            self._remove_prefix(k, 'ema_model.'): v
+            remove_prefix(k, 'ema_model.'): v
             for k, v in state_dict.items()
         }
 
@@ -74,8 +73,8 @@ class F5_TTSStateDictConverter(  # noqa: N801 pylint: disable=invalid-name
         return super()._convert(key)
 
 
-class F5_TTS(PretrainedMixin):  # noqa: N801 pylint: disable=invalid-name
-    STATE_DICT_CONVERTER = F5_TTSStateDictConverter
+class Model(PretrainedMixin):
+    STATE_DICT_CONVERTER = ModelStateDictConverter
 
     def __init__(
         self,

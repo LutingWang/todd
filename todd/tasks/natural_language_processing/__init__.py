@@ -1,3 +1,3 @@
-from . import runners, tokenizers
+from . import runners, segmentors, tokenizers
 from .bpe import *
 from .registries import *

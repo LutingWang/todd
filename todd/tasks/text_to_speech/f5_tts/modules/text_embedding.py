@@ -13,7 +13,7 @@ from todd.models.modules import PretrainedMixin, sinusoidal_position_embedding
 from todd.utils import StateDict, StateDictConverter, set_temp
 from todd.utils.state_dicts import parallel_conversion
 
-from .constants import MAX_DURATION
+from ..constants import MAX_DURATION
 
 
 class GRN(nn.Module):

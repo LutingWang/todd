@@ -27,6 +27,6 @@ class AudioSegment(BaseAudioSegment):
 
     def clamp(self, min_rms: float) -> Self:
         gain = min_rms * self.max_possible_amplitude / self.rms
-        if gain <= 1:
+        if gain > 1:
             self += ratio_to_db(gain)
         return self

@@ -30,6 +30,8 @@
     "ODKD",
     "preds",
     "pretrained",
+    "segmentor",
+    "segmentors",
     "SGFI",
     "shorthair",
     "Sintel",

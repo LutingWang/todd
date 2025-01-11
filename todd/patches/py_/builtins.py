@@ -1,4 +1,6 @@
 __all__ = [
+    'remove_prefix',
+    'remove_suffix',
     'get_',
     'has_',
     'set_',
@@ -18,6 +20,16 @@ try:
     builtins.breakpoint = ipdb.set_trace
 except ImportError:
     pass
+
+
+def remove_prefix(string: str, prefix: str) -> str:
+    assert string.startswith(prefix)
+    return string.removeprefix(prefix)
+
+
+def remove_suffix(string: str, suffix: str) -> str:
+    assert string.endswith(suffix)
+    return string.removesuffix(suffix)
 
 
 def get_(obj: Any, attr: str, default: Any = ...) -> Any:

@@ -74,11 +74,6 @@ class UnknownKeyError(ValueError):
 
 class StateDictConverter:
 
-    @staticmethod
-    def _remove_prefix(key: str, prefix: str) -> str:
-        assert key.startswith(prefix)
-        return key.removeprefix(prefix)
-
     def __init__(
         self,
         *args,
