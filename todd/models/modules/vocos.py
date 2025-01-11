@@ -2,6 +2,7 @@ __all__ = [
     'Vocos',
 ]
 
+from abc import ABC, abstractmethod
 from typing import cast
 
 import einops
@@ -13,6 +14,38 @@ from ...utils import StateDict, StateDictConverter, set_temp
 from ...utils.state_dicts import parallel_conversion
 from .pretrained import PretrainedMixin
 from .transformer import mlp
+
+
+class BaseConvNeXt(PretrainedMixin, ABC):
+
+    def __init__(self, *args, channels: int, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self._channels = channels
+        self._in_conv = nn.Conv1d(
+            channels,
+            channels,
+            7,
+            padding=3,
+            groups=channels,
+        )
+        self._norm = nn.LayerNorm(channels, eps=1e-6)
+
+    def _input(self, x: torch.Tensor) -> torch.Tensor:
+        x = einops.rearrange(x, 'b t c -> b c t')
+        x = self._in_conv(x)
+        x = einops.rearrange(x, 'b c t -> b t c')
+        x = self._norm(x)
+        return x
+
+    @abstractmethod
+    def _forward(self, x: torch.Tensor) -> torch.Tensor:
+        pass
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        identity = x
+        x = self._input(x)
+        x = self._forward(x)
+        return identity + x
 
 
 class ConvNeXtStateDictConverter(StateDictConverter):
@@ -32,37 +65,23 @@ class ConvNeXtStateDictConverter(StateDictConverter):
             return super().convert(state_dict)
 
 
-class ConvNeXt(PretrainedMixin):
+class ConvNeXt(BaseConvNeXt):
     STATE_DICT_CONVERTER = ConvNeXtStateDictConverter
 
     def __init__(
         self,
         *args,
-        channels: int,
         hidden_channels: int = 1536,
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
-        self._in_conv = nn.Conv1d(
-            channels,
-            channels,
-            7,
-            padding=3,
-            groups=channels,
-        )
-        self._norm = nn.LayerNorm(channels, 1e-6)
-        self._mlp = mlp(channels, hidden_channels, channels)
-        self._gamma = nn.Parameter(torch.empty(channels))
+        self._mlp = mlp(self._channels, hidden_channels, self._channels)
+        self._gamma = nn.Parameter(torch.empty(self._channels))
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        identity = x
-        x = self._in_conv(x)
-        x = einops.rearrange(x, 'b c t -> b t c')
-        x = self._norm(x)
+    def _forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self._mlp(x)
         x = self._gamma * x
-        x = einops.rearrange(x, 'b t c -> b c t')
-        return identity + x
+        return x
 
 
 class VocosStateDictConverter(StateDictConverter):
@@ -163,9 +182,7 @@ class Vocos(PretrainedMixin):
         x: torch.Tensor = self._in_conv(mel_spectrogram)
         x = einops.rearrange(x, 'b c t -> b t c')
         x = self._in_norm(x)
-        x = einops.rearrange(x, 'b t c -> b c t')
         x = self._blocks(x)
-        x = einops.rearrange(x, 'b c t -> b t c')
         x = self._out_norm(x)
         x = self._projector(x)
         x = einops.rearrange(x, 'b t c -> b c t')

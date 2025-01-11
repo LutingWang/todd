@@ -10,6 +10,7 @@ import torch.nn.functional as F
 from torch import nn
 
 from todd.models.modules import PretrainedMixin, sinusoidal_position_embedding
+from todd.models.modules.vocos import BaseConvNeXt
 from todd.utils import StateDict, StateDictConverter, set_temp
 from todd.utils.state_dicts import parallel_conversion
 
@@ -51,34 +52,21 @@ class ConvNeXtV2StateDictConverter(StateDictConverter):
             return super().convert(state_dict)
 
 
-class ConvNeXtV2(PretrainedMixin):
+class ConvNeXtV2(BaseConvNeXt):
     STATE_DICT_CONVERTER = ConvNeXtV2StateDictConverter
 
-    def __init__(self, *args, channels: int, **kwargs) -> None:
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self._in_conv = nn.Conv1d(
-            channels,
-            channels,
-            7,
-            padding=3,
-            groups=channels,
-        )
-        self._norm = nn.LayerNorm(channels, eps=1e-6)
-        self._proj1 = nn.Linear(channels, channels * 2)
-        self._grn = GRN(channels=channels * 2)
-        self._proj2 = nn.Linear(channels * 2, channels)
+        self._proj1 = nn.Linear(self._channels, self._channels * 2)
+        self._grn = GRN(channels=self._channels * 2)
+        self._proj2 = nn.Linear(self._channels * 2, self._channels)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        identity = x
-        x = einops.rearrange(x, 'b t c -> b c t')
-        x = self._in_conv(x)
-        x = einops.rearrange(x, 'b c t -> b t c')
-        x = self._norm(x)
+    def _forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self._proj1(x)
         x = F.gelu(x)
         x = self._grn(x)
         x = self._proj2(x)
-        return identity + x
+        return x
 
 
 class TextEmbeddingStateDictConverter(StateDictConverter):
