@@ -3,16 +3,16 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 from transformers.modeling_outputs import CausalLMOutputWithPast
 from transformers.models.gemma import GemmaForCausalLM, GemmaTokenizerFast
 
-from todd.patches.torch import get_device
+import todd
 
-PRETRAINED = "pretrained/gemma/gemma-1.1-2b-it"
+PRETRAINED = 'pretrained/gemma/gemma-1.1-2b-it'
 
 tokenizer: GemmaTokenizerFast = AutoTokenizer.from_pretrained(PRETRAINED)
 model: GemmaForCausalLM = AutoModelForCausalLM.from_pretrained(
     PRETRAINED,
-    device_map=get_device(),
-    torch_dtype=torch.float16,
-    revision="float16",
+    device_map='auto',
+    torch_dtype='auto',
+    revision='float16',
 )
 
 WORD_TOKEN = '<word>'  # nosec B105
@@ -22,34 +22,40 @@ TEMPLATE = (
     f": {WORD_TOKEN}"
 )
 
-prompt = tokenizer.apply_chat_template(
-    [dict(role='user', content=TEMPLATE)],
-    tokenize=False,
+conversation = [dict(role='user', content=TEMPLATE)]
+inputs = tokenizer.apply_chat_template(
+    conversation,
     add_generation_prompt=True,
+    tokenize=False,
 )
-prefix, suffix = prompt.split(WORD_TOKEN)
-prefix_ids = tokenizer.encode(
+prefix, suffix = inputs.split(WORD_TOKEN)
+prefix_ids: torch.Tensor = tokenizer.encode(
     prefix,
-    return_tensors='pt',
     add_special_tokens=False,
-).to('cuda')
-suffix_ids = tokenizer.encode(
+    return_tensors='pt',
+)
+suffix_ids: torch.Tensor = tokenizer.encode(
     suffix,
-    return_tensors='pt',
     add_special_tokens=False,
-).to('cuda')
+    return_tensors='pt',
+)
+if todd.Store.cuda:  # pylint: disable=using-constant-test
+    prefix_ids = prefix_ids.cuda()
+    suffix_ids = suffix_ids.cuda()
 prefix_outputs: CausalLMOutputWithPast = model(prefix_ids, use_cache=True)
 prefix_cache = prefix_outputs.past_key_values
 
 WORD = 'car'
 
-word_ids = tokenizer.encode(
+word_ids: torch.Tensor = tokenizer.encode(
     WORD,
-    return_tensors='pt',
     add_special_tokens=False,
-).to('cuda')
+    return_tensors='pt',
+)
+if todd.Store.cuda:  # pylint: disable=using-constant-test
+    word_ids = word_ids.cuda()
 
-input_ids = torch.cat([prefix_ids, word_ids, suffix_ids], dim=-1)
+input_ids = torch.cat([prefix_ids, word_ids, suffix_ids], -1)
 output_ids = model.generate(
     input_ids,
     past_key_values=prefix_cache,
@@ -57,6 +63,8 @@ output_ids = model.generate(
     max_new_tokens=50,
     do_sample=True,
 )
-output_ids = output_ids[0, input_ids.shape[-1]:]
-output_text = tokenizer.decode(output_ids, skip_special_tokens=True)
+
+_, input_length = input_ids.shape
+output_ids = output_ids[0, input_length:]
+output_text = tokenizer.decode(output_ids, True)
 print(output_text)

@@ -43,6 +43,7 @@ Documentation = 'https://toddai.readthedocs.io/en/latest/'
 
 [project.optional-dependencies]
 optional = [
+    'beautifulsoup4',
     'bitsandbytes',
     'diffusers',
     'ftfy',
@@ -82,6 +83,7 @@ lint = [
     'pre-commit',
     'pydocstyle',
     'pylint',
+    'types-beautifulsoup4',
     'types-Pillow',
     'types-pycocotools',
     'types-regex',
@@ -158,6 +160,7 @@ plugins = 'numpy.typing.mypy_plugin'
 module = [
     'custom_types.*',
     'datasets.*',
+    'ebooklib.*',
     'ffmpeg.*',
     'h5py.*',
     'ipdb.*',
