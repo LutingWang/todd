@@ -14,7 +14,8 @@ import torch.nn.functional as F
 from torch import nn
 from torchvision.models import SwinTransformer
 from torchvision.models.swin_transformer import ShiftedWindowAttention
-from transformers.models.bert import BertConfig, BertLayer, BertModel
+from transformers import BertConfig, BertModel
+from transformers.models.bert import BertLayer
 from transformers.models.bert.modeling_bert import BertSelfAttention
 
 from todd.models.modules import PretrainedMixin
@@ -256,7 +257,7 @@ class Decoder(BertModel):  # pylint: disable=abstract-method
         category_embedding = self._in_linear(category_embedding)
         category_embedding = category_embedding.relu()
 
-        embedding, *_ = super().forward(
+        embedding, *_ = super().forward(  # pylint: disable=no-member
             inputs_embeds=category_embedding,
             encoder_hidden_states=x,
         )

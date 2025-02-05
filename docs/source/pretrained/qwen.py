@@ -6,9 +6,7 @@ import torch
 from bs4 import BeautifulSoup, NavigableString
 from ebooklib import ITEM_DOCUMENT, epub
 from tqdm import tqdm
-from transformers import BatchEncoding
-from transformers.cache_utils import DynamicCache
-from transformers.models.qwen2 import Qwen2ForCausalLM, Qwen2TokenizerFast
+from transformers import DynamicCache, Qwen2ForCausalLM, Qwen2TokenizerFast
 
 import todd
 
@@ -51,7 +49,7 @@ class Chatbot:
         message = Message(role='user', content=text)
         self._conversation.append(message)
 
-        inputs: BatchEncoding = self._tokenizer.apply_chat_template(
+        inputs = self._tokenizer.apply_chat_template(
             self._conversation,
             add_generation_prompt=True,
             return_tensors='pt',
@@ -98,7 +96,9 @@ class Translator:
 
     def _translate_item(self, item: epub.EpubItem) -> None:
         soup = BeautifulSoup(item.content, 'html.parser')
-        texts: list[NavigableString] = soup.body.find_all(string=True)
+        body = soup.body
+        assert body is not None
+        texts: list[NavigableString] = body.find_all(string=True)
         for text in tqdm(texts, leave=False):
             translation = self._translate_text(text)
             if translation is not None and translation.strip():

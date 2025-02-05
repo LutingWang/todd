@@ -1,7 +1,11 @@
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import (
+    AutoModelForCausalLM,
+    AutoTokenizer,
+    GemmaForCausalLM,
+    GemmaTokenizerFast,
+)
 from transformers.modeling_outputs import CausalLMOutputWithPast
-from transformers.models.gemma import GemmaForCausalLM, GemmaTokenizerFast
 
 import todd
 
