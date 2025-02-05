@@ -72,6 +72,7 @@ lint = [
     'commitizen',
     'doc8',
     'docformatter[tomli]',
+    'ebooklib',
     'flake8',
     'flake8-bugbear',
     'flake8-commas',
