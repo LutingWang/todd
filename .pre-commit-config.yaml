@@ -35,9 +35,6 @@ repos:
       - id: detect-private-key
       - id: end-of-file-fixer
         exclude: ^tests/test_configs/py_/diff\.html$
-      - id: fix-encoding-pragma
-        args:
-          - --remove
       - id: forbid-submodules
       - id: mixed-line-ending
         args:
@@ -73,6 +70,8 @@ repos:
     rev: v2.3.0
     hooks:
       - id: codespell
+        additional_dependencies:
+          - tomli
         exclude_types:
           - jupyter
         exclude: |

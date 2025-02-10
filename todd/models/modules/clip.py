@@ -136,6 +136,7 @@ class CLIPViT(CLIPMixin, ViT):
         self,
         image: torch.Tensor,
         return_2d: bool,
+        normalize: bool = True,
     ) -> tuple[torch.Tensor, torch.Tensor]:
         x: torch.Tensor = self._patch_embedding(image)
 
@@ -157,7 +158,8 @@ class CLIPViT(CLIPMixin, ViT):
 
         x = self._project(x)
 
-        x = F.normalize(x, dim=-1)
+        if normalize:
+            x = F.normalize(x, dim=-1)
 
         cls_ = x[:, 0]
         x = x[:, 1:]
