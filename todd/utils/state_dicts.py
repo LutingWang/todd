@@ -103,6 +103,7 @@ class StateDictConverter:
         new_child_name: str | None,
         child_converter_type: type['StateDictConverter'],
     ) -> None:
+        assert '.' not in child_name
         self._child_converters[child_name] = (
             new_child_name,
             child_converter_type,
@@ -117,26 +118,75 @@ class StateDictConverter:
             key_pattern = re.compile(key_pattern)
         self._regex_converters[key_pattern] = new_key
 
-    def _child_converter(
-        self,
-        child_name: str,
-    ) -> tuple[str | None, 'StateDictConverter']:
-        new_child_name, child_converter_type = (
-            self._child_converters[child_name]
-        )
-        if self._module is None:
-            child = None
-        elif new_child_name is None:
-            child = self._module
-        else:
-            child = getattr(self._module, new_child_name)
-        return new_child_name, child_converter_type(module=child)
-
     def load(self, *args, **kwargs) -> StateDict:
         return load_state_dict_(*args, **kwargs)
 
     def _pre_convert(self, state_dict: StateDict) -> StateDict:
         return state_dict
+
+    def _map_keys(self, state_dict: StateDict) -> StateDict:
+        new_state_dict: StateDict = dict()
+        for key, new_key in self._key_mapping.items():
+            if key not in state_dict:
+                continue
+            value = state_dict.pop(key)
+            if new_key is not None:
+                new_state_dict[new_key] = value
+        return new_state_dict
+
+    def _convert_child(self, name: str, state_dict: StateDict) -> StateDict:
+        new_name, converter_type = self._child_converters[name]
+
+        prefix = '' if new_name is None else f'{new_name}.'
+
+        if self._module is None:
+            module = None
+        elif new_name is None:
+            module = self._module
+        else:
+            module = getattr(self._module, new_name)
+        converter = converter_type(module=module)
+
+        new_state_dict = converter.convert(state_dict)
+        return {prefix + k: v for k, v in new_state_dict.items()}
+
+    def _convert_children(self, state_dict: StateDict) -> StateDict:
+        new_state_dict: StateDict = dict()
+        if not self._child_converters:
+            return new_state_dict
+
+        children: defaultdict[str, StateDict] = defaultdict(dict)
+        for key in list(state_dict):
+            if '.' not in key:
+                continue
+            child_name, child_key = key.split('.', 1)
+            if child_name not in self._child_converters:
+                continue
+            value = state_dict.pop(key)
+            children[child_name][child_key] = value
+
+        for child in starmap(self._convert_child, children.items()):
+            new_state_dict.update(child)
+
+        return new_state_dict
+
+    def _convert_regex(self, state_dict: StateDict) -> StateDict:
+        new_state_dict: StateDict = dict()
+        if not self._regex_converters:
+            return new_state_dict
+
+        for key in list(state_dict):
+            for pattern, new_key in self._regex_converters.items():
+                match_ = pattern.fullmatch(key)
+                if match_ is None:
+                    continue
+                value = state_dict.pop(key)
+                if new_key is not None:
+                    new_key = match_.expand(new_key)
+                    new_state_dict[new_key] = value
+                break
+
+        return new_state_dict
 
     def _convert(self, key: str) -> str | None:
         raise UnknownKeyError(key)
@@ -144,61 +194,18 @@ class StateDictConverter:
     def _post_convert(self, state_dict: StateDict) -> StateDict:
         return state_dict
 
-    def _convert_child_state_dict(
-        self,
-        name: str,
-        state_dict: StateDict,
-    ) -> StateDict:
-        new_child_name, child_converter = self._child_converter(name)
-        prefix = '' if new_child_name is None else f'{new_child_name}.'
-        state_dict = child_converter.convert(state_dict)
-        return {prefix + k: v for k, v in state_dict.items()}
-
     def convert(self, state_dict: StateDict) -> StateDict:  # noqa: C901
         state_dict = self._pre_convert(state_dict)
 
-        new_state_dict: StateDict = dict()
-
-        for key, new_key in self._key_mapping.items():
-            if key not in state_dict:
-                continue
-            value = state_dict.pop(key)
-            if new_key is not None:
-                new_state_dict[new_key] = value
-
-        # group child state dicts by child name
-        child_state_dicts: defaultdict[str, StateDict] = defaultdict(dict)
+        # move items from state_dict to new_state_dict
+        new_state_dict = self._map_keys(state_dict)
+        new_state_dict |= self._convert_children(state_dict)
+        new_state_dict |= self._convert_regex(state_dict)
 
         for key, value in state_dict.items():
-
-            # store child state dicts for later conversion
-            if self._child_converters and '.' in key:
-                child_name, child_key = key.split('.', 1)
-                if child_name in self._child_converters:
-                    child_state_dicts[child_name][child_key] = value
-                    continue
-
-            # convert keys using regex
-            for key_pattern, new_key in self._regex_converters.items():
-                match_ = key_pattern.fullmatch(key)
-                if match_ is None:
-                    continue
-                if new_key is not None:
-                    new_state_dict[match_.expand(new_key)] = value
-                break
-
-            # convert keys using `_convert`
-            else:
-                new_key = self._convert(key)
-                if new_key is not None:
-                    new_state_dict[new_key] = value
-
-        # convert child state dicts
-        for child_state_dict in starmap(
-            self._convert_child_state_dict,
-            child_state_dicts.items(),
-        ):
-            new_state_dict.update(child_state_dict)
+            new_key = self._convert(key)
+            if new_key is not None:
+                new_state_dict[new_key] = value
 
         new_state_dict = self._post_convert(new_state_dict)
         return new_state_dict

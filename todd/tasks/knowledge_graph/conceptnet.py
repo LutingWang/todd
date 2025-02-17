@@ -48,7 +48,7 @@ class ConceptNet(pd.DataFrame):
             sep='\t',
             compression='gzip',
             header=None,
-            names=list(Edge.__dataclass_fields__.keys()),  # noqa: E501 pylint: disable=no-member
+            names=list(Edge.__dataclass_fields__),  # noqa: E501 pylint: disable=no-member
         )
         df.__class__ = cls
         return cast(Self, df)

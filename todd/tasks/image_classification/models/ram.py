@@ -46,7 +46,7 @@ class Categories(pd.DataFrame):
         df = pd.read_csv(
             f,
             header=None,
-            names=list(Category.__dataclass_fields__.keys()),  # noqa: E501 pylint: disable=no-member
+            names=list(Category.__dataclass_fields__),  # noqa: E501 pylint: disable=no-member
         )
         df.__class__ = cls
         return cast(Self, df)

@@ -60,10 +60,7 @@ class ModelStateDictConverter(StateDictConverter):
                 child_state_dict[key.removeprefix(child_prefix)] = value
             else:
                 new_state_dict[key] = value
-        new_state_dict |= self._convert_child_state_dict(
-            child_name,
-            child_state_dict,
-        )
+        new_state_dict |= self._convert_child(child_name, child_state_dict)
 
         return new_state_dict
 
