@@ -33,7 +33,7 @@ class CustomAdapt(BaseAdapt):
         bbox_list = [bboxes[bs.flatten() == i] for i in range(2)]
         h = torch.div(h, self._stride, rounding_mode='trunc')
         w = torch.div(w, self._stride, rounding_mode='trunc')
-        pos = torch.cat((level, bs, h, w), dim=-1)
+        pos = torch.cat((level, bs, h, w), -1)
         id_ = id_.reshape(-1)
         return feat, bbox_list, pos, id_
 

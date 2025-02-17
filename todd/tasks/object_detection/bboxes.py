@@ -136,7 +136,7 @@ class BBoxes(NormalizeMixin[BBox], TensorWrapper[BBox], ABC):
     def from_(cls, bboxes: 'BBoxes') -> Self:
         from1 = cls._from1(bboxes)
         from2 = cls._from2(bboxes)
-        from_ = torch.cat([from1, from2], dim=-1)
+        from_ = torch.cat([from1, from2], -1)
         (_, *args), kwargs = bboxes.__getstate__()
         return cls(from_, *args, **kwargs)
 
@@ -147,7 +147,7 @@ class BBoxes(NormalizeMixin[BBox], TensorWrapper[BBox], ABC):
         if isinstance(offset_xy, tuple):
             offset_xy = self._tensor.new_tensor(offset_xy)
         bboxes = self.to(BBoxesXYXY)
-        tensor = bboxes._tensor + torch.cat([offset_xy, offset_xy], dim=-1)
+        tensor = bboxes._tensor + torch.cat([offset_xy, offset_xy], -1)
         bboxes = bboxes.copy(tensor)
         return bboxes.to(self.__class__)
 
@@ -157,7 +157,7 @@ class BBoxes(NormalizeMixin[BBox], TensorWrapper[BBox], ABC):
             bboxes = bboxes.denormalize()
         lt = bboxes.lt.floor()
         rb = bboxes.rb.ceil()
-        tensor = torch.cat([lt, rb], dim=-1)
+        tensor = torch.cat([lt, rb], -1)
         bboxes = bboxes.copy(tensor)
         if normalized:
             bboxes = bboxes.normalize()
@@ -167,7 +167,7 @@ class BBoxes(NormalizeMixin[BBox], TensorWrapper[BBox], ABC):
         if isinstance(ratio_wh, tuple):
             ratio_wh = self._tensor.new_tensor(ratio_wh)
         bboxes = self.to(BBoxesCXCYWH)
-        tensor = torch.cat([bboxes.center, bboxes.wh * ratio_wh], dim=-1)
+        tensor = torch.cat([bboxes.center, bboxes.wh * ratio_wh], -1)
         bboxes = bboxes.copy(tensor)
         return bboxes.to(self.__class__)
 

@@ -83,7 +83,7 @@ class ViT(nn.Module):
         x = einops.rearrange(x, 'b c h w -> b (h w) c')
 
         cls_token = einops.repeat(self._cls_token, 'd -> b 1 d', b=b)
-        x = torch.cat((cls_token, x), dim=1)
+        x = torch.cat((cls_token, x), 1)
 
         position_embedding = self._interpolate_position_embedding(
             (w, h),

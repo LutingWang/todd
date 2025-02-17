@@ -42,7 +42,7 @@ class RoIAlign(BaseAdapt):
             roi_feats: l x r x c x 7 x 7
         """
         rois = torch.cat([  # yapf: disable
-            torch.cat([b.new_full((b.shape[0], 1), i), b[:, :4]], dim=-1)
+            torch.cat([b.new_full((b.shape[0], 1), i), b[:, :4]], -1)
             for i, b in enumerate(bboxes)
             if b.shape[0] > 0
         ])

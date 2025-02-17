@@ -72,7 +72,7 @@ class SGFILoss(MSELoss):
             embed_pred,
             embed_target,
         )
-        similarity = F.softmax(similarity / self._tau, dim=1)
+        similarity = F.softmax(similarity / self._tau, 1)
 
         fused_pred = torch.einsum(
             'l r c h w, l r -> r c h w',
@@ -135,7 +135,7 @@ class SGFILoss(MSELoss):
 #         )
 
 #         similarity = preds.bmm(targets)  # r x l x 1
-#         similarity = F.softmax(similarity / self._tau, dim=1)
+#         similarity = F.softmax(similarity / self._tau, 1)
 
 #         fused_pred = einops.reduce(
 #             preds * similarity,

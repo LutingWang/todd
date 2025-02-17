@@ -15,7 +15,7 @@ image = get_image(url)
 transforms = tf_v2.Compose([
     torch.from_numpy,
     Rearrange('h w c -> 1 c h w'),
-    tf_v2.Resize(256, interpolation=tf_v2.InterpolationMode.BICUBIC),
+    tf_v2.Resize(256, tf_v2.InterpolationMode.BICUBIC),
     tf_v2.CenterCrop(256),
     tf_v2.ToDtype(torch.float32, True),
     tf_v2.Normalize(CLIP_MEAN, CLIP_STD),
@@ -75,7 +75,6 @@ assert torch.allclose(
 
 tokenizer = nlp.tokenizers.CLIPTokenizer()
 texts = ['hello, world']
-# tokens = clip.adaptively_tokenize(texts)
 tokens = tokenizer.encodes(texts)
 
 model = CLIPText(out_features=512)

@@ -30,24 +30,23 @@ class ColorWheel:
         mr: int = 6,
     ) -> None:
         self._color_wheel = torch.cat([
-            torch.stack([full(ry), arange(ry), zeros(ry)], dim=-1),
+            torch.stack([full(ry), arange(ry), zeros(ry)], -1),
             torch.stack(
                 [255 - arange(yg), full(yg),
                  zeros(yg)],
-                dim=-1,
+                -1,
             ),
-            torch.stack([zeros(gc), full(gc), arange(gc)], dim=-1),
+            torch.stack([zeros(gc), full(gc), arange(gc)], -1),
             torch.stack(
                 [zeros(cb), 255 - arange(cb),
                  full(cb)],
-                dim=-1,
+                -1,
             ),
-            torch.stack([arange(bm), zeros(bm),
-                         full(bm)], dim=-1),
             torch.stack(
-                [full(mr), zeros(mr), 255 - arange(mr)],
-                dim=-1,
+                [arange(bm), zeros(bm), full(bm)],
+                -1,
             ),
+            torch.stack([full(mr), zeros(mr), 255 - arange(mr)], -1),
         ])
 
     def __len__(self) -> int:

@@ -57,3 +57,12 @@ Both ``train.json`` and ``val.json`` exhibit the following structure:
 .. code-block:: python
 
     {"1":{"WNID":"n02119789","words":"kit fox, Vulpes macrotis",...},...}
+
+ImageNet-21k
+------------
+
+.. code::
+
+    data/imagenet-21k/
+    ├── n00004475
+    └── ...

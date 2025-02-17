@@ -191,7 +191,7 @@ class Encoder(PretrainedMixin, SwinTransformer):
                 einops.rearrange(cls_, 'b c -> b 1 c'),
                 einops.rearrange(x, 'b c h w -> b (h w) c'),
             ],
-            dim=1,
+            1,
         )
         x = self.head(x)
         return x

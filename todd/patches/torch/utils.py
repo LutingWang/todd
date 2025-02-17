@@ -3,10 +3,12 @@ __all__ = [
     'PrefetchDataLoader',
 ]
 
-from typing import Any, Iterator
+from typing import Any, Iterator, TypeVar
 
 import torch
 from torch.utils.data import DataLoader
+
+T = TypeVar('T')
 
 
 def set_epoch(dataloader: DataLoader, epoch: int) -> None:
@@ -27,7 +29,7 @@ def cuda(x: Any) -> Any:
     return x
 
 
-class PrefetchDataLoader(torch.utils.data.DataLoader):
+class PrefetchDataLoader(DataLoader[T]):
 
     def __init__(self, *args, **kwargs) -> None:
         from ...utils import NestedCollectionUtils

@@ -200,7 +200,7 @@ class PngOpticalFlow(SerializeMixin, SparseMixin, OpticalFlow):
         data = cv2.imread(str(path), cv2.IMREAD_UNCHANGED)
         data = data.astype(np.int32)  # torch 2.0 does not support uint16
         tensor = torch.tensor(data)
-        validity, tensor = tensor.split_with_sizes([1, 2], dim=-1)
+        validity, tensor = tensor.split_with_sizes([1, 2], -1)
         validity = einops.rearrange(validity.bool(), 'h w 1 -> h w')
         tensor = tensor.float().flip(-1)
         tensor = (tensor - 2**15) / 64.
@@ -210,7 +210,7 @@ class PngOpticalFlow(SerializeMixin, SparseMixin, OpticalFlow):
         tensor = self._optical_flow * 64 + 2**15
         tensor = tensor.flip(-1).int()
         validity = einops.rearrange(self._validity, 'h w -> h w 1').int()
-        tensor = torch.cat([validity, tensor], dim=-1)
+        tensor = torch.cat([validity, tensor], -1)
         data: npt.NDArray[np.int32] = tensor.numpy()
         data = data.astype(np.uint16)
         cv2.imwrite(str(path), data)
