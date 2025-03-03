@@ -61,7 +61,7 @@ class Block(nn.Module):
 
 
 class Transformer(nn.Module):
-    BLOCK_TYPE = Block
+    BLOCK_TYPE: type[nn.Module] = Block
 
     def __init__(
         self,

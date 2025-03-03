@@ -12,11 +12,12 @@ from .transformer import Block
 
 
 class ViT(nn.Module):
-    BLOCK_TYPE = Block
+    BLOCK_TYPE: type[nn.Module] = Block
 
     def __init__(
         self,
         *args,
+        in_channels: int = 3,
         patch_size: int = 16,
         patch_wh: tuple[int, int] = (14, 14),
         width: int = 768,
@@ -29,7 +30,12 @@ class ViT(nn.Module):
         self._patch_wh = patch_wh
         self._num_heads = num_heads
 
-        self._patch_embedding = nn.Conv2d(3, width, patch_size, patch_size)
+        self._patch_embedding = nn.Conv2d(
+            in_channels,
+            width,
+            patch_size,
+            patch_size,
+        )
         self._cls_token = nn.Parameter(torch.empty(width))
         self._position_embedding = nn.Parameter(
             torch.empty(self.num_patches + 1, width),
@@ -41,6 +47,10 @@ class ViT(nn.Module):
             ],
         )
         self._norm = nn.LayerNorm(width, 1e-6)
+
+    @property
+    def in_channels(self) -> int:
+        return self._patch_embedding.in_channels
 
     @property
     def num_patches(self) -> int:
