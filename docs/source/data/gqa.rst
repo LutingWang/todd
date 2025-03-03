@@ -11,3 +11,12 @@ https://cs.stanford.edu/people/dorarad/gqa/index.html
     wget https://downloads.cs.stanford.edu/nlp/data/gqa/${f}
     unzip -q ${f}
     cd ../..
+
+.. code::
+
+    data/gqa/
+    └── images
+        ├── 1.jpg
+        └── ...
+
+There is a total of 148,854 images.

@@ -37,4 +37,4 @@ https://v3det.openxlab.org.cn/
 
 The training split contains 183,354 images, the validation split contains
 29,821 images, and the test split contains 29,863 images.
-There is a total of 13,432 categories in the images folder.
+There is a total of 13,433 categories in the images folder.

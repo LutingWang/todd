@@ -7,4 +7,5 @@ Qwen
     mkdir -p ${root} && cd ${root}
     git clone git@hf.co:Qwen/Qwen2-1.5B-Instruct
     git clone git@hf.co:Qwen/Qwen2.5-7B-Instruct
+    git clone git@hf.co:Qwen/Qwen2.5-VL-7B-Instruct
     cd ../..

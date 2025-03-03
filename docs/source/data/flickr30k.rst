@@ -18,6 +18,15 @@ https://shannon.cs.illinois.edu/DenotationGraph/data/index.html
     mv flickr30k-images images
     cd ../..
 
+.. code::
+
+    data/flickr-30k/
+    └── images
+        ├── 36979.jpg
+        └── ...
+
+There is a total of 31,784 images.
+
 Flickr 30k Entities
 -------------------
 
