@@ -3,7 +3,8 @@ __all__ = [
 ]
 
 import math
-from typing import cast
+from types import MappingProxyType
+from typing import Any, Mapping, cast
 
 import einops
 import torch
@@ -12,14 +13,15 @@ from torch import nn
 
 from todd.models import AdaptiveLayerNorm
 from todd.models.modules import (
+    BaseAttention,
     PretrainedMixin,
     rotary_position_embedding,
     sinusoidal_position_embedding,
 )
 from todd.models.modules.transformer import mlp
 from todd.patches.torch import Sequential
-from todd.utils import StateDict, StateDictConverter, set_temp
-from todd.utils.state_dicts import parallel_conversion
+from todd.utils import StateDict, StateDictConverter
+from todd.utils.state_dicts import SequentialStateDictConverterMixin
 
 from .time_embedding import TimeEmbedding
 
@@ -46,23 +48,15 @@ class AttentionStateDictConverter(StateDictConverter):
         return super()._convert(key)
 
 
-class Attention(PretrainedMixin):
+class Attention(PretrainedMixin, BaseAttention):
     STATE_DICT_CONVERTER = AttentionStateDictConverter
 
-    def __init__(
-        self,
-        *args,
-        channels: int,
-        num_heads: int = 16,
-        **kwargs,
-    ) -> None:
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
+        assert self._width == self.hidden_dim
 
-        assert channels % num_heads == 0
-        self._head_channels = channels // num_heads
-
-        self._in_proj = nn.Linear(channels, 3 * channels)
-        self._out_proj = nn.Linear(channels, channels)
+        self._in_proj = nn.Linear(self._width, 3 * self._width)
+        self._out_proj = nn.Linear(self._width, self._width)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         _, t, _ = x.shape
@@ -72,15 +66,14 @@ class Attention(PretrainedMixin):
             qkv,
             'b t (three nh hc) -> three b nh t hc',
             three=3,
-            hc=self._head_channels,
+            hc=self.head_dim,
         )
         q, k, v = qkv.unbind()
 
         position_embedding = sinusoidal_position_embedding(
             torch.arange(t, device=x.device),
-            self._head_channels + 2,
-        )
-        position_embedding = position_embedding[..., :-2]
+            self.head_dim + 2,
+        )[..., :-2]
         q[:, 0] = rotary_position_embedding(q[:, 0], position_embedding)
         k[:, 0] = rotary_position_embedding(k[:, 0], position_embedding)
 
@@ -92,7 +85,10 @@ class Attention(PretrainedMixin):
         return x
 
 
-class BlockStateDictConverter(StateDictConverter):
+class BlocksStateDictConverter(
+    SequentialStateDictConverterMixin,
+    StateDictConverter,
+):
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -122,25 +118,25 @@ class BlockStateDictConverter(StateDictConverter):
             return key
         return super()._convert(key)
 
-    @parallel_conversion
-    def convert(self, state_dict: StateDict, prefix: str) -> StateDict:  # noqa: E501 pylint: disable=arguments-differ
-        module = cast(Sequential, self._module)
-        with set_temp(self, '._module', module[int(prefix)]):
-            return super().convert(state_dict)
 
+class Block(nn.Module):
 
-class Block(PretrainedMixin):
-    STATE_DICT_CONVERTER = BlockStateDictConverter
-
-    def __init__(self, *args, channels: int, **kwargs) -> None:
+    def __init__(
+        self,
+        *args,
+        width: int,
+        num_heads: int = 16,
+        mlp_ratio: float = 2,
+        **kwargs,
+    ) -> None:
         super().__init__(*args, **kwargs)
-        self._gates = nn.Linear(channels, channels * 2)
+        self._gates = nn.Linear(width, width * 2)
 
-        self._norm1 = AdaptiveLayerNorm(channels, 1e-6, condition_dim=channels)
-        self._attention = Attention(channels=channels)
+        self._norm1 = AdaptiveLayerNorm(width, 1e-6, condition_dim=width)
+        self._attention = Attention(width=width, num_heads=num_heads)
 
-        self._norm2 = AdaptiveLayerNorm(channels, 1e-6, condition_dim=channels)
-        self._mlp = mlp(channels, channels * 2, channels)
+        self._norm2 = AdaptiveLayerNorm(width, 1e-6, condition_dim=width)
+        self._mlp = mlp(width, int(width * mlp_ratio), width)
         cast(nn.GELU, self._mlp[1]).approximate = 'tanh'
 
     def forward(
@@ -182,7 +178,7 @@ class DiTStateDictConverter(StateDictConverter):
         self._register_child_converter(
             'transformer_blocks',
             '_blocks',
-            BlockStateDictConverter,
+            BlocksStateDictConverter,
         )
         self._register_regex_converter(
             r'norm_out\.(.*)',
@@ -203,45 +199,31 @@ class DiT(PretrainedMixin):
         self,
         *args,
         in_channels: int,
-        hidden_channels: int = 1024,
         out_channels: int,
+        width: int = 1024,
         depth: int = 22,
+        block_kwargs: Mapping[str, Any] = MappingProxyType(dict()),  # noqa: B006 E501 pylint: disable=line-too-long
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
 
-        time_embedding = TimeEmbedding(embedding_dim=hidden_channels)
+        time_embedding = TimeEmbedding(embedding_dim=width)
         self._time_embedding = time_embedding
 
-        self._in_proj = nn.Linear(in_channels, hidden_channels)
+        self._in_proj = nn.Linear(in_channels, width)
         self._residual = nn.Sequential(
-            nn.Conv1d(
-                hidden_channels,
-                hidden_channels,
-                31,
-                padding=15,
-                groups=16,
-            ),
+            nn.Conv1d(width, width, 31, padding=15, groups=16),
             nn.Mish(),
-            nn.Conv1d(
-                hidden_channels,
-                hidden_channels,
-                31,
-                padding=15,
-                groups=16,
-            ),
+            nn.Conv1d(width, width, 31, padding=15, groups=16),
             nn.Mish(),
         )
 
-        blocks = [Block(channels=hidden_channels) for _ in range(depth)]
-        self._blocks = Sequential(*blocks)
-
-        self._out_norm = AdaptiveLayerNorm(
-            hidden_channels,
-            1e-6,
-            condition_dim=hidden_channels,
+        self._blocks = Sequential(
+            *[Block(width=width, **block_kwargs) for _ in range(depth)],
         )
-        self._out_proj = nn.Linear(hidden_channels, out_channels)
+
+        self._out_norm = AdaptiveLayerNorm(width, 1e-6, condition_dim=width)
+        self._out_proj = nn.Linear(width, out_channels)
 
     @property
     def out_channels(self) -> int:

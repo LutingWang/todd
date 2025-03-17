@@ -19,6 +19,7 @@ from torch import nn
 from ..loggers import master_logger
 from ..patches.py_ import get_
 from ..patches.torch import load_state_dict_
+from .misc import set_temp
 
 T = TypeVar('T')
 
@@ -229,3 +230,13 @@ def parallel_conversion(func):
         return state_dict
 
     return wrapper
+
+
+class SequentialStateDictConverterMixin(StateDictConverter):
+
+    @parallel_conversion
+    def convert(self, state_dict: StateDict, prefix: str) -> StateDict:  # noqa: E501 pylint: disable=arguments-differ
+        module = self._module
+        assert isinstance(module, nn.Sequential)
+        with set_temp(self, '._module', module[int(prefix)]):
+            return super().convert(state_dict)

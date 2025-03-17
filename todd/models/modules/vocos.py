@@ -3,15 +3,14 @@ __all__ = [
 ]
 
 from abc import ABC, abstractmethod
-from typing import cast
 
 import einops
 import torch
 import torchaudio
 from torch import nn
 
-from ...utils import StateDict, StateDictConverter, set_temp
-from ...utils.state_dicts import parallel_conversion
+from ...utils import StateDict, StateDictConverter
+from ...utils.state_dicts import SequentialStateDictConverterMixin
 from .pretrained import PretrainedMixin
 from .transformer import mlp
 
@@ -48,7 +47,10 @@ class BaseConvNeXt(PretrainedMixin, ABC):
         return identity + x
 
 
-class ConvNeXtStateDictConverter(StateDictConverter):
+class ConvNeXtStateDictConverter(
+    SequentialStateDictConverterMixin,
+    StateDictConverter,
+):
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -57,12 +59,6 @@ class ConvNeXtStateDictConverter(StateDictConverter):
         self._register_regex_converter(r'pwconv1\.(.*)', r'_mlp.0.\1')
         self._register_regex_converter(r'pwconv2\.(.*)', r'_mlp.2.\1')
         self._register_key_mapping('gamma', '_gamma')
-
-    @parallel_conversion
-    def convert(self, state_dict: StateDict, prefix: str) -> StateDict:  # noqa: E501 pylint: disable=arguments-differ
-        module = cast(nn.Sequential, self._module)
-        with set_temp(self, '._module', module[int(prefix)]):
-            return super().convert(state_dict)
 
 
 class ConvNeXt(BaseConvNeXt):

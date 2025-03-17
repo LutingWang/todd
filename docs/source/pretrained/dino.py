@@ -21,7 +21,7 @@ transforms = tf_v2.Compose([
 ])
 tensor = transforms(image)
 
-dino = DINO()
+dino = DINO(block_kwargs=dict(num_heads=12))
 dino.load_pretrained('pretrained/dino/dino_vitbase16_pretrain.pth')
 dino.requires_grad_(False)
 dino.eval()
@@ -46,7 +46,7 @@ dinov2 = DINOv2(
     patch_wh=(37, 37),
     width=1024,
     depth=24,
-    num_heads=16,
+    block_kwargs=dict(num_heads=16),
 )
 dinov2.load_pretrained('pretrained/dino/dinov2_vitl14_pretrain.pth')
 dinov2.requires_grad_(False)

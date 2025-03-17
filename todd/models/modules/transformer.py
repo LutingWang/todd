@@ -4,6 +4,9 @@ __all__ = [
     'Transformer',
 ]
 
+from types import MappingProxyType
+from typing import Any, Mapping
+
 import torch
 from torch import nn
 
@@ -72,18 +75,20 @@ class Transformer(nn.Module):
         num_embeddings: int = 49408,
         width: int = 512,
         depth: int = 12,
-        num_heads: int = 8,
+        block_kwargs: Mapping[str, Any] = MappingProxyType(dict()),  # noqa: B006 E501 pylint: disable=line-too-long
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
         self._token_embedding = nn.Embedding(num_embeddings, width)
         self._position_embedding = nn.Parameter(torch.empty(max_length, width))
+
         self._blocks = Sequential(
             *[
-                self.BLOCK_TYPE(width=width, num_heads=num_heads)
+                self.BLOCK_TYPE(width=width, **block_kwargs)
                 for _ in range(depth)
             ],
         )
+
         self._norm = nn.LayerNorm(width)
 
         attention_mask = torch.full((max_length, max_length), float('-inf'))

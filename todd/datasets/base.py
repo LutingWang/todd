@@ -106,6 +106,10 @@ class BaseDataset(BuildPreHookMixin, Dataset[T], Generic[T, KT_co, VT], ABC):
     def build_keys(self) -> KeysProtocol[KT_co]:
         return list(self._access_layer)
 
+    @property
+    def keys(self) -> KeysProtocol[KT_co]:
+        return self._keys
+
     def __len__(self) -> int:
         if Store.DRY_RUN:
             return 4 * get_world_size()

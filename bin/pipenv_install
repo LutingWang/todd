@@ -11,7 +11,7 @@ command -v pyenv > /dev/null || curl https://pyenv.run | bash
 eval "$(pyenv init -)"
 eval "$(pyenv virtualenv-init -)"
 
-pyenv versions --bare | grep -q ${python_version} || pyenv install ${python_version}
+pyenv versions --bare | grep -q ${python_version} || pyenv install -v ${python_version}
 
 pipenv install --python ${python_version}
 pipenv run pip install -U setuptools

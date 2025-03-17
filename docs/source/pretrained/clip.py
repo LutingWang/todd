@@ -25,6 +25,7 @@ tensor = transforms(image)
 clip_vit_b_32 = CLIPViT(
     patch_size=32,
     patch_wh=(7, 7),
+    block_kwargs=dict(num_heads=12),
     out_features=512,
 )
 clip_vit_b_32.load_pretrained('pretrained/clip/ViT-B-32.pt')
@@ -51,7 +52,7 @@ clip_vit_l_14 = CLIPViT(
     patch_wh=(16, 16),
     width=1024,
     depth=24,
-    num_heads=16,
+    block_kwargs=dict(num_heads=16),
     out_features=768,
 )
 clip_vit_l_14.load_pretrained('pretrained/clip/ViT-L-14.pt')
@@ -77,7 +78,7 @@ tokenizer = nlp.tokenizers.CLIPTokenizer()
 texts = ['hello, world']
 tokens = tokenizer.encodes(texts)
 
-model = CLIPText(out_features=512)
+model = CLIPText(block_kwargs=dict(num_heads=8), out_features=512)
 model.load_pretrained('pretrained/clip/ViT-B-32.pt')
 model.requires_grad_(False)
 model.eval()
@@ -86,6 +87,6 @@ x = model(tokens)
 eos = CLIPText.eos(tokens, x)
 assert torch.allclose(
     eos[:, :3],
-    torch.tensor([[7.2253e-02, 1.0570e-01, -1.0538e-01]]),
+    tensor([[0.0058, 0.0085, -0.0085]]),
     atol=1e-5,
 )

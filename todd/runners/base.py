@@ -151,14 +151,17 @@ class BaseRunner(BuildPreHookMixin, StateDictMixin, Generic[T]):
         registry: RegistryMeta,
         item: Item,
     ) -> Config:
-        default_root = 'work_dirs'
-        default_name = config.name
-        if Store.DRY_RUN:
-            default_name = os.path.join('dry_run', default_name)
-
         work_dir = config.get('work_dir', Config())
-        root = work_dir.get('root', default_root)
-        name = work_dir.get('name', default_name)
+        if not isinstance(work_dir, Config):
+            config.work_dir = pathlib.Path(work_dir)
+            return config
+
+        root = work_dir.get('root', 'work_dirs')
+        name = work_dir.get('name', config.name)
+
+        if Store.DRY_RUN:
+            name = os.path.join('dry_run', name)
+
         config.work_dir = pathlib.Path(root) / name
         return config
 

@@ -7,15 +7,12 @@ __all__ = [
     'DINOv2',
 ]
 
-from typing import cast
-
 import einops
 import torch
 from torch import nn
 
-from ...patches.torch import Sequential
-from ...utils import StateDict, StateDictConverter, set_temp
-from ...utils.state_dicts import parallel_conversion
+from ...utils import StateDict, StateDictConverter
+from ...utils.state_dicts import SequentialStateDictConverterMixin
 from .pretrained import PretrainedMixin
 from .transformer import Block
 from .vit import ViT
@@ -32,7 +29,10 @@ class DINOMixin(PretrainedMixin, ViT):
         return super()._interpolate_position_embedding(wh, **kwargs)
 
 
-class DINOBlocksStateDictConverter(StateDictConverter):
+class DINOBlocksStateDictConverter(
+    SequentialStateDictConverterMixin,
+    StateDictConverter,
+):
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -47,12 +47,6 @@ class DINOBlocksStateDictConverter(StateDictConverter):
         )
         self._register_regex_converter(r'mlp\.fc1\.(.*)', r'_mlp.0.\1')
         self._register_regex_converter(r'mlp\.fc2\.(.*)', r'_mlp.2.\1')
-
-    @parallel_conversion
-    def convert(self, state_dict: StateDict, prefix: str) -> StateDict:  # noqa: E501 pylint: disable=arguments-differ
-        module = cast(Sequential, self._module)
-        with set_temp(self, '._module', module[int(prefix)]):
-            return super().convert(state_dict)
 
 
 class DINOStateDictConverter(StateDictConverter):
@@ -81,7 +75,7 @@ class DINOStateDictConverter(StateDictConverter):
             state_dict['_position_embedding'],
             '1 l d -> l d',
         )
-        return state_dict
+        return super()._post_convert(state_dict)
 
 
 class DINO(DINOMixin):

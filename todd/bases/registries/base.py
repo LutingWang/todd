@@ -393,7 +393,13 @@ class RegistryMeta(  # type: ignore[misc]
             >>> persian.friend
             'Siamese'
         """
-        config = Config(kwargs) | config
+        # NOTE: If `kwargs` and `config` have the same key, the following code
+        # will overwrite `kwargs` with `config`, instead of merging them.
+        # config = Config(kwargs) | config
+
+        kwargs = Config(kwargs)
+        kwargs.update(config)
+        config = kwargs
 
         config_type = config.pop('type')
         registry, item = cls.parse(config_type)

@@ -2,8 +2,6 @@ __all__ = [
     'TextEmbedding',
 ]
 
-from typing import cast
-
 import einops
 import torch
 import torch.nn.functional as F
@@ -11,8 +9,8 @@ from torch import nn
 
 from todd.models.modules import PretrainedMixin, sinusoidal_position_embedding
 from todd.models.modules.vocos import BaseConvNeXt
-from todd.utils import StateDict, StateDictConverter, set_temp
-from todd.utils.state_dicts import parallel_conversion
+from todd.utils import StateDict, StateDictConverter
+from todd.utils.state_dicts import SequentialStateDictConverterMixin
 
 from ..constants import MAX_DURATION
 
@@ -30,7 +28,10 @@ class GRN(nn.Module):
         return self._weight * (x * norm) + self._bias + x
 
 
-class ConvNeXtV2StateDictConverter(StateDictConverter):
+class ConvNeXtV2StateDictConverter(
+    SequentialStateDictConverterMixin,
+    StateDictConverter,
+):
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -44,12 +45,6 @@ class ConvNeXtV2StateDictConverter(StateDictConverter):
         state_dict['_grn._weight'] = state_dict['_grn._weight'].flatten()
         state_dict['_grn._bias'] = state_dict['_grn._bias'].flatten()
         return super()._post_convert(state_dict)
-
-    @parallel_conversion
-    def convert(self, state_dict: StateDict, prefix: str) -> StateDict:  # noqa: E501 pylint: disable=arguments-differ
-        module = cast(nn.Sequential, self._module)
-        with set_temp(self, '._module', module[int(prefix)]):
-            return super().convert(state_dict)
 
 
 class ConvNeXtV2(BaseConvNeXt):

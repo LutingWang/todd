@@ -20,10 +20,11 @@ from ...utils import StateDict, StateDictConverter, set_temp
 from ...utils.state_dicts import parallel_conversion
 from .pretrained import PretrainedMixin
 from .transformer import Block, Transformer
+from .utils import ApproximateGELU
 from .vit import ViT
 
 
-class CLIPTransformerStateDictConverter(StateDictConverter):
+class CLIPBlocksStateDictConverter(StateDictConverter):
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -102,16 +103,10 @@ class CLIPViTStateDictConverter(CLIPVisionStateDictConverterMixin):
         self._register_child_converter(
             'transformer',
             '_blocks',
-            CLIPTransformerStateDictConverter,
+            CLIPBlocksStateDictConverter,
         )
         self._register_regex_converter(r'ln_post\.(.*)', r'_norm.\1')
         self._register_key_mapping('proj', '_projector')
-
-
-class GELU(nn.Module):
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return x * torch.sigmoid(1.702 * x)
 
 
 class CLIPBlock(Block):
@@ -120,7 +115,7 @@ class CLIPBlock(Block):
         super().__init__(*args, **kwargs)
         self._norm1.eps = 1e-5
         self._norm2.eps = 1e-5
-        self._mlp[1].__class__ = GELU
+        self._mlp[1].__class__ = ApproximateGELU
 
 
 class CLIPViT(CLIPMixin, ViT):
@@ -170,7 +165,7 @@ class CLIPViT(CLIPMixin, ViT):
         return cls_, x
 
 
-class CLIPTextStateDictConverterMixin(CLIPStateDictConverterMixin):
+class CLIPTextStateDictConverter(CLIPStateDictConverterMixin):
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -182,7 +177,7 @@ class CLIPTextStateDictConverterMixin(CLIPStateDictConverterMixin):
         self._register_child_converter(
             'transformer',
             '_blocks',
-            CLIPTransformerStateDictConverter,
+            CLIPBlocksStateDictConverter,
         )
         self._register_regex_converter(r'ln_final\.(.*)', r'_norm.\1')
         self._register_key_mapping(r'text_projection', r'_projector')
@@ -196,7 +191,7 @@ class CLIPTextStateDictConverterMixin(CLIPStateDictConverterMixin):
 
 class CLIPText(CLIPMixin, Transformer):
     BLOCK_TYPE = CLIPBlock
-    STATE_DICT_CONVERTER = CLIPTextStateDictConverterMixin
+    STATE_DICT_CONVERTER = CLIPTextStateDictConverter
 
     @classmethod
     def eos(cls, text: torch.Tensor, x: torch.Tensor) -> torch.Tensor:
@@ -204,7 +199,15 @@ class CLIPText(CLIPMixin, Transformer):
         eos_indices = text.argmax(-1)  # <EOS> has the highest number
         return x[torch.arange(b), eos_indices]
 
-    def forward(self, text: torch.Tensor) -> torch.Tensor:
+    def forward(
+        self,
+        text: torch.Tensor,
+        normalize: bool = True,
+    ) -> torch.Tensor:
         x = super().forward(text)
         x = self._project(x)
+
+        if normalize:
+            x = F.normalize(x, dim=-1)
+
         return x

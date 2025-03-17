@@ -19,8 +19,8 @@ from transformers.models.bert import BertLayer
 from transformers.models.bert.modeling_bert import BertSelfAttention
 
 from todd.models.modules import PretrainedMixin
-from todd.utils import StateDict, StateDictConverter, set_temp
-from todd.utils.state_dicts import parallel_conversion
+from todd.utils import StateDict, StateDictConverter
+from todd.utils.state_dicts import SequentialStateDictConverterMixin
 
 
 class RAMStateDictConverterMixin(StateDictConverter):
@@ -65,7 +65,10 @@ class Categories(pd.DataFrame):
         return outputs
 
 
-class SwinTransformerBlockStateDictConverter(StateDictConverter):
+class SwinTransformerBlockStateDictConverter(
+    SequentialStateDictConverterMixin,
+    StateDictConverter,
+):
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -89,12 +92,6 @@ class SwinTransformerBlockStateDictConverter(StateDictConverter):
         ):
             return key
         return super()._convert(key)
-
-    @parallel_conversion
-    def convert(self, state_dict: StateDict, prefix: str) -> StateDict:  # noqa: E501 pylint: disable=arguments-differ
-        module = cast(nn.Sequential, self._module)
-        with set_temp(self, '._module', module[int(prefix)]):
-            return super().convert(state_dict)
 
 
 class EncoderStateDictConverter(StateDictConverter):

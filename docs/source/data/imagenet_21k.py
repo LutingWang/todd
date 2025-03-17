@@ -75,7 +75,7 @@ def main() -> None:
         patch_wh=(16, 16),
         width=1024,
         depth=24,
-        num_heads=16,
+        block_kwargs=dict(num_heads=16),
         out_features=768,
     )
     clip_vit_l_14 = clip_vit_l_14.cuda()
@@ -84,7 +84,7 @@ def main() -> None:
     clip_vit_l_14.requires_grad_(False)
     clip_vit_l_14.eval()
 
-    dino = DINO()
+    dino = DINO(block_kwargs=dict(num_heads=12))
     dino = dino.cuda()
 
     dino.load_pretrained('pretrained/dino/dino_vitbase16_pretrain.pth')

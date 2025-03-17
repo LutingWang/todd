@@ -2,6 +2,9 @@ __all__ = [
     'ViT',
 ]
 
+from types import MappingProxyType
+from typing import Any, Mapping
+
 import einops
 import torch
 from torch import nn
@@ -22,13 +25,12 @@ class ViT(nn.Module):
         patch_wh: tuple[int, int] = (14, 14),
         width: int = 768,
         depth: int = 12,
-        num_heads: int = 12,
+        block_kwargs: Mapping[str, Any] = MappingProxyType(dict()),  # noqa: B006 E501 pylint: disable=line-too-long
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
         self._patch_size = patch_size
         self._patch_wh = patch_wh
-        self._num_heads = num_heads
 
         self._patch_embedding = nn.Conv2d(
             in_channels,
@@ -40,12 +42,14 @@ class ViT(nn.Module):
         self._position_embedding = nn.Parameter(
             torch.empty(self.num_patches + 1, width),
         )
+
         self._blocks = Sequential(
             *[
-                self.BLOCK_TYPE(width=width, num_heads=num_heads)
+                self.BLOCK_TYPE(width=width, **block_kwargs)
                 for _ in range(depth)
             ],
         )
+
         self._norm = nn.LayerNorm(width, 1e-6)
 
     @property
