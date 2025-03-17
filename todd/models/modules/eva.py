@@ -1,3 +1,5 @@
+# pylint: disable=duplicate-code
+
 __all__ = [
     'EVA_CLIPViT',
     'EVA_CLIPText',
