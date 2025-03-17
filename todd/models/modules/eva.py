@@ -262,7 +262,7 @@ class ViTStateDictConverter(DINOStateDictConverter):
         return state_dict
 
 
-class EVA_CLIPViT(PretrainedMixin, ViT):
+class EVA_CLIPViT(PretrainedMixin, ViT):  # noqa: E501 N801 pylint: disable=invalid-name
     BLOCK_TYPE = ViTBlock
     STATE_DICT_CONVERTER = ViTStateDictConverter
 
@@ -342,7 +342,7 @@ class TextStateDictConverter(StateDictConverter):
         return state_dict
 
 
-class EVA_CLIPText(CLIPText):
+class EVA_CLIPText(CLIPText):  # noqa: E501 N801 pylint: disable=invalid-name
     BLOCK_TYPE = TextBlock
     STATE_DICT_CONVERTER = cast(
         type[CLIPTextStateDictConverter],

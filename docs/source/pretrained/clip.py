@@ -87,6 +87,6 @@ x = model(tokens)
 eos = CLIPText.eos(tokens, x)
 assert torch.allclose(
     eos[:, :3],
-    tensor([[0.0058, 0.0085, -0.0085]]),
+    torch.tensor([[0.0058, 0.0085, -0.0085]]),
     atol=1e-5,
 )
