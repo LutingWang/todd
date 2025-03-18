@@ -93,7 +93,12 @@ class ViTAttention(PretrainedMixin, BaseAttention):
         x = torch.cat((x1, x2), -2)
         return x
 
-    def forward(self, x: torch.Tensor, wh: tuple[int, int]) -> torch.Tensor:
+    def forward(
+        self,
+        x: torch.Tensor,
+        wh: tuple[int, int],
+        attention_mask: torch.Tensor | None = None,
+    ) -> torch.Tensor:
         qkv = self._in_proj(x)
         qkv = einops.rearrange(qkv, 'b n (qkv c) -> qkv b n c', qkv=3)
         q, k, v = torch.unbind(qkv)
@@ -112,7 +117,7 @@ class ViTAttention(PretrainedMixin, BaseAttention):
             q = self._apply_rope(q, rope)
             k = self._apply_rope(k, rope)
 
-        x = F.scaled_dot_product_attention(q, k, v)
+        x = F.scaled_dot_product_attention(q, k, v, attention_mask)
         x = einops.rearrange(x, 'b nh n c -> b n (nh c)')
 
         x = self._norm(x)
