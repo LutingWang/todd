@@ -1,18 +1,17 @@
 import torch
-from transformers import (
-    AutoModelForCausalLM,
-    AutoTokenizer,
-    GemmaForCausalLM,
-    GemmaTokenizerFast,
-)
+from transformers import GemmaForCausalLM, GemmaTokenizerFast
 from transformers.modeling_outputs import CausalLMOutputWithPast
 
 import todd
 
+assert torch.cuda.device_count() <= 4, (  # yapf: disable
+    "Please use no more than 4 GPUs, in order to avoid RuntimeError."
+)
+
 PRETRAINED = 'pretrained/gemma/gemma-1.1-2b-it'
 
-tokenizer: GemmaTokenizerFast = AutoTokenizer.from_pretrained(PRETRAINED)
-model: GemmaForCausalLM = AutoModelForCausalLM.from_pretrained(
+tokenizer: GemmaTokenizerFast = GemmaTokenizerFast.from_pretrained(PRETRAINED)
+model: GemmaForCausalLM = GemmaForCausalLM.from_pretrained(
     PRETRAINED,
     device_map='auto',
     torch_dtype='auto',

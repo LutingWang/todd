@@ -1,12 +1,13 @@
 # pylint: disable=duplicate-code
 
-import os
 import pathlib
+from typing import Sequence
 
 import torch
 from PIL import Image
 from transformers import (
     BatchEncoding,
+    BatchFeature,
     MllamaForConditionalGeneration,
     MllamaProcessor,
     PreTrainedTokenizerFast,
@@ -32,11 +33,11 @@ class Chatbot:
         )
         self._model = model
 
-    def __call__(self, inputs: BatchEncoding) -> str:
+    def __call__(self, inputs: BatchEncoding | BatchFeature) -> str:
         if todd.Store.cuda:  # pylint: disable=using-constant-test
             inputs = inputs.to('cuda')
 
-        input_ids: torch.Tensor = inputs['input_ids']
+        input_ids: torch.Tensor = inputs.input_ids
         _, input_length = input_ids.shape
 
         output_ids = self._model.generate(**inputs, max_new_tokens=1024)
@@ -58,7 +59,7 @@ class Chatbot:
         )
         return self(inputs)
 
-    def chat_multimodal(self, images: list[Image.Image], text: str) -> str:
+    def chat_multimodal(self, images: Sequence[Image.Image], text: str) -> str:
         content = [dict(type='image') for _ in images]
         content.append(dict(type='text', text=text))
         conversation = [dict(role='user', content=content)]
@@ -78,10 +79,7 @@ class Chatbot:
 
 def main() -> None:
     images_root = pathlib.Path(__file__).parent / 'images'
-    images = [
-        Image.open(os.path.join('cat', image))
-        for image in images_root.iterdir()
-    ]
+    images = [Image.open(image) for image in images_root.iterdir()]
 
     chatbot = Chatbot()
 

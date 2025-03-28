@@ -1,0 +1,11 @@
+{
+  "configurations": [
+    {
+      "justMyCode": false,
+      "name": "Python Debugger: Current File",
+      "request": "launch",
+      "type": "debugpy"
+    }
+  ],
+  "version": "0.2.0"
+}

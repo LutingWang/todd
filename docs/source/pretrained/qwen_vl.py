@@ -1,12 +1,13 @@
 # pylint: disable=duplicate-code
 
-import os
 import pathlib
+from typing import Sequence
 
 import torch
 from PIL import Image
 from transformers import (
     BatchEncoding,
+    BatchFeature,
     Qwen2_5_VLForConditionalGeneration,
     Qwen2_5_VLProcessor,
     Qwen2TokenizerFast,
@@ -35,11 +36,14 @@ class Chatbot:
         )
         self._model = model
 
-    def __call__(self, inputs: BatchEncoding) -> tuple[torch.Tensor, str]:
+    def __call__(
+        self,
+        inputs: BatchEncoding | BatchFeature,
+    ) -> tuple[torch.Tensor, str]:
         if todd.Store.cuda:  # pylint: disable=using-constant-test
             inputs = inputs.to('cuda')
 
-        input_ids: torch.Tensor = inputs['input_ids']
+        input_ids: torch.Tensor = inputs.input_ids
         _, input_length = input_ids.shape
 
         outputs = self._model.generate(
@@ -62,11 +66,10 @@ class Chatbot:
         # inputs, while others are one.
 
         hidden_states = torch.stack([
-            hidden_states[-1][:, -1]
-            for hidden_states in outputs['hidden_states']
+            hidden_states[-1][:, -1] for hidden_states in outputs.hidden_states
         ])
 
-        output_ids = outputs['sequences']
+        output_ids = outputs.sequences
         generated_ids = output_ids[0, input_length:]
         generated_text = self._processor.decode(
             generated_ids,
@@ -87,7 +90,7 @@ class Chatbot:
 
     def chat_multimodal(
         self,
-        images: list[Image.Image],
+        images: Sequence[Image.Image],
         text: str,
     ) -> tuple[torch.Tensor, str]:
         content = [dict(type='image') for _ in images]
@@ -108,11 +111,12 @@ class Chatbot:
 
 
 def main() -> None:
+    assert torch.cuda.device_count() <= 4, (
+        "Please use no more than 4 GPUs, in order to avoid RuntimeError."
+    )
+
     images_root = pathlib.Path(__file__).parent / 'images'
-    images = [
-        Image.open(os.path.join('cat', image))
-        for image in images_root.iterdir()
-    ]
+    images = [Image.open(image) for image in images_root.iterdir()]
 
     chatbot = Chatbot()
 

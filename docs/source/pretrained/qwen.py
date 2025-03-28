@@ -58,7 +58,7 @@ class Chatbot:
         if todd.Store.cuda:  # pylint: disable=using-constant-test
             inputs = inputs.to('cuda')
 
-        input_ids: torch.Tensor = inputs['input_ids']
+        input_ids: torch.Tensor = inputs.input_ids
         _, input_length = input_ids.shape
 
         output_ids = self._model.generate(
