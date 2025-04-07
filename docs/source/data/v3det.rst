@@ -3,6 +3,8 @@ V3Det
 
 https://v3det.openxlab.org.cn/
 
+https://opendatalab.com/LutingWang/V3Det/
+
 .. code-block:: bash
 
     cd data

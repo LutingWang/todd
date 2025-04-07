@@ -17,9 +17,21 @@ PRETRAINED = 'pretrained/intern/InternVL2_5-1B'
 
 class PILToTensor(transforms.PILToTensor):
 
-    def __init__(self, *args, patch_wh: tuple[int, int], **kwargs) -> None:
+    def __init__(
+        self,
+        *args,
+        patch_wh: tuple[int, int],
+        min_patches: int = 1,
+        max_patches: int = 4,
+        **kwargs,
+    ) -> None:
         super().__init__(*args, **kwargs)
         self._patch_wh = patch_wh
+        self._min_patches = min_patches
+        self._max_patches = max_patches
+
+    def _clip(self, n: float) -> int:
+        return max(self._min_patches, min(self._max_patches, round(n)))
 
     def __call__(self, image: Image.Image) -> torch.Tensor:
         image = image.convert('RGB')
@@ -27,8 +39,8 @@ class PILToTensor(transforms.PILToTensor):
         image_w, image_h = image.size
         patch_w, patch_h = self._patch_wh
 
-        nw = round(image_w / patch_w)
-        nh = round(image_h / patch_h)
+        nw = self._clip(image_w / patch_w)
+        nh = self._clip(image_h / patch_h)
 
         patches = image.resize(
             (nw * patch_w, nh * patch_h),

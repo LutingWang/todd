@@ -6,18 +6,11 @@ https://openxlab.org.cn/datasets/GMAI/SA-Med2D-20M
 .. code-block:: bash
 
     cd data
+    git clone git@hf.co:datasets/OpenGVLab/SA-Med2D-20M
 
-    repo=SA-Med2D-20M
-    git clone https://huggingface.co/datasets/OpenGVLab/${repo}
-    # rm -rf ${repo}/.git
-
-    prefix=${repo}/raw/SA-Med2D-16M
-    f=SA-Med2D-16M.zip
-    zip ${prefix}.zip ${prefix}.z0* ${prefix}.z10 -s=0 --out ${f}
-    # rm -rf ${repo}
-
-    unzip -q ${f}
-    # rm ${f}
+    prefix=SA-Med2D-20M/raw/SA-Med2D-16M
+    zip ${prefix}.zip ${prefix}.z{01..10} -s 0 --out SA-Med2D-16M.zip
+    unzip -q SA-Med2D-16M.zip
 
     mv SAMed2Dv1 sa_med2d
     cd sa_med2d

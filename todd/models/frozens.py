@@ -160,7 +160,7 @@ class NoGradMixin(InitWeightsMixin, BuildPreHookMixin, CheckMixin):
         >>> model.check(model, tuple(), dict())
         Traceback (most recent call last):
             ...
-        AssertionError
+        RuntimeError: conv.weight requires grad
         >>> _ = model.requires_grad_()
         >>> model.check(model, tuple(), dict())
 
@@ -212,8 +212,9 @@ class NoGradMixin(InitWeightsMixin, BuildPreHookMixin, CheckMixin):
 
     def check(self, *args, **kwargs) -> None:
         super().check(*args, **kwargs)  # type: ignore[safe-super]
-        for _, parameter in self._no_grad_named_parameters():
-            assert not parameter.requires_grad
+        for name, parameter in self._no_grad_named_parameters():
+            if parameter.requires_grad:
+                raise RuntimeError(f"{name} requires grad")
 
     def _no_grad_named_parameters(self) -> Iterable[tuple[str, nn.Parameter]]:
         if self._no_grad is None:
@@ -288,7 +289,7 @@ class EvalMixin(InitWeightsMixin, BuildPreHookMixin, CheckMixin):
         >>> model.check(model, tuple(), dict())
         Traceback (most recent call last):
             ...
-        AssertionError
+        RuntimeError: bn is in training mode
 
     Use `train` to enforce the properties to meet the requirement:
 
@@ -336,8 +337,9 @@ class EvalMixin(InitWeightsMixin, BuildPreHookMixin, CheckMixin):
 
     def check(self, *args, **kwargs) -> None:
         super().check(*args, **kwargs)  # type: ignore[safe-super]
-        for _, module in self._eval_modules():
-            assert not module.training
+        for name, module in self._eval_modules():
+            if module.training:
+                raise RuntimeError(f"{name} is in training mode")
 
     def _eval_modules(self) -> Iterable[tuple[str, nn.Module]]:
         if self._eval is None:

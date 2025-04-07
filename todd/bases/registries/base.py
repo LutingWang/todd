@@ -80,6 +80,9 @@ class RegistryMeta(  # type: ignore[misc]
         items = ' '.join(f'{k}={v}' for k, v in cls.items())
         return f"<{cls.__name__} {items}>"
 
+    def __hash__(cls) -> int:
+        return id(cls)
+
     # Inheritance
 
     @no_type_check

@@ -63,9 +63,13 @@ repos:
         additional_dependencies:
           - numpy<2.0
           - pandas-stubs
+          - types-beautifulsoup4
           - types-Pillow
+          - types-pycocotools
+          - types-regex
           - types-requests
           - types-toml
+          - types-tqdm
   - repo: https://github.com/codespell-project/codespell
     rev: v2.3.0
     hooks:
