@@ -88,7 +88,7 @@ class Annotations(UserList[Annotation]):
     @property
     def bboxes(self) -> 'FlattenBBoxesXYWH':
         from todd.tasks.object_detection import FlattenBBoxesXYWH
-        if len(self) > 0:
+        if self:
             bboxes = torch.tensor([annotation.bbox for annotation in self])
         else:
             bboxes = torch.zeros(0, 4)

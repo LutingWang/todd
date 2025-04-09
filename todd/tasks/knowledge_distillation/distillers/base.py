@@ -50,7 +50,7 @@ class BaseDistiller(BuildPreHookMixin, nn.Module, ABC):
         outputs: set[str] = set()
         for pipeline in self._hook_pipelines.processors:
             spec = pipeline.spec
-            assert len(spec.inputs) == 0
+            assert not spec.inputs
             assert outputs.isdisjoint(spec.outputs)
             outputs |= spec.outputs
 
@@ -120,7 +120,7 @@ class BaseDistiller(BuildPreHookMixin, nn.Module, ABC):
                 loss_spec.outputs,
             )
             inputs = message.keys()
-            if len(spec.inputs ^ inputs):
+            if spec.inputs ^ inputs:
                 warnings.warn(
                     f"Missing inputs {spec.inputs - inputs}\n"
                     f"Unexpected inputs {inputs - spec.inputs}\n",

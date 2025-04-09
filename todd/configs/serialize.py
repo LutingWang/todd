@@ -25,7 +25,7 @@ class SerializeMixin(Config):
 
     @classmethod
     def load(cls, file: str | pathlib.Path, **kwargs) -> Self:
-        if len(kwargs) > 0:
+        if kwargs:
             kwargs_str = ', '.join(f'{k}={v}' for k, v in kwargs.items())
             master_logger.debug(
                 "Loading config from %s with %s",

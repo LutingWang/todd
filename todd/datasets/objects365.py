@@ -37,8 +37,7 @@ class Keys(COCOKeys):
     def __init__(self, *args, ignore: Iterable[str], **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
-        ignore = set(ignore)
-        if len(ignore) > 0:
+        if ignore := set(ignore):
             ignore_indices = [i for i in range(len(self)) if self[i] in ignore]
             assert len(ignore_indices) == len(ignore)
             for i in ignore_indices[::-1]:
@@ -97,7 +96,7 @@ class Annotations(UserList[Annotation]):
     @property
     def bboxes(self) -> 'FlattenBBoxesXYWH':
         from todd.tasks.object_detection import FlattenBBoxesXYWH
-        if len(self) > 0:
+        if self:
             bboxes = torch.tensor([annotation.bbox for annotation in self])
         else:
             bboxes = torch.zeros(0, 4)

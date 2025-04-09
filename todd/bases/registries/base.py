@@ -122,7 +122,7 @@ class RegistryMeta(  # type: ignore[misc]
                 subclass for subclass in subclasses
                 if subclass.__name__ == child_name
             )
-            if len(subclasses) == 0:
+            if not subclasses:
                 raise ValueError(f"{child_name} is not a child of {child}")
             if len(subclasses) > 1:
                 raise ValueError(
@@ -283,7 +283,7 @@ class RegistryMeta(  # type: ignore[misc]
         """
 
         def wrapper_func(item: T) -> T:
-            keys = [item.__name__] if len(args) == 0 else args
+            keys = args or [item.__name__]
             for key in keys:
                 if force:
                     cls.pop(key, None)

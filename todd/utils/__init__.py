@@ -8,4 +8,5 @@ from .seeds import *
 from .serialize import *
 from .state_dicts import *
 from .state_machines import *
+from .statistician import *
 from .stores import *

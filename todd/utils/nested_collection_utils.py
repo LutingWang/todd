@@ -177,7 +177,7 @@ class NestedCollectionUtils:
             handler for handler in handlers
             if all(map(handler.can_handle, objs))
         )
-        if len(handlers) == 0:
+        if not handlers:
             return None
         handler, = handlers
         return handler

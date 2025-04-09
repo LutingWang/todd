@@ -68,7 +68,7 @@ def set_(obj: Any, attr: str, value: Any) -> None:
     """
     locals_: dict[str, Any] = dict()
     exec(f'__o{attr} = __v', dict(__o=obj, __v=value), locals_)  # nosec B102
-    if len(locals_) != 0:
+    if locals_:
         raise ValueError(f"{attr} is invalid. Consider prepending a dot.")
 
 

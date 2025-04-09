@@ -71,7 +71,7 @@ class InterleavedData(SerializeMixin, Generic[T]):
     ) -> None:
         segments: list[Segment[T]] = []
         for token, token_type in zip(tokens, token_types):
-            segment_start = 0 if len(segments) == 0 else segments[-1].end
+            segment_start = segments[-1].end if segments else 0
             segment = Segment(token, token_type, segment_start)
             segments.append(segment)
         self._segments = tuple(segments)
