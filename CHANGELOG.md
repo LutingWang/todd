@@ -1,3 +1,115 @@
+## v0.6.0 (2025-05-21)
+
+### Feat
+
+- statistician
+- allow attention mask in eva
+- eva_clip
+- vit in_channels
+- clip normalize arg
+- llama
+- new state dict converter
+- finish some todos
+- f5 tts
+- use torchaudio instead of soundfile
+- whisper
+- v3det dataset
+- patch torch cosine_similarity
+- auto torchrun
+- [WIP]
+- ram
+- prefetch dataloader
+- ram
+- **nlp**: revise clip tokenizer
+- **nlp**: clip tokenizer
+- **models**: clip
+- **models**: vit uses patched sequential
+- **models**: dinov2
+- **models**: dino
+- register transforms v2
+- filename codec
+- **strategies**: compile model
+- object365
+- **datasets**: unify coco and lvis
+- **datasets**: coco do not transform annotations
+- multiple
+- **runners**: metrics
+- **runners**: fix checkpoint
+- multiple fixes
+- satin dataset
+- misc retry
+- satin and sa_med2d datasets
+- **datasets**: laion aesthetics
+- **datasets**: add transforms property
+- **tasks**: kd model adapt
+- **tasks**: lmm image data
+- **tasks**: lmm x2i data
+- get config and new sequential
+- **patches**: torch sequential
+- **nlp**: bpe trainer
+- **nlp**: bpe
+- **od**: bboxes to mask
+- configs and coco dataset
+- **datasets**: update pil dataset
+- **datasets**: coco and pil datasets
+- **tasks**: large multimodal model
+- **registries**: dataloder batch size in total
+- **datasets**: transforms
+- **tasks**: imagenet dataset and fid
+- simplify distiller config
+- **tasks**: points inside mask
+- **registries**: change build_spec to build pre hooks
+- **runners**: merge callbacks bind and init
+- introduce priors to builders
+- **runners**: move builders to build_spec
+- **registries**: builders
+- **tasks**: tap vid davis
+- **tasks**: point tracking
+- **utils**: serialize mixin
+- worker init fn
+- **tasks**: optical flow spring dataset
+- optical flow dataset
+- simplify store logic
+
+### Fix
+
+- missing import
+- base convnext
+- f5 tts tokenization
+- **runners**: checkpoint callback creates broken latest symbolic link
+- object365 to objects365
+- **nlp**: clip tokenizer
+- **datasets**: rename object365 to objects365
+- **datasets**: lvis and coco annotations can be empty
+- **datasests**: coco and lvis annotations are in XYWH format
+- multiple
+- multiple
+- **datasets**: lvis
+- **docs**: imagenet preprocessing
+- satin dataset
+- **registries**: fix yapf error with non-standard pyconfig
+- **tasks**: x2i data repr
+- **tasks**: bpe multiprocessing
+- **registries**: yapf maybe unable to process config when build failed
+- **tasks**: image generation fid
+- **tasks**: kd pipeline
+- **runners**: build hooks
+- type annotations
+- **tasks**: optical flow type
+- numpy 2.0 is not supported by pytorch
+- **tasks**: minor
+- multiple
+
+### Refactor
+
+- state dict converter
+- **conceptnet**: update
+- **kd**: simplify pipeline build
+- **registries**: process init args of composed callback in registry
+- **configs**: move configs to base
+- **utils**: nested_collection_utils
+- **tasks**: distillation processors
+
 ## v0.5.1 (2024-06-01)
 
 ## v0.5.0 (2024-05-31)
