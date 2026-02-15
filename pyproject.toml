@@ -18,7 +18,7 @@ dependencies = [
     'einops',
     'ffmpeg-python',
     'lmdb',
-    'numpy<2.0',
+    'numpy',
     'opencv-python',
     'pycocotools',
     'pydub',

@@ -29,7 +29,7 @@ Prerequisites:
 - torchaudio
 
 ```bash
-pip install git+https://github.com/lvis-dataset/lvis-api.git@lvis_challenge_2021
+pip install --no-build-isolation git+https://github.com/lvis-dataset/lvis-api.git@lvis_challenge_2021
 pip install todd_ai
 ```
 

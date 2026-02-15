@@ -47,6 +47,8 @@
     "xywh",
     "xyxy"
   ],
+  "python-envs.defaultEnvManager": "ms-python.python:pipenv",
+  "python-envs.pythonProjects": [],
   "python.analysis.exclude": [
     "**/data",
     "**/pretrained",
