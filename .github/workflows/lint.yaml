@@ -19,7 +19,7 @@ jobs:
           python-version: ${{ matrix.python }}
       - name: Lint
         run: |
-          pip install -U setuptools wheel
+          pip install -U "setuptools<81" wheel
           pip install torch==${{ matrix.torch }} torchvision==${{ matrix.torchvision }} torchaudio==${{ matrix.torchaudio }}
           pip install git+https://github.com/lvis-dataset/lvis-api.git@lvis_challenge_2021 --no-build-isolation
           pip install .[optional,lint,doc,test]

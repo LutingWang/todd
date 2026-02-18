@@ -103,7 +103,7 @@ def load_state_dict(
 
 
 def load_state_dict_(
-    f: torch.serialization.FILE_LIKE | list[torch.serialization.FILE_LIKE],
+    f: torch.serialization.FileLike | list[torch.serialization.FileLike],
     *args,
     logger: logging.Logger | None = None,
     **kwargs,

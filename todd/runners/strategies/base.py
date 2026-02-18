@@ -74,7 +74,7 @@ class BaseStrategy(RunnerHolderMixin[T], StateDictMixin):
 
     def load_model_from(
         self,
-        f: torch.serialization.FILE_LIKE | list[torch.serialization.FILE_LIKE],
+        f: torch.serialization.FileLike | list[torch.serialization.FileLike],
         *args,
         **kwargs,
     ) -> None:
