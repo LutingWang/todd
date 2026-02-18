@@ -10,11 +10,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - python: "3.11"
-            torch: "2.2.2"
-            torchvision: "0.17.2"
-            torchaudio: "2.2.2"
+        python: ["3.11"]
     steps:
       - uses: LutingWang/todd/.github/actions/checkout-todd@main
         with:
@@ -24,11 +20,10 @@ jobs:
           python-version: ${{ matrix.python }}
       - name: Test
         run: |
-          pip install -U "setuptools<81" wheel
-          pip install torch==${{ matrix.torch }} torchvision==${{ matrix.torchvision }} torchaudio==${{ matrix.torchaudio }}
+          pip install -U setuptools wheel
+          pip install torch torchvision torchaudio
           pip install git+https://github.com/lvis-dataset/lvis-api.git@lvis_challenge_2021 --no-build-isolation
           pip install .[optional,test]
-          pip install mmcv==2.2.0 -f https://download.openmmlab.com/mmcv/dist/cpu/torch2.2/index.html --no-build-isolation
           coverage run
           coverage xml && coverage report -m
       - uses: codecov/codecov-action@main

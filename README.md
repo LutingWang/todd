@@ -33,12 +33,6 @@ pip install --no-build-isolation git+https://github.com/lvis-dataset/lvis-api.gi
 pip install todd_ai
 ```
 
-Optional dependencies:
-
-```bash
-mim install mmcv
-```
-
 ## Developer Guides
 
 ```bash
@@ -53,4 +47,3 @@ TODO
 4. finish docs/source/api_reference/tasks/bpe.py and docs/source/pretrained/stable_diffusion.py
 5. remove todd.scripts
 6. update docformatter to v1.8 in pre-commit-config and remove bandit B614 from pyproject.toml
-7. openmim uses pkg_resources, which is deprecated in setuptools v81.0.0. Checkout .github/workflows/lint.yaml and .github/workflows/test.yaml for the workaround.
