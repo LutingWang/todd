@@ -44,8 +44,6 @@ Documentation = 'https://toddai.readthedocs.io/en/latest/'
 [project.optional-dependencies]
 optional = [
     'beautifulsoup4',
-    'bitsandbytes',
-    'diffusers',
     'ebooklib',
     'ftfy',
     'jieba',
