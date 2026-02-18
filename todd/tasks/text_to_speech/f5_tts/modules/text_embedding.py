@@ -1,3 +1,5 @@
+# pylint: disable=duplicate-code
+
 __all__ = [
     'TextEmbedding',
 ]
