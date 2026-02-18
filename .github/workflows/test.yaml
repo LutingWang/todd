@@ -28,7 +28,7 @@ jobs:
           pip install torch==${{ matrix.torch }} torchvision==${{ matrix.torchvision }} torchaudio==${{ matrix.torchaudio }}
           pip install git+https://github.com/lvis-dataset/lvis-api.git@lvis_challenge_2021 --no-build-isolation
           pip install .[optional,test]
-          mim install mmcv
+          pip install mmcv==2.2.0 -f https://download.openmmlab.com/mmcv/dist/cpu/torch2.2/index.html --no-build-isolation
           coverage run
           coverage xml && coverage report -m
       - uses: codecov/codecov-action@main
