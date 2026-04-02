@@ -6,8 +6,8 @@ build:
     python: "3.11"
   jobs:
     pre_install:
-      - pip install torch==2.2.2 torchvision==0.17.2 torchaudio==2.2.2
-      - pip install git+https://github.com/lvis-dataset/lvis-api.git@lvis_challenge_2021
+      - pip install torch torchvision torchaudio
+      - pip install git+https://github.com/lvis-dataset/lvis-api.git@lvis_challenge_2021 --no-build-isolation
 
 sphinx:
   configuration: docs/source/conf.py
