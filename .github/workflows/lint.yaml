@@ -18,6 +18,6 @@ jobs:
           pip install -U setuptools wheel
           pip install torch torchvision torchaudio
           pip install git+https://github.com/lvis-dataset/lvis-api.git@lvis_challenge_2021 --no-build-isolation
-          pip install .[optional,lint,doc,test]
+          pip install ./todd[lint,doc,test] ./todd_torch ./todd_tasks[optional]
           pre-commit install
           pre-commit run -a

@@ -12,7 +12,7 @@ from typing import Any, Callable, Never, Protocol, TypeVar, no_type_check
 from yapf.yapflib.errors import YapfError
 
 from ...loggers import logger
-from ...patches.py_ import NonInstantiableMeta
+from ...patches import NonInstantiableMeta
 from ..configs import Config
 
 
@@ -273,7 +273,7 @@ class RegistryMeta(  # type: ignore[misc]
             >>> Cat['Munchkin']
             <class '...AnotherMunchkin'>
 
-        `build_pre_hook` can be bind to objects during registration:
+        ``build_pre_hook`` can be bind to objects during registration:
 
             >>> build_pre_hook = lambda c, r, i: c
             >>> @Cat.register_(build_pre_hook=build_pre_hook)
@@ -289,7 +289,7 @@ class RegistryMeta(  # type: ignore[misc]
                     cls.pop(key, None)
                 cls[key] = item  # noqa: E501 pylint: disable=unsupported-assignment-operation
             if build_pre_hook is not None:
-                item.build_pre_hook = build_pre_hook  # type: ignore[attr-defined] # noqa: E501 pylint: disable=line-too-long
+                setattr(item, 'build_pre_hook', build_pre_hook)  # noqa: B010
             return item
 
         return wrapper_func

@@ -20,12 +20,13 @@ from torch import nn
 from torch.nn import init, utils
 from torch.optim import lr_scheduler
 
-from ..bases.configs import Config
-from ..bases.registries import Item, Registry, RegistryMeta
-from ..loggers import logger
-from ..patches.py_ import descendant_classes, get_classes
+from todd.bases.configs import Config
+from todd.bases.registries import Item, Registry, RegistryMeta
+from todd.loggers import logger
+from todd.patches import descendant_classes, get_classes
+from todd.registries import PartialRegistry
+
 from ..patches.torch import PrefetchDataLoader, get_world_size
-from .partial import PartialRegistry
 
 if TYPE_CHECKING:
     from ..models.filters import NamedParametersFilter

@@ -15,7 +15,10 @@ sphinx:
 
 python:
   install:
-    - path: .
+    - path: todd
+      extra_requirements:
+        - doc
+    - path: todd_torch
+    - path: todd_tasks
       extra_requirements:
         - optional
-        - doc

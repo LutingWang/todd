@@ -10,10 +10,11 @@ from typing import Any, Callable, cast
 import einops.layers.torch  # noqa: F401 pylint: disable=unused-import
 from torch import nn
 
-from ..bases.configs import Config
-from ..bases.registries import Item, Registry, RegistryMeta
+from todd.bases.configs import Config
+from todd.bases.registries import Item, Registry, RegistryMeta
+from todd.patches import descendant_classes
+
 from ..loggers import master_logger
-from ..patches.py_ import descendant_classes
 
 
 class InitWeightsMixin(nn.Module, ABC):
@@ -73,8 +74,6 @@ class ModelRegistry(Registry):
 
 
 for c in descendant_classes(nn.Module):
-    name = (  # pylint: disable=invalid-name
-        c.__module__.replace('.', '_') + '_' + c.__name__
-    )
+    name = c.__module__.replace('.', '_') + '_' + c.__name__
     if name not in ModelRegistry:
         ModelRegistry.register_(name)(cast(Item, c))

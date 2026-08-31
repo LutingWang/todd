@@ -9,7 +9,7 @@ from typing import Any
 from typing_extensions import Self
 
 from ..bases.configs import Config
-from ..loggers import master_logger
+from ..loggers import logger
 
 
 class SerializeMixin(Config):
@@ -27,13 +27,13 @@ class SerializeMixin(Config):
     def load(cls, file: str | pathlib.Path, **kwargs) -> Self:
         if kwargs:
             kwargs_str = ', '.join(f'{k}={v}' for k, v in kwargs.items())
-            master_logger.debug(
+            logger.debug(
                 "Loading config from %s with %s",
                 file,
                 kwargs_str,
             )
         else:
-            master_logger.debug("Loading config from %s", file)
+            logger.debug("Loading config from %s", file)
 
         if isinstance(file, str):
             file = pathlib.Path(file)

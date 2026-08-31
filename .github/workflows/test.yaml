@@ -23,7 +23,7 @@ jobs:
           pip install -U setuptools wheel
           pip install torch torchvision torchaudio
           pip install git+https://github.com/lvis-dataset/lvis-api.git@lvis_challenge_2021 --no-build-isolation
-          pip install .[optional,test]
+          pip install ./todd[test] ./todd_torch ./todd_tasks[optional]
           coverage run
           coverage xml && coverage report -m
       - uses: codecov/codecov-action@main
