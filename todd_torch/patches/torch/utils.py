@@ -8,6 +8,8 @@ from typing import Any, Iterator, TypeVar
 import torch
 from torch.utils.data import DataLoader
 
+from todd.utils import NestedCollectionUtils
+
 T = TypeVar('T')
 
 
@@ -32,7 +34,6 @@ def cuda(x: Any) -> Any:
 class PrefetchDataLoader(DataLoader[T]):
 
     def __init__(self, *args, **kwargs) -> None:
-        from ...utils import NestedCollectionUtils
         super().__init__(*args, **kwargs)
         self._stream = torch.cuda.Stream()
         self._utils = NestedCollectionUtils()
