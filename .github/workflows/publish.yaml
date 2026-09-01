@@ -6,6 +6,7 @@ jobs:
   publish:
     name: publish ${{ matrix.package }}
     runs-on: ubuntu-latest
+    environment: ${{ matrix.package }}
     strategy:
       fail-fast: false
       matrix:
