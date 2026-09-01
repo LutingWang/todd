@@ -10,8 +10,9 @@ import numpy as np
 import numpy.typing as npt
 import torch
 
-from ..bases.configs import Config
-from ..colors import PALETTE, RGB, Color
+from todd.bases.configs import Config
+from todd.colors import PALETTE, RGB, Color
+
 from ..patches.cv2 import ColorMap
 
 

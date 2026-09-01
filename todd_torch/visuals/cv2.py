@@ -8,9 +8,10 @@ import cv2
 import numpy as np
 import numpy.typing as npt
 
-from ..bases.configs import Config
-from ..colors import BGR, RGB, Color
-from ..registries import VisualRegistry
+from todd.bases.configs import Config
+from todd.colors import BGR, RGB, Color
+from todd.registries import VisualRegistry
+
 from .anchors import XAnchor, YAnchor
 from .base import BaseVisual
 

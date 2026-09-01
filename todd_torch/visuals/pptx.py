@@ -20,9 +20,10 @@ import pptx.shapes.shapetree
 import pptx.slide
 import pptx.util
 
-from ..bases.configs import Config
-from ..colors import RGB, Color
-from ..registries import VisualRegistry
+from todd.bases.configs import Config
+from todd.colors import RGB, Color
+from todd.registries import VisualRegistry
+
 from .base import BaseVisual
 
 
@@ -193,7 +194,7 @@ class PPTXVisual(BaseVisual):
         fill: Color | None = None,
     ) -> pptx.shapes.autoshape.Shape:
         rectangle: pptx.shapes.autoshape.Shape = self.shapes.add_shape(
-            pptx.enum.shapes.MSO_AUTO_SHAPE_TYPE.RECTANGLE,  # noqa: E501 pylint: disable=no-member
+            pptx.enum.shapes.MSO_AUTO_SHAPE_TYPE.RECTANGLE,  # noqa: E501
             pptx.util.Pt(left),
             pptx.util.Pt(top),
             pptx.util.Pt(width),
