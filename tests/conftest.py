@@ -3,11 +3,9 @@ import pathlib
 import sys
 
 import pytest
-from torch import nn
 
 sys.path.append(os.path.join(os.path.dirname(__file__), 'helpers'))
-from custom_types import (  # noqa: E402 pylint: disable=wrong-import-position
-    CustomModule,
+from custom_object import (  # noqa: E402 pylint: disable=wrong-import-position
     CustomObject,
 )
 
@@ -21,11 +19,3 @@ def data_dir(request: pytest.FixtureRequest) -> pathlib.Path:
 @pytest.fixture
 def obj() -> CustomObject:
     return CustomObject(one=1, obj=CustomObject())
-
-
-@pytest.fixture
-def model() -> CustomModule:
-    return CustomModule(
-        conv=nn.Conv2d(128, 256, 3),
-        module=CustomModule(linear=nn.Linear(1024, 10)),
-    )
