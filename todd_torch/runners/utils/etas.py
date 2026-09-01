@@ -10,7 +10,7 @@ import datetime
 from abc import ABC, abstractmethod
 from typing import NamedTuple
 
-from todd.bases.configs import Config
+from todd import Config
 from todd.utils import EMA
 
 from ..registries import RunnerRegistry

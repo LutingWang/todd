@@ -7,7 +7,7 @@ from typing import Iterator, TypeVar
 
 from datasets import Dataset, DatasetDict, load_dataset
 
-from todd.bases.configs import Config
+from todd import Config
 from todd.bases.registries import BuildPreHookMixin, Item, RegistryMeta
 from todd.loggers import logger
 

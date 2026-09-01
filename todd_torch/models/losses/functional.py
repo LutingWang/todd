@@ -15,7 +15,7 @@ from typing import Callable
 import torch
 import torch.nn.functional as F
 
-from todd.bases.configs import Config
+from todd import Config
 from todd.bases.registries import Item, RegistryMeta
 
 from ...registries import ModelRegistry

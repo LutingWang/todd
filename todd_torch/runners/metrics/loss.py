@@ -8,7 +8,7 @@ import einops
 import torch
 from torch import nn
 
-from todd.bases.configs import Config
+from todd import Config
 from todd.bases.registries import BuildPreHookMixin, Item, RegistryMeta
 from todd.patches import get_
 

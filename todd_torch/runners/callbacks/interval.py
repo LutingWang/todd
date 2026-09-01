@@ -6,7 +6,8 @@ from typing import TypeVar
 
 from torch import nn
 
-from ...utils import Store
+from todd import Store
+
 from .base import BaseCallback
 
 T = TypeVar('T', bound=nn.Module)

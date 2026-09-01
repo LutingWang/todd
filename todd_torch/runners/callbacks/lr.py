@@ -8,7 +8,7 @@ from typing import Any, Mapping, TypeVar
 import torch
 from torch import nn
 
-from todd.bases.configs import Config
+from todd import Config
 
 from ...patches.torch import get_rank, get_world_size
 from ...registries import LRSchedulerRegistry

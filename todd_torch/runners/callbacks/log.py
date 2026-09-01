@@ -9,7 +9,7 @@ from typing import Any, TypeVar
 import torch
 from torch import nn
 
-from todd.bases.configs import Config
+from todd import Config
 from todd.loggers import Formatter
 from todd.utils import collect_env_, get_timestamp
 

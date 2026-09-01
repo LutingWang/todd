@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any, Mapping, TypeVar
 import torch
 from torch import nn
 
-from todd.bases.configs import Config
+from todd import Config
 from todd.bases.registries import Item, RegistryMeta
 from todd.registries import RunnerRegistry
 

@@ -6,7 +6,7 @@ from typing import Any, Iterable, Iterator, Literal, Mapping, TypeVar
 
 from torch import nn
 
-from todd.bases.configs import Config
+from todd import Config
 from todd.bases.registries import BuildPreHookMixin, Item, RegistryMeta
 
 from ..registries import CallbackRegistry

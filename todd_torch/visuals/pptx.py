@@ -20,7 +20,7 @@ import pptx.shapes.shapetree
 import pptx.slide
 import pptx.util
 
-from todd.bases.configs import Config
+from todd import Config
 from todd.colors import RGB, Color
 from todd.registries import VisualRegistry
 

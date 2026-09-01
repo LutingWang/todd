@@ -8,7 +8,7 @@ import torch
 import torch.distributed as dist
 from torch import nn
 
-from todd.bases.configs import Config
+from todd import Config
 
 from ...patches.torch import get_local_rank
 from ...utils import Store

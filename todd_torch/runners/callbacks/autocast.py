@@ -8,7 +8,7 @@ from typing import Any, TypeVar
 import torch
 from torch import nn
 
-from todd.bases.configs import Config
+from todd import Config
 
 from ..memo import Memo
 from ..registries import CallbackRegistry

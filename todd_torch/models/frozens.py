@@ -13,11 +13,10 @@ from typing_extensions import Self
 import torch
 from torch import nn
 
-from todd.bases.configs import Config
+from todd import Config, Store
 from todd.bases.registries import BuildPreHookMixin, Item, RegistryMeta
 
 from ..registries import InitWeightsMixin
-from ..utils import Store
 from .filters import NamedModulesFilter, NamedParametersFilter
 from .registries import FilterRegistry
 

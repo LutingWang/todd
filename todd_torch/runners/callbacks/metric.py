@@ -4,7 +4,7 @@ __all__ = [
 
 from typing import Any, Iterable
 
-from todd.bases.configs import Config
+from todd import Config
 from todd.bases.registries import BuildPreHookMixin, Item, RegistryMeta
 
 from ...patches.torch import get_rank

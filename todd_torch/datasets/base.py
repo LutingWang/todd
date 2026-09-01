@@ -10,13 +10,12 @@ from typing import Generator, Generic, Iterator, Protocol, Sized, TypeVar
 import torchvision.transforms as tf
 from torch.utils.data import Dataset
 
-from todd.bases.configs import Config
+from todd import Config, Store
 from todd.bases.registries import BuildPreHookMixin, Item, RegistryMeta
 from todd.loggers import logger
 
 from ..patches.torch import get_world_size
 from ..registries import TransformRegistry
-from ..utils import Store
 from .access_layers import BaseAccessLayer
 from .registries import AccessLayerRegistry
 

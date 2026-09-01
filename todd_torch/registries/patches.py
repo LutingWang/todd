@@ -20,7 +20,7 @@ from torch import nn
 from torch.nn import init, utils
 from torch.optim import lr_scheduler
 
-from todd.bases.configs import Config
+from todd import Config
 from todd.bases.registries import Item, Registry, RegistryMeta
 from todd.loggers import logger
 from todd.patches import descendant_classes, get_classes

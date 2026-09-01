@@ -11,7 +11,7 @@ import torch
 import torchvision.transforms.functional as F
 from PIL import Image
 
-from todd.bases.configs import Config
+from todd import Config
 from todd_torch.datasets import AccessLayerRegistry, BaseDataset, IndexKeys
 from todd_torch.datasets.access_layers import HFAccessLayer
 from todd_torch.patches.pil import convert_rgb

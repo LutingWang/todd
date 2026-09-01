@@ -8,7 +8,7 @@ import cv2
 import numpy as np
 import numpy.typing as npt
 
-from todd.bases.configs import Config
+from todd import Config
 from todd.colors import BGR, RGB, Color
 from todd.registries import VisualRegistry
 

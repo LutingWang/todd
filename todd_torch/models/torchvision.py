@@ -5,7 +5,7 @@ __all__ = [
 
 from torchvision import models
 
-from todd.bases.configs import Config
+from todd import Config
 from todd.bases.registries import Item, RegistryMeta
 from todd.patches import get_
 

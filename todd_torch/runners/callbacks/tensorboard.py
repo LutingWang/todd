@@ -8,7 +8,7 @@ from typing import Any, TypeVar
 from torch import nn
 from torch.utils.tensorboard import SummaryWriter
 
-from todd.bases.configs import Config
+from todd import Config
 
 from ...patches.torch import get_rank
 from ..memo import Memo
