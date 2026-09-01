@@ -3,24 +3,19 @@ __all__ = [
     'platform',
     'nvidia_smi',
     'python_version',
-    'pytorch_version',
-    'torchvision_version',
-    'opencv_version',
     'todd_version',
-    'cuda_home',
     'git_commit_id',
     'git_status',
     'collect_env_',
 ]
 
 import argparse
-import importlib.util
 import os
 import subprocess  # nosec B404
 
 from ..bases.registries import Registry
 from ..loggers import logger
-from ..patches.py_ import run
+from ..patches import run
 
 
 class EnvRegistry(Registry):
@@ -49,37 +44,9 @@ def python_version(verbose: bool = False) -> str | None:
 
 
 @EnvRegistry.register_()
-def pytorch_version(verbose: bool = False) -> str | None:
-    import torch
-    return torch.__version__
-
-
-@EnvRegistry.register_()
-def torchvision_version(verbose: bool = False) -> str | None:
-    if not importlib.util.find_spec('torchvision'):
-        return None
-    import torchvision
-    return torchvision.__version__
-
-
-@EnvRegistry.register_()
-def opencv_version(verbose: bool = False) -> str | None:
-    if not importlib.util.find_spec('cv2'):
-        return None
-    import cv2
-    return cv2.__version__
-
-
-@EnvRegistry.register_()
 def todd_version(verbose: bool = False) -> str | None:
     from .. import __version__
     return __version__
-
-
-@EnvRegistry.register_()
-def cuda_home(verbose: bool = False) -> str | None:
-    from torch.utils.cpp_extension import CUDA_HOME
-    return CUDA_HOME
 
 
 @EnvRegistry.register_()

@@ -5,6 +5,7 @@ __all__ = [
     'transfer_state_dict',
     'transfer_state_dicts',
     'StateDictConverter',
+    'SequentialStateDictConverterMixin',
 ]
 
 import functools
@@ -16,10 +17,11 @@ from typing import Any, Mapping, NamedTuple, TypeVar
 import torch
 from torch import nn
 
+from todd.patches import get_
+from todd.utils import set_temp
+
 from ..loggers import master_logger
-from ..patches.py_ import get_
 from ..patches.torch import load_state_dict_
-from .misc import set_temp
 
 T = TypeVar('T')
 

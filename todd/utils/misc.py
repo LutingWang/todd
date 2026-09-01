@@ -1,7 +1,6 @@
 __all__ = [
     'get_timestamp',
     'set_temp',
-    'is_sync',
     'retry',
 ]
 
@@ -10,12 +9,8 @@ import functools
 from datetime import datetime
 from typing import Any, Generator
 
-import torch
-import torch.distributed as dist
-
 from ..loggers import logger
-from ..patches.py_ import del_, get_, has_, set_
-from ..patches.torch import get_world_size
+from ..patches import del_, get_, has_, set_
 
 
 def get_timestamp() -> str:
@@ -44,15 +39,6 @@ def set_temp(obj, name: str, value) -> Generator[None, None, None]:
         set_(obj, name, value)
         yield
         del_(obj, name)
-
-
-def is_sync(x: torch.Tensor) -> bool:
-    if get_world_size() <= 1:
-        return True
-    x_prime = x.clone()
-    dist.all_reduce(x)
-    x /= get_world_size()
-    return torch.allclose(x, x_prime)
 
 
 def retry(n: int) -> Any:

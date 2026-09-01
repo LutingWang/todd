@@ -4,11 +4,11 @@ __all__ = [
 ]
 
 import os
+from inspect import get_annotations
 from typing import Any
 
 from ..loggers import logger
-from ..patches.py_ import NonInstantiableMeta, classproperty
-from ..patches.torch import get_device
+from ..patches import NonInstantiableMeta
 
 
 class StoreMeta(NonInstantiableMeta):
@@ -61,21 +61,20 @@ class StoreMeta(NonInstantiableMeta):
 
     def __init__(cls, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        for k, v in cls.__annotations__.items():
+        for k, v in get_annotations(cls).items():
             if not hasattr(cls, k):
                 setattr(cls, k, v())
 
     def _overridden(cls, name: str) -> bool:
-        return name in cls.__annotations__ and name in os.environ
+        return name in get_annotations(cls) and name in os.environ
 
     def __getattribute__(cls, name: str) -> Any:
         if (
-            name in ['__annotations__', '_overridden']
-            # pylint: disable=no-value-for-parameter
-            or not cls._overridden(name)
+            name in ['__annotations__', '__annotate__', '_overridden']
+            or not cls._overridden(name)  # pylint: disable=no-value-for-parameter
         ):
             return super().__getattribute__(name)
-        type_ = cls.__annotations__[name]
+        type_ = get_annotations(cls)[name]
         variable = os.environ[name]
         if type_ is not str:
             variable = eval(variable)  # nosec B307
@@ -90,28 +89,10 @@ class StoreMeta(NonInstantiableMeta):
 
     def __repr__(cls) -> str:
         variables = ' '.join(
-            f'{k}={getattr(cls, k)}' for k in cls.__annotations__
+            f'{k}={getattr(cls, k)}' for k in get_annotations(cls)
         )
         return f"<{cls.__name__} {variables}>"
 
 
 class Store(metaclass=StoreMeta):
-    DEVICE: str = get_device()
     DRY_RUN: bool
-    TRAIN_WITH_VAL_DATASET: bool
-
-    @classmethod
-    def _device(cls, name: str) -> bool:
-        return cls.DEVICE == name
-
-    @classproperty
-    def cpu(self) -> bool:
-        return self._device('cpu')
-
-    @classproperty
-    def cuda(self) -> bool:
-        return self._device('cuda')
-
-    @classproperty
-    def mps(self) -> bool:
-        return self._device('mps')

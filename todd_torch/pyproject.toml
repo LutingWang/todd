@@ -1,0 +1,61 @@
+[build-system]
+requires = ['setuptools']
+build-backend = 'setuptools.build_meta'
+
+[project]
+name = 'todd-torch'
+version = '0.7.0'
+description = 'PyTorch extensions for Toolkit for Object Detection Distillation'
+readme = 'README.md'
+requires-python = '>=3.11'
+license = 'Apache-2.0'
+license-files = ['LICENSE']
+classifiers = [
+    'Programming Language :: Python :: 3',
+    'Operating System :: OS Independent',
+]
+dependencies = [
+    'todd_ai>=0.7.0',
+    'datasets',
+    'einops',
+    'ffmpeg-python',
+    'lmdb',
+    'numpy',
+    'opencv-python',
+    'pydub',
+    'python-pptx',
+    'tensorboard',
+    'timm',
+    'torch',
+    'torchaudio',
+    'torchvision',
+    'typing_extensions',
+    'yapf',
+]
+
+[[project.authors]]
+name = 'Luting Wang'
+email = 'wangluting@buaa.edu.cn'
+
+[project.urls]
+Homepage = 'https://github.com/LutingWang/todd'
+Documentation = 'https://toddai.readthedocs.io/en/latest/'
+
+[project.scripts]
+images_to_video = 'todd_torch.patches.cv2.video_io:images_to_video_cli'
+
+[tool.setuptools]
+script-files = [
+    'scripts/crop_border.py',
+    'scripts/merge_lmdbs.py',
+    'bin/auto_torchrun',
+    'bin/pipenv_install',
+]
+
+[tool.setuptools.packages.find]
+where = ['..']
+include = ['todd_torch', 'todd_torch.*']
+namespaces = false
+
+[tool.setuptools.package-data]
+todd_torch = ['py.typed']

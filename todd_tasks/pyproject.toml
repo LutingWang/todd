@@ -1,0 +1,61 @@
+[build-system]
+requires = ['setuptools']
+build-backend = 'setuptools.build_meta'
+
+[project]
+name = 'todd-tasks'
+version = '0.7.0'
+description = 'Task implementations for Toolkit for Object Detection Distillation'
+readme = 'README.md'
+requires-python = '>=3.11'
+license = 'Apache-2.0'
+license-files = ['LICENSE']
+classifiers = [
+    'Programming Language :: Python :: 3',
+    'Operating System :: OS Independent',
+]
+dependencies = [
+    'beautifulsoup4',
+    'diffusers',
+    'ebooklib',
+    'ftfy',
+    'h5py',
+    'jieba',
+    'lvis',
+    'nltk',
+    'pypinyin',
+    'pycocotools',
+    'regex',
+    'sentencepiece',
+    'todd_ai>=0.7.0',
+    'todd-torch>=0.7.0',
+    'scipy',
+    'tqdm',
+    'transformers==4.49.0',
+]
+
+[[project.authors]]
+name = 'Luting Wang'
+email = 'wangluting@buaa.edu.cn'
+
+[project.urls]
+Homepage = 'https://github.com/LutingWang/todd'
+Documentation = 'https://toddai.readthedocs.io/en/latest/'
+
+[project.optional-dependencies]
+optional = [
+    'pandas[all]',
+    'WeTextProcessing',
+]
+
+[tool.setuptools.packages.find]
+where = ['..']
+include = ['todd_tasks', 'todd_tasks.*']
+namespaces = false
+
+[tool.setuptools.package-data]
+todd_tasks = [
+    'image_classification/models/ram.csv',
+    'natural_language_processing/tokenizers/clip_bpe.txt.gz',
+    'py.typed',
+]

@@ -22,7 +22,13 @@ _/      _/_/      _/_/_/    _/_/_/
 
 ## Installation
 
-Prerequisites:
+Core utilities have no PyTorch dependency:
+
+```bash
+pip install todd-ai
+```
+
+For the PyTorch extensions and task implementations:
 
 - torch
 - torchvision
@@ -30,13 +36,13 @@ Prerequisites:
 
 ```bash
 pip install --no-build-isolation git+https://github.com/lvis-dataset/lvis-api.git@lvis_challenge_2021
-pip install todd_ai
+pip install todd-torch todd-tasks
 ```
 
 ## Developer Guides
 
 ```bash
-pip install .\[optional,dev,lint,doc,test\]
+pip install -e 'todd[dev,lint,doc,test]' -e todd_torch -e 'todd_tasks[optional]'
 ```
 
 TODO

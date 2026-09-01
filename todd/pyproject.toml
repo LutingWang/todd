@@ -1,0 +1,85 @@
+[build-system]
+requires = ['setuptools']
+build-backend = 'setuptools.build_meta'
+
+[project]
+name = 'todd_ai'
+version = '0.7.0'
+description = 'Core utilities for Toolkit for Object Detection Distillation'
+readme = 'README.md'
+requires-python = '>=3.11'
+license = 'Apache-2.0'
+license-files = ['LICENSE']
+classifiers = [
+    'Programming Language :: Python :: 3',
+    'Operating System :: OS Independent',
+]
+dependencies = [
+    'requests',
+    'typing_extensions',
+    'yapf',
+]
+
+[[project.authors]]
+name = 'Luting Wang'
+email = 'wangluting@buaa.edu.cn'
+
+[project.urls]
+Homepage = 'https://github.com/LutingWang/todd'
+Documentation = 'https://toddai.readthedocs.io/en/latest/'
+
+[project.optional-dependencies]
+dev = [
+    'ipdb',
+    'ipykernel',
+    'jupyter',
+    'torch-tb-profiler',
+]
+lint = [
+    'autoflake',
+    'bandit[toml]',
+    'codespell',
+    'commitizen',
+    'doc8',
+    'docformatter[tomli]',
+    'flake8',
+    'flake8-bugbear',
+    'flake8-commas',
+    'flake8-docstrings',
+    'mccabe',
+    'mypy',
+    'pandas-stubs',
+    'pep8-naming',
+    'pre-commit',
+    'pydocstyle',
+    'pylint',
+    'types-beautifulsoup4',
+    'types-Pillow',
+    'types-pycocotools',
+    'types-regex',
+    'types-requests',
+    'types-toml',
+    'types-tqdm',
+]
+doc = [
+    'python-docs-theme',
+    'sphinx',
+    'sphinx_rtd_theme',
+]
+test = [
+    'coverage',
+    'pytest',
+]
+
+[project.scripts]
+configs_diff = 'todd.configs.diff:diff_cli'
+collect_env = 'todd.utils.collect_env:collect_env_cli'
+sgr = 'todd.loggers.control_sequences.sgr:sgr_cli'
+
+[tool.setuptools.packages.find]
+where = ['..']
+include = ['todd', 'todd.*']
+namespaces = false
+
+[tool.setuptools.package-data]
+todd = ['py.typed']

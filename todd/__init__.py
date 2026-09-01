@@ -1,20 +1,8 @@
-"""Toolkit for Object Detection Distillation."""
+"""Core utilities for Toolkit for Object Detection Distillation."""
 
-__version__ = '0.6.1'
+__version__ = '0.7.0'
 
-from . import (
-    bases,
-    colors,
-    configs,
-    datasets,
-    loggers,
-    models,
-    registries,
-    runners,
-    tasks,
-    utils,
-    visuals,
-)
+from . import bases, colors, configs, loggers, patches, registries, utils
 from .bases.configs import Config
 from .bases.registries import Registry, RegistryMeta
 from .loggers import logger
