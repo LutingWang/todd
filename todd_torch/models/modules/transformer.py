@@ -1,6 +1,7 @@
 # pylint: disable=duplicate-code
 
 __all__ = [
+    'mlp',
     'Transformer',
 ]
 
@@ -75,7 +76,9 @@ class Transformer(nn.Module):
         num_embeddings: int = 49408,
         width: int = 512,
         depth: int = 12,
-        block_kwargs: Mapping[str, Any] = MappingProxyType(dict()),  # noqa: B006 E501 pylint: disable=line-too-long
+        block_kwargs: Mapping[str, Any] = MappingProxyType(
+            dict(),  # noqa: B006
+        ),
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)

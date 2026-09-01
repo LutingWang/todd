@@ -25,7 +25,9 @@ class ViT(nn.Module):
         patch_wh: tuple[int, int] = (14, 14),
         width: int = 768,
         depth: int = 12,
-        block_kwargs: Mapping[str, Any] = MappingProxyType(dict()),  # noqa: B006 E501 pylint: disable=line-too-long
+        block_kwargs: Mapping[str, Any] = MappingProxyType(
+            dict(),  # noqa: B006
+        ),
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)

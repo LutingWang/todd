@@ -14,9 +14,11 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 
-from ...patches.py_ import remove_prefix
+from todd.patches import remove_prefix
+from todd.utils import set_temp
+
 from ...patches.torch import Sequential
-from ...utils import StateDict, StateDictConverter, set_temp
+from ...utils import StateDict, StateDictConverter
 from ...utils.state_dicts import parallel_conversion
 from .pretrained import PretrainedMixin
 from .transformer import Block, Transformer

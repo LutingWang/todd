@@ -15,8 +15,9 @@ from typing import Callable
 import torch
 import torch.nn.functional as F
 
-from ...bases.configs import Config
-from ...bases.registries import Item, RegistryMeta
+from todd.bases.configs import Config
+from todd.bases.registries import Item, RegistryMeta
+
 from ...registries import ModelRegistry
 from ..registries import LossRegistry
 from .base import BaseLoss, Reduction

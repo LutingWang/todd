@@ -4,9 +4,10 @@ __all__ = [
 
 import torch
 
-from ...bases.configs import Config
-from ...bases.registries import BuildPreHookMixin, Item, RegistryMeta
-from ...utils import EMA
+from todd.bases.configs import Config
+from todd.bases.registries import BuildPreHookMixin, Item, RegistryMeta
+from todd.utils import EMA
+
 from ..registries import ShadowRegistry
 from .base import BaseShadow
 

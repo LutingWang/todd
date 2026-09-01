@@ -18,8 +18,9 @@ from typing import Iterable, cast
 import torch
 from torch import nn
 
-from ...bases.configs import Config
-from ...bases.registries import BuildPreHookMixin, Item, RegistryMeta
+from todd.bases.configs import Config
+from todd.bases.registries import BuildPreHookMixin, Item, RegistryMeta
+
 from .registries import SchedulerRegistry
 
 
