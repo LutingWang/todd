@@ -6,7 +6,8 @@ from typing import Any, Mapping, TypeVar
 
 from torch import nn
 
-from ...bases.configs import Config
+from todd.bases.configs import Config
+
 from ...models.shadows import EMAShadow
 from ...patches.torch import get_rank
 from ..registries import CallbackRegistry

@@ -4,8 +4,9 @@ __all__ = [
 
 from typing import Any, Iterable
 
-from ...bases.configs import Config
-from ...bases.registries import BuildPreHookMixin, Item, RegistryMeta
+from todd.bases.configs import Config
+from todd.bases.registries import BuildPreHookMixin, Item, RegistryMeta
+
 from ...patches.torch import get_rank
 from ..callbacks import BaseCallback
 from ..memo import Memo

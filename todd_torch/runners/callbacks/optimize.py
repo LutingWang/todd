@@ -8,8 +8,9 @@ from typing import Any, Mapping, TypeVar
 import torch
 from torch import nn
 
-from ...bases.configs import Config
-from ...bases.registries import BuildPreHookMixin, Item, RegistryMeta
+from todd.bases.configs import Config
+from todd.bases.registries import BuildPreHookMixin, Item, RegistryMeta
+
 from ...patches.torch import (
     get_rank,
     named_trainable_parameters,

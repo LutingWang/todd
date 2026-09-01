@@ -7,9 +7,10 @@ from typing import TypeVar
 
 from torch import nn
 
-from ...patches.py_ import run
+from todd.patches import run
+from todd.utils import get_timestamp
+
 from ...patches.torch import get_rank
-from ...utils import get_timestamp
 from ..registries import CallbackRegistry
 from .base import BaseCallback
 

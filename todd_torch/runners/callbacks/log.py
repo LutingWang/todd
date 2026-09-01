@@ -9,10 +9,12 @@ from typing import Any, TypeVar
 import torch
 from torch import nn
 
-from ...bases.configs import Config
-from ...loggers import Formatter
+from todd.bases.configs import Config
+from todd.loggers import Formatter
+from todd.utils import collect_env_, get_timestamp
+
 from ...patches.torch import get_rank
-from ...utils import Store, collect_env_, get_timestamp
+from ...utils import Store
 from ..memo import Memo
 from ..registries import CallbackRegistry
 from ..utils import BaseETA, ETARegistry

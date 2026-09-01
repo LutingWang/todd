@@ -8,7 +8,8 @@ from typing import TypeVar
 import torch
 from torch import nn
 
-from ...bases.configs import Config
+from todd.bases.configs import Config
+
 from ...patches.torch import get_rank
 from ..memo import Memo
 from ..registries import CallbackRegistry
