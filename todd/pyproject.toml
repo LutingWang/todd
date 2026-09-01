@@ -77,7 +77,7 @@ collect_env = 'todd.utils.collect_env:collect_env_cli'
 sgr = 'todd.loggers.control_sequences.sgr:sgr_cli'
 
 [tool.setuptools.packages.find]
-where = ['..']
+where = ['src']
 include = ['todd', 'todd.*']
 namespaces = false
 

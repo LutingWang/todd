@@ -19,9 +19,9 @@ known_third_party = [
 profile = 'hug'
 src_paths = [
     'tests',
-    'todd',
-    'todd_tasks',
-    'todd_torch',
+    'todd/src',
+    'todd_tasks/src',
+    'todd_torch/src',
 ]
 line_length = 79
 multi_line_output = 3
@@ -33,9 +33,9 @@ add-ignore = 'D100,D101,D102,D103,D104,D105,D106,D107'
 [tool.mypy]
 files = [
     'tests',
-    'todd',
-    'todd_tasks',
-    'todd_torch',
+    'todd/src',
+    'todd_tasks/src',
+    'todd_torch/src',
 ]
 plugins = 'numpy.typing.mypy_plugin'
 
@@ -76,16 +76,22 @@ filterwarnings = [
     'ignore::DeprecationWarning:torch:6',
     'ignore::FutureWarning',
 ]
-testpaths = 'tests todd todd_torch todd_tasks'
+testpaths = [
+    'tests',
+    'todd/src/todd',
+    'todd_tasks/src/todd_tasks',
+    'todd_torch/scripts',
+    'todd_torch/src/todd_torch',
+]
 addopts = '--doctest-modules'
 
 [tool.coverage.run]
 branch = true
 command_line = '-m pytest'
 source = [
-    'todd',
-    'todd_tasks',
-    'todd_torch',
+    'todd/src/todd',
+    'todd_tasks/src/todd_tasks',
+    'todd_torch/src/todd_torch',
 ]
 
 [tool.coverage.report]
@@ -118,19 +124,18 @@ version_files = [
     'todd_tasks/pyproject.toml:todd-torch>=',
     'docs/source/conf.py:^release',
     'CITATION.cff:^version',
-    'todd/__init__.py:^__version__',
+    'todd/src/todd/__init__.py:^__version__',
 ]
 
 [tool.pylint.main]
 init-hook = '''
-import os
+import pathlib
 import sys
-from pylint.config import find_default_config_files
-default_config_file = next(find_default_config_files())
-root = os.path.dirname(default_config_file)
-sys.path.insert(0, root)
-path = os.path.join(root, 'tests/helpers')
-sys.path.append(path)
+root = pathlib.Path.cwd()
+sys.path.insert(0, str(root / 'todd' / 'src'))
+sys.path.insert(0, str(root / 'todd_tasks' / 'src'))
+sys.path.insert(0, str(root / 'todd_torch' / 'src'))
+sys.path.append(str(root / 'tests' / 'helpers'))
 '''
 
 [tool.pylint.'messages control']

@@ -1,9 +1,13 @@
 # pylint: disable=invalid-name
 
 import os
+import pathlib
 import sys
 
-sys.path.insert(0, os.path.abspath('../..'))
+root = pathlib.Path(__file__).parents[2]
+sys.path.insert(0, str(root / 'todd' / 'src'))
+sys.path.insert(0, str(root / 'todd_tasks' / 'src'))
+sys.path.insert(0, str(root / 'todd_torch' / 'src'))
 
 project = 'todd'
 project_copyright = '2022, Luting Wang'

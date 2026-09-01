@@ -53,7 +53,7 @@ script-files = [
 ]
 
 [tool.setuptools.packages.find]
-where = ['..']
+where = ['src']
 include = ['todd_torch', 'todd_torch.*']
 namespaces = false
 

@@ -49,7 +49,7 @@ optional = [
 ]
 
 [tool.setuptools.packages.find]
-where = ['..']
+where = ['src']
 include = ['todd_tasks', 'todd_tasks.*']
 namespaces = false
 

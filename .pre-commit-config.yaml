@@ -30,7 +30,7 @@ repos:
       - id: check-vcs-permalinks
       - id: check-yaml
       - id: debug-statements
-        exclude: ^todd/patches/builtins\.py$
+        exclude: ^todd/src/todd/patches/builtins\.py$
       - id: destroyed-symlinks
       - id: detect-private-key
       - id: end-of-file-fixer
@@ -80,7 +80,7 @@ repos:
         exclude: |
           (?x)^(
             .github/CODE_OF_CONDUCT.md|
-            todd_tasks/image_classification/models/ram.csv|
+            todd_tasks/src/todd_tasks/image_classification/models/ram.csv|
             CHANGELOG.md
           )$
   - repo: https://github.com/commitizen-tools/commitizen
