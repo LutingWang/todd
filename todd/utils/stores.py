@@ -70,7 +70,8 @@ class StoreMeta(NonInstantiableMeta):
     def __getattribute__(cls, name: str) -> Any:
         if (
             name in ('__annotations__', '__annotate__', '_overridden')
-            or not cls._overridden(name)  # pylint: disable=no-value-for-parameter
+            # pylint: disable-next=no-value-for-parameter
+            or not cls._overridden(name)
         ):
             return super().__getattribute__(name)
         type_ = cls.__annotations__[name]

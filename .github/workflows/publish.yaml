@@ -4,10 +4,13 @@ on: push
 
 jobs:
   publish:
+    name: publish ${{ matrix.package }}
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         python: ["3.11"]
+        package: [todd, todd_torch, todd_tasks]
     permissions:
       id-token: write
     steps:
@@ -20,9 +23,7 @@ jobs:
       - name: Build
         run: |
           pip install build
-          for package in todd todd_torch todd_tasks; do
-            python -m build --sdist --wheel --outdir dist/ ${package}
-          done
+          python -m build --sdist --wheel --outdir dist/ ${{ matrix.package }}
       - uses: pypa/gh-action-pypi-publish@release/v1
         if: ${{ !startsWith(github.ref , 'refs/tags') }}
         with:

@@ -6,6 +6,7 @@ import torch
 
 from todd_tasks import knowledge_distillation as kd
 from todd_tasks import object_detection as od
+
 from ..registries import ODKDAdaptRegistry
 
 BaseAdapt = kd.distillers.adapts.BaseAdapt

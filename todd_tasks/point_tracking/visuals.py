@@ -13,10 +13,10 @@ import torch
 import torchvision
 
 from todd.colors import BGR, Color
+from todd_tasks import optical_flow_estimation as ofe
 from todd_torch.patches.cv2 import ColorMap, VideoWriter
 from todd_torch.visuals import CV2Visual
 
-from todd_tasks import optical_flow_estimation as ofe
 from .datasets.tap_vid_davis import T as TAPVidDAVISDataType  # noqa: N811
 from .points import Points
 

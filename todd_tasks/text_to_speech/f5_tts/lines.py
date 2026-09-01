@@ -7,6 +7,7 @@ from typing import Generator, Iterable, cast
 import jieba
 
 from todd_tasks import natural_language_processing as nlp
+
 from ..lines import Lines as BaseLines
 from .constants import PUNCTUATION_PATTERN, WHITESPACE_PATTERN
 from .voices import Voice

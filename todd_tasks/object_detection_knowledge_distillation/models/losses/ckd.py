@@ -7,10 +7,10 @@ import torch
 import torch.distributed as dist
 import torch.nn.functional as F
 
+from todd_tasks.object_detection import FlattenBBoxesXYXY
 from todd_torch.models.losses import BaseLoss
 from todd_torch.patches.torch import get_rank, get_world_size
 
-from todd_tasks.object_detection import FlattenBBoxesXYXY
 from ..registries import ODKDLossRegistry
 
 
