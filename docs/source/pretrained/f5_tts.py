@@ -3,8 +3,8 @@ import pathlib
 
 import torch
 
-import todd.tasks.text_to_speech as tts
-from todd.utils import init_seed
+import todd_tasks.text_to_speech as tts
+from todd_torch.utils import init_seed
 
 
 def parse_args() -> argparse.Namespace:

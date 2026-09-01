@@ -3,9 +3,9 @@ import torchvision.transforms.v2 as tf_v2
 from einops.layers.torch import Rearrange
 from PIL import Image
 
-import todd.tasks.natural_language_processing as nlp
-from todd.datasets import CLIP_MEAN, CLIP_STD
-from todd.models.modules import EVA_CLIPText, EVA_CLIPViT
+import todd_tasks.natural_language_processing as nlp
+from todd_torch.datasets import CLIP_MEAN, CLIP_STD
+from todd_torch.models.modules import EVA_CLIPText, EVA_CLIPViT
 
 
 def preprocess(image_size: int) -> tf_v2.Compose:

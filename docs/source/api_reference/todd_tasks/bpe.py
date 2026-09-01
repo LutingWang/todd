@@ -11,12 +11,12 @@ import tqdm
 from torch import nn
 from torch.utils.data import DataLoader
 
-from todd.datasets import BaseDataset
-from todd.datasets.access_layers import PthAccessLayer
 from todd.loggers import logger
-from todd.tasks.natural_language_processing import BPETrainer
-from todd.tasks.natural_language_processing.bpe import TokenSequence
 from todd.utils import Store
+from todd_tasks.natural_language_processing import BPETrainer
+from todd_tasks.natural_language_processing.bpe import TokenSequence
+from todd_torch.datasets import BaseDataset
+from todd_torch.datasets.access_layers import PthAccessLayer
 
 # TODO
 

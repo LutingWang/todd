@@ -2,10 +2,10 @@ import torch
 import torchvision.transforms.v2 as tf_v2
 from einops.layers.torch import Rearrange
 
-import todd.tasks.image_classification as ic
-from todd.datasets import IMAGENET_MEAN, IMAGENET_STD
-from todd.tasks.image_classification.models.ram import Categories
-from todd.utils import get_image
+import todd_tasks.image_classification as ic
+from todd_tasks.image_classification.models.ram import Categories
+from todd_torch.datasets import IMAGENET_MEAN, IMAGENET_STD
+from todd_torch.utils import get_image
 
 url = (  # pylint: disable=invalid-name
     'https://raw.githubusercontent.com/OPPOMKLab/recognize-anything/main/'

@@ -1,4 +1,4 @@
-import todd.tasks.point_tracking as pt
+import todd_tasks.point_tracking as pt
 from todd import Config
 
 dataset = pt.datasets.TAPVidDAVISDataset(

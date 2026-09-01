@@ -10,7 +10,8 @@ from transformers import AutoModel, Qwen2Tokenizer
 from transformers.generation import GenerateDecoderOnlyOutput
 
 import todd
-from todd.datasets import IMAGENET_MEAN, IMAGENET_STD
+from todd_torch.datasets import IMAGENET_MEAN, IMAGENET_STD
+from todd_torch.utils import Store
 
 PRETRAINED = 'pretrained/intern/InternVL2_5-1B'
 
@@ -187,7 +188,7 @@ class Chatbot:
         input_text = self._model.apply_template('\n'.join(texts + [text]))
 
         inputs = self._tokenizer(input_text, return_tensors='pt')
-        if todd.Store.cuda:  # pylint: disable=using-constant-test
+        if Store.cuda:  # pylint: disable=using-constant-test
             inputs = inputs.to('cuda')
 
         outputs = self._model.generate(input_image, **inputs)

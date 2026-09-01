@@ -23,12 +23,12 @@ Welcome to todd's documentation!
    pretrained/*
 
 .. toctree::
-   :glob:
    :maxdepth: 2
    :caption: API Reference:
 
-   api_reference/*
-   api_reference/*/index
+   api_reference/todd/index
+   api_reference/todd_torch/index
+   api_reference/todd_tasks/index
 
 Indices and tables
 ==================

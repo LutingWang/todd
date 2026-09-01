@@ -7,4 +7,4 @@ Models
 
    *
 
-.. automodule:: todd.models
+.. automodule:: todd_torch.models

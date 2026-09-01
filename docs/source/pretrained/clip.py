@@ -4,10 +4,11 @@ import torch
 import torchvision.transforms.v2 as tf_v2
 from einops.layers.torch import Rearrange
 
-import todd.tasks.natural_language_processing as nlp
-from todd.datasets import CLIP_MEAN, CLIP_STD, coco_url
-from todd.models.modules import CLIPText, CLIPViT
-from todd.utils import get_image
+import todd_tasks.natural_language_processing as nlp
+from todd_tasks.object_detection.datasets import coco_url
+from todd_torch.datasets import CLIP_MEAN, CLIP_STD
+from todd_torch.models.modules import CLIPText, CLIPViT
+from todd_torch.utils import get_image
 
 url = coco_url('val', 2017, 39769)  # pylint: disable=invalid-name
 image = get_image(url)

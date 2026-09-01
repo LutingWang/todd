@@ -7,4 +7,4 @@ Datasets
 
    *
 
-.. automodule:: todd.datasets
+.. automodule:: todd_torch.datasets

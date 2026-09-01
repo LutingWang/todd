@@ -14,8 +14,8 @@ def visualize(dataset: Iterable[T]) -> None:
     import numpy as np
     import tqdm
 
-    import todd.tasks.optical_flow_estimation as ofe
-    from todd.patches.cv2 import ColorMap, VideoWriter
+    import todd_tasks.optical_flow_estimation as ofe
+    from todd_torch.patches.cv2 import ColorMap, VideoWriter
 
     color_map = ColorMap(cv2.COLORMAP_JET)
     video_writers: defaultdict[str, VideoWriter] = \

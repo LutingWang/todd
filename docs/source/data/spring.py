@@ -1,7 +1,7 @@
 import pathlib
 from typing import Any
 
-import todd.tasks.optical_flow_estimation as ofe
+import todd_tasks.optical_flow_estimation as ofe
 from todd import Config
 from todd.configs import PyConfig
 

@@ -7,9 +7,13 @@ import numpy.typing as npt
 import scipy.io
 import tqdm
 
-from todd.datasets import ImageNetDataset
-from todd.datasets.imagenet import Annotation, Synset, Synsets
-from todd.patches.py_ import json_dump
+from todd.patches import json_dump
+from todd_tasks.image_classification.datasets import ImageNetDataset
+from todd_tasks.image_classification.datasets.imagenet import (
+    Annotation,
+    Synset,
+    Synsets,
+)
 
 
 def parse_synset(array: npt.NDArray[Any]) -> tuple[int, Synset]:

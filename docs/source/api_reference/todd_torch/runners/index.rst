@@ -7,4 +7,4 @@ Runners
 
    *
 
-.. automodule:: todd.runners
+.. automodule:: todd_torch.runners

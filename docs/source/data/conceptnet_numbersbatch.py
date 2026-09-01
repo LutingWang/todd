@@ -1,7 +1,7 @@
 import torch
 import torch.nn.functional as F
 
-import todd.tasks.knowledge_graph as kg
+import todd_tasks.knowledge_graph as kg
 
 
 class ConceptNetNumbersbatch(kg.ConceptNetNumbersbatch):

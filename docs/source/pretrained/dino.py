@@ -4,9 +4,10 @@ import torch
 import torchvision.transforms.v2 as tf_v2
 from einops.layers.torch import Rearrange
 
-from todd.datasets import IMAGENET_MEAN, IMAGENET_STD, coco_url
-from todd.models.modules import DINO, DINOv2
-from todd.utils import get_image
+from todd_tasks.object_detection.datasets import coco_url
+from todd_torch.datasets import IMAGENET_MEAN, IMAGENET_STD
+from todd_torch.models.modules import DINO, DINOv2
+from todd_torch.utils import get_image
 
 url = coco_url('val', 2017, 39769)  # pylint: disable=invalid-name
 image = get_image(url)

@@ -7,10 +7,14 @@ import torchvision.transforms.v2 as tf_v2
 from tqdm import tqdm
 
 import todd
-from todd.datasets import CLIP_MEAN, CLIP_STD, PILDataset
-from todd.datasets.access_layers import PILAccessLayer
-from todd.models.modules import DINO, CLIPViT
-from todd.patches.torch import PrefetchDataLoader, get_rank, get_world_size
+from todd_torch.datasets import CLIP_MEAN, CLIP_STD, PILDataset
+from todd_torch.datasets.access_layers import PILAccessLayer
+from todd_torch.models.modules import DINO, CLIPViT
+from todd_torch.patches.torch import (
+    PrefetchDataLoader,
+    get_rank,
+    get_world_size,
+)
 
 DATA_ROOT = pathlib.Path('data/imagenet-21k')
 WORK_DIR = pathlib.Path('work_dirs/imagenet-21k')
@@ -92,7 +96,7 @@ def main() -> None:
     dino.eval()
 
     categories = sorted(category.name for category in DATA_ROOT.iterdir())
-    # categories = todd.patches.py_.json_load('wnids.json')
+    # categories = todd.patches.json_load('wnids.json')
     categories = categories[get_rank()::get_world_size()]
 
     for category in tqdm(categories, disable=not is_master):

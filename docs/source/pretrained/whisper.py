@@ -2,7 +2,7 @@ import einops
 import torch
 from transformers import AutomaticSpeechRecognitionPipeline, pipeline
 
-from todd.utils import get_audio
+from todd_torch.utils import get_audio
 
 assert torch.cuda.device_count() <= 4, (  # yapf: disable
     "Please use no more than 4 GPUs, in order to avoid RuntimeError."

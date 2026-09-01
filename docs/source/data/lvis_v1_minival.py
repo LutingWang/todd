@@ -1,8 +1,8 @@
 import json
 from typing import Any, cast
 
-from todd.datasets.coco import URL
-from todd.datasets.lvis import LVISDataset
+from todd_tasks.object_detection.datasets import LVISDataset
+from todd_tasks.object_detection.datasets.coco import URL
 
 annotations_file = LVISDataset.ANNOTATIONS_ROOT / 'lvis_v1_val.json'
 with annotations_file.open() as f:

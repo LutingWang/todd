@@ -8,7 +8,7 @@ from ebooklib import ITEM_DOCUMENT, epub
 from tqdm import tqdm
 from transformers import DynamicCache, Qwen2ForCausalLM, Qwen2TokenizerFast
 
-import todd
+from todd_torch.utils import Store
 
 
 class Message(TypedDict):
@@ -55,7 +55,7 @@ class Chatbot:
             return_tensors='pt',
             return_dict=True,
         )
-        if todd.Store.cuda:  # pylint: disable=using-constant-test
+        if Store.cuda:  # pylint: disable=using-constant-test
             inputs = inputs.to('cuda')
 
         input_ids: torch.Tensor = inputs.input_ids

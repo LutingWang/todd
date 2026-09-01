@@ -2,7 +2,7 @@ import torch
 from transformers import GemmaForCausalLM, GemmaTokenizerFast
 from transformers.modeling_outputs import CausalLMOutputWithPast
 
-import todd
+from todd_torch.utils import Store
 
 assert torch.cuda.device_count() <= 4, (  # yapf: disable
     "Please use no more than 4 GPUs, in order to avoid RuntimeError."
@@ -42,7 +42,7 @@ suffix_ids: torch.Tensor = tokenizer.encode(
     add_special_tokens=False,
     return_tensors='pt',
 )
-if todd.Store.cuda:  # pylint: disable=using-constant-test
+if Store.cuda:  # pylint: disable=using-constant-test
     prefix_ids = prefix_ids.cuda()
     suffix_ids = suffix_ids.cuda()
 prefix_outputs: CausalLMOutputWithPast = model(prefix_ids, use_cache=True)
@@ -55,7 +55,7 @@ word_ids: torch.Tensor = tokenizer.encode(
     add_special_tokens=False,
     return_tensors='pt',
 )
-if todd.Store.cuda:  # pylint: disable=using-constant-test
+if Store.cuda:  # pylint: disable=using-constant-test
     word_ids = word_ids.cuda()
 
 input_ids = torch.cat([prefix_ids, word_ids, suffix_ids], -1)

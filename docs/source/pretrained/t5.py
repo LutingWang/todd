@@ -4,7 +4,7 @@ from transformers.modeling_outputs import (
     BaseModelOutputWithPastAndCrossAttentions,
 )
 
-import todd
+from todd_torch.utils import Store
 
 PRETRAINED = 'pretrained/t5/t5-large'
 tokenizer: T5Tokenizer = T5Tokenizer.from_pretrained(PRETRAINED)
@@ -20,7 +20,7 @@ print(tokenizer.convert_ids_to_tokens(tokens.input_ids[0]))
 # ['▁Studies', '▁have', '▁been', '▁shown', '▁that', '▁own', 'ing', '▁', 'a',
 #  '▁dog', '▁is', '▁good', '▁for', '▁you', '</s>']
 
-if todd.Store.cuda:  # pylint: disable=using-constant-test
+if Store.cuda:  # pylint: disable=using-constant-test
     tokens = tokens.to('cuda')
 
 with torch.no_grad():

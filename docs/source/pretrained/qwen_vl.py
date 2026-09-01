@@ -14,6 +14,7 @@ from transformers import (
 )
 
 import todd
+from todd_torch.utils import Store
 
 
 class Chatbot:
@@ -40,7 +41,7 @@ class Chatbot:
         self,
         inputs: BatchEncoding | BatchFeature,
     ) -> tuple[torch.Tensor, str]:
-        if todd.Store.cuda:  # pylint: disable=using-constant-test
+        if Store.cuda:  # pylint: disable=using-constant-test
             inputs = inputs.to('cuda')
 
         input_ids: torch.Tensor = inputs.input_ids
