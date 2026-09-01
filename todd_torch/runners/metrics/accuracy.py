@@ -8,7 +8,8 @@ import einops
 import torch
 from torch import nn
 
-from ...patches.py_ import get_
+from todd.patches import get_
+
 from ..memo import Memo
 from ..registries import MetricRegistry
 from .vanilla import Metric

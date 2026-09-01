@@ -8,11 +8,12 @@ import einops
 import torch
 from torch import nn
 
-from ...bases.configs import Config
-from ...bases.registries import BuildPreHookMixin, Item, RegistryMeta
+from todd.bases.configs import Config
+from todd.bases.registries import BuildPreHookMixin, Item, RegistryMeta
+from todd.patches import get_
+
 from ...models import LossRegistry
 from ...models.losses import BaseLoss
-from ...patches.py_ import get_
 from ..memo import Memo
 from ..registries import MetricRegistry
 from .vanilla import Metric
