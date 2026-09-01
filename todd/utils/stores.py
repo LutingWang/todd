@@ -4,7 +4,6 @@ __all__ = [
 ]
 
 import os
-from inspect import get_annotations
 from typing import Any
 
 from ..loggers import logger
@@ -61,20 +60,20 @@ class StoreMeta(NonInstantiableMeta):
 
     def __init__(cls, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        for k, v in get_annotations(cls).items():
+        for k, v in cls.__annotations__.items():
             if not hasattr(cls, k):
                 setattr(cls, k, v())
 
     def _overridden(cls, name: str) -> bool:
-        return name in get_annotations(cls) and name in os.environ
+        return name in cls.__annotations__ and name in os.environ
 
     def __getattribute__(cls, name: str) -> Any:
         if (
-            name in ['__annotations__', '__annotate__', '_overridden']
+            name in ('__annotations__', '__annotate__', '_overridden')
             or not cls._overridden(name)  # pylint: disable=no-value-for-parameter
         ):
             return super().__getattribute__(name)
-        type_ = get_annotations(cls)[name]
+        type_ = cls.__annotations__[name]
         variable = os.environ[name]
         if type_ is not str:
             variable = eval(variable)  # nosec B307
@@ -89,7 +88,7 @@ class StoreMeta(NonInstantiableMeta):
 
     def __repr__(cls) -> str:
         variables = ' '.join(
-            f'{k}={getattr(cls, k)}' for k in get_annotations(cls)
+            f'{k}={getattr(cls, k)}' for k in cls.__annotations__
         )
         return f"<{cls.__name__} {variables}>"
 
