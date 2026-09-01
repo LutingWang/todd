@@ -6,7 +6,8 @@ from typing import TypeVar
 
 from torch import nn
 
-from ...utils import HolderMixin
+from todd.utils import HolderMixin
+
 from ..base import BaseRunner
 from ..epoch_based_trainer import EpochBasedTrainer
 from ..iter_based_trainer import IterBasedTrainer

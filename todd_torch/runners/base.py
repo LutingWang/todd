@@ -14,16 +14,13 @@ from typing import TYPE_CHECKING, Any, Generic, Mapping, TypeVar
 from torch import nn
 from torch.utils.data import DataLoader, Dataset
 
-from ..bases.configs import Config
-from ..bases.registries import BuildPreHookMixin, Item, RegistryMeta
-from ..loggers import logger as base_logger
+from todd.bases.configs import Config
+from todd.bases.registries import BuildPreHookMixin, Item, RegistryMeta
+from todd.loggers import logger as base_logger
+from todd.registries import RunnerRegistry
+
 from ..patches.torch import get_rank
-from ..registries import (
-    DataLoaderRegistry,
-    DatasetRegistry,
-    ModelRegistry,
-    RunnerRegistry,
-)
+from ..registries import DataLoaderRegistry, DatasetRegistry, ModelRegistry
 from ..utils import StateDictMixin, Store
 from .memo import Memo
 from .registries import CallbackRegistry, StrategyRegistry

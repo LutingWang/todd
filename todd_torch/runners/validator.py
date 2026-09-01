@@ -7,7 +7,8 @@ from typing import TypeVar
 import torch
 from torch import nn
 
-from ..registries import RunnerRegistry
+from todd.registries import RunnerRegistry
+
 from .base import BaseRunner
 from .memo import Memo
 

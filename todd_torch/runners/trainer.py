@@ -8,9 +8,10 @@ from typing import TYPE_CHECKING, Any, Mapping, TypeVar
 import torch
 from torch import nn
 
-from ..bases.configs import Config
-from ..bases.registries import Item, RegistryMeta
-from ..registries import RunnerRegistry
+from todd.bases.configs import Config
+from todd.bases.registries import Item, RegistryMeta
+from todd.registries import RunnerRegistry
+
 from .base import BaseRunner
 from .memo import Memo
 
