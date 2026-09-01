@@ -9,7 +9,8 @@ from torch import nn
 from torch.distributed.fsdp import FullyShardedDataParallel as FSDP
 from torch.distributed.fsdp import MixedPrecision
 
-from ...bases.configs import Config
+from todd.bases.configs import Config
+
 from ...registries import OptimizerRegistry
 from ..registries import StrategyRegistry
 from .cuda import CUDAStrategy

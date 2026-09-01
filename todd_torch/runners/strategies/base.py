@@ -7,7 +7,8 @@ from typing import Any, Mapping, TypeVar, cast
 import torch
 from torch import nn
 
-from ...bases.configs import Config
+from todd.bases.configs import Config
+
 from ...patches.torch import load_state_dict, load_state_dict_
 from ...registries import OptimizerRegistry
 from ...utils import StateDictMixin
