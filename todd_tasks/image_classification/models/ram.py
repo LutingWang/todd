@@ -18,9 +18,12 @@ from transformers import BertConfig, BertModel
 from transformers.models.bert import BertLayer
 from transformers.models.bert.modeling_bert import BertSelfAttention
 
-from todd.models.modules import PretrainedMixin
-from todd.utils import StateDict, StateDictConverter
-from todd.utils.state_dicts import SequentialStateDictConverterMixin
+from todd_torch.models.modules import PretrainedMixin
+from todd_torch.utils import (
+    SequentialStateDictConverterMixin,
+    StateDict,
+    StateDictConverter,
+)
 
 
 class RAMStateDictConverterMixin(StateDictConverter):
@@ -254,7 +257,7 @@ class Decoder(BertModel):  # pylint: disable=abstract-method
         category_embedding = self._in_linear(category_embedding)
         category_embedding = category_embedding.relu()
 
-        embedding, *_ = super().forward(  # pylint: disable=no-member
+        embedding, *_ = super().forward(
             inputs_embeds=category_embedding,
             encoder_hidden_states=x,
         )

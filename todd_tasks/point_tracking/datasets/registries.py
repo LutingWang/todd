@@ -4,7 +4,7 @@ __all__ = [
 
 from todd_torch.datasets import AccessLayerRegistry
 
-from ...registries import PTRegistry
+from todd_tasks.registries import PTRegistry
 
 
 class PTAccessLayerRegistry(PTRegistry, AccessLayerRegistry):

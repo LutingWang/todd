@@ -11,17 +11,20 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 
-from todd.models import AdaptiveLayerNorm
-from todd.models.modules import (
+from todd_torch.models import AdaptiveLayerNorm
+from todd_torch.models.modules import (
     BaseAttention,
     PretrainedMixin,
+    mlp,
     rotary_position_embedding,
     sinusoidal_position_embedding,
 )
-from todd.models.modules.transformer import mlp
-from todd.patches.torch import Sequential
-from todd.utils import StateDict, StateDictConverter
-from todd.utils.state_dicts import SequentialStateDictConverterMixin
+from todd_torch.patches.torch import Sequential
+from todd_torch.utils import (
+    SequentialStateDictConverterMixin,
+    StateDict,
+    StateDictConverter,
+)
 
 from .time_embedding import TimeEmbedding
 
@@ -202,7 +205,9 @@ class DiT(PretrainedMixin):
         out_channels: int,
         width: int = 1024,
         depth: int = 22,
-        block_kwargs: Mapping[str, Any] = MappingProxyType(dict()),  # noqa: B006 E501 pylint: disable=line-too-long
+        block_kwargs: Mapping[str, Any] = MappingProxyType(
+            dict(),  # noqa: B006
+        ),
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)

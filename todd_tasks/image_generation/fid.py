@@ -16,11 +16,12 @@ import torchvision
 from scipy import linalg
 from torch import nn
 
-import todd
 from todd import Config
-from todd.patches.torch import all_gather_object
-from todd.registries import InitWeightsMixin
-from todd.utils import set_temp
+from todd.loggers import logger
+from todd.utils import Store, set_temp
+from todd_torch.models import FrozenMixin, MeanStdMixin
+from todd_torch.patches.torch import all_gather_object
+from todd_torch.registries import InitWeightsMixin
 
 from .registries import IGModelRegistry
 
@@ -31,8 +32,8 @@ class InceptionRegistry(IGModelRegistry):
 
 @InceptionRegistry.register_()
 class Inception(
-    todd.models.MeanStdMixin,
-    todd.models.FrozenMixin,
+    MeanStdMixin,
+    FrozenMixin,
     InitWeightsMixin,
 ):
 
@@ -60,7 +61,7 @@ class Inception(
 
         self._inception = inception
 
-    def init_weights(self, config: todd.Config) -> bool:
+    def init_weights(self, config: Config) -> bool:
         # https://github.com/mseitzer/pytorch-fid/releases/download/
         # fid_weights/pt_inception-2015-12-05-6726825d.pth
         f = config.get('pretrained', 'pretrained/pytorch-fid/pt_inception.pth')
@@ -117,7 +118,7 @@ def fid(gt: Statistics, pred: Statistics, eps: float = 1e-6) -> float:
     cov, _ = linalg.sqrtm(cov, disp=False)
 
     if np.isinf(cov).any():
-        todd.logger.warning("FID calculation produces singular product")
+        logger.warning("FID calculation produces singular product")
         gt_offset = np.eye(gt.sigma.shape[0]) * eps
         offset = np.eye(pred.sigma.shape[0]) * eps
         cov = (gt.sigma + gt_offset).dot(pred.sigma + offset)
@@ -127,8 +128,8 @@ def fid(gt: Statistics, pred: Statistics, eps: float = 1e-6) -> float:
     if np.iscomplexobj(cov):
         if not np.allclose(np.diagonal(cov).imag, 0, atol=1e-3):
             message = f'Imaginary component {np.max(np.abs(cov.imag))}'
-            todd.logger.error(message)
-            if not todd.Store.DRY_RUN:
+            logger.error(message)
+            if not Store.DRY_RUN:
                 raise ValueError(message)
         cov = cov.real
 

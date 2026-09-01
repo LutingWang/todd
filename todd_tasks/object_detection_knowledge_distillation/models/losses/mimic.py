@@ -7,8 +7,7 @@ import einops
 import torch
 import torch.nn.functional as F
 
-import todd.tasks.knowledge_distillation as kd
-
+from todd_tasks import knowledge_distillation as kd
 from ..registries import ODKDLossRegistry
 
 MSE2DLoss = kd.models.losses.MSE2DLoss

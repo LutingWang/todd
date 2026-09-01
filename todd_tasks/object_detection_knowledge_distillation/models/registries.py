@@ -2,8 +2,7 @@ __all__ = [
     'ODKDLossRegistry',
 ]
 
-import todd.tasks.knowledge_distillation as kd
-
+from todd_tasks import knowledge_distillation as kd
 from ..registries import ODKDModelRegistry
 
 KDLossRegistry = kd.models.KDLossRegistry

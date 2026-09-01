@@ -4,9 +4,8 @@ __all__ = [
 
 import torch
 
-import todd.tasks.knowledge_distillation as kd
-import todd.tasks.object_detection as od
-
+from todd_tasks import knowledge_distillation as kd
+from todd_tasks import object_detection as od
 from ..registries import ODKDAdaptRegistry
 
 BaseAdapt = kd.distillers.adapts.BaseAdapt

@@ -11,10 +11,10 @@ import torch
 import torchaudio.functional as F
 from transformers import AutomaticSpeechRecognitionPipeline, pipeline
 
-import todd
 from todd.configs import PyConfig
-from todd.patches.pydub import AudioSegment
-from todd.utils import get_audio
+from todd.loggers import logger
+from todd_torch.patches.pydub import AudioSegment
+from todd_torch.utils import get_audio
 
 from .utils import normalize_text
 
@@ -58,7 +58,7 @@ class Voice:
 
         if transcription is None:
             transcription = Whisper.transcript(audio)
-            todd.logger.info("Transcription\n%s", transcription)
+            logger.info("Transcription\n%s", transcription)
         transcription = normalize_text(transcription)
         self._transcription = transcription
 
@@ -90,10 +90,10 @@ class Voice:
     @classmethod
     def load(cls, name: str, audio_file: Any, **kwargs) -> Self:
         if isinstance(audio_file, str) and audio_file.startswith('http'):
-            todd.logger.info("Downloading voice %s from %s", name, audio_file)
+            logger.info("Downloading voice %s from %s", name, audio_file)
             audio_segment = AudioSegment.from_tensor(*get_audio(audio_file))
         else:
-            todd.logger.info("Loading voice %s from %s", name, audio_file)
+            logger.info("Loading voice %s from %s", name, audio_file)
             audio_segment = AudioSegment.from_file(audio_file)
         return cls(name, audio_segment, **kwargs)
 

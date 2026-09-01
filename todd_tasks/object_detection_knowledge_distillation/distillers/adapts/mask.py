@@ -11,8 +11,7 @@ from abc import ABC, abstractmethod
 import einops
 import torch
 
-import todd.tasks.knowledge_distillation as kd
-
+from todd_tasks import knowledge_distillation as kd
 from ..registries import ODKDAdaptRegistry
 
 BaseAdapt = kd.distillers.adapts.BaseAdapt

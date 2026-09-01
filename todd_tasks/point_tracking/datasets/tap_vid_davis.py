@@ -8,7 +8,7 @@ import torch
 
 from todd import Config, RegistryMeta
 from todd.bases.registries import Item
-from todd.datasets import BaseDataset
+from todd_torch.datasets import BaseDataset
 
 from .access_layers import TAPVidDAVISAccessLayer
 from .access_layers.tap_vid_davis import VT
@@ -37,7 +37,7 @@ class TAPVidDAVISDataset(BaseDataset[T, str, VT]):
         config.access_layer = access_layer
         return config
 
-    def __init__(  # pylint: disable=useless-super-delegation
+    def __init__(
         self,
         *args,
         access_layer: Config,
