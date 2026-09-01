@@ -7,7 +7,7 @@ from typing import Any, Sequence, cast
 
 
 class DictAction(argparse.Action):
-    """``argparse`` action to parse arguments in the form of key-value pairs.
+    """`argparse` action to parse arguments in the form of key-value pairs.
 
     Examples:
         >>> parser = argparse.ArgumentParser()

@@ -47,14 +47,14 @@ class CheckMixin(nn.Module, ABC):
         Checking 'Model' with args=(1, 2) and kwargs={'a': 3, 'b': 4}
         Forwarding with args=(1, 2) and kwargs={'a': 3, 'b': 4}
 
-    If ``Store.DRY_RUN`` is False, the `check` method executes only once:
+    If `Store.DRY_RUN` is False, the `check` method executes only once:
 
         >>> Store.DRY_RUN
         False
         >>> model(1, a=2)
         Forwarding with args=(1,) and kwargs={'a': 2}
 
-    If ``Store.DRY_RUN`` is True, the `check` method executes every time
+    If `Store.DRY_RUN` is True, the `check` method executes every time
     ``__call__`` is invoked:
 
         >>> Store.DRY_RUN = True
