@@ -7,9 +7,10 @@ from typing import Iterator, TypeVar
 
 from datasets import Dataset, DatasetDict, load_dataset
 
-from ...bases.configs import Config
-from ...bases.registries import BuildPreHookMixin, Item, RegistryMeta
-from ...loggers import logger
+from todd.bases.configs import Config
+from todd.bases.registries import BuildPreHookMixin, Item, RegistryMeta
+from todd.loggers import logger
+
 from ..registries import AccessLayerRegistry
 from .base import BaseAccessLayer
 

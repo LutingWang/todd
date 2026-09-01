@@ -5,8 +5,9 @@ __all__ = [
 from abc import ABC
 from typing import Any, Generator, Mapping, TypeVar
 
-from ...bases.configs import Config
-from ...bases.registries import BuildPreHookMixin, Item, RegistryMeta
+from todd.bases.configs import Config
+from todd.bases.registries import BuildPreHookMixin, Item, RegistryMeta
+
 from ..registries import AccessLayerRegistry
 from .base import BaseAccessLayer
 
