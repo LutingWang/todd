@@ -55,7 +55,10 @@ class BaseDistiller(BuildPreHookMixin, nn.Module, ABC):
             assert outputs.isdisjoint(spec.outputs)
             outputs |= spec.outputs
 
-        for model, pipeline in zip(models, hook_pipelines.processors):
+        for model, pipeline in zip(
+            self._models,  # models may have been exhausted.
+            hook_pipelines.processors,
+        ):
             for atom in pipeline.atoms:
                 atom.bind(model)
 

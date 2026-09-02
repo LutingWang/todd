@@ -60,6 +60,7 @@ class TAPVidDAVISDataset(BaseDataset[T, str, VT]):
         valid = visible.any(-1)
         points = points[valid]
         occluded = occluded[valid]
+        visible = visible[valid]
 
         query_ts = []
         query_points = []

@@ -102,7 +102,7 @@ class ImageNetDataset(PILDataset[T], ABC):
         with annotations_file.open() as f:
             self._annotations: Annotations = json.load(f)
 
-        with self.SYNSETS_FILE.open() as f:
+        with synsets_file.open() as f:
             synsets: dict[str, Synset] = json.load(f)
         synsets_: Synsets = {int(k): v for k, v in synsets.items()}
         self._synsets = synsets_
