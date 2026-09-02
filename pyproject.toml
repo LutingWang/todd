@@ -66,6 +66,7 @@ write-changes = true
 
 [tool.pytest.ini_options]
 pythonpath = [
+    'tests/helpers',
     'todd/src',
     'todd_tasks/src',
     'todd_torch/src',

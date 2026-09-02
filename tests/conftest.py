@@ -1,10 +1,6 @@
-import os
 import pathlib
-import sys
 
 import pytest
-
-sys.path.append(os.path.join(os.path.dirname(__file__), 'helpers'))
 from custom_object import (  # noqa: E402 pylint: disable=wrong-import-position
     CustomObject,
 )
