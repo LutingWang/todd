@@ -33,12 +33,16 @@ def set_temp(obj, name: str, value) -> Generator[None, None, None]:
     if has_(obj, name):
         prev = get_(obj, name)
         set_(obj, name, value)
-        yield
-        set_(obj, name, prev)
+        try:
+            yield
+        finally:
+            set_(obj, name, prev)
     else:
         set_(obj, name, value)
-        yield
-        del_(obj, name)
+        try:
+            yield
+        finally:
+            del_(obj, name)
 
 
 def retry(n: int) -> Any:
