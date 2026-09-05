@@ -36,8 +36,7 @@ class Statistician:
             self._variances.append(chunk.var(0))
             running_chunk = running_chunk[self._chunk_size:]
 
-        if running_chunk.shape[0]:
-            self._running_chunk = [running_chunk]
+        self._running_chunk = [running_chunk] if running_chunk.shape[0] else []
 
     def _weighted_average(
         self,
