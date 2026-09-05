@@ -6,7 +6,7 @@ from abc import abstractmethod
 from typing import TypeVar
 
 from todd import Config, RegistryMeta
-from todd.bases.registries import Item
+from todd.registries import Item
 from todd_torch.datasets import BaseDataset as BaseDataset_
 
 from ..optical_flow import OpticalFlow

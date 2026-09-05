@@ -21,10 +21,9 @@ from torch.nn import init, utils
 from torch.optim import lr_scheduler
 
 from todd import Config
-from todd.bases.registries import Item, Registry, RegistryMeta
 from todd.loggers import logger
 from todd.patches import descendant_classes, get_classes
-from todd.registries import PartialRegistry
+from todd.registries import Item, PartialRegistry, Registry, RegistryMeta
 
 from ..patches.torch import PrefetchDataLoader, get_world_size
 

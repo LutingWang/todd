@@ -8,8 +8,8 @@ from abc import abstractmethod
 from typing import Any
 from typing_extensions import Self
 
-from ..bases.configs import Config
 from ..loggers import logger
+from .config import Config
 
 
 class SerializeMixin(Config):

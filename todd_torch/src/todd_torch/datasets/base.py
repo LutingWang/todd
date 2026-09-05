@@ -11,8 +11,8 @@ import torchvision.transforms as tf
 from torch.utils.data import Dataset
 
 from todd import Config, Store
-from todd.bases.registries import BuildPreHookMixin, Item, RegistryMeta
 from todd.loggers import logger
+from todd.registries import BuildPreHookMixin, Item, RegistryMeta
 
 from ..patches.torch import get_world_size
 from ..registries import TransformRegistry

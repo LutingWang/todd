@@ -7,7 +7,7 @@ from typing import Any, Iterable, Iterator, Literal, Mapping, TypeVar
 from torch import nn
 
 from todd import Config
-from todd.bases.registries import BuildPreHookMixin, Item, RegistryMeta
+from todd.registries import BuildPreHookMixin, Item, RegistryMeta
 
 from ..registries import CallbackRegistry
 from ..utils import PriorityQueue

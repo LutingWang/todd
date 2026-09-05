@@ -11,9 +11,9 @@ from typing import Any, Callable, Never, Protocol, TypeVar, no_type_check
 
 from yapf.yapflib.errors import YapfError
 
-from ...loggers import logger
-from ...patches import NonInstantiableMeta
 from ..configs import Config
+from ..loggers import logger
+from ..patches import NonInstantiableMeta
 
 
 class Item(Protocol):
@@ -416,7 +416,7 @@ class RegistryMeta(  # type: ignore[misc]
             try:
                 config = build_pre_hook(config.copy(), registry, item)
             except Exception:
-                from ...configs import PyConfig
+                from ..configs import PyConfig
                 try:
                     dumps = PyConfig(config).dumps()
                 except YapfError:
@@ -431,7 +431,7 @@ class RegistryMeta(  # type: ignore[misc]
         try:
             return registry._build(item, config.copy())
         except Exception:
-            from ...configs import PyConfig
+            from ..configs import PyConfig
             try:
                 dumps = PyConfig(config).dumps()
             except YapfError:

@@ -6,9 +6,9 @@ __all__ = [
 from functools import partial
 from typing import Any, no_type_check
 
-from ..bases.configs import Config
-from ..bases.registries import Item, RegistryMeta
+from ..configs import Config
 from ..patches import NonInstantiableMeta
+from .registry import Item, RegistryMeta
 
 
 class PartialRegistryMeta(RegistryMeta):

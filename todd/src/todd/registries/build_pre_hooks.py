@@ -5,7 +5,7 @@ __all__ = [
 from abc import abstractmethod
 
 from ..configs import Config
-from .base import Item, RegistryMeta
+from .registry import Item, RegistryMeta
 
 
 class BuildPreHookMixin:

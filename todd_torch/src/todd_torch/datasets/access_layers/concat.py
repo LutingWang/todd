@@ -6,7 +6,7 @@ from abc import ABC
 from typing import Any, Generator, Mapping, TypeVar
 
 from todd import Config
-from todd.bases.registries import BuildPreHookMixin, Item, RegistryMeta
+from todd.registries import BuildPreHookMixin, Item, RegistryMeta
 
 from ..registries import AccessLayerRegistry
 from .base import BaseAccessLayer

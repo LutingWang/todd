@@ -15,8 +15,8 @@ from torch import nn
 from torch.utils.data import DataLoader, Dataset
 
 from todd import Config, Store
-from todd.bases.registries import BuildPreHookMixin, Item, RegistryMeta
 from todd.loggers import logger as base_logger
+from todd.registries import BuildPreHookMixin, Item, RegistryMeta
 
 from ..patches.torch import get_rank
 from ..registries import (

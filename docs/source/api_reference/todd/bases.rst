@@ -1,4 +1,0 @@
-Bases
-=====
-
-.. automodule:: todd.bases

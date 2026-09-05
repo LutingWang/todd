@@ -23,7 +23,7 @@ from typing import (
     cast,
 )
 
-from ..bases.registries import Registry
+from ..registries import Registry
 
 T = TypeVar('T')
 T_contra = TypeVar('T_contra', contravariant=True)

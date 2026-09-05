@@ -9,7 +9,7 @@ import torch
 from torch import nn
 
 from todd import Config
-from todd.bases.registries import Item, RegistryMeta
+from todd.registries import Item, RegistryMeta
 
 from ..registries import RunnerRegistry
 from .base import BaseRunner

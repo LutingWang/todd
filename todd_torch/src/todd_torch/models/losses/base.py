@@ -9,7 +9,7 @@ import torch
 from torch import nn
 
 from todd import Config
-from todd.bases.registries import BuildPreHookMixin, Item, RegistryMeta
+from todd.registries import BuildPreHookMixin, Item, RegistryMeta
 
 from .schedulers import BaseScheduler, SchedulerRegistry
 

@@ -2,9 +2,9 @@
 
 __version__ = '0.7.1'
 
-from . import bases, colors, configs, loggers, patches, registries, utils
-from .bases.configs import Config
-from .bases.registries import Registry, RegistryMeta
+from . import colors, configs, loggers, patches, registries, utils
+from .configs import Config
 from .loggers import logger
 from .patches import *
+from .registries import Registry, RegistryMeta
 from .utils import Store

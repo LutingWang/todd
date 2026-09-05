@@ -9,8 +9,8 @@ import torch
 from torch import nn
 
 from todd import Config
-from todd.bases.registries import BuildPreHookMixin, Item, RegistryMeta
 from todd.patches import get_
+from todd.registries import BuildPreHookMixin, Item, RegistryMeta
 
 from ...models import LossRegistry
 from ...models.losses import BaseLoss

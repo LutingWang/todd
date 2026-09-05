@@ -7,7 +7,7 @@ from typing import Any
 from torch import nn
 
 from todd import Config, RegistryMeta
-from todd.bases.registries import BuildPreHookMixin, Item
+from todd.registries import BuildPreHookMixin, Item
 from todd_torch.registries import ModelRegistry
 
 from ..registries import KDAdaptRegistry

@@ -2,7 +2,7 @@ __all__ = [
     'VisualRegistry',
 ]
 
-from todd.bases.registries import Registry
+from todd.registries import Registry
 
 
 class VisualRegistry(Registry):

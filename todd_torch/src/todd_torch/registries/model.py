@@ -11,8 +11,8 @@ import einops.layers.torch  # noqa: F401 pylint: disable=unused-import
 from torch import nn
 
 from todd import Config
-from todd.bases.registries import Item, Registry, RegistryMeta
 from todd.patches import descendant_classes
+from todd.registries import Item, Registry, RegistryMeta
 
 from ..loggers import master_logger
 

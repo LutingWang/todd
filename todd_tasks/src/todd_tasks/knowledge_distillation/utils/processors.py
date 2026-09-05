@@ -19,14 +19,9 @@ from typing import Any, Callable, Generic, Iterable, NamedTuple, TypeVar, cast
 import pandas as pd
 
 from todd import Config
-from todd.bases.registries import (
-    BuildPreHookMixin,
-    Item,
-    Registry,
-    RegistryMeta,
-)
 from todd.loggers import logger
 from todd.patches import exec_
+from todd.registries import BuildPreHookMixin, Item, Registry, RegistryMeta
 from todd.utils import Args, ArgsKwargs, Kwargs, SerializeMixin
 
 from ..registries import KDProcessorRegistry

@@ -13,9 +13,9 @@ import argparse
 import os
 import subprocess  # nosec B404
 
-from ..bases.registries import Registry
 from ..loggers import logger
 from ..patches import run
+from ..registries import Registry
 
 
 class EnvRegistry(Registry):

@@ -6,9 +6,9 @@ from typing import Any
 
 import yapf.yapflib.yapf_api as yapf
 
-from ..bases.configs import Config
 from ..patches import exec_
-from ..registries import ConfigRegistry
+from .config import Config
+from .registries import ConfigRegistry
 from .serialize import SerializeMixin
 
 

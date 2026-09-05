@@ -2,7 +2,7 @@ __all__ = [
     'ConfigRegistry',
 ]
 
-from ..bases.registries import Registry
+from ..registries import Registry
 
 
 class ConfigRegistry(Registry):

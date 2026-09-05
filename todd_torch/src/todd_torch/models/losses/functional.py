@@ -16,7 +16,7 @@ import torch
 import torch.nn.functional as F
 
 from todd import Config
-from todd.bases.registries import Item, RegistryMeta
+from todd.registries import Item, RegistryMeta
 
 from ...registries import ModelRegistry
 from ..registries import LossRegistry

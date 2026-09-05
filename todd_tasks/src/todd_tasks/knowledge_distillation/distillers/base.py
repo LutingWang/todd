@@ -11,7 +11,7 @@ from typing_extensions import Self
 from torch import nn
 
 from todd import Config, RegistryMeta
-from todd.bases.registries import BuildPreHookMixin, Item
+from todd.registries import BuildPreHookMixin, Item
 from todd.utils import StoreMeta
 from todd_torch.models.losses import BaseLoss
 from todd_torch.utils import transfer_state_dicts

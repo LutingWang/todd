@@ -7,7 +7,7 @@ from typing import Generator, Iterable
 from torch import nn
 
 from todd import Config
-from todd.bases.registries import BuildPreHookMixin, Item, RegistryMeta
+from todd.registries import BuildPreHookMixin, Item, RegistryMeta
 
 from ..registries import FilterRegistry
 from .named_member import NamedMembersFilter

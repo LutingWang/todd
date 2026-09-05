@@ -5,7 +5,7 @@ __all__ = [
 import torch
 
 from todd import Config
-from todd.bases.registries import BuildPreHookMixin, Item, RegistryMeta
+from todd.registries import BuildPreHookMixin, Item, RegistryMeta
 from todd.utils import EMA
 
 from ..registries import ShadowRegistry

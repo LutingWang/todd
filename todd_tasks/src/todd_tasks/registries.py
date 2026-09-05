@@ -10,7 +10,7 @@ __all__ = [
     'NLPRegistry',
 ]
 
-from todd.bases.registries import Registry
+from todd.registries import Registry
 
 
 class TaskRegistry(Registry):

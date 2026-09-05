@@ -5,7 +5,7 @@ import tempfile
 import webbrowser
 from typing import cast
 
-from ..registries import ConfigRegistry
+from .registries import ConfigRegistry
 from .serialize import SerializeMixin
 
 

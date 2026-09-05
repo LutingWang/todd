@@ -14,7 +14,7 @@ import torch
 from torch import nn
 
 from todd import Config, Store
-from todd.bases.registries import BuildPreHookMixin, Item, RegistryMeta
+from todd.registries import BuildPreHookMixin, Item, RegistryMeta
 
 from ..registries import InitWeightsMixin
 from .filters import NamedModulesFilter, NamedParametersFilter
