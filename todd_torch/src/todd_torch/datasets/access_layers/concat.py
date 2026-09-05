@@ -67,7 +67,7 @@ class ConcatAccessLayer(BuildPreHookMixin, BaseAccessLayer[str, VT], ABC):
                 yield name + self.KEY_SEPARATOR + k
 
     def __len__(self) -> int:
-        return sum(map(len, self._access_layers))
+        return sum(map(len, self._access_layers.values()))
 
     def __getitem__(self, key: str) -> VT:
         access_layer, key = self._parse(key)
