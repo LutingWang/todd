@@ -22,8 +22,8 @@ import pptx.util
 
 from todd import Config
 from todd.colors import RGB, Color
-from todd.registries import VisualRegistry
 
+from ..registries import VisualRegistry
 from .base import BaseVisual
 
 

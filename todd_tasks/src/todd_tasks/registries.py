@@ -1,4 +1,5 @@
 __all__ = [
+    'TaskRegistry',
     'IGRegistry',
     'KDRegistry',
     'ODRegistry',
@@ -9,7 +10,11 @@ __all__ = [
     'NLPRegistry',
 ]
 
-from todd.registries import TaskRegistry
+from todd.bases.registries import Registry
+
+
+class TaskRegistry(Registry):
+    pass
 
 
 class IGRegistry(TaskRegistry):

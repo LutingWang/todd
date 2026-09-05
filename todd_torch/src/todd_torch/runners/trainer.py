@@ -10,8 +10,8 @@ from torch import nn
 
 from todd import Config
 from todd.bases.registries import Item, RegistryMeta
-from todd.registries import RunnerRegistry
 
+from ..registries import RunnerRegistry
 from .base import BaseRunner
 from .memo import Memo
 

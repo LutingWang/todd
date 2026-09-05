@@ -8,5 +8,6 @@ todd_torch
    datasets/index
    models/index
    patches/index
+   registries
    runners/index
    visuals

@@ -10,8 +10,8 @@ import numpy.typing as npt
 
 from todd import Config
 from todd.colors import BGR, RGB, Color
-from todd.registries import VisualRegistry
 
+from ..registries import VisualRegistry
 from .anchors import XAnchor, YAnchor
 from .base import BaseVisual
 

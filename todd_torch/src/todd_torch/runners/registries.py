@@ -4,7 +4,7 @@ __all__ = [
     'MetricRegistry',
 ]
 
-from todd.registries import RunnerRegistry
+from ..registries import RunnerRegistry
 
 
 class CallbackRegistry(RunnerRegistry):

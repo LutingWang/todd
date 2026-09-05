@@ -5,3 +5,4 @@ todd_tasks
    :maxdepth: 2
 
    object_detection
+   registries

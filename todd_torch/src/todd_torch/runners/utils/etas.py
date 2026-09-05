@@ -13,7 +13,7 @@ from typing import NamedTuple
 from todd import Config
 from todd.utils import EMA
 
-from ..registries import RunnerRegistry
+from ...registries import RunnerRegistry
 
 
 class ETARegistry(RunnerRegistry):

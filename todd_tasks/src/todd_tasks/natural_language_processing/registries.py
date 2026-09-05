@@ -2,7 +2,7 @@ __all__ = [
     'NLPRunnerRegistry',
 ]
 
-from todd.registries import RunnerRegistry
+from todd_torch.registries import RunnerRegistry
 
 from ..registries import NLPRegistry
 
