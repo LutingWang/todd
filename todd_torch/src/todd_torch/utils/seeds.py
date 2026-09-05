@@ -59,13 +59,14 @@ def set_seed_temp(
         cudnn.benchmark = benchmark
 
     init_seed(seed)
-    yield
+    try:
+        yield
+    finally:
+        random.setstate(random_state)
+        np.random.set_state(np_state)
+        torch.set_rng_state(torch_state)
 
-    random.setstate(random_state)
-    np.random.set_state(np_state)
-    torch.set_rng_state(torch_state)
-
-    if Store.cuda:
-        torch.cuda.set_rng_state(cuda_state)
-        cudnn.deterministic = prev_deterministic
-        cudnn.benchmark = prev_benchmark
+        if Store.cuda:
+            torch.cuda.set_rng_state(cuda_state)
+            cudnn.deterministic = prev_deterministic
+            cudnn.benchmark = prev_benchmark
