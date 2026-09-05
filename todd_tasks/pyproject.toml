@@ -4,7 +4,7 @@ build-backend = 'setuptools.build_meta'
 
 [project]
 name = 'todd-tasks'
-version = '0.7.1'
+version = '0.8.0'
 description = 'Task implementations for Toolkit for Object Detection Distillation'
 readme = 'README.md'
 requires-python = '>=3.11'
@@ -27,8 +27,8 @@ dependencies = [
     'pycocotools',
     'regex',
     'sentencepiece',
-    'todd_ai>=0.7.1',
-    'todd-torch>=0.7.1',
+    'todd_ai>=0.8.0',
+    'todd-torch>=0.8.0',
     'scipy',
     'tqdm',
     'transformers==4.49.0',
