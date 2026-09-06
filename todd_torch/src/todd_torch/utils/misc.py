@@ -12,6 +12,6 @@ def is_sync(x: torch.Tensor) -> bool:
     if get_world_size() <= 1:
         return True
     x_prime = x.clone()
-    dist.all_reduce(x)
-    x /= get_world_size()
+    dist.all_reduce(x_prime)
+    x_prime /= get_world_size()
     return torch.allclose(x, x_prime)
