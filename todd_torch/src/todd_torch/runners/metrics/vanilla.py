@@ -19,7 +19,7 @@ class Metric(BaseMetric[T]):
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self._metrics: list[torch.Tensor] = []
+        self._values: list[torch.Tensor] = []
 
     @abstractmethod
     def _forward(self, batch: Any, memo: Memo) -> tuple[torch.Tensor, Memo]:
@@ -27,16 +27,16 @@ class Metric(BaseMetric[T]):
 
     def forward(self, batch: Any, memo: Memo) -> Memo:
         log: Memo | None = memo.get('log')
-        metric, memo = self._forward(batch, memo)
-        if metric.shape == tuple():  # to support torch.cat
-            metric = metric.view(1)
-        self._metrics.append(metric)
+        values, memo = self._forward(batch, memo)
+        if values.shape == tuple():  # to support torch.cat
+            values = values.view(1)
+        self._values.append(values)
         if log is not None:
-            log[self._name] = f'{metric.mean():.3f}'
+            log[self._name] = f'{values.mean():.3f}'
         return memo
 
     def summary(self, memo: Memo) -> float:
-        metrics = torch.cat(self._metrics)
-        metrics = torch.cat(all_gather_object(metrics))
-        metrics = metrics.mean()
-        return metrics.item()
+        values = torch.cat(self._values)
+        values = torch.cat(all_gather_object(values))
+        values = values.mean()
+        return values.item()
