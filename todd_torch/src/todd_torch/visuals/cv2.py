@@ -9,7 +9,7 @@ import numpy as np
 import numpy.typing as npt
 
 from todd import Config
-from todd.colors import BGR, RGB, Color
+from todd.colors import RGB, Color
 
 from ..registries import VisualRegistry
 from .anchors import XAnchor, YAnchor
@@ -20,6 +20,14 @@ Image = npt.NDArray[np.uint8]
 
 @VisualRegistry.register_()
 class CV2Visual(BaseVisual):
+
+    @staticmethod
+    def _to_bgr(color: Color) -> tuple[float, ...]:
+        blue, green, red, *_ = RGB.from_(color).to_tuple(
+            normalized=False,
+            order='bgr',
+        )
+        return blue, green, red
 
     def __init__(
         self,
@@ -96,8 +104,16 @@ class CV2Visual(BaseVisual):
             (left + width, top + height),
         )
         if fill is not None:
-            cv2.rectangle(*args, fill.to(BGR).to_tuple(), thickness=-1)
-        cv2.rectangle(*args, color.to(BGR).to_tuple(), thickness=thickness)
+            cv2.rectangle(
+                *args,
+                self._to_bgr(fill),
+                thickness=-1,
+            )
+        cv2.rectangle(
+            *args,
+            self._to_bgr(color),
+            thickness=thickness,
+        )
         return self._image
 
     def _translate_xy(
@@ -150,7 +166,7 @@ class CV2Visual(BaseVisual):
             xy,
             font_face,
             font_scale,
-            color.to(BGR).to_tuple(),
+            self._to_bgr(color),
             thickness,
         )
         return self._image
@@ -166,7 +182,7 @@ class CV2Visual(BaseVisual):
             self._image,
             (x, y),
             size,
-            color.to(BGR).to_tuple(),
+            self._to_bgr(color),
             -1,
             cv2.LINE_AA,
         )
@@ -182,7 +198,7 @@ class CV2Visual(BaseVisual):
         cv2.drawMarker(
             self._image,
             (x, y),
-            color.to(BGR).to_tuple(),
+            self._to_bgr(color),
             cv2.MARKER_CROSS,
             5 * size,
             size // 2,
@@ -203,7 +219,7 @@ class CV2Visual(BaseVisual):
             self._image,
             (x1, y1),
             (x2, y2),
-            color.to(BGR).to_tuple(),
+            self._to_bgr(color),
             thickness,
             cv2.LINE_AA,
         )

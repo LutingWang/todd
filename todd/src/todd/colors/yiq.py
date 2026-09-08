@@ -46,8 +46,8 @@ class YIQ(Color):
         return cls(y, i, q)
 
     def _to(self) -> RGBA:
-        r, g, b = yiq_to_rgb(*self._to_tuple())
+        r, g, b = yiq_to_rgb(*self.to_tuple())
         return RGBA(r, g, b, alpha=1.)
 
-    def _to_tuple(self) -> tuple[float, ...]:
+    def to_tuple(self) -> tuple[float, ...]:
         return self._luminance, self._in_phase, self._quadrature

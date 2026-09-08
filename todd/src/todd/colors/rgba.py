@@ -1,9 +1,9 @@
 __all__ = [
     'RGB',
     'RGBA',
-    'BGR',
 ]
 
+from typing import Literal, Sequence
 from typing_extensions import Self
 
 from .color import Color
@@ -12,9 +12,10 @@ from .color import Color
 class RGB(Color):
 
     def __init__(self, red: float, green: float, blue: float) -> None:
-        self._red = self._normalize(red)
-        self._green = self._normalize(green)
-        self._blue = self._normalize(blue)
+        assert all(0. <= channel <= 1. for channel in (red, green, blue))
+        self._red = red
+        self._green = green
+        self._blue = blue
 
     def __repr__(self) -> str:
         return (
@@ -38,21 +39,57 @@ class RGB(Color):
         return cls(rgba.red, rgba.green, rgba.blue)
 
     @classmethod
+    def from_tuple(
+        cls,
+        tuple_: Sequence[float],
+        normalized: bool = True,
+        order: Literal['rgb', 'bgr'] = 'rgb',
+    ) -> Self:
+        if order == 'rgb':
+            red, green, blue = tuple_
+        elif order == 'bgr':
+            blue, green, red = tuple_
+        else:
+            raise ValueError(f'Invalid order: {order}')
+        if not normalized:
+            red /= 255
+            green /= 255
+            blue /= 255
+        return cls(red, green, blue)
+
+    @classmethod
     def from_(cls, color: Color | str) -> Self:
         if isinstance(color, str):
             assert len(color) == 7 and color[0] == '#'
             return cls(
-                int(color[1:3], 16),
-                int(color[3:5], 16),
-                int(color[5:], 16),
+                int(color[1:3], 16) / 255,
+                int(color[3:5], 16) / 255,
+                int(color[5:], 16) / 255,
             )
         return super().from_(color)
 
     def _to(self) -> 'RGBA':
         return RGBA(self._red, self._green, self._blue, alpha=1.)
 
-    def _to_tuple(self) -> tuple[float, ...]:
-        return self._red, self._green, self._blue
+    def _to_tuple(
+        self,
+        order: Literal['rgb', 'bgr'],
+    ) -> tuple[float, ...]:
+        if order == 'rgb':
+            return self._red, self._green, self._blue
+        if order == 'bgr':
+            return self._blue, self._green, self._red
+        raise ValueError(f'Invalid order: {order}')
+
+    def to_tuple(
+        self,
+        normalized: bool = True,
+        order: Literal['rgb', 'bgr'] = 'rgb',
+    ) -> tuple[float, ...]:
+        tuple_ = self._to_tuple(order)
+        if normalized:
+            return tuple_
+        return tuple(int(channel * 255) for channel in tuple_)
 
 
 class RGBA(RGB):
@@ -84,16 +121,5 @@ class RGBA(RGB):
     def _to(self) -> 'RGBA':
         return self
 
-    def to_tuple(self, *args, **kwargs) -> tuple[float, ...]:
-        return super().to_tuple(*args, **kwargs) + (self._alpha, )
-
-
-class BGR(RGB):
-
-    def __init__(self, blue: float, green: float, red: float) -> None:
-        super().__init__(red, green, blue)
-
-    def __repr__(self) -> str:
-        return (
-            f"{type(self).__name__}({self._blue}, {self._green}, {self._red})"
-        )
+    def _to_tuple(self, *args, **kwargs) -> tuple[float, ...]:
+        return super()._to_tuple(*args, **kwargs) + (self._alpha, )

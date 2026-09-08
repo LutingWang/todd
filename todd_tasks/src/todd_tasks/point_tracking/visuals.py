@@ -3,7 +3,6 @@ __all__ = [
     'TAPVidDAVISVisual',
 ]
 
-from itertools import starmap
 from typing import Any, Iterable, cast
 
 import cv2
@@ -12,7 +11,7 @@ import numpy as np
 import torch
 import torchvision
 
-from todd.colors import BGR, Color
+from todd.colors import RGB, Color
 from todd_tasks import optical_flow_estimation as ofe
 from todd_torch.patches.cv2 import ColorMap, VideoWriter
 from todd_torch.visuals import CV2Visual
@@ -42,7 +41,7 @@ class Visual:
         self._target_points = target_points.denormalize()  # p * t
         self._occluded = occluded  # p * t
 
-    def colorize(self, color_map: int = cv2.COLORMAP_JET) -> list[BGR]:
+    def colorize(self, color_map: int = cv2.COLORMAP_JET) -> list[RGB]:
         tensor = self._target_points.to_tensor()
         tensor = tensor[:, 0]
         tensor = tensor - tensor.median(0).values
@@ -50,7 +49,10 @@ class Visual:
         of = ofe.OpticalFlow(tensor)
         colors = ColorMap(color_map)(of.a)
         colors = einops.rearrange(colors, '1 n c -> n c')
-        return list(starmap(BGR, colors.tolist()))
+        return [
+            RGB.from_tuple(color, normalized=False, order='bgr')
+            for color in colors.tolist()
+        ]
 
     def scatter(self, colors: Iterable[Color], size: int) -> None:
         colors = list(colors)

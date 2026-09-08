@@ -46,14 +46,6 @@ class Color(ABC):
         return self.to(YIQ).quadrature
 
     @classmethod
-    def _normalize(cls, value: float) -> float:
-        return value / 255 if isinstance(value, int) else value
-
-    @classmethod
-    def _denormalize(cls, value: float) -> int:
-        return int(value * 255)
-
-    @classmethod
     @abstractmethod
     def _from(cls, rgba: 'RGBA') -> Self:
         pass
@@ -74,11 +66,5 @@ class Color(ABC):
         return cls._from(self._to())
 
     @abstractmethod
-    def _to_tuple(self) -> tuple[float, ...]:
+    def to_tuple(self) -> tuple[float, ...]:
         pass
-
-    def to_tuple(self, normalized: bool = False) -> tuple[float, ...]:
-        tuple_ = self._to_tuple()
-        if normalized:
-            return tuple_
-        return tuple(map(self._denormalize, tuple_))

@@ -95,9 +95,8 @@ class PPTXVisual(BaseVisual):
         cf: pptx.dml.color.ColorFormat,
         color: Color,
     ) -> None:
-        cf.rgb = pptx.dml.color.RGBColor(
-            *color.to(RGB).to_tuple(),
-        )
+        red, green, blue, *_ = RGB.from_(color).to_tuple(normalized=False)
+        cf.rgb = pptx.dml.color.RGBColor(red, green, blue)
 
     def save(self, path: Any) -> None:
         """Save the PowerPoint.
