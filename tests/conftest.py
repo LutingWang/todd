@@ -1,9 +1,7 @@
 import pathlib
 
 import pytest
-from custom_object import (  # noqa: E402 pylint: disable=wrong-import-position
-    CustomObject,
-)
+from custom_object import CustomObject
 
 
 @pytest.fixture
@@ -13,5 +11,5 @@ def data_dir(request: pytest.FixtureRequest) -> pathlib.Path:
 
 
 @pytest.fixture
-def obj() -> CustomObject:
+def custom_object() -> CustomObject:
     return CustomObject(one=1, obj=CustomObject())
