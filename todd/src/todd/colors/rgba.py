@@ -35,8 +35,7 @@ class RGB(Color):
 
     @classmethod
     def _from(cls, rgba: 'RGBA') -> Self:
-        r, g, b, _ = rgba.to_tuple()
-        return cls(r, g, b)
+        return cls(rgba.red, rgba.green, rgba.blue)
 
     @classmethod
     def from_(cls, color: Color | str) -> Self:
@@ -75,8 +74,12 @@ class RGBA(RGB):
 
     @classmethod
     def _from(cls, rgba: 'RGBA') -> Self:
-        *rgb, a = rgba.to_tuple()
-        return cls(*rgb, alpha=a)
+        return cls(
+            rgba.red,
+            rgba.green,
+            rgba.blue,
+            alpha=rgba.alpha,
+        )
 
     def _to(self) -> 'RGBA':
         return self
