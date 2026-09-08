@@ -8,8 +8,9 @@ from todd_tasks.knowledge_distillation.distillers.adapts.dict_tensor import (
 
 class TestIntersect:
 
+    @classmethod
     @pytest.fixture(scope='class')
-    def intersect(self):
+    def intersect(cls):
         return Intersect()
 
     def test_normal(self, intersect: Intersect):

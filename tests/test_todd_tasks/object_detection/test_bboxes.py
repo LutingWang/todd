@@ -144,22 +144,26 @@ class ConcreteBBoxes1(ConcreteBBoxes):
 
 class TestBBoxes:
 
+    @classmethod
     @pytest.fixture(scope='class')
-    def bboxes1(self) -> BBoxesXYXY:
+    def bboxes1(cls) -> BBoxesXYXY:
         return BBoxesXYXY(torch.tensor([[10., 20., 30., 50.]]))
 
+    @classmethod
     @pytest.fixture(scope='class')
-    def bboxes2(self) -> BBoxesXYXY:
+    def bboxes2(cls) -> BBoxesXYXY:
         return BBoxesXYXY(
             torch.tensor([[10., 20., 30., 50.], [100., 200., 300., 500.]]),
         )
 
+    @classmethod
     @pytest.fixture(scope='class')
-    def bboxes3(self) -> BBoxesXYXY:
+    def bboxes3(cls) -> BBoxesXYXY:
         return BBoxesXYXY(torch.tensor([[10.9, 20.3, 30.1, 50.5]]))
 
+    @classmethod
     @pytest.fixture(scope='class')
-    def bboxes4(self) -> BBoxesXYXY:
+    def bboxes4(cls) -> BBoxesXYXY:
         return BBoxesXYXY(
             torch.tensor([
                 [-30., -50., -10., -20.],
@@ -171,13 +175,15 @@ class TestBBoxes:
             ]),
         )
 
+    @classmethod
     @pytest.fixture(scope='class')
-    def bboxes5(self) -> BBoxesXYXY:
+    def bboxes5(cls) -> BBoxesXYXY:
         tensor = einops.repeat(tensor1, 'd -> n d', n=36)
         return BBoxesXYXY(tensor)
 
+    @classmethod
     @pytest.fixture(scope='class')
-    def bboxes6(self) -> BBoxesXYXY:
+    def bboxes6(cls) -> BBoxesXYXY:
         return BBoxesXYXY(tensor2)
 
     def test_to_object(self) -> None:
@@ -364,8 +370,9 @@ class TestBBoxes:
 
 class TestBBoxesXY__:
 
+    @classmethod
     @pytest.fixture(scope='class')
-    def bboxes1(self) -> BBoxesXYXY:
+    def bboxes1(cls) -> BBoxesXYXY:
         return BBoxesXYXY(torch.tensor([[10., 20., 30., 50.]]))
 
     def test_left(self, bboxes1: BBoxesXYXY) -> None:
@@ -383,8 +390,9 @@ class TestBBoxesXY__:
 
 class TestBBoxesCXCY__:
 
+    @classmethod
     @pytest.fixture(scope='class')
-    def bboxes1(self) -> BBoxesCXCYWH:
+    def bboxes1(cls) -> BBoxesCXCYWH:
         return BBoxesCXCYWH(torch.tensor([[10., 20., 30., 50.]]))
 
     def test_center_x(self, bboxes1: BBoxesCXCYWH) -> None:
@@ -402,8 +410,9 @@ class TestBBoxesCXCY__:
 
 class TestBBoxes__XY:  # noqa: N801
 
+    @classmethod
     @pytest.fixture(scope='class')
-    def bboxes1(self) -> BBoxesXYXY:
+    def bboxes1(cls) -> BBoxesXYXY:
         return BBoxesXYXY(torch.tensor([[10., 20., 30., 50.]]))
 
     def test_right(self, bboxes1: BBoxesXYXY) -> None:
@@ -421,8 +430,9 @@ class TestBBoxes__XY:  # noqa: N801
 
 class TestBBoxes__WH:  # noqa: N801
 
+    @classmethod
     @pytest.fixture(scope='class')
-    def bboxes1(self) -> BBoxesXYWH:
+    def bboxes1(cls) -> BBoxesXYWH:
         return BBoxesXYWH(torch.tensor([[10., 20., 30., 50.]]))
 
     def test_width(self, bboxes1: BBoxesXYWH) -> None:
@@ -440,8 +450,9 @@ class TestBBoxes__WH:  # noqa: N801
 
 class TestBBoxesXYXY:
 
+    @classmethod
     @pytest.fixture(scope='class')
-    def bboxes1(self) -> BBoxesXYXY:
+    def bboxes1(cls) -> BBoxesXYXY:
         return BBoxesXYXY(torch.tensor([[10., 20., 30., 50.]]))
 
     def test_width(self, bboxes1: BBoxesXYXY) -> None:
@@ -465,8 +476,9 @@ class TestBBoxesXYXY:
 
 class TestBBoxesXYWH:
 
+    @classmethod
     @pytest.fixture(scope='class')
-    def bboxes_(self) -> BBoxesXYWH:
+    def bboxes_(cls) -> BBoxesXYWH:
         return BBoxesXYWH(torch.tensor([[10., 20., 20., 30.]]))
 
     def test_right(self, bboxes_: BBoxesXYWH) -> None:
@@ -490,8 +502,9 @@ class TestBBoxesXYWH:
 
 class TestBBBoxesCXCYWH:
 
+    @classmethod
     @pytest.fixture(scope='class')
-    def bboxes_(self) -> BBoxesCXCYWH:
+    def bboxes_(cls) -> BBoxesCXCYWH:
         return BBoxesCXCYWH(torch.tensor([[20., 35., 20., 30.]]))
 
     def test_left(self, bboxes_: BBoxesCXCYWH) -> None:
@@ -515,13 +528,15 @@ class TestBBBoxesCXCYWH:
 
 class TestFlattenMixin:
 
+    @classmethod
     @pytest.fixture(scope='class')
-    def bboxes1(self) -> FlattenBBoxesXYXY:
+    def bboxes1(cls) -> FlattenBBoxesXYXY:
         tensor = einops.rearrange(tensor1, 'd -> 1 d')
         return FlattenBBoxesXYXY(tensor)
 
+    @classmethod
     @pytest.fixture(scope='class')
-    def bboxes2(self) -> FlattenBBoxesXYXY:
+    def bboxes2(cls) -> FlattenBBoxesXYXY:
         return FlattenBBoxesXYXY(tensor2)
 
     def test_intersections(
