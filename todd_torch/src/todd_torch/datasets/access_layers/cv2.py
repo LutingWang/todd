@@ -24,4 +24,5 @@ class CV2AccessLayer(SuffixMixin[VT], FolderAccessLayer[VT]):
         return cast(VT, image)
 
     def __setitem__(self, key: str, value: VT) -> None:
-        cv2.imwrite(str(self._file(key)), value)
+        image = cv2.cvtColor(value, cv2.COLOR_RGB2BGR)
+        cv2.imwrite(str(self._file(key)), image)
