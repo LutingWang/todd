@@ -17,9 +17,10 @@ class YIQ(Color):
         in_phase: float,
         quadrature: float,
     ) -> None:
-        self._luminance = self._normalize(luminance)
-        self._in_phase = self._normalize(in_phase)
-        self._quadrature = self._normalize(quadrature)
+        assert 0. <= luminance <= 1.
+        self._luminance = luminance
+        self._in_phase = in_phase
+        self._quadrature = quadrature
 
     def __repr__(self) -> str:
         return (
@@ -41,8 +42,7 @@ class YIQ(Color):
 
     @classmethod
     def _from(cls, rgba: RGBA) -> Self:
-        r, g, b, *_ = rgba.to_tuple()
-        y, i, q = rgb_to_yiq(r, g, b)
+        y, i, q = rgb_to_yiq(rgba.red, rgba.green, rgba.blue)
         return cls(y, i, q)
 
     def _to(self) -> RGBA:
