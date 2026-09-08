@@ -8,12 +8,12 @@ from todd.colors.rgba import RGB, RGBA
 class TestRGB:
 
     def test_init(self) -> None:
-        rgb = RGB(1., 0., 0.)
+        rgb = RGB(red=1., green=0., blue=0.)
 
         assert rgb.to_tuple() == (1., 0., 0.)
 
         with pytest.raises(AssertionError):
-            RGB(255, 0, 0)
+            RGB(red=255, green=0, blue=0)
 
     def test_from(self) -> None:
         rgb = RGB.from_('#8040FF')
@@ -39,7 +39,7 @@ class TestRGB:
             RGB.from_tuple((1., 0., 0.), order=cast(Any, 'invalid'))
 
     def test_to_tuple(self) -> None:
-        rgb = RGB(.5, .25, 1.)
+        rgb = RGB(red=.5, green=.25, blue=1.)
 
         assert rgb.to_tuple() == (.5, .25, 1.)
         assert rgb.to_tuple(normalized=False) == (127, 63, 255)
@@ -55,7 +55,7 @@ class TestRGB:
 class TestRGBA:
 
     def test_to_tuple(self) -> None:
-        rgba = RGBA(.5, .25, 1., alpha=.5)
+        rgba = RGBA(red=.5, green=.25, blue=1., alpha=.5)
 
         assert rgba.to_tuple() == (.5, .25, 1., .5)
         assert rgba.to_tuple(normalized=False) == (127, 63, 255, 127)

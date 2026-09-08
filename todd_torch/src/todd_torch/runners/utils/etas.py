@@ -27,7 +27,8 @@ class Datum(NamedTuple):
 
 class BaseETA(ABC):
 
-    def __init__(self, start: int, end: int) -> None:
+    def __init__(self, *args, start: int, end: int, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
         self._start = self._datum(start)
         self._end = end
 

@@ -13,10 +13,13 @@ class YIQ(Color):
 
     def __init__(
         self,
+        *args,
         luminance: float,
         in_phase: float,
         quadrature: float,
+        **kwargs,
     ) -> None:
+        super().__init__(*args, **kwargs)
         assert 0. <= luminance <= 1.
         self._luminance = luminance
         self._in_phase = in_phase
@@ -43,11 +46,11 @@ class YIQ(Color):
     @classmethod
     def _from(cls, rgba: RGBA) -> Self:
         y, i, q = rgb_to_yiq(rgba.red, rgba.green, rgba.blue)
-        return cls(y, i, q)
+        return cls(luminance=y, in_phase=i, quadrature=q)
 
     def _to(self) -> RGBA:
         r, g, b = yiq_to_rgb(*self.to_tuple())
-        return RGBA(r, g, b, alpha=1.)
+        return RGBA(red=r, green=g, blue=b, alpha=1.)
 
     def to_tuple(self) -> tuple[float, ...]:
         return self._luminance, self._in_phase, self._quadrature

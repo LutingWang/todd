@@ -23,8 +23,19 @@ class VT(TypedDict):
 @PTAccessLayerRegistry.register_()
 class TAPVidDAVISAccessLayer(BaseAccessLayer[str, VT]):
 
-    def __init__(self, data_root: str, task_name: str = 'davis.pkl') -> None:
-        super().__init__(data_root, task_name)
+    def __init__(
+        self,
+        *args,
+        data_root: str,
+        task_name: str = 'davis.pkl',
+        **kwargs,
+    ) -> None:
+        super().__init__(
+            *args,
+            data_root=data_root,
+            task_name=task_name,
+            **kwargs,
+        )
 
     @property
     def data_file(self) -> pathlib.Path:

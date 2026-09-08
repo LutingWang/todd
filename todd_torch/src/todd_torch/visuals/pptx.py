@@ -37,13 +37,19 @@ class PPTXVisual(BaseVisual):
     .. _python-pptx: https://github.com/scanny/python-pptx
     """
 
-    def __init__(self, width: int, height: int, **kwargs) -> None:
+    def __init__(
+        self,
+        *args,
+        width: int,
+        height: int,
+        **kwargs,
+    ) -> None:
         """Initialize the PowerPoint with a single slide.
 
         To initialize a PowerPoint with width 640pt and height 426pt, use the
         following code:
 
-            >>> visual = PPTXVisual(640, 426)
+            >>> visual = PPTXVisual(width=640, height=426)
 
         Once initialized, the width and height of the slide cannot be altered.
         We can read the width and height of the PowerPoint by:
@@ -57,7 +63,8 @@ class PPTXVisual(BaseVisual):
             width: the width of the PowerPoint in point
             height: the height of the PowerPoint in point
         """
-        self._presentation = pptx.Presentation(**kwargs)
+        super().__init__(*args, width=width, height=height, **kwargs)
+        self._presentation = pptx.Presentation()
 
         self.presentation.slide_width = pptx.util.Pt(width)
         self.presentation.slide_height = pptx.util.Pt(height)
@@ -105,12 +112,12 @@ class PPTXVisual(BaseVisual):
 
             >>> import tempfile
             >>> with tempfile.NamedTemporaryFile() as f:
-            ...     PPTXVisual(640, 426).save(f.name)
+            ...     PPTXVisual(width=640, height=426).save(f.name)
 
         Or it can simply be a file-like object:
 
             >>> with tempfile.TemporaryFile() as f:
-            ...     PPTXVisual(640, 426).save(f)
+            ...     PPTXVisual(width=640, height=426).save(f)
 
         Args:
             path: destination path
@@ -136,7 +143,7 @@ class PPTXVisual(BaseVisual):
         that the image covers the whole background:
 
             >>> h, w, _ = image.shape
-            >>> visual = PPTXVisual(w, h)
+            >>> visual = PPTXVisual(width=w, height=h)
             >>> visual.image(image)
             <pptx.shapes.picture.Picture object at ...>
 
@@ -188,7 +195,7 @@ class PPTXVisual(BaseVisual):
         top: int,
         width: int,
         height: int,
-        color: Color = RGB(0., 0., 0.),  # noqa: B008
+        color: Color = RGB(red=0., green=0., blue=0.),  # noqa: B008
         thickness: int = 1,
         fill: Color | None = None,
     ) -> pptx.shapes.autoshape.Shape:
@@ -218,7 +225,7 @@ class PPTXVisual(BaseVisual):
         text: str,
         x: int,
         y: int,
-        color: Color = RGB(0., 0., 0.),  # noqa: B008
+        color: Color = RGB(red=0., green=0., blue=0.),  # noqa: B008
         font: Config | None = None,
     ) -> pptx.shapes.autoshape.Shape:
         if font is None:
@@ -250,7 +257,7 @@ class PPTXVisual(BaseVisual):
         x: int,
         y: int,
         size: int,
-        color: Color = RGB(0., 0., 0.),  # noqa: B008
+        color: Color = RGB(red=0., green=0., blue=0.),  # noqa: B008
     ) -> Any:
         raise NotImplementedError
 
@@ -259,7 +266,7 @@ class PPTXVisual(BaseVisual):
         x: int,
         y: int,
         size: int,
-        color: Color = RGB(0., 0., 0.),  # noqa: B008
+        color: Color = RGB(red=0., green=0., blue=0.),  # noqa: B008
     ) -> Any:
         raise NotImplementedError
 
@@ -269,7 +276,7 @@ class PPTXVisual(BaseVisual):
         y1: int,
         x2: int,
         y2: int,
-        color: Color = RGB(0., 0., 0.),  # noqa: B008
+        color: Color = RGB(red=0., green=0., blue=0.),  # noqa: B008
         thickness: int = 1,
     ) -> Any:
         raise NotImplementedError

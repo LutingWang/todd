@@ -19,7 +19,7 @@ def annotation(
     width: int,
     height: int,
     text: str | None = None,
-    color: Color = RGB(0., 0., 0.),  # noqa: B008
+    color: Color = RGB(red=0., green=0., blue=0.),  # noqa: B008
     thickness: int = 1,
     font: Config | None = None,
 ) -> tuple[Any, Any]:
@@ -33,7 +33,7 @@ def annotation(
     labels, for example:
 
         >>> from todd_torch.visuals import PPTXVisual
-        >>> visual = PPTXVisual(640, 426)
+        >>> visual = PPTXVisual(width=640, height=426)
         >>> annotations = [
         ...     dict(bbox=[236.98, 142.51, 24.7, 69.5], category_id=64),
         ...     dict(bbox=[7.03, 167.76, 149.32, 94.87], category_id=72),

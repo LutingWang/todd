@@ -30,7 +30,7 @@ class ConcatAccessLayer(BuildPreHookMixin, BaseAccessLayer[str, VT], ABC):
         data_root = self.DATA_ROOT_SEPARATOR.join(
             al._data_root for al in access_layers.values()
         )
-        super().__init__(data_root, *args, **kwargs)
+        super().__init__(*args, data_root=data_root, **kwargs)
 
         self._access_layers = dict(access_layers)
 

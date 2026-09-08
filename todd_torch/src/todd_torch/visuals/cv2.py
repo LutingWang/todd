@@ -16,6 +16,7 @@ from .anchors import XAnchor, YAnchor
 from .base import BaseVisual
 
 Image = npt.NDArray[np.uint8]
+Canvas = npt.NDArray[np.float64]
 
 
 @VisualRegistry.register_()
@@ -31,12 +32,14 @@ class CV2Visual(BaseVisual):
 
     def __init__(
         self,
+        *args,
         width: int,
         height: int,
         channels: int = 3,
         **kwargs,
     ) -> None:
-        self._image = np.zeros((height, width, channels), **kwargs)
+        super().__init__(*args, width=width, height=height, **kwargs)
+        self._image: Canvas = np.zeros((height, width, channels))
 
     @property
     def width(self) -> int:
@@ -74,7 +77,7 @@ class CV2Visual(BaseVisual):
         width: int | None = None,
         height: int | None = None,
         opacity: float = 1.0,
-    ) -> Image:
+    ) -> Canvas:
         assert 0.0 <= opacity <= 1.0
         image_ = image.astype(np.float32)
 
@@ -94,10 +97,10 @@ class CV2Visual(BaseVisual):
         top: int,
         width: int,
         height: int,
-        color: Color = RGB(0., 0., 0.),  # noqa: B008
+        color: Color = RGB(red=0., green=0., blue=0.),  # noqa: B008
         thickness: int = 1,
         fill: Color | None = None,
-    ) -> Image:
+    ) -> Canvas:
         args = (
             self._image,
             (left, top),
@@ -139,12 +142,12 @@ class CV2Visual(BaseVisual):
         text: str,
         x: int,
         y: int,
-        color: Color = RGB(0., 0., 0.),  # noqa: B008
+        color: Color = RGB(red=0., green=0., blue=0.),  # noqa: B008
         font: Config | None = None,
         x_anchor: XAnchor = XAnchor.LEFT,
         y_anchor: YAnchor = YAnchor.TOP,
         thickness: int = 1,
-    ) -> Image:
+    ) -> Canvas:
         if font is None:
             font = Config()
 
@@ -176,8 +179,8 @@ class CV2Visual(BaseVisual):
         x: int,
         y: int,
         size: int,
-        color: Color = RGB(0., 0., 0.),  # noqa: B008
-    ) -> Image:
+        color: Color = RGB(red=0., green=0., blue=0.),  # noqa: B008
+    ) -> Canvas:
         cv2.circle(
             self._image,
             (x, y),
@@ -193,8 +196,8 @@ class CV2Visual(BaseVisual):
         x: int,
         y: int,
         size: int,
-        color: Color = RGB(0., 0., 0.),  # noqa: B008
-    ) -> Image:
+        color: Color = RGB(red=0., green=0., blue=0.),  # noqa: B008
+    ) -> Canvas:
         cv2.drawMarker(
             self._image,
             (x, y),
@@ -212,9 +215,9 @@ class CV2Visual(BaseVisual):
         y1: int,
         x2: int,
         y2: int,
-        color: Color = RGB(0., 0., 0.),  # noqa: B008
+        color: Color = RGB(red=0., green=0., blue=0.),  # noqa: B008
         thickness: int = 1,
-    ) -> Image:
+    ) -> Canvas:
         cv2.line(
             self._image,
             (x1, y1),

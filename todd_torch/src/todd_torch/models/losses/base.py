@@ -26,12 +26,13 @@ class BaseLoss(BuildPreHookMixin, nn.Module, ABC):
 
     def __init__(
         self,
+        *args,
         reduction: str | Reduction = Reduction.MEAN,
         weight: float | BaseScheduler = 1.0,
         bound: float | None = None,
         **kwargs,
     ) -> None:
-        super().__init__(**kwargs)
+        super().__init__(*args, **kwargs)
         self._reduction = (
             reduction if isinstance(reduction, Reduction) else
             Reduction(reduction.lower())

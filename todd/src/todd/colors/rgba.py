@@ -11,7 +11,15 @@ from .color import Color
 
 class RGB(Color):
 
-    def __init__(self, red: float, green: float, blue: float) -> None:
+    def __init__(
+        self,
+        *args,
+        red: float,
+        green: float,
+        blue: float,
+        **kwargs,
+    ) -> None:
+        super().__init__(*args, **kwargs)
         assert all(0. <= channel <= 1. for channel in (red, green, blue))
         self._red = red
         self._green = green
@@ -36,7 +44,7 @@ class RGB(Color):
 
     @classmethod
     def _from(cls, rgba: 'RGBA') -> Self:
-        return cls(rgba.red, rgba.green, rgba.blue)
+        return cls(red=rgba.red, green=rgba.green, blue=rgba.blue)
 
     @classmethod
     def from_tuple(
@@ -55,21 +63,26 @@ class RGB(Color):
             red /= 255
             green /= 255
             blue /= 255
-        return cls(red, green, blue)
+        return cls(red=red, green=green, blue=blue)
 
     @classmethod
     def from_(cls, color: Color | str) -> Self:
         if isinstance(color, str):
             assert len(color) == 7 and color[0] == '#'
             return cls(
-                int(color[1:3], 16) / 255,
-                int(color[3:5], 16) / 255,
-                int(color[5:], 16) / 255,
+                red=int(color[1:3], 16) / 255,
+                green=int(color[3:5], 16) / 255,
+                blue=int(color[5:], 16) / 255,
             )
         return super().from_(color)
 
     def _to(self) -> 'RGBA':
-        return RGBA(self._red, self._green, self._blue, alpha=1.)
+        return RGBA(
+            red=self._red,
+            green=self._green,
+            blue=self._blue,
+            alpha=1.,
+        )
 
     def _to_tuple(
         self,
@@ -112,9 +125,9 @@ class RGBA(RGB):
     @classmethod
     def _from(cls, rgba: 'RGBA') -> Self:
         return cls(
-            rgba.red,
-            rgba.green,
-            rgba.blue,
+            red=rgba.red,
+            green=rgba.green,
+            blue=rgba.blue,
             alpha=rgba.alpha,
         )
 

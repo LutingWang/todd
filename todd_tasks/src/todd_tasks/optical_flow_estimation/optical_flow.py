@@ -26,7 +26,13 @@ from .registries import OFEOpticalFlowRegistry
 
 class OpticalFlow:
 
-    def __init__(self, optical_flow: torch.Tensor) -> None:
+    def __init__(
+        self,
+        *args,
+        optical_flow: torch.Tensor,
+        **kwargs,
+    ) -> None:
+        super().__init__(*args, **kwargs)
         _, _, c = optical_flow.shape
         assert c == 2
         self._optical_flow = optical_flow
@@ -75,11 +81,13 @@ class SparseMixin(OpticalFlow):
 
     def __init__(
         self,
+        *args,
         optical_flow: torch.Tensor,
         validity: torch.Tensor,
+        **kwargs,
     ) -> None:
         optical_flow[~validity] = 0
-        super().__init__(optical_flow)
+        super().__init__(*args, optical_flow=optical_flow, **kwargs)
         self._validity = validity
 
     @property
@@ -123,7 +131,7 @@ class FloOpticalFlow(SerializeMixin, OpticalFlow):
             h = np.fromfile(f, '<i', 1).item()
             shape = (h, w, 2)
             data = np.fromfile(f, '<f', math.prod(shape)).reshape(shape)
-        return cls(torch.tensor(data))
+        return cls(optical_flow=torch.tensor(data))
 
     def _dump(self, path: pathlib.Path) -> None:
         with path.open('wb') as f:
@@ -145,7 +153,10 @@ class Flo5OpticalFlow(SparseMixin, SerializeMixin, OpticalFlow):
         validity: npt.NDArray[np.bool_] = ~np.isnan(data)
         validity = validity.all(axis=-1)
         data[~validity] = 0
-        return cls(torch.tensor(data).float(), torch.tensor(validity))
+        return cls(
+            optical_flow=torch.tensor(data).float(),
+            validity=torch.tensor(validity),
+        )
 
     def _dump(self, path: pathlib.Path) -> None:
         optical_flow = self._optical_flow.half().numpy()
@@ -179,7 +190,7 @@ class PfmOpticalFlow(SerializeMixin, OpticalFlow):
                 math.prod(shape),
             ).reshape(shape)
         data = data[:, :, :2]
-        return cls(torch.tensor(data).flipud())
+        return cls(optical_flow=torch.tensor(data).flipud())
 
     def _dump(self, path: pathlib.Path) -> None:
         with path.open('wb') as f:
@@ -204,7 +215,7 @@ class PngOpticalFlow(SerializeMixin, SparseMixin, OpticalFlow):
         validity = einops.rearrange(validity.bool(), 'h w 1 -> h w')
         tensor = tensor.float().flip(-1)
         tensor = (tensor - 2**15) / 64.
-        return cls(tensor, validity)
+        return cls(optical_flow=tensor, validity=validity)
 
     def _dump(self, path: pathlib.Path) -> None:
         tensor = self._optical_flow * 64 + 2**15

@@ -15,13 +15,14 @@ class Decouple(BaseAdapt):
 
     def __init__(
         self,
+        *args,
         num: int,
         in_features: int,
         out_features: int,
         bias: bool = True,
         **kwargs,
     ) -> None:
-        super().__init__(**kwargs)
+        super().__init__(*args, **kwargs)
         self._num = num
         self._layer = nn.Linear(in_features, out_features * num, bias)
 

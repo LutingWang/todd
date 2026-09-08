@@ -22,7 +22,7 @@ def visualize(dataset: Iterable[T]) -> None:
         defaultdict(lambda: VideoWriter(12.))
     for data in tqdm.tqdm(dataset):
         id_: str = data['id_']
-        of = ofe.OpticalFlow(data['of'])
+        of = ofe.OpticalFlow(optical_flow=data['of'])
         frame = np.concatenate([
             data['frame1'],
             of.to_color().numpy(),

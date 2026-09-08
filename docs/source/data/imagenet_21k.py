@@ -33,7 +33,11 @@ Batch = tuple[list[str], torch.Tensor]
 class Dataset(PILDataset[T]):
 
     def __init__(self, *args, category: str, **kwargs) -> None:
-        access_layer = PILAccessLayer(str(DATA_ROOT), category, suffix='JPEG')
+        access_layer = PILAccessLayer(
+            data_root=str(DATA_ROOT),
+            task_name=category,
+            suffix='JPEG',
+        )
         super().__init__(*args, access_layer=access_layer, **kwargs)
 
     def __getitem__(self, index: int) -> T:

@@ -7,20 +7,24 @@ from todd.colors.yiq import YIQ
 class TestYIQ:
 
     def test_init(self) -> None:
-        yiq = YIQ(1, 0, 0)
+        yiq = YIQ(luminance=1, in_phase=0, quadrature=0)
 
         assert yiq.luminance == 1
 
         with pytest.raises(AssertionError):
-            YIQ(255, 0, 0)
+            YIQ(luminance=255, in_phase=0, quadrature=0)
 
     def test_to_tuple(self) -> None:
-        yiq = YIQ(.5, -.25, .125)
+        yiq = YIQ(luminance=.5, in_phase=-.25, quadrature=.125)
 
         assert yiq.to_tuple() == (.5, -.25, .125)
 
     def test_from(self) -> None:
-        gray = RGB(128 / 255, 128 / 255, 128 / 255)
+        gray = RGB(
+            red=128 / 255,
+            green=128 / 255,
+            blue=128 / 255,
+        )
 
         yiq = gray.to(YIQ)
 

@@ -33,7 +33,7 @@ class Visual:
         super().__init__(*args, **kwargs)
 
         t_, h, w, c = video.shape
-        visuals = [CV2Visual(w, h, c) for _ in range(t_)]
+        visuals = [CV2Visual(width=w, height=h, channels=c) for _ in range(t_)]
         for frame, visual in zip(video, visuals):
             visual.image(frame.numpy())
         self._visuals = visuals
@@ -46,7 +46,7 @@ class Visual:
         tensor = tensor[:, 0]
         tensor = tensor - tensor.median(0).values
         tensor = einops.rearrange(tensor, 'n c -> 1 n c')
-        of = ofe.OpticalFlow(tensor)
+        of = ofe.OpticalFlow(optical_flow=tensor)
         colors = ColorMap(color_map)(of.a)
         colors = einops.rearrange(colors, '1 n c -> n c')
         return [
@@ -112,7 +112,12 @@ class Visual:
 
 class TAPVidDAVISVisual(Visual):
 
-    def __init__(self, t: TAPVidDAVISDataType) -> None:
+    def __init__(
+        self,
+        *args,
+        t: TAPVidDAVISDataType,
+        **kwargs,
+    ) -> None:
         video = t['video']
         _, h, w, _ = video.shape
 
@@ -125,7 +130,9 @@ class TAPVidDAVISVisual(Visual):
         occluded = t['occluded']
 
         super().__init__(
+            *args,
             video=video,
             target_points=target_points,
             occluded=occluded,
+            **kwargs,
         )

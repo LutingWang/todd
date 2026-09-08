@@ -19,8 +19,8 @@ from ..patches.cv2 import ColorMap
 class BaseVisual(ABC):
 
     @abstractmethod
-    def __init__(self, width: int, height: int) -> None:
-        pass
+    def __init__(self, *args, width: int, height: int, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
 
     @property
     @abstractmethod
@@ -80,7 +80,7 @@ class BaseVisual(ABC):
         Then we draw the activation map:
 
             >>> from .pptx import PPTXVisual
-            >>> visual = PPTXVisual(640, 426)
+            >>> visual = PPTXVisual(width=640, height=426)
             >>> visual.activation(
             ...     activation,
             ...     width=visual.width,
@@ -107,7 +107,7 @@ class BaseVisual(ABC):
         top: int,
         width: int,
         height: int,
-        color: Color = RGB(0., 0., 0.),  # noqa: B008
+        color: Color = RGB(red=0., green=0., blue=0.),  # noqa: B008
         thickness: int = 1,
         fill: Color | None = None,
     ) -> Any:
@@ -119,7 +119,7 @@ class BaseVisual(ABC):
         text: str,
         x: int,
         y: int,
-        color: Color = RGB(0., 0., 0.),  # noqa: B008
+        color: Color = RGB(red=0., green=0., blue=0.),  # noqa: B008
         font: Config | None = None,
     ) -> Any:
         pass
@@ -130,7 +130,7 @@ class BaseVisual(ABC):
         x: int,
         y: int,
         size: int,
-        color: Color = RGB(0., 0., 0.),  # noqa: B008
+        color: Color = RGB(red=0., green=0., blue=0.),  # noqa: B008
     ) -> Any:
         pass
 
@@ -140,7 +140,7 @@ class BaseVisual(ABC):
         x: int,
         y: int,
         size: int,
-        color: Color = RGB(0., 0., 0.),  # noqa: B008
+        color: Color = RGB(red=0., green=0., blue=0.),  # noqa: B008
     ) -> Any:
         pass
 
@@ -167,7 +167,7 @@ class BaseVisual(ABC):
         y1: int,
         x2: int,
         y2: int,
-        color: Color = RGB(0., 0., 0.),  # noqa: B008
+        color: Color = RGB(red=0., green=0., blue=0.),  # noqa: B008
         thickness: int = 1,
     ) -> Any:
         pass
@@ -175,7 +175,7 @@ class BaseVisual(ABC):
     def trajectory(
         self,
         trajectory: Iterable[tuple[int, int]],
-        color: Color = RGB(0., 0., 0.),  # noqa: B008
+        color: Color = RGB(red=0., green=0., blue=0.),  # noqa: B008
         thickness: int = 1,
     ) -> Self:
         """Draw the trajectory.
