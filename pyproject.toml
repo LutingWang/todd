@@ -1,3 +1,38 @@
+[project]
+name = 'todd-workspace'
+version = '0.0.0'
+requires-python = '==3.11.*'
+dependencies = [
+    'todd_ai[dev,doc,lint,test]',
+    'todd-tasks[optional]',
+    'todd-torch',
+]
+
+[tool.uv]
+package = false
+
+[[tool.uv.index]]
+name = 'tuna'
+url = 'https://pypi.tuna.tsinghua.edu.cn/simple'
+default = true
+
+[tool.uv.workspace]
+members = [
+    'todd',
+    'todd_tasks',
+    'todd_torch',
+]
+
+[tool.uv.sources]
+lvis = { git = 'https://github.com/lvis-dataset/lvis-api.git', branch = 'lvis_challenge_2021' }
+todd_ai = { workspace = true }
+todd-tasks = { workspace = true }
+todd-torch = { workspace = true }
+
+[tool.uv.extra-build-dependencies]
+# NOTE: LVIS imports pip from setup.py while determining build requirements.
+lvis = ['pip']
+
 [tool.autoflake]
 in-place = true
 

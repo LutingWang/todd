@@ -18,6 +18,7 @@ repos:
     rev: v5.0.0
     hooks:
       - id: check-added-large-files
+        exclude: ^uv\.lock$
       - id: check-ast
       - id: check-case-conflict
       - id: check-docstring-first
@@ -81,7 +82,8 @@ repos:
           (?x)^(
             .github/CODE_OF_CONDUCT.md|
             todd_tasks/src/todd_tasks/image_classification/models/ram.csv|
-            CHANGELOG.md
+            CHANGELOG.md|
+            uv\.lock
           )$
   - repo: https://github.com/commitizen-tools/commitizen
     rev: v3.29.1

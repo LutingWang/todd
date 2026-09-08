@@ -42,7 +42,7 @@ pip install todd-torch todd-tasks
 ## Developer Guides
 
 ```bash
-pip install -e 'todd[dev,lint,doc,test]' -e todd_torch -e 'todd_tasks[optional]'
+uv sync
 ```
 
 TODO

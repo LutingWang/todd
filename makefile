@@ -3,18 +3,18 @@ SHELL := zsh
 .PHONY: lint test coverage commit docs
 
 lint:
-	pipenv run pre-commit run -a
+	uv run pre-commit run -a
 
 test:
-	pipenv run pytest
+	uv run pytest
 
 coverage:
-	pipenv run coverage run
-	pipenv run coverage report
-	pipenv run coverage html
+	uv run coverage run
+	uv run coverage report
+	uv run coverage html
 
 commit: test
-	pipenv run cz c
+	uv run cz c
 
 docs:
-	pipenv run make -C docs html
+	uv run make -C docs html
