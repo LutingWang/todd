@@ -165,21 +165,22 @@ class OptimizeCallback(BuildPreHookMixin, BaseCallback[T]):
                         name,
                     )
 
+        if self._should_accumulate():
+            return
+
         if self.with_grad_clipper:
             grad = self._clip_grad(optimizer)
             if log is not None:
                 log['grad'] = f'{grad:.3f}'
-
-        if not self._should_accumulate():
-            self._step(optimizer)
-            optimizer.zero_grad()
-            if trainer.iter_ == self._accumulate and self._check:
-                for name, parameter in named_trainable_parameters(module):
-                    if parameter.grad is not None:
-                        trainer.logger.warning(
-                            "Parameter %s gradient not cleared",
-                            name,
-                        )
+        self._step(optimizer)
+        optimizer.zero_grad()
+        if trainer.iter_ == self._accumulate and self._check:
+            for name, parameter in named_trainable_parameters(module):
+                if parameter.grad is not None:
+                    trainer.logger.warning(
+                        "Parameter %s gradient not cleared",
+                        name,
+                    )
 
     def load_state_dict(
         self,
