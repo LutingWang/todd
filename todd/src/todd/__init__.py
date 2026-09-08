@@ -6,5 +6,5 @@ from . import colors, configs, loggers, patches, registries, utils
 from .configs import Config
 from .loggers import logger
 from .patches import *
-from .registries import Registry, RegistryMeta
+from .registries import Registry
 from .utils import Store

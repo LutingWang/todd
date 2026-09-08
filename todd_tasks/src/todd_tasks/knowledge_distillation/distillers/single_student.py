@@ -13,8 +13,8 @@ from typing import Generic, Iterable, Mapping, TypeVar
 
 from torch import nn
 
-from todd import Config, RegistryMeta
-from todd.registries import Item
+from todd import Config
+from todd.registries import Item, RegistryMeta
 
 from ..registries import KDDistillerRegistry
 from ..utils import Pipeline

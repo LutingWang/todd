@@ -6,8 +6,8 @@ from typing import TypedDict
 
 import torch
 
-from todd import Config, RegistryMeta
-from todd.registries import Item
+from todd import Config
+from todd.registries import Item, RegistryMeta
 from todd_torch.datasets import BaseDataset
 
 from .access_layers import TAPVidDAVISAccessLayer
