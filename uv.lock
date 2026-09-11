@@ -4415,7 +4415,7 @@ wheels = [
 
 [[package]]
 name = "todd-ai"
-version = "0.9.0"
+version = "0.9.1"
 source = { editable = "todd" }
 dependencies = [
     { name = "requests" },
@@ -4509,7 +4509,7 @@ provides-extras = ["dev", "lint", "doc", "test"]
 
 [[package]]
 name = "todd-tasks"
-version = "0.9.0"
+version = "0.9.1"
 source = { editable = "todd_tasks" }
 dependencies = [
     { name = "beautifulsoup4" },
@@ -4563,7 +4563,7 @@ provides-extras = ["optional"]
 
 [[package]]
 name = "todd-torch"
-version = "0.9.0"
+version = "0.9.1"
 source = { editable = "todd_torch" }
 dependencies = [
     { name = "datasets" },
