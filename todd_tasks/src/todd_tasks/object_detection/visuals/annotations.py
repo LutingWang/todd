@@ -5,9 +5,8 @@ __all__ = [
 
 from typing import Any, Iterable
 
-from todd import Config
 from todd.colors import RGB, Color
-from todd_torch.visuals import BaseVisual
+from todd_torch.visuals import BaseVisual, Pen, Point, TextStyle
 
 from ..bboxes import FlattenBBoxesMixin, FlattenBBoxesXYWH
 
@@ -21,7 +20,7 @@ def annotation(
     text: str | None = None,
     color: Color = RGB(red=0., green=0., blue=0.),  # noqa: B008
     thickness: int = 1,
-    font: Config | None = None,
+    font_size: float = 12,
 ) -> tuple[Any, Any]:
     """Draw an annotation bbox.
 
@@ -46,7 +45,7 @@ def annotation(
         ...         visual,
         ...         *map(int, a['bbox']),
         ...         category_name,
-        ...         visual.color(category_id),
+        ...         RGB.from_hex('#dc2626'),
         ...     )
         >>> rectangle
         <pptx.shapes.autoshape.Shape object at ...>
@@ -66,19 +65,17 @@ def annotation(
         tuple of the bbox and the text object
     """
     rectangle = visual.rectangle(
-        left,
-        top,
-        width,
-        height,
-        color,
-        thickness,
+        Point(left, top),
+        Point(left + width, top + height),
+        pen=Pen(color=color, width=thickness),
     )
     text_ = None if text is None else visual.text(
         text,
-        left,
-        top + height,
-        color=color,
-        font=font,
+        Point(left, top + height),
+        TextStyle(
+            color=color,
+            font_size=font_size,
+        ),
     )
     return rectangle, text_
 
@@ -97,6 +94,11 @@ def annotations(
         assert len(texts) == len(bboxes)
 
     return [
-        annotation(visual, *map(int, bbox), text, **kwargs)  # type: ignore
+        annotation(  # type: ignore[call-arg]
+            visual,
+            *map(int, bbox),  # type: ignore[arg-type]
+            text,
+            **kwargs,
+        )
         for text, bbox in zip(texts, bboxes)
     ]

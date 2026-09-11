@@ -7,12 +7,11 @@ import numpy as np
 import numpy.typing as npt
 import torch
 
-# https://github.com/opencv/opencv/blob/4.x/modules/imgproc/include/opencv2/imgproc.hpp
-
 
 class ColorMap:
 
-    def __init__(self, color_map: int) -> None:
+    def __init__(self, *args, color_map: int, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
         self._color_map = color_map
 
     def __call__(self, tensor: torch.Tensor) -> npt.NDArray[np.uint8]:
@@ -21,4 +20,7 @@ class ColorMap:
         tensor = tensor / tensor.max()
         tensor = tensor * 255
         tensor = tensor.type(torch.uint8)
-        return cv2.applyColorMap(tensor.numpy(), self._color_map)
+        return cv2.applyColorMap(  # type: ignore[return-value]
+            tensor.numpy(),
+            self._color_map,
+        )

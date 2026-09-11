@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <style>
+      html, body {
+        margin: 0;
+      }
+
+      .todd-canvas {
+        position: relative;
+        width: {{ width }}px;
+        height: {{ height }}px;
+        overflow: hidden;
+      }
+
+      .todd-element {
+        position: absolute;
+        box-sizing: border-box;
+      }
+
+      .todd-point {
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+      }
+
+      .todd-line {
+        transform-origin: 0 50%;
+      }
+
+      .todd-fill {
+        inset: 0;
+      }
+
+      .todd-text {
+        overflow: hidden;
+        overflow-wrap: anywhere;
+        white-space: pre-wrap;
+        font-family: sans-serif;
+        line-height: 1.2;
+      }
+
+      .todd-image {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="todd-canvas">
+      {{ elements }}
+    </div>
+    <script>
+      {{ script }}
+    </script>
+  </body>
+</html>

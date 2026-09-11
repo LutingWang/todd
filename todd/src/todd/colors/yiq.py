@@ -27,7 +27,7 @@ class YIQ(Color):
 
     def __repr__(self) -> str:
         return (
-            f"{type(self).__name__}({self._luminance}, {self._in_phase}, "
+            f"{self.__class__.__name__}({self._luminance}, {self._in_phase}, "
             f"{self._quadrature})"
         )
 
@@ -44,13 +44,13 @@ class YIQ(Color):
         return self._quadrature
 
     @classmethod
-    def _from(cls, rgba: RGBA) -> Self:
+    def _from_rgba(cls, rgba: RGBA) -> Self:
         y, i, q = rgb_to_yiq(rgba.red, rgba.green, rgba.blue)
         return cls(luminance=y, in_phase=i, quadrature=q)
 
-    def _to(self) -> RGBA:
+    def _to_rgba(self) -> RGBA:
         r, g, b = yiq_to_rgb(*self.to_tuple())
-        return RGBA(red=r, green=g, blue=b, alpha=1.)
+        return RGBA(red=r, green=g, blue=b, alpha=1)
 
     def to_tuple(self) -> tuple[float, ...]:
         return self._luminance, self._in_phase, self._quadrature

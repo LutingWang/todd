@@ -9,6 +9,14 @@ from typing_extensions import Self
 from .color import Color
 
 
+def normalize(value: float) -> float:
+    return value / 255
+
+
+def denormalize(value: float) -> int:
+    return int(value * 255)
+
+
 class RGB(Color):
 
     def __init__(
@@ -27,7 +35,8 @@ class RGB(Color):
 
     def __repr__(self) -> str:
         return (
-            f"{type(self).__name__}({self._red}, {self._green}, {self._blue})"
+            f"{self.__class__.__name__}({self._red}, {self._green}, "
+            f"{self._blue})"
         )
 
     @property
@@ -43,8 +52,13 @@ class RGB(Color):
         return self._blue
 
     @classmethod
-    def _from(cls, rgba: 'RGBA') -> Self:
-        return cls(red=rgba.red, green=rgba.green, blue=rgba.blue)
+    def from_hex(cls, color: str) -> Self:
+        assert len(color) == 7 and color[0] == '#'
+        return cls(
+            red=normalize(int(color[1:3], 16)),
+            green=normalize(int(color[3:5], 16)),
+            blue=normalize(int(color[5:], 16)),
+        )
 
     @classmethod
     def from_tuple(
@@ -53,35 +67,26 @@ class RGB(Color):
         normalized: bool = True,
         order: Literal['rgb', 'bgr'] = 'rgb',
     ) -> Self:
+        if not normalized:
+            tuple_ = tuple(map(normalize, tuple_))
         if order == 'rgb':
             red, green, blue = tuple_
         elif order == 'bgr':
             blue, green, red = tuple_
         else:
             raise ValueError(f'Invalid order: {order}')
-        if not normalized:
-            red /= 255
-            green /= 255
-            blue /= 255
         return cls(red=red, green=green, blue=blue)
 
     @classmethod
-    def from_(cls, color: Color | str) -> Self:
-        if isinstance(color, str):
-            assert len(color) == 7 and color[0] == '#'
-            return cls(
-                red=int(color[1:3], 16) / 255,
-                green=int(color[3:5], 16) / 255,
-                blue=int(color[5:], 16) / 255,
-            )
-        return super().from_(color)
+    def _from_rgba(cls, rgba: 'RGBA') -> Self:
+        return cls(red=rgba.red, green=rgba.green, blue=rgba.blue)
 
-    def _to(self) -> 'RGBA':
+    def _to_rgba(self) -> 'RGBA':
         return RGBA(
-            red=self._red,
-            green=self._green,
-            blue=self._blue,
-            alpha=1.,
+            red=self.red,
+            green=self.green,
+            blue=self.blue,
+            alpha=1,
         )
 
     def _to_tuple(
@@ -102,7 +107,11 @@ class RGB(Color):
         tuple_ = self._to_tuple(order)
         if normalized:
             return tuple_
-        return tuple(int(channel * 255) for channel in tuple_)
+        return tuple(map(denormalize, tuple_))
+
+    def to_css(self) -> str:
+        red, green, blue = self.to_tuple(normalized=False)
+        return f'rgb({red},{green},{blue})'
 
 
 class RGBA(RGB):
@@ -114,8 +123,8 @@ class RGBA(RGB):
 
     def __repr__(self) -> str:
         return (
-            f"{type(self).__name__}({self._red}, {self._green}, {self._blue}, "
-            f"alpha={self._alpha})"
+            f"{self.__class__.__name__}({self._red}, {self._green}, "
+            f"{self._blue}, alpha={self._alpha})"
         )
 
     @property
@@ -123,7 +132,7 @@ class RGBA(RGB):
         return self._alpha
 
     @classmethod
-    def _from(cls, rgba: 'RGBA') -> Self:
+    def _from_rgba(cls, rgba: 'RGBA') -> Self:
         return cls(
             red=rgba.red,
             green=rgba.green,
@@ -131,8 +140,12 @@ class RGBA(RGB):
             alpha=rgba.alpha,
         )
 
-    def _to(self) -> 'RGBA':
+    def _to_rgba(self) -> 'RGBA':
         return self
 
     def _to_tuple(self, *args, **kwargs) -> tuple[float, ...]:
         return super()._to_tuple(*args, **kwargs) + (self._alpha, )
+
+    def to_css(self) -> str:
+        red, green, blue, *_ = self.to_tuple(normalized=False)
+        return f'rgba({red},{green},{blue},{self.alpha:g})'

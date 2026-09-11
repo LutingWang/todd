@@ -1,25 +1,54 @@
 __all__ = [
+    'PALETTE',
+    'Point',
+    'Pen',
+    'TextStyle',
     'BaseVisual',
 ]
 
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, Self
+from collections.abc import Sequence
+from dataclasses import dataclass
+from typing import Any, NamedTuple
 
-import cv2
 import numpy as np
 import numpy.typing as npt
-import torch
 
-from todd import Config
-from todd.colors import PALETTE, RGB, Color
+from todd.colors import HTML4, RGB, Color
 
-from ..patches.cv2 import ColorMap
+PALETTE = tuple(RGB.from_hex(color.value) for color in HTML4)
+
+
+class Point(NamedTuple):
+    x: float
+    y: float
+
+    def round_(self) -> tuple[int, int]:
+        return round(self.x), round(self.y)
+
+
+@dataclass(frozen=True)
+class Pen:
+    color: Color
+    width: float
+
+
+@dataclass(frozen=True)
+class TextStyle:
+    color: Color
+    font_size: float
 
 
 class BaseVisual(ABC):
 
     @abstractmethod
-    def __init__(self, *args, width: int, height: int, **kwargs) -> None:
+    def __init__(
+        self,
+        *args,
+        width: int,
+        height: int,
+        **kwargs,
+    ) -> None:
         super().__init__(*args, **kwargs)
 
     @property
@@ -32,160 +61,115 @@ class BaseVisual(ABC):
     def height(self) -> int:
         pass
 
-    def color(self, index: int) -> Color:
-        index %= len(PALETTE)
-        return PALETTE[index]
-
     @abstractmethod
     def save(self, path: Any) -> None:
         pass
 
     @abstractmethod
-    def image(
+    def point(
         self,
-        image: npt.NDArray[np.uint8],
-        left: int = 0,
-        top: int = 0,
-        width: int | None = None,
-        height: int | None = None,
-        opacity: float = 1.0,
+        point: Point,
+        pen: Pen,
     ) -> Any:
         pass
-
-    def activation(
-        self,
-        activation: torch.Tensor,
-        left: int = 0,
-        top: int = 0,
-        width: int | None = None,
-        height: int | None = None,
-        opacity: float = 0.5,
-    ) -> Any:
-        """Draw the activation map.
-
-        Suppose our activation map is :math:`(256, 13, 20)`, where 256 is the
-        number of channels, 13 is the height, and 20 is the width:
-
-            >>> activation = torch.rand(256, 13, 20)
-
-        We first reduce the channel dimension, using whatever reduction:
-
-            >>> import einops
-            >>> activation = einops.reduce(
-            ...     activation,
-            ...     'c h w -> h w',
-            ...     reduction='mean',
-            ... )
-
-        Then we draw the activation map:
-
-            >>> from .pptx import PPTXVisual
-            >>> visual = PPTXVisual(width=640, height=426)
-            >>> visual.activation(
-            ...     activation,
-            ...     width=visual.width,
-            ...     height=visual.height,
-            ... )
-            <pptx.shapes.picture.Picture object at ...>
-
-        Args:
-            activation: :math:`(H, W)`
-            left: x coordinate of the left side of the activation map
-            top: y coordinate of the top size of the activation map
-            width: width of the activation map
-            height: height of the activation map
-            opacity: opacity of the activation map
-        """
-        color_map = ColorMap(cv2.COLORMAP_JET)
-        image = color_map(activation.detach())
-        return self.image(image, left, top, width, height, opacity)
 
     @abstractmethod
-    def rectangle(
+    def line(
         self,
-        left: int,
-        top: int,
-        width: int,
-        height: int,
-        color: Color = RGB(red=0., green=0., blue=0.),  # noqa: B008
-        thickness: int = 1,
-        fill: Color | None = None,
+        start: Point,
+        end: Point,
+        pen: Pen,
     ) -> Any:
         pass
+
+    def fill(
+        self,
+        points: Sequence[Point],
+        color: Color,
+    ) -> Any:
+        raise NotImplementedError
 
     @abstractmethod
     def text(
         self,
         text: str,
-        x: int,
-        y: int,
-        color: Color = RGB(red=0., green=0., blue=0.),  # noqa: B008
-        font: Config | None = None,
+        position: Point,
+        style: TextStyle,
+        width: float | None = None,
+        height: float | None = None,
     ) -> Any:
         pass
+
+    @staticmethod
+    def _get_image_wh(
+        image: npt.NDArray[np.uint8],
+        width: float | None,
+        height: float | None,
+    ) -> tuple[float, float]:
+        if width is not None and height is not None:
+            return width, height
+
+        h, w = image.shape[:2]
+
+        if width is not None:
+            return width, h / w * width
+        if height is not None:
+            return w / h * height, height
+        return w, h
 
     @abstractmethod
-    def point(
+    def image(
         self,
-        x: int,
-        y: int,
-        size: int,
-        color: Color = RGB(red=0., green=0., blue=0.),  # noqa: B008
+        image: npt.NDArray[np.uint8],
+        position: Point,
+        width: float | None = None,
+        height: float | None = None,
+        opacity: float = 1,
     ) -> Any:
         pass
 
-    @abstractmethod
-    def marker(
-        self,
-        x: int,
-        y: int,
-        size: int,
-        color: Color = RGB(red=0., green=0., blue=0.),  # noqa: B008
-    ) -> Any:
-        pass
+    def color(self, index: int) -> Color:
+        return PALETTE[index % len(PALETTE)]
 
-    def scatter(
+    def polyline(
         self,
-        points: Iterable[tuple[int, int]],
-        sizes: Iterable[int],
-        colors: Iterable[Color],
-        types: Iterable[str],
+        points: Sequence[Point],
+        pen: Pen,
     ) -> Any:
-        for (x, y), size, color, type_ in zip(points, sizes, colors, types):
-            if type_ == '.':
-                self.point(x, y, size, color)
-            elif type_ == '*':
-                self.marker(x, y, size, color)
-            else:
-                raise ValueError(f'Invalid type: {type_}')
+        points = tuple(points)
+        for start, end in zip(points[:-1], points[1:], strict=True):
+            self.line(start, end, pen)
         return self
 
-    @abstractmethod
-    def line(
+    def polygon(
         self,
-        x1: int,
-        y1: int,
-        x2: int,
-        y2: int,
-        color: Color = RGB(red=0., green=0., blue=0.),  # noqa: B008
-        thickness: int = 1,
+        points: Sequence[Point],
+        fill: Color | None = None,
+        pen: Pen | None = None,
     ) -> Any:
-        pass
-
-    def trajectory(
-        self,
-        trajectory: Iterable[tuple[int, int]],
-        color: Color = RGB(red=0., green=0., blue=0.),  # noqa: B008
-        thickness: int = 1,
-    ) -> Self:
-        """Draw the trajectory.
-
-        Args:
-            trajectory: :math:`(T, 2)`
-            color: color of the trajectory
-            thickness: thickness of the trajectory
-        """
-        trajectory = list(trajectory)
-        for (x1, y1), (x2, y2) in zip(trajectory[:-1], trajectory[1:]):
-            self.line(x1, y1, x2, y2, color, thickness)
+        points = tuple(points)
+        if fill is not None:
+            self.fill(points, fill)
+        if pen is not None:
+            self.polyline((*points, points[0]), pen)
         return self
+
+    def rectangle(
+        self,
+        left_top: Point,
+        right_bottom: Point,
+        fill: Color | None = None,
+        pen: Pen | None = None,
+    ) -> Any:
+        left, top = left_top
+        right, bottom = right_bottom
+        return self.polygon(
+            (
+                Point(left, top),
+                Point(right, top),
+                Point(right, bottom),
+                Point(left, bottom),
+            ),
+            fill,
+            pen,
+        )

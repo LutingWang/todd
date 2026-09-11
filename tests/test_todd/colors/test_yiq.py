@@ -27,8 +27,11 @@ class TestYIQ:
         )
 
         yiq = gray.to(YIQ)
+        rgb = yiq.to(RGB)
 
+        assert yiq.to(YIQ) is yiq
         assert yiq.luminance == pytest.approx(128 / 255)
-        assert yiq.to(RGB).to_tuple(normalized=True) == pytest.approx(
+        assert rgb.to_tuple(normalized=True) == pytest.approx(
             gray.to_tuple(normalized=True),
         )
+        assert rgb.__class__ is RGB

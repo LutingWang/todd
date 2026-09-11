@@ -13,8 +13,9 @@ import torchvision
 
 from todd.colors import RGB, Color
 from todd_tasks import optical_flow_estimation as ofe
-from todd_torch.patches.cv2 import ColorMap, VideoWriter
-from todd_torch.visuals import CV2Visual
+from todd_torch.colors import ColorMap
+from todd_torch.patches.cv2 import VideoWriter
+from todd_torch.visuals import CV2Visual, Pen, Point
 
 from .datasets.tap_vid_davis import T as TAPVidDAVISDataType  # noqa: N811
 from .points import Points
@@ -34,8 +35,8 @@ class Visual:
 
         t_, h, w, c = video.shape
         visuals = [CV2Visual(width=w, height=h, channels=c) for _ in range(t_)]
-        for frame, visual in zip(video, visuals):
-            visual.image(frame.numpy())
+        for frame, visual in zip(video, visuals, strict=True):
+            visual.image(frame.numpy(), Point(0, 0))
         self._visuals = visuals
 
         self._target_points = target_points.denormalize()  # p * t
@@ -47,7 +48,7 @@ class Visual:
         tensor = tensor - tensor.median(0).values
         tensor = einops.rearrange(tensor, 'n c -> 1 n c')
         of = ofe.OpticalFlow(optical_flow=tensor)
-        colors = ColorMap(color_map)(of.a)
+        colors = ColorMap(color_map=color_map)(of.a)
         colors = einops.rearrange(colors, '1 n c -> n c')
         return [
             RGB.from_tuple(color, normalized=False, order='bgr')
@@ -56,19 +57,22 @@ class Visual:
 
     def scatter(self, colors: Iterable[Color], size: int) -> None:
         colors = list(colors)
-        sizes = [size] * len(colors)
         for t, visual in enumerate(self._visuals):
             points = cast(Points, self._target_points[:, t])
-            types = [
-                '*' if occluded else '.'
-                for occluded in self._occluded[:, t].tolist()
-            ]
-            visual.scatter(
+            for (x, y), color, occluded in zip(
                 points.to_tensor().int().tolist(),
-                sizes,
                 colors,
-                types,
-            )
+                self._occluded[:, t].tolist(),
+                strict=True,
+            ):
+                marker_type = (
+                    cv2.MARKER_STAR if occluded else cv2.MARKER_CROSS
+                )
+                visual.point(
+                    Point(x, y),
+                    Pen(color=color, width=2 * size),
+                    marker_type=marker_type,
+                )
 
     def trajectory(
         self,
@@ -85,10 +89,13 @@ class Visual:
                 trajectory = cast(Points, trajectories[p, ~occluded])
                 if trajectory.size < 2:
                     continue
-                visual.trajectory(
-                    trajectory.to_tensor().int().tolist(),
-                    colors[p],
-                    thickness,
+                points_ = [
+                    Point(x, y)
+                    for x, y in trajectory.to_tensor().int().tolist()
+                ]
+                visual.polyline(
+                    points_,
+                    Pen(color=colors[p], width=thickness),
                 )
 
     def save_image(self, path: Any, *args, **kwargs) -> None:
@@ -99,14 +106,14 @@ class Visual:
         tensor = torchvision.utils.make_grid(tensor, *args, **kwargs)
         tensor = einops.rearrange(tensor, 'c h w -> h w c')
         image = tensor.numpy()
-        cv2.imwrite(str(path), image)
+        cv2.imwrite(str(path), cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
 
     def save_video(self, path: Any, *args, **kwargs) -> None:
         video_writer = VideoWriter(*args, **kwargs)
         for visual in self._visuals:
-            frame = visual.to_numpy()
-            frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-            video_writer.write(frame)
+            rgb_frame = visual.to_numpy()
+            bgr_frame = cv2.cvtColor(rgb_frame, cv2.COLOR_RGB2BGR)
+            video_writer.write(bgr_frame)  # type: ignore[arg-type]
         video_writer.dump(path)
 
 

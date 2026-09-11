@@ -22,13 +22,16 @@ class ColorWheel:
 
     def __init__(
         self,
+        *args,
         ry: int = 15,
         yg: int = 6,
         gc: int = 4,
         cb: int = 11,
         bm: int = 13,
         mr: int = 6,
+        **kwargs,
     ) -> None:
+        super().__init__(*args, **kwargs)
         self._color_wheel = torch.cat([
             torch.stack([full(ry), arange(ry), zeros(ry)], -1),
             torch.stack(
