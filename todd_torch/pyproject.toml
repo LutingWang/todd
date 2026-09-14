@@ -23,6 +23,7 @@ dependencies = [
     'lmdb',
     'numpy',
     'opencv-python',
+    'playwright',
     'pydub',
     'python-pptx',
     'tensorboard',
@@ -62,6 +63,5 @@ namespaces = false
 [tool.setuptools.package-data]
 todd_torch = [
     'py.typed',
-    'visuals/html/index.html.jinja',
-    'visuals/html/script.js',
+    'visuals/html/**/*',
 ]

@@ -3,14 +3,17 @@ __all__ = [
 ]
 
 import math
+import shutil
 from collections.abc import Sequence
 from html import escape
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from typing import Any
 
 import numpy as np
 import numpy.typing as npt
 from jinja2 import Template
+from playwright.sync_api import sync_playwright
 
 from todd.colors import RGB, Color
 
@@ -43,29 +46,65 @@ class HTMLVisual(BaseVisual):
         return self._height
 
     def save(self, path: Any) -> None:
-        html_root = Path(__file__).with_suffix('')
-        html_path = html_root / 'index.html.jinja'
-        html = html_path.read_text()
-        script_path = html_root / 'script.js'
-        script = script_path.read_text()
-        template: Template = Template(html)
-        document = template.render(
-            width=self.width,
-            height=self.height,
-            elements=''.join(self._elements),
-            script=script,
-        )
-        path_: Path = Path(path)
-        path_.write_text(document)
+        path = Path(path).resolve()
+        path.mkdir(parents=True, exist_ok=True)
+        assert not list(path.iterdir())
+
+        resources_root = Path(__file__).with_suffix('')
+        shutil.copytree(resources_root, path, dirs_exist_ok=True)
+        for template_path in path.rglob('*.jinja'):
+            template: Template = Template(template_path.read_text())
+            template_path.with_suffix('').write_text(
+                template.render(
+                    width=self.width,
+                    height=self.height,
+                    elements=self._elements,
+                ),
+            )
+
+    def export_pdf(self, path: Path) -> None:
+        with (
+            TemporaryDirectory() as temporary_root,
+            sync_playwright() as playwright,
+            playwright.chromium.launch() as browser,
+        ):
+            html_root = Path(temporary_root)
+            self.save(html_root)
+            html_path = html_root / 'index.html'
+            page = browser.new_page()
+            page.goto(html_path.as_uri())
+            if error := page.evaluate('window.todd_render()'):
+                raise ValueError(error)
+            page.pdf(
+                path=str(path),
+                print_background=True,
+                prefer_css_page_size=True,
+            )
+
+    @staticmethod
+    def _to_rgb(color: Color) -> RGB:
+        if not isinstance(color, RGB):
+            color = color.to(RGB)
+        return color
+
+    def _resolve_wh(
+        self,
+        position: Point,
+        width: float | None,
+        height: float | None,
+    ) -> tuple[float, float]:
+        if width is None:
+            width = self.width - position.x
+        if height is None:
+            height = self.height - position.y
+        return width, height
 
     def point(
         self,
         point: Point,
         pen: Pen,
     ) -> str:
-        color = pen.color
-        if not isinstance(color, RGB):
-            color = color.to(RGB)
+        color = self._to_rgb(pen.color)
         self._elements.append(
             '<div class="todd-element todd-point" '
             f'style="left:{point.x:g}px;top:{point.y:g}px;'
@@ -82,9 +121,7 @@ class HTMLVisual(BaseVisual):
     ) -> str:
         dx = end.x - start.x
         dy = end.y - start.y
-        color = pen.color
-        if not isinstance(color, RGB):
-            color = color.to(RGB)
+        color = self._to_rgb(pen.color)
         self._elements.append(
             '<div class="todd-element todd-line" '
             f'style="left:{start.x:g}px;top:{start.y - pen.width / 2:g}px;'
@@ -101,8 +138,7 @@ class HTMLVisual(BaseVisual):
         color: Color,
     ) -> str:
         points_ = ','.join(f'{point.x:g}px {point.y:g}px' for point in points)
-        if not isinstance(color, RGB):
-            color = color.to(RGB)
+        color = self._to_rgb(color)
         self._elements.append(
             '<div class="todd-element todd-fill" '
             f'style="background:{color.to_css()};'
@@ -118,13 +154,12 @@ class HTMLVisual(BaseVisual):
         width: float | None = None,
         height: float | None = None,
     ) -> str:
-        color = style.color
-        if not isinstance(color, RGB):
-            color = color.to(RGB)
-        if width is None:
-            width = self.width - position.x
-        if height is None:
-            height = self.height - position.y
+        color = self._to_rgb(style.color)
+        width, height = self._resolve_wh(
+            position,
+            width,
+            height,
+        )
         self._elements.append(
             '<div class="todd-element todd-text" data-todd-fit-text '
             f'data-todd-font-size="{style.font_size:g}" '
@@ -152,5 +187,53 @@ class HTMLVisual(BaseVisual):
             f'style="left:{position.x:g}px;top:{position.y:g}px;'
             f'width:{width:g}px;height:{height:g}px;'
             f'opacity:{opacity:g}">',
+        )
+        return self._elements[-1]
+
+    def latex(
+        self,
+        latex: str,
+        position: Point,
+        style: TextStyle,
+        width: float | None = None,
+        height: float | None = None,
+        display_mode: bool = False,
+    ) -> str:
+        color = self._to_rgb(style.color)
+        width, height = self._resolve_wh(
+            position,
+            width,
+            height,
+        )
+        self._elements.append(
+            '<div class="todd-element todd-semantic todd-latex" '
+            f'data-todd-display-mode="{"true" if display_mode else "false"}" '
+            f'style="left:{position.x:g}px;top:{position.y:g}px;'
+            f'width:{width:g}px;height:{height:g}px;'
+            f'font-size:{style.font_size:g}px;'
+            f'color:{color.to_css()}">{escape(latex)}</div>',
+        )
+        return self._elements[-1]
+
+    def table(
+        self,
+        html: str,
+        position: Point,
+        style: TextStyle,
+        width: float | None = None,
+        height: float | None = None,
+    ) -> str:
+        color = self._to_rgb(style.color)
+        width, height = self._resolve_wh(
+            position,
+            width,
+            height,
+        )
+        self._elements.append(
+            '<div class="todd-element todd-semantic todd-table" '
+            f'style="left:{position.x:g}px;top:{position.y:g}px;'
+            f'width:{width:g}px;height:{height:g}px;'
+            f'font-size:{style.font_size:g}px;'
+            f'color:{color.to_css()}">{html}</div>',
         )
         return self._elements[-1]
