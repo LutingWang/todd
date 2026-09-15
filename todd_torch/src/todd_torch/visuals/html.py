@@ -5,15 +5,16 @@ __all__ = [
 import math
 import shutil
 from collections.abc import Sequence
+from contextlib import contextmanager
 from html import escape
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Any
+from typing import Any, Generator
 
 import numpy as np
 import numpy.typing as npt
 from jinja2 import Template
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import Browser, Page
 
 from todd.colors import RGB, Color
 
@@ -62,24 +63,37 @@ class HTMLVisual(BaseVisual):
                 ),
             )
 
-    def export_pdf(self, path: Path) -> None:
-        with (
-            TemporaryDirectory() as temporary_root,
-            sync_playwright() as playwright,
-            playwright.chromium.launch() as browser,
-        ):
+    @contextmanager
+    def _export(self, browser: Browser) -> Generator[Page, None, None]:
+        with TemporaryDirectory() as temporary_root:
             html_root = Path(temporary_root)
             self.save(html_root)
             html_path = html_root / 'index.html'
-            page = browser.new_page()
-            page.goto(html_path.as_uri())
-            if error := page.evaluate('window.todd_render()'):
-                raise ValueError(error)
+            page = browser.new_page(
+                viewport=dict(
+                    width=self.width,
+                    height=self.height,
+                ),
+            )
+            try:
+                page.goto(html_path.as_uri())
+                if error := page.evaluate('window.todd_render()'):
+                    raise ValueError(error)
+                yield page
+            finally:
+                page.close()
+
+    def export_pdf(self, *args, path: Path, **kwargs) -> None:
+        with self._export(*args, **kwargs) as page:
             page.pdf(
-                path=str(path),
+                path=path,
                 print_background=True,
                 prefer_css_page_size=True,
             )
+
+    def export_screenshot(self, *args, path: Path, **kwargs) -> None:
+        with self._export(*args, **kwargs) as page:
+            page.screenshot(path=path)
 
     @staticmethod
     def _to_rgb(color: Color) -> RGB:
