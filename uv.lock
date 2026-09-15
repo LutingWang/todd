@@ -4553,6 +4553,7 @@ dependencies = [
     { name = "jieba" },
     { name = "lvis" },
     { name = "nltk" },
+    { name = "pyarrow" },
     { name = "pycocotools" },
     { name = "pypinyin" },
     { name = "regex" },
@@ -4581,6 +4582,7 @@ requires-dist = [
     { name = "lvis", git = "https://github.com/lvis-dataset/lvis-api.git?branch=lvis_challenge_2021" },
     { name = "nltk" },
     { name = "pandas", extras = ["all"], marker = "extra == 'optional'" },
+    { name = "pyarrow" },
     { name = "pycocotools" },
     { name = "pypinyin" },
     { name = "regex" },
@@ -4600,6 +4602,7 @@ version = "0.10.0"
 source = { editable = "todd_torch" }
 dependencies = [
     { name = "datasets" },
+    { name = "defusedxml" },
     { name = "einops" },
     { name = "ffmpeg-python" },
     { name = "jinja2" },
@@ -4622,6 +4625,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "datasets" },
+    { name = "defusedxml" },
     { name = "einops" },
     { name = "ffmpeg-python" },
     { name = "jinja2" },

@@ -17,6 +17,7 @@ classifiers = [
 dependencies = [
     'todd_ai>=0.10.0',
     'datasets',
+    'defusedxml',
     'einops',
     'ffmpeg-python',
     'jinja2',
