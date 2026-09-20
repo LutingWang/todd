@@ -18,8 +18,7 @@ Run the following shell commands to prepare the dataset.
     tar -zxf ${f}
 
     mkdir annotations train val
-    wget https://image-net.org/data/ILSVRC/2012/ILSVRC2012_img_train.tar
-    wget https://image-net.org/data/ILSVRC/2012/ILSVRC2012_img_val.tar
+    wget https://image-net.org/data/ILSVRC/2012/ILSVRC2012_img_{train,val}.tar
     cd ../..
 
     python imagenet_1k.py
@@ -33,17 +32,17 @@ After processing, the directory structure should look like:
     data/imagenet/
     ├── annotations
     │   ├── train.json
-    |   └── val.json
+    │   └── val.json
     ├── train
     │   ├── n1440764
     │   │   ├── 18.JPEG
     │   │   └── ...
-    |   └── ...
+    │   └── ...
     ├── val
     │   ├── n1440764
     │   │   ├── 293.JPEG
     │   │   └── ...
-    |   └── ...
+    │   └── ...
     └── synsets.json
 
 Both ``train.json`` and ``val.json`` exhibit the following structure:

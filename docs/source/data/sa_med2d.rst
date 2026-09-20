@@ -24,10 +24,10 @@ https://openxlab.org.cn/datasets/GMAI/SA-Med2D-20M
     data/sa_med2d/
     ├── annotations
     │   ├── SAMed2D_v1_class_mapping_id.json
-    |   └── SAMed2D_v1.json
+    │   └── SAMed2D_v1.json
     ├── images
     │   ├── ct_00--AbdomenCT1K--Case_00011--x_0040.png
-    |   └── ... (total 3772180)
+    │   └── ... (total 3772180)
     └── masks
         ├── ct_00--AbdomenCT1K--Case_00011--x_0041--0000_001.png
         └── ...

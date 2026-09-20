@@ -22,10 +22,10 @@ DAVIS 2017
     │   ├── bear
     │   │   ├── 00000.png
     │   │   └── ...
-    |   └── ...
+    │   └── ...
     ├── ImageSets/2017/
     │   ├── train.txt
-    |   └── val.txt
+    │   └── val.txt
     └── JPEGImages/480p/
         ├── bear
         │   ├── 00000.jpg

@@ -17,19 +17,21 @@ Objects365 v2
     base_url=https://dorc.ks3-cn-beijing.ksyun.com/data-set/2020Objects365%E6%95%B0%E6%8D%AE%E9%9B%86
 
     mkdir annotations && cd annotations
-    wget ${base_url}/train/zhiyuan_objv2_train.tar.gz
-    wget ${base_url}/val/zhiyuan_objv2_val.json
+    wget \
+        ${base_url}/train/zhiyuan_objv2_train.tar.gz \
+        ${base_url}/val/zhiyuan_objv2_val.json
     tar -zxf *.tar.gz
     cd ..
 
     mkdir train && cd train
-    for i in {0..50}; do wget ${base_url}/train/patch${i}.tar.gz; done
+    wget ${base_url}/train/patch{0..50}.tar.gz
     for f in *.tar.gz; do echo ${f}; tar -zxf ${f}; done
     cd ..
 
     mkdir val && cd val
-    for i in {0..15}; do wget ${base_url}/val/images/v1/patch${i}.tar.gz; done
-    for i in {16..43}; do wget ${base_url}/val/images/v2/patch${i}.tar.gz; done
+    wget \
+        ${base_url}/val/images/v1/patch{0..15}.tar.gz \
+        ${base_url}/val/images/v2/patch{16..43}.tar.gz
     for f in *.tar.gz; do echo ${f}; tar -zxf ${f}; done
     cd ..
 
@@ -39,17 +41,17 @@ Objects365 v2
 
     data/objects365v2/
     ├── annotations
-    |   ├── zhiyuan_objv2_train.json
-    |   └── zhiyuan_objv2_val.json
+    │   ├── zhiyuan_objv2_train.json
+    │   └── zhiyuan_objv2_val.json
     ├── train
-    |   ├── patch0
-    |   |   ├── objects365_v1_00000000.jpg
-    |   |   └── ...
-    |   └── ...
+    │   ├── patch0
+    │   │   ├── objects365_v1_00000000.jpg
+    │   │   └── ...
+    │   └── ...
     └── val
         ├── patch0
-        |   ├── objects365_v1_00000016.jpg
-        |   └── ...
+        │   ├── objects365_v1_00000016.jpg
+        │   └── ...
         └── ...
 
 There are 51 patches in the train split and 44 patches in the val split.
