@@ -29,7 +29,7 @@ After processing, the directory structure should look like:
 
 .. code::
 
-    data/imagenet/
+    data/imagenet
     ├── annotations
     │   ├── train.json
     │   └── val.json
@@ -62,6 +62,6 @@ ImageNet-21k
 
 .. code::
 
-    data/imagenet-21k/
+    data/imagenet-21k
     ├── n00004475
     └── ...

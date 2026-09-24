@@ -14,7 +14,7 @@ https://github.com/IBM/SynthTabNet
 
 .. code::
 
-    data/synthtabnet/
+    data/synthtabnet
     └── {fintabnet,marketing,pubtabnet,sparse}
         ├── images/{train,val,test}
         │   ├── image_000000_1634629328.513163.png

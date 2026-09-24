@@ -15,7 +15,7 @@ BLN600
 
 .. code::
 
-    data/bln600/
+    data/bln600
     ├── Images
     │   ├── 3207163457.jpg
     │   └── ...

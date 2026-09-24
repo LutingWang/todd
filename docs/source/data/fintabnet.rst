@@ -20,7 +20,7 @@ https://github.com/microsoft/table-transformer
 
 .. code::
 
-    data/fintabnet-c/
+    data/fintabnet-c
     ├── FinTabNet.c-Structure
     │   ├── images
     │   │   ├── FAST_2015_page_67_table_2.jpg

@@ -17,16 +17,16 @@ DAVIS 2017
 
 .. code::
 
-    data/davis/
-    ├── Annotations/480p/
+    data/davis
+    ├── Annotations/480p
     │   ├── bear
     │   │   ├── 00000.png
     │   │   └── ...
     │   └── ...
-    ├── ImageSets/2017/
+    ├── ImageSets/2017
     │   ├── train.txt
     │   └── val.txt
-    └── JPEGImages/480p/
+    └── JPEGImages/480p
         ├── bear
         │   ├── 00000.jpg
         │   └── ...

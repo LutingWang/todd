@@ -21,7 +21,7 @@ https://openxlab.org.cn/datasets/GMAI/SA-Med2D-20M
 
 .. code::
 
-    data/sa_med2d/
+    data/sa_med2d
     ├── annotations
     │   ├── SAMed2D_v1_class_mapping_id.json
     │   └── SAMed2D_v1.json

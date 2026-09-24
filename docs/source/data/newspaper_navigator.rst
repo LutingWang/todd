@@ -10,8 +10,8 @@ Newspaper Navigator
 
 .. code::
 
-    data/newspaper-navigator/beyond_words_data/
-    ├── images/
+    data/newspaper-navigator/beyond_words_data
+    ├── images
     │   └── {1..3560}.jpg
     ├── beyond_words.txt
     ├── train_80_percent.json

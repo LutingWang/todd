@@ -16,7 +16,7 @@ https://github.com/lvis-dataset/lvis-api
 
 .. code::
 
-    data/lvis/
+    data/lvis
     ├── train2017 -> ../coco/train2017
     └── val2017 -> ../coco/val2017
 
@@ -32,7 +32,7 @@ LVIS v0.5
 
 .. code::
 
-    data/lvis/
+    data/lvis
     └── annotations
         ├── lvis_v0.5_train.json
         └── lvis_v0.5_val.json
@@ -55,7 +55,7 @@ annotations from ``lvis_v1_val.json``.
 
 .. code::
 
-    data/lvis/
+    data/lvis
     └── annotations
         ├── lvis_v1_minival.json
         ├── lvis_v1_train.json

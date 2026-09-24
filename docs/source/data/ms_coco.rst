@@ -18,7 +18,7 @@ MS-COCO 2017
 
 .. code::
 
-    data/coco/
+    data/coco
     ├── annotations
     │   ├── instances_train2017.json
     │   └── instances_val2017.json

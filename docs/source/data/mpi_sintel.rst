@@ -22,7 +22,7 @@ http://sintel.is.tue.mpg.de/
 
 .. code::
 
-    data/sintel/
+    data/sintel
     ├── training
     │   ├── albedo|clean|final|flow_viz|invalid|occlusions
     │   │   ├── alley_1

@@ -28,7 +28,7 @@ https://github.com/cvdfoundation/open-images-dataset
 
 .. code::
 
-    data/open_images/
+    data/open_images
     ├── train_0
     │   ├── 000002b66c9c498e.jpg
     │   └── ...

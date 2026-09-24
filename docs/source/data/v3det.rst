@@ -30,7 +30,7 @@ https://opendatalab.com/LutingWang/V3Det/
 
 .. code::
 
-    data/v3det/
+    data/v3det
     └── images
         ├── a00000066
         │   ├── 0_2530_11591900204_c1c10c1531_c.jpg

@@ -7,6 +7,6 @@ https://huggingface.co/datasets/jordanparker6/publaynet
 
 .. code::
 
-    data/publaynet/data/
+    data/publaynet/data
     ├── train-00000-of-00208-3f1d0dff7cee414a.parquet
     └── ...

@@ -11,7 +11,7 @@ https://github.com/opendatalab/UniMERNet
 
 .. code::
 
-    data/unimer-1m/
+    data/unimer-1m
     ├── UniMER-1M
     │   ├── images
     │   │   └── {0000000..1061790}.png

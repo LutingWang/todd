@@ -20,7 +20,7 @@ https://shannon.cs.illinois.edu/DenotationGraph/data/index.html
 
 .. code::
 
-    data/flickr-30k/
+    data/flickr-30k
     └── images
         ├── 36979.jpg
         └── ...

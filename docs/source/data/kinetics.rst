@@ -21,7 +21,7 @@ Kinetics-700-2020
 
 .. code::
 
-    data/kinetics/
+    data/kinetics
     └── k700-2020
         ├── annotations
         │   ├── test.csv

@@ -16,7 +16,7 @@ https://huggingface.co/datasets/LutingWang/crohme
 
 .. code::
 
-    data/crohme/TC11_CROHME23/
+    data/crohme/TC11_CROHME23
     ├── IMG/{train,val,test}/<source>/*.png
     ├── INKML/{train,val,test}/<source>/*.inkml
     └── SymLG/{train,val,test}/<source>/*.lg

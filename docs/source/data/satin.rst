@@ -11,4 +11,4 @@ https://satinbenchmark.github.io/
 
 .. code::
 
-    data/satin/
+    data/satin

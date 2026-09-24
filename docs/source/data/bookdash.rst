@@ -7,6 +7,6 @@ https://huggingface.co/datasets/LutingWang/bookdash
 
 .. code::
 
-    data/bookdash/
+    data/bookdash
     ├── the-window-seat.pdf
     └── ...

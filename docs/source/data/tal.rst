@@ -24,7 +24,7 @@ HME100K
 
 .. code::
 
-    data/tal/HME100K/
+    data/tal/HME100K
     ├── subset
     │   ├── easy.json
     │   ├── medium.json
@@ -50,7 +50,7 @@ K-12 印刷体
 
 .. code::
 
-    data/tal/印刷体/
+    data/tal/印刷体
     ├── images
     │   ├── 00IODs4kpkp6GSX7mcH4_z2ET-YvtuVHnk65O_WfZV4%3D_0.jpg
     │   └── ...

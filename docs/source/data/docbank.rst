@@ -14,7 +14,7 @@ https://huggingface.co/datasets/liminghao1630/DocBank
 
 .. code::
 
-    data/docbank/
+    data/docbank
     ├── DocBank_500K_ori_img
     │   ├── 1.tar_1401.0001.gz_infoingames_without_metric_arxiv_0_ori.jpg
     │   └── ...

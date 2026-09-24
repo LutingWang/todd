@@ -45,7 +45,7 @@ CASIA-HWDB1
 
 .. code::
 
-    data/casia-hwdb/
+    data/casia-hwdb
     └── Gnt1.{0..2}{Train,Test}
         ├── 001-f.gnt
         └── ...
@@ -62,7 +62,7 @@ CASIA-OLHWDB1
 
 .. code::
 
-    data/casia-hwdb/
+    data/casia-hwdb
     └── Pot1.{0..2}{Train,Test}
         ├── 001.pot
         └── ...
@@ -79,7 +79,7 @@ CASIA-HWDB2
 
 .. code::
 
-    data/casia-hwdb/
+    data/casia-hwdb
     └── HWDB2.{0..2}{Train,Test}
         ├── 001-P16.dgrl
         └── ...
@@ -96,7 +96,7 @@ CASIA-OLHWDB2
 
 .. code::
 
-    data/casia-hwdb/
+    data/casia-hwdb
     └── WPTT2.{0..2}-{Train,Test}
         ├── 501-P14.wptt
         └── ...
@@ -118,7 +118,7 @@ Competition
 
 .. code::
 
-    data/casia-hwdb/competition/
+    data/casia-hwdb/competition
     ├── competition-gnt
     │   ├── C001-f-f.gnt
     │   └── ...

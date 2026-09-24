@@ -43,7 +43,7 @@ https://opendatalab.com/LutingWang/LAION-Aesthetics/
 
 .. code::
 
-    data/laion/aesthetics/
+    data/laion/aesthetics
     ├── annotations
     │   └── v2_6.5plus.tsv
     └── v2_6.5plus

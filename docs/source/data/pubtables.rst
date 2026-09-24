@@ -13,7 +13,7 @@ https://github.com/microsoft/table-transformer
 
 .. code::
 
-    data/pubtables-1m/
+    data/pubtables-1m
     ├── PubTables-1M-Detection
     │   ├── images
     │   │   ├── PMC4967509_3.jpg

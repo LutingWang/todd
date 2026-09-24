@@ -11,7 +11,7 @@ GTDB
 
 .. code::
 
-    data/gtdb/
+    data/gtdb
     ├── GTDB-1
     │   ├── AIF_1970_493_498.csv
     │   └── ...

@@ -11,7 +11,7 @@ https://github.com/AlibabaResearch/AdvancedLiterateMachinery/tree/main/DocumentU
 
 .. code::
 
-    data/d4la/D4LA/
+    data/d4la/D4LA
     ├── train_images
     │   ├── budget_0000000867.png
     │   └── ...

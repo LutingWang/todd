@@ -39,7 +39,7 @@ Objects365 v2
 
 .. code::
 
-    data/objects365v2/
+    data/objects365v2
     ├── annotations
     │   ├── zhiyuan_objv2_train.json
     │   └── zhiyuan_objv2_val.json

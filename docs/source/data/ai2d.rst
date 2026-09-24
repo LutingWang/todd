@@ -14,11 +14,11 @@ https://registry.opendata.aws/allenai-diagrams/
 
 .. code::
 
-    data/ai2d/
-        ├── annotations/
+    data/ai2d
+        ├── annotations
         │   └── {0..4907}.png.json
-        ├── images/
+        ├── images
         │   └── {0..4907}.png
-        ├── questions/
+        ├── questions
         │   └── {0..4907}.png.json
         └── categories.json

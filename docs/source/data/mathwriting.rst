@@ -14,7 +14,7 @@ https://github.com/google-research/google-research/tree/master/mathwriting
 
 .. code::
 
-    data/mathwriting/
+    data/mathwriting
     └── mathwriting-2024
         ├── {train,valid,test,synthetic,symbols}
         │   ├── 708b55f278d89aad.inkml

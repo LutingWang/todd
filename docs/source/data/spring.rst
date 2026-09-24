@@ -21,7 +21,7 @@ https://spring-benchmark.org/
 
 .. code::
 
-    data/spring/train/
+    data/spring/train
     ├── 0001
     │   ├── flow_FW_left
     │   │   ├── flow_FW_left_0001.flo5
@@ -31,7 +31,7 @@ https://spring-benchmark.org/
     │       └── ...
     └── ...
 
-    data/spring_sample/train/
+    data/spring_sample/train
     ├── 0001
     │   ├── cam_data
     │   │   ├── extrinsics.txt

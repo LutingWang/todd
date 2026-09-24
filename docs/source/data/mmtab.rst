@@ -13,7 +13,7 @@ https://github.com/SpursGoZmy/Table-LLaVA
 
 .. code::
 
-    data/mmtab/
+    data/mmtab
     ├── README.md
     ├── all_test_image
     │   ├── AIT-QA_tab-0.jpg

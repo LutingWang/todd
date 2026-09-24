@@ -14,7 +14,7 @@ https://zenodo.org/records/44519
 
 .. code::
 
-    data/bentham/
+    data/bentham
     ├── BenthamDatasetR0-Images/Images/Pages
     │   ├── 071_184_003.jpg
     │   └── ...

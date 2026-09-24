@@ -21,5 +21,5 @@ TAP-Vid-DAVIS
 
 .. code::
 
-    data/tap_vid/
+    data/tap_vid
     └── davis.pkl

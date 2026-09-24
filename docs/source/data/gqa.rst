@@ -14,7 +14,7 @@ https://cs.stanford.edu/people/dorarad/gqa/index.html
 
 .. code::
 
-    data/gqa/
+    data/gqa
     └── images
         ├── 1.jpg
         └── ...

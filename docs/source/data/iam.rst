@@ -27,7 +27,7 @@ IAM Handwriting Database
 
 .. code::
 
-    data/iam/IAM Handwriting Database/
+    data/iam/IAM Handwriting Database
     ├── ascii
     │   └── {forms,lines,sentences,words}.txt
     ├── forms
@@ -60,7 +60,7 @@ IAM On-Line Handwriting Database
 
 .. code::
 
-    data/iam/IAM On-Line Handwriting Database/
+    data/iam/IAM On-Line Handwriting Database
     ├── ascii-all
     │   └── ascii
     │       ├── a01/a01-000/a01-000u.txt

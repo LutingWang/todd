@@ -21,7 +21,7 @@ DIBCO2009
 
 .. code::
 
-    data/dibco/DIBCO-2009/
+    data/dibco/DIBCO-2009
     ├── DIBC02009_Test_images-handwritten
     │   └── H{01..05}.bmp
     ├── DIBCO2009_Test_images-printed
@@ -42,7 +42,7 @@ H-DIBCO2010
 
 .. code::
 
-    data/dibco/H-DIBCO-2010/
+    data/dibco/H-DIBCO-2010
     ├── H{01..10}.*
     ├── H{01..10}_estGT.tiff
     └── H{01..10}_skelGT.tiff
@@ -58,7 +58,7 @@ DIBCO2011
 
 .. code::
 
-    data/dibco/DIBCO-2011/
+    data/dibco/DIBCO-2011
     ├── HW{1..8}.png
     ├── HW{1..8}_GT.tiff
     ├── PR{1..8}.png
@@ -76,7 +76,7 @@ H-DIBCO2012
 
 .. code::
 
-    data/dibco/H-DIBCO-2012/H-DIBCO2012-dataset/H-DIBCO2012-dataset/
+    data/dibco/H-DIBCO-2012/H-DIBCO2012-dataset/H-DIBCO2012-dataset
     ├── H{01..14}.png
     └── H{01..14}_GT.tif
 
@@ -92,7 +92,7 @@ DIBCO2013
 
 .. code::
 
-    data/dibco/DIBCO-2013/
+    data/dibco/DIBCO-2013
     ├── OriginalImages
     │   ├── HW{01..08}.*
     │   └── PR{01..08}.bmp
@@ -111,7 +111,7 @@ H-DIBCO2014
 
 .. code::
 
-    data/dibco/H-DIBCO-2014/
+    data/dibco/H-DIBCO-2014
     ├── H{01..10}.png
     └── H{01..10}_estGT.tiff
 
@@ -126,7 +126,7 @@ H-DIBCO2016
 
 .. code::
 
-    data/dibco/H-DIBCO-2016/
+    data/dibco/H-DIBCO-2016
     ├── DIPCO2016_dataset
     │   └── {1..10}.bmp
     └── DIPCO2016_Dataset_GT
@@ -143,7 +143,7 @@ DIBCO2017
 
 .. code::
 
-    data/dibco/DIBCO-2017/
+    data/dibco/DIBCO-2017
     ├── Dataset
     │   └── {1..20}.bmp
     └── GT
@@ -160,7 +160,7 @@ H-DIBCO2018
 
 .. code::
 
-    data/dibco/H-DIBCO-2018/
+    data/dibco/H-DIBCO-2018
     ├── dataset
     │   └── {1..10}.bmp
     ├── gt
@@ -179,7 +179,7 @@ DIBCO2019
 
 .. code::
 
-    data/dibco/DIBCO-2019/
+    data/dibco/DIBCO-2019
     ├── Dataset
     │   └── {1..20}.bmp
     ├── GT
