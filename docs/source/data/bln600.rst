@@ -1,0 +1,28 @@
+BLN600
+======
+
+https://orda.shef.ac.uk/articles/dataset/BLN600_A_Parallel_Corpus_of_Machine_Human_Transcribed_Nineteenth_Century_Newspaper_Texts/25439023
+
+BLN600
+------
+
+.. code-block:: bash
+
+    root=data/bln600
+    mkdir -p ${root}
+    wget https://orda.shef.ac.uk/ndownloader/files/49365928 -O ${root}/BLN600.zip
+    unzip -q -P BLN600 ${root}/BLN600.zip -d ${root}
+
+.. code::
+
+    data/bln600/
+    ├── Images
+    │   ├── 3207163457.jpg
+    │   └── ...
+    ├── Ground Truth
+    │   ├── 3207163457.txt
+    │   └── ...
+    ├── OCR Text
+    │   ├── 3207163457.txt
+    │   └── ...
+    └── metadata.json
