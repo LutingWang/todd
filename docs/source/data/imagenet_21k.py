@@ -34,8 +34,7 @@ class Dataset(PILDataset[T]):
 
     def __init__(self, *args, category: str, **kwargs) -> None:
         access_layer = PILAccessLayer(
-            data_root=str(DATA_ROOT),
-            task_name=category,
+            directory=DATA_ROOT / category,
             suffix='JPEG',
         )
         super().__init__(*args, access_layer=access_layer, **kwargs)
