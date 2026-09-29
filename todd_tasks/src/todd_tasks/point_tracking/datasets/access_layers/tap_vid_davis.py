@@ -22,7 +22,7 @@ class VT(TypedDict):
 
 @PTAccessLayerRegistry.register_()
 class TAPVidDAVISAccessLayer(BaseAccessLayer[str, VT]):
-    DATA_FILE = pathlib.Path('data') / 'tap_vid' / 'davis.pkl'
+    DATA_FILE = pathlib.Path('data', 'tap_vid', 'davis.pkl')
 
     @cached_property
     def data(self) -> dict[str, VT]:

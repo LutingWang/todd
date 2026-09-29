@@ -28,8 +28,8 @@ from ..registries import Registry
 T = TypeVar('T')
 T_contra = TypeVar('T_contra', contravariant=True)
 T_co = TypeVar('T_co', covariant=True)
-KT = TypeVar('KT')
-VT = TypeVar('VT')
+K = TypeVar('K')
+V = TypeVar('V')
 
 
 class CallableProtocol(Protocol[T_contra, T_co]):
@@ -65,22 +65,22 @@ class BaseHandler(Generic[T], ABC):
 
 
 @HandlerRegistry.register_()
-class MappingHandler(BaseHandler[Mapping[KT, VT]]):
+class MappingHandler(BaseHandler[Mapping[K, V]]):
 
     @classmethod
-    def can_handle(cls, obj: Any) -> TypeGuard[Mapping[KT, VT]]:
+    def can_handle(cls, obj: Any) -> TypeGuard[Mapping[K, V]]:
         return isinstance(obj, Mapping)
 
     @classmethod
-    def elements(cls, obj: Mapping[KT, VT]) -> list[VT]:
+    def elements(cls, obj: Mapping[K, V]) -> list[V]:
         return list(obj.values())
 
     @classmethod
     def map(
         cls,
-        f: CallableProtocol[VT, T_co],
-        *objs: Mapping[KT, VT],
-    ) -> dict[KT, T_co]:
+        f: CallableProtocol[V, T_co],
+        *objs: Mapping[K, V],
+    ) -> dict[K, T_co]:
         return {k: f(*[o[k] for o in objs]) for k in set().union(*objs)}
 
 

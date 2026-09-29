@@ -19,27 +19,27 @@ from ..registries import TransformRegistry
 from .access_layers import BaseAccessLayer
 from .registries import AccessLayerRegistry
 
-KT_co = TypeVar('KT_co', covariant=True)
-VT = TypeVar('VT')
+K_co = TypeVar('K_co', covariant=True)
+V = TypeVar('V')
 T = TypeVar('T')
 
 
-class KeysProtocol(Sized, Protocol[KT_co]):
+class KeysProtocol(Sized, Protocol[K_co]):
 
-    def __getitem__(self, index: int) -> KT_co:
+    def __getitem__(self, index: int) -> K_co:
         ...
 
-    def __iter__(self) -> Iterator[KT_co]:
+    def __iter__(self) -> Iterator[K_co]:
         for i in range(len(self)):
             yield self[i]
 
 
-class BaseDataset(BuildPreHookMixin, Dataset[T], Generic[T, KT_co, VT], ABC):
+class BaseDataset(BuildPreHookMixin, Dataset[T], Generic[T, K_co, V], ABC):
 
     def __init__(
         self,
         *args,
-        access_layer: BaseAccessLayer[KT_co, VT],
+        access_layer: BaseAccessLayer[K_co, V],
         transforms: tf.Compose | None = None,
         **kwargs,
     ) -> None:
@@ -96,18 +96,18 @@ class BaseDataset(BuildPreHookMixin, Dataset[T], Generic[T, KT_co, VT], ABC):
         return config
 
     @property
-    def access_layer(self) -> BaseAccessLayer[KT_co, VT]:
+    def access_layer(self) -> BaseAccessLayer[K_co, V]:
         return self._access_layer
 
     @property
     def transforms(self) -> tf.Compose | None:
         return self._transforms
 
-    def build_keys(self) -> KeysProtocol[KT_co]:
+    def build_keys(self) -> KeysProtocol[K_co]:
         return list(self._access_layer)
 
     @property
-    def keys(self) -> KeysProtocol[KT_co]:
+    def keys(self) -> KeysProtocol[K_co]:
         return self._keys
 
     def __len__(self) -> int:
@@ -119,7 +119,7 @@ class BaseDataset(BuildPreHookMixin, Dataset[T], Generic[T, KT_co, VT], ABC):
         for index in range(len(self)):
             yield self[index]
 
-    def _access(self, index: int) -> tuple[KT_co, VT]:
+    def _access(self, index: int) -> tuple[K_co, V]:
         key = self._keys[index]
         return key, self._access_layer[key]
 

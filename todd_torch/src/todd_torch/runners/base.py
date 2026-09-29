@@ -163,7 +163,7 @@ class BaseRunner(BuildPreHookMixin, StateDictMixin, Generic[T]):
         if Store.DRY_RUN:
             name = os.path.join('dry_run', name)
 
-        config.work_dir = pathlib.Path(root) / name
+        config.work_dir = pathlib.Path(root, name)
         return config
 
     @classmethod

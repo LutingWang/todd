@@ -13,11 +13,11 @@ from ..optical_flow import OpticalFlow
 from ..registries import OFEDatasetRegistry
 
 T = TypeVar('T')
-VT = TypeVar('VT', bound=OpticalFlow)
+V = TypeVar('V', bound=OpticalFlow)
 
 
 @OFEDatasetRegistry.register_()
-class BaseDataset(BaseDataset_[T, str, VT]):
+class BaseDataset(BaseDataset_[T, str, V]):
 
     @classmethod
     def build_pre_hook(
