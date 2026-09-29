@@ -28,9 +28,9 @@ ModuleType = TypeVar('ModuleType', bound=nn.Module)  # noqa: E501 pylint: disabl
 
 class OursTokenDataset(BaseDataset[torch.Tensor, KT, VT]):
 
-    def __init__(self, *args, directory: pathlib.Path, **kwargs) -> None:
+    def __init__(self, *args, data_root: str, **kwargs) -> None:
         access_layer: PthAccessLayer[np.int64] = \
-            PthAccessLayer(directory=directory)
+            PthAccessLayer(data_root=data_root)
         super().__init__(*args, access_layer=access_layer, **kwargs)
 
     def __getitem__(self, index: int) -> torch.Tensor:
@@ -56,7 +56,7 @@ def main() -> None:
     name: str = args.name
 
     cpu = os.cpu_count() or 1
-    dataset = OursTokenDataset(directory=pathlib.Path('work_dir'))
+    dataset = OursTokenDataset(data_root='work_dir')
     dataloader: DataLoader[torch.Tensor] = DataLoader(
         dataset,
         cpu,
