@@ -252,7 +252,7 @@ class Pipeline(Processor[T_co]):
         self._processors = tuple(processors)
 
     @classmethod
-    def processors_build_pre_hook(
+    def _processors_build_pre_hook(
         cls,
         config: Config,
         registry: RegistryMeta,
@@ -279,7 +279,7 @@ class Pipeline(Processor[T_co]):
         item: Item,
     ) -> Config:
         config = super().build_pre_hook(config, registry, item)
-        config = cls.processors_build_pre_hook(config, registry, item)
+        config = cls._processors_build_pre_hook(config, registry, item)
         return config
 
     def __getstate__(self) -> ArgsKwargs:

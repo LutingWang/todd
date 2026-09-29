@@ -34,7 +34,7 @@ class Trainer(BaseRunner[T], ABC):
         super().__init__(*args, **kwargs)
 
     @classmethod
-    def optimizer_build_pre_hook(
+    def _optimizer_build_pre_hook(
         cls,
         config: Config,
         registry: RegistryMeta,
@@ -53,7 +53,7 @@ class Trainer(BaseRunner[T], ABC):
         item: Item,
     ) -> Config:
         config = super().build_pre_hook(config, registry, item)
-        config = cls.optimizer_build_pre_hook(config, registry, item)
+        config = cls._optimizer_build_pre_hook(config, registry, item)
         return config
 
     @property

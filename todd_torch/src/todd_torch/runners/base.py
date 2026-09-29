@@ -81,7 +81,7 @@ class BaseRunner(BuildPreHookMixin, StateDictMixin, Generic[T]):
         )
 
     @classmethod
-    def strategy_build_pre_hook(
+    def _strategy_build_pre_hook(
         cls,
         config: Config,
         registry: RegistryMeta,
@@ -91,7 +91,7 @@ class BaseRunner(BuildPreHookMixin, StateDictMixin, Generic[T]):
         return config
 
     @classmethod
-    def model_build_pre_hook(
+    def _model_build_pre_hook(
         cls,
         config: Config,
         registry: RegistryMeta,
@@ -101,7 +101,7 @@ class BaseRunner(BuildPreHookMixin, StateDictMixin, Generic[T]):
         return config
 
     @classmethod
-    def callbacks_build_pre_hook(
+    def _callbacks_build_pre_hook(
         cls,
         config: Config,
         registry: RegistryMeta,
@@ -114,7 +114,7 @@ class BaseRunner(BuildPreHookMixin, StateDictMixin, Generic[T]):
         return config
 
     @classmethod
-    def dataset_build_pre_hook(
+    def _dataset_build_pre_hook(
         cls,
         config: Config,
         registry: RegistryMeta,
@@ -124,7 +124,7 @@ class BaseRunner(BuildPreHookMixin, StateDictMixin, Generic[T]):
         return config
 
     @classmethod
-    def dataloader_build_pre_hook(
+    def _dataloader_build_pre_hook(
         cls,
         config: Config,
         registry: RegistryMeta,
@@ -146,7 +146,7 @@ class BaseRunner(BuildPreHookMixin, StateDictMixin, Generic[T]):
         return config
 
     @classmethod
-    def work_dir_build_pre_hook(
+    def _work_dir_build_pre_hook(
         cls,
         config: Config,
         registry: RegistryMeta,
@@ -167,7 +167,7 @@ class BaseRunner(BuildPreHookMixin, StateDictMixin, Generic[T]):
         return config
 
     @classmethod
-    def logger_build_pre_hook(
+    def _logger_build_pre_hook(
         cls,
         config: Config,
         registry: RegistryMeta,
@@ -186,13 +186,13 @@ class BaseRunner(BuildPreHookMixin, StateDictMixin, Generic[T]):
         item: Item,
     ) -> Config:
         config = super().build_pre_hook(config, registry, item)
-        config = cls.strategy_build_pre_hook(config, registry, item)
-        config = cls.model_build_pre_hook(config, registry, item)
-        config = cls.callbacks_build_pre_hook(config, registry, item)
-        config = cls.dataset_build_pre_hook(config, registry, item)
-        config = cls.dataloader_build_pre_hook(config, registry, item)
-        config = cls.work_dir_build_pre_hook(config, registry, item)
-        config = cls.logger_build_pre_hook(config, registry, item)
+        config = cls._strategy_build_pre_hook(config, registry, item)
+        config = cls._model_build_pre_hook(config, registry, item)
+        config = cls._callbacks_build_pre_hook(config, registry, item)
+        config = cls._dataset_build_pre_hook(config, registry, item)
+        config = cls._dataloader_build_pre_hook(config, registry, item)
+        config = cls._work_dir_build_pre_hook(config, registry, item)
+        config = cls._logger_build_pre_hook(config, registry, item)
         return config
 
     @property

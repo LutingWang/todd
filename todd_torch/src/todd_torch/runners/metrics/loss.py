@@ -36,7 +36,7 @@ class LossMetric(BuildPreHookMixin, Metric[T]):
         self._inputs = dict(inputs)
 
     @classmethod
-    def loss_build_pre_hook(
+    def _loss_build_pre_hook(
         cls,
         config: Config,
         registry: RegistryMeta,
@@ -60,7 +60,7 @@ class LossMetric(BuildPreHookMixin, Metric[T]):
         item: Item,
     ) -> Config:
         config = super().build_pre_hook(config, registry, item)
-        config = cls.loss_build_pre_hook(config, registry, item)
+        config = cls._loss_build_pre_hook(config, registry, item)
         return config
 
     def _forward(self, batch: Any, memo: Memo) -> tuple[torch.Tensor, Memo]:

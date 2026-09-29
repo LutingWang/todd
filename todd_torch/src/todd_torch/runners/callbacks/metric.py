@@ -32,7 +32,7 @@ class MetricCallback(BuildPreHookMixin, BaseCallback):
         self._map_model_config = map_model_config
 
     @classmethod
-    def metrics_build_pre_hook(
+    def _metrics_build_pre_hook(
         cls,
         config: Config,
         registry: RegistryMeta,
@@ -59,7 +59,7 @@ class MetricCallback(BuildPreHookMixin, BaseCallback):
         item: Item,
     ) -> Config:
         config = super().build_pre_hook(config, registry, item)
-        config = cls.metrics_build_pre_hook(config, registry, item)
+        config = cls._metrics_build_pre_hook(config, registry, item)
         return config
 
     def bind(self, *args, **kwargs) -> None:

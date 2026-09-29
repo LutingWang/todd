@@ -22,7 +22,7 @@ class Model(BuildPreHookMixin, BaseAdapt):
         self._model = model
 
     @classmethod
-    def model_build_pre_hook(
+    def _model_build_pre_hook(
         cls,
         config: Config,
         registry: RegistryMeta,
@@ -39,7 +39,7 @@ class Model(BuildPreHookMixin, BaseAdapt):
         item: Item,
     ) -> Config:
         config = super().build_pre_hook(config, registry, item)
-        config = cls.model_build_pre_hook(config, registry, item)
+        config = cls._model_build_pre_hook(config, registry, item)
         return config
 
     def forward(self, *args, **kwargs) -> Any:

@@ -56,7 +56,7 @@ class BaseDataset(BuildPreHookMixin, Dataset[T], Generic[T, KT_co, VT], ABC):
         )
 
     @classmethod
-    def access_layer_build_pre_hook(
+    def _access_layer_build_pre_hook(
         cls,
         config: Config,
         registry: RegistryMeta,
@@ -70,7 +70,7 @@ class BaseDataset(BuildPreHookMixin, Dataset[T], Generic[T, KT_co, VT], ABC):
         return config
 
     @classmethod
-    def transforms_build_pre_hook(
+    def _transforms_build_pre_hook(
         cls,
         config: Config,
         registry: RegistryMeta,
@@ -91,8 +91,8 @@ class BaseDataset(BuildPreHookMixin, Dataset[T], Generic[T, KT_co, VT], ABC):
         item: Item,
     ) -> Config:
         config = super().build_pre_hook(config, registry, item)
-        config = cls.access_layer_build_pre_hook(config, registry, item)
-        config = cls.transforms_build_pre_hook(config, registry, item)
+        config = cls._access_layer_build_pre_hook(config, registry, item)
+        config = cls._transforms_build_pre_hook(config, registry, item)
         return config
 
     @property
