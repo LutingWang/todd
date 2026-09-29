@@ -15,8 +15,7 @@ def downsample(data: T) -> T:
 
 dataset = ofe.datasets.SpringDataset(
     access_layer=Config(
-        data_root='data/spring_sample',
-        task_name='train',
+        directory=pathlib.Path('data', 'spring_sample', 'train'),
         modality='flow_FW_left',
     ),
     frame_access_layer=Config(modality='frame_left'),

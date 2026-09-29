@@ -1,9 +1,6 @@
 import todd_tasks.point_tracking as pt
-from todd import Config
 
-dataset = pt.datasets.TAPVidDAVISDataset(
-    access_layer=Config(data_root='data/tap_vid'),
-)
+dataset = pt.datasets.TAPVidDAVISDataset()
 for t in dataset:
     visual = pt.TAPVidDAVISVisual(t=t)
     colors = visual.colorize()
