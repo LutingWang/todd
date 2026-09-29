@@ -14,6 +14,7 @@ from typing import Any, Generator
 import numpy as np
 import numpy.typing as npt
 from jinja2 import Template
+from PIL import Image
 from playwright.sync_api import Browser, Page
 
 from todd.colors import RGB, Color
@@ -194,7 +195,7 @@ class HTMLVisual(BaseVisual):
         opacity: float = 1,
     ) -> str:
         width, height = self._get_image_wh(image, width, height)
-        data_url = image_to_data_url(image)
+        data_url = image_to_data_url(Image.fromarray(image), '.png')
         self._elements.append(
             '<img class="todd-element todd-image" alt="" '
             f'src="{data_url}" '

@@ -28,11 +28,10 @@ def get_audio(url: str) -> tuple[torch.Tensor, int]:
 
 
 def image_to_data_url(
-    image: npt.NDArray[np.uint8],
-    suffix: str = '.png',
+    image: Image.Image,
+    suffix: str,
 ) -> str:
-    image_ = Image.fromarray(image)
     with io.BytesIO() as f:
-        image_.save(f, Image.registered_extensions()[suffix])
+        image.save(f, Image.registered_extensions()[suffix])
         data = base64.b64encode(f.getvalue()).decode('ascii')
     return f'data:{mimetypes.types_map[suffix]};base64,{data}'
