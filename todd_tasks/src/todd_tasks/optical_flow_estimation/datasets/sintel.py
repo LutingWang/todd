@@ -36,28 +36,24 @@ class SintelDataset(BaseDataset[T, VT]):
         pass_: str,
         **kwargs,
     ) -> None:
-        task_name = 'training/'
+        directory = access_layer.directory / 'training'
         flo_access_layer = OpticalFlowAccessLayer(
-            **access_layer,
-            task_name=task_name + 'flow',
+            **dict(access_layer, directory=directory / 'flow'),
             optical_flow_type=VT,
-            subfolder_action='walk',
+            recursive=True,
         )
         super().__init__(*args, access_layer=flo_access_layer, **kwargs)
         self._frame = CV2AccessLayer(
-            **access_layer,
-            task_name=task_name + pass_,
-            suffix='png',
+            **dict(access_layer, directory=directory / pass_),
+            suffix='.png',
         )
         self._invalid = CV2AccessLayer(
-            **access_layer,
-            task_name=task_name + 'invalid',
-            suffix='png',
+            **dict(access_layer, directory=directory / 'invalid'),
+            suffix='.png',
         )
         self._occlusion = CV2AccessLayer(
-            **access_layer,
-            task_name=task_name + 'occlusions',
-            suffix='png',
+            **dict(access_layer, directory=directory / 'occlusions'),
+            suffix='.png',
         )
 
     def _next_key(self, key: str, prefix: str = 'frame_') -> str:

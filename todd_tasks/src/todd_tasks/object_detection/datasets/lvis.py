@@ -121,7 +121,7 @@ class LVISDataset(BaseCOCODataset[LVIS, T]):
     ) -> None:
         if access_layer is None:
             access_layer = PILAccessLayer(
-                data_root=str(self.DATA_ROOT),
+                directory=self.DATA_ROOT,
                 suffix=self.SUFFIX,
             )
         if annotations_file is None:

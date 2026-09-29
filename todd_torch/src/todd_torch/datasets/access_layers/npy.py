@@ -8,7 +8,7 @@ import numpy as np
 import numpy.typing as npt
 
 from ..registries import AccessLayerRegistry
-from .folder import FolderAccessLayer
+from .directory import DirectoryAccessLayer
 from .suffix import SuffixMixin
 
 T = TypeVar('T', bound=np.number)
@@ -17,11 +17,11 @@ T = TypeVar('T', bound=np.number)
 @AccessLayerRegistry.register_()
 class NpyAccessLayer(
     SuffixMixin[npt.NDArray[T]],
-    FolderAccessLayer[npt.NDArray[T]],
+    DirectoryAccessLayer[npt.NDArray[T]],
 ):
 
     def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, suffix='npy', **kwargs)
+        super().__init__(*args, suffix='.npy', **kwargs)
 
     def __getitem__(self, key: str) -> npt.NDArray[T]:
         return np.load(self._file(key))

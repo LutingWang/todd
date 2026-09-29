@@ -59,7 +59,7 @@ class BaseKeys(KeysProtocol[str], ABC):
 
     def __getitem__(self, index: int) -> str:
         item = self._getitem(self._image_ids[index])
-        return item.removesuffix(f'.{self._suffix}')
+        return item.removesuffix(self._suffix)
 
 
 class Keys(BaseKeys):
@@ -151,7 +151,7 @@ class BaseDataset(
     Generic[APIType, DataType],
     ABC,
 ):
-    SUFFIX = 'jpg'
+    SUFFIX = '.jpg'
 
     def __init__(
         self,
@@ -194,8 +194,7 @@ class COCODataset(BaseDataset[COCO, T]):
         split_year = f'{split}{year}'
         if access_layer is None:
             access_layer = PILAccessLayer(
-                data_root=str(self.DATA_ROOT),
-                task_name=split_year,
+                directory=self.DATA_ROOT / split_year,
                 suffix=self.SUFFIX,
             )
         if annotations_file is None:

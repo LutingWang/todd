@@ -32,8 +32,8 @@ class V3DetDataset(COCODataset):
     ) -> None:
         if access_layer is None:
             access_layer = PILAccessLayer(
-                data_root=str(self.DATA_ROOT),
-                suffix='jpg',
+                directory=self.DATA_ROOT,
+                suffix='.jpg',
             )
         if annotations_file is None:
             annotations_file = (

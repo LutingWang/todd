@@ -57,7 +57,7 @@ class Keys(KeysProtocol[str]):  # pylint: disable=unsubscriptable-object
         annotation = self._annotations[index]
         return os.path.join(
             self._synsets[annotation['synset_id']]['WNID'],
-            annotation['name'].removesuffix(f'.{self._suffix}'),
+            annotation['name'].removesuffix(self._suffix),
         )
 
 
@@ -72,7 +72,7 @@ class ImageNetDataset(PILDataset[T], ABC):
     DATA_ROOT = pathlib.Path('data/imagenet')
     ANNOTATIONS_ROOT = DATA_ROOT / 'annotations'
     SYNSETS_FILE = DATA_ROOT / 'synsets.json'
-    SUFFIX = 'JPEG'
+    SUFFIX = '.JPEG'
 
     def __init__(
         self,
@@ -85,9 +85,8 @@ class ImageNetDataset(PILDataset[T], ABC):
     ) -> None:
         if access_layer is None:
             access_layer = PILAccessLayer(
-                data_root=str(self.DATA_ROOT),
-                task_name=split,
-                subfolder_action='walk',
+                directory=self.DATA_ROOT / split,
+                recursive=True,
                 suffix=self.SUFFIX,
             )
         if annotations_file is None:

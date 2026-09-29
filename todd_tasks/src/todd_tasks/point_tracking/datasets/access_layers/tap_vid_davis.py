@@ -22,33 +22,16 @@ class VT(TypedDict):
 
 @PTAccessLayerRegistry.register_()
 class TAPVidDAVISAccessLayer(BaseAccessLayer[str, VT]):
-
-    def __init__(
-        self,
-        *args,
-        data_root: str,
-        task_name: str = 'davis.pkl',
-        **kwargs,
-    ) -> None:
-        super().__init__(
-            *args,
-            data_root=data_root,
-            task_name=task_name,
-            **kwargs,
-        )
-
-    @property
-    def data_file(self) -> pathlib.Path:
-        return pathlib.Path(self._data_root) / self._task_name
+    DATA_FILE = pathlib.Path('data') / 'tap_vid' / 'davis.pkl'
 
     @cached_property
     def data(self) -> dict[str, VT]:
-        with self.data_file.open('rb') as f:
+        with self.DATA_FILE.open('rb') as f:
             return pickle.load(f)  # nosec B301
 
     @property
     def exists(self) -> bool:
-        return self.data_file.exists()
+        return self.DATA_FILE.exists()
 
     def touch(self) -> None:
         raise NotImplementedError

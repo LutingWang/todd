@@ -6,26 +6,26 @@ from typing import TypeVar
 
 from todd import Config
 from todd.registries import BuildPreHookMixin, Item, RegistryMeta
-from todd_torch.datasets.access_layers import FolderAccessLayer, SuffixMixin
+from todd_torch.datasets.access_layers import DirectoryAccessLayer, SuffixMixin
 
 from ...optical_flow import SerializeMixin
 from ...registries import OFEOpticalFlowRegistry
 from ..registries import OFEAccessLayerRegistry
 
-VT = TypeVar('VT', bound=SerializeMixin)
+V = TypeVar('V', bound=SerializeMixin)
 
 
 @OFEAccessLayerRegistry.register_()
 class OpticalFlowAccessLayer(
     BuildPreHookMixin,
-    SuffixMixin[VT],
-    FolderAccessLayer[VT],
+    SuffixMixin[V],
+    DirectoryAccessLayer[V],
 ):
 
-    def __init__(self, *args, optical_flow_type: type[VT], **kwargs) -> None:
+    def __init__(self, *args, optical_flow_type: type[V], **kwargs) -> None:
         super().__init__(
             *args,
-            suffix=optical_flow_type.SUFFIX.removeprefix('.'),
+            suffix=optical_flow_type.SUFFIX,
             **kwargs,
         )
         self._optical_flow_type = optical_flow_type
@@ -45,8 +45,8 @@ class OpticalFlowAccessLayer(
             )
         return config
 
-    def __getitem__(self, key: str) -> VT:
+    def __getitem__(self, key: str) -> V:
         return self._optical_flow_type.load(self._file(key))
 
-    def __setitem__(self, key: str, value: VT) -> None:
+    def __setitem__(self, key: str, value: V) -> None:
         value.dump(self._file(key))

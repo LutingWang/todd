@@ -10,12 +10,10 @@ class TestConcatAccessLayer:
 
     def test_len(self, tmp_path: pathlib.Path) -> None:
         first: NpyAccessLayer[np.int64] = NpyAccessLayer(
-            data_root=str(tmp_path),
-            task_name='first',
+            directory=tmp_path / 'first',
         )
         second: NpyAccessLayer[np.int64] = NpyAccessLayer(
-            data_root=str(tmp_path),
-            task_name='second',
+            directory=tmp_path / 'second',
         )
         access_layer = ConcatAccessLayer(
             access_layers={

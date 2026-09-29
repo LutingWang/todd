@@ -25,7 +25,7 @@ class T(TypedDict):
 class SAMed2DDataset(PILDataset[T], ABC):
     DATA_ROOT = pathlib.Path('data/sa_med2d')
     ANNOTATIONS_ROOT = DATA_ROOT / 'annotations'
-    SUFFIX = 'png'
+    SUFFIX = '.png'
 
     def __init__(
         self,
@@ -37,9 +37,7 @@ class SAMed2DDataset(PILDataset[T], ABC):
     ) -> None:
         if access_layer is None:
             access_layer = PILAccessLayer(
-                data_root=str(self.DATA_ROOT),
-                task_name='images',
-                subfolder_action='none',
+                directory=self.DATA_ROOT / 'images',
                 suffix=self.SUFFIX,
             )
         if annotations_file is None:
@@ -54,7 +52,7 @@ class SAMed2DDataset(PILDataset[T], ABC):
         with self._annotations_file.open() as f:
             annotations: dict[str, list[str]] = json.load(f)
             return [
-                k.removeprefix('images/').removesuffix(f'.{self.SUFFIX}')
+                k.removeprefix('images/').removesuffix(self.SUFFIX)
                 for k in annotations
             ]
 

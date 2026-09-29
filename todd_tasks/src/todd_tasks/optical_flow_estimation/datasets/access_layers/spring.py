@@ -10,16 +10,16 @@ from typing import Iterator, TypeVar
 import numpy as np
 import numpy.typing as npt
 
-from todd_torch.datasets.access_layers import CV2AccessLayer, FolderAccessLayer
+from todd_torch.datasets.access_layers import CV2AccessLayer, DirectoryAccessLayer
 
 from ...optical_flow import Flo5OpticalFlow
 from ..registries import OFEAccessLayerRegistry
 from .optical_flow import OpticalFlowAccessLayer
 
-VT = TypeVar('VT')
+V = TypeVar('V')
 
 
-class SpringMixin(FolderAccessLayer[VT]):
+class SpringMixin(DirectoryAccessLayer[V]):
 
     def __init__(self, *args, modality: str, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -57,4 +57,4 @@ class SpringOpticalFlowAccessLayer(
 class SpringCV2AccessLayer(SpringMixin[npt.NDArray[np.uint8]], CV2AccessLayer):
 
     def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, suffix='png', **kwargs)
+        super().__init__(*args, suffix='.png', **kwargs)

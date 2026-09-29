@@ -49,7 +49,7 @@ class T(TypedDict):
 class LAIONAestheticsDataset(PILDataset[T], ABC):
     DATA_ROOT = pathlib.Path('data/laion/aesthetics')
     ANNOTATIONS_ROOT = DATA_ROOT / 'annotations'
-    SUFFIX = None
+    SUFFIX = ''
 
     def __init__(
         self,
@@ -61,9 +61,7 @@ class LAIONAestheticsDataset(PILDataset[T], ABC):
     ) -> None:
         if access_layer is None:
             access_layer = PILAccessLayer(
-                data_root=str(self.DATA_ROOT),
-                task_name=split,
-                subfolder_action='none',
+                directory=self.DATA_ROOT / split,
                 suffix=self.SUFFIX,
             )
         if annotations_file is None:

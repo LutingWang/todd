@@ -3,17 +3,14 @@ __all__ = [
 ]
 
 import io
-import pathlib
-from typing import Any, Literal, TypedDict
+from typing import Any, Iterator, Literal, TypedDict
 
 import datasets
 import torch
 import torchvision.transforms.functional as F
 from PIL import Image
 
-from todd import Config
-from todd_torch.datasets import AccessLayerRegistry, BaseDataset, IndexKeys
-from todd_torch.datasets.access_layers import HFAccessLayer
+from todd_torch.datasets import BaseAccessLayer, BaseDataset, IndexKeys
 from todd_torch.patches.pil import convert_rgb
 from todd_torch.registries import DatasetRegistry
 
@@ -35,30 +32,52 @@ Split = Literal['SAT-4', 'SAT-6', 'NASC-TG2', 'WHU-RS19', 'RSSCN7', 'RS_C11',
                 'MultiScene', 'RSI-CB256', 'AID_MultiLabel']
 
 
+class SATINAccessLayer(BaseAccessLayer[int, dict[str, Any]]):
+
+    def __init__(self, *args, split: Split, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self._dataset = datasets.load_dataset(
+            'jonathan-roberts1/satin',
+            name=split,
+            split=datasets.Split.TRAIN,
+            trust_remote_code=True,
+        )
+
+    @property
+    def exists(self) -> bool:
+        return True
+
+    def touch(self) -> None:
+        pass
+
+    def __len__(self) -> int:
+        return len(self._dataset)
+
+    def __iter__(self) -> Iterator[int]:
+        return iter(range(len(self)))
+
+    def __getitem__(self, key: int) -> dict[str, Any]:
+        return self._dataset[key]
+
+    def __delitem__(self, *args, **kwargs) -> None:
+        raise NotImplementedError
+
+    def __setitem__(self, *args, **kwargs) -> None:
+        raise NotImplementedError
+
+
 @DatasetRegistry.register_()
 class SATINDataset(BaseDataset[T, int, dict[str, Any]]):
-    DATA_ROOT = pathlib.Path('data/satin')
 
     def __init__(
         self,
         *args,
         split: Split,
-        access_layer: HFAccessLayer | None = None,
+        access_layer: SATINAccessLayer | None = None,
         **kwargs,
     ) -> None:
         if access_layer is None:
-            access_layer = AccessLayerRegistry.build(
-                Config(
-                    type=HFAccessLayer.__name__,
-                    data_root=str(self.DATA_ROOT),
-                    task_name=str(datasets.Split.TRAIN),
-                    datasets=dict(
-                        path='jonathan-roberts1/satin',
-                        name=split,
-                        trust_remote_code=True,
-                    ),
-                ),
-            )
+            access_layer = SATINAccessLayer(split=split)
 
         super().__init__(*args, access_layer=access_layer, **kwargs)
         self._split = split

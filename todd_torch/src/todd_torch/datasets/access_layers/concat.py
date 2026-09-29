@@ -11,27 +11,21 @@ from todd.registries import BuildPreHookMixin, Item, RegistryMeta
 from ..registries import AccessLayerRegistry
 from .base import BaseAccessLayer
 
-VT = TypeVar('VT')
+V = TypeVar('V')
 
 
 @AccessLayerRegistry.register_()
-class ConcatAccessLayer(BuildPreHookMixin, BaseAccessLayer[str, VT], ABC):
+class ConcatAccessLayer(BuildPreHookMixin, BaseAccessLayer[str, V], ABC):
     KEY_SEPARATOR = ':'
-    DATA_ROOT_SEPARATOR = '|'
 
     def __init__(
         self,
         *args,
-        access_layers: Mapping[str, BaseAccessLayer[str, VT]],
+        access_layers: Mapping[str, BaseAccessLayer[str, V]],
         **kwargs,
     ) -> None:
         assert not any(self.KEY_SEPARATOR in k for k in access_layers)
-
-        data_root = self.DATA_ROOT_SEPARATOR.join(
-            al._data_root for al in access_layers.values()
-        )
-        super().__init__(*args, data_root=data_root, **kwargs)
-
+        super().__init__(*args, **kwargs)
         self._access_layers = dict(access_layers)
 
     @classmethod
@@ -49,7 +43,7 @@ class ConcatAccessLayer(BuildPreHookMixin, BaseAccessLayer[str, VT], ABC):
         }
         return config
 
-    def _parse(self, key: str) -> tuple[BaseAccessLayer[str, VT], str]:
+    def _parse(self, key: str) -> tuple[BaseAccessLayer[str, V], str]:
         name, key = key.split(self.KEY_SEPARATOR, maxsplit=1)
         return self._access_layers[name], key
 
@@ -69,11 +63,11 @@ class ConcatAccessLayer(BuildPreHookMixin, BaseAccessLayer[str, VT], ABC):
     def __len__(self) -> int:
         return sum(map(len, self._access_layers.values()))
 
-    def __getitem__(self, key: str) -> VT:
+    def __getitem__(self, key: str) -> V:
         access_layer, key = self._parse(key)
         return access_layer[key]
 
-    def __setitem__(self, key: str, value: VT) -> None:
+    def __setitem__(self, key: str, value: V) -> None:
         access_layer, key = self._parse(key)
         access_layer[key] = value
 

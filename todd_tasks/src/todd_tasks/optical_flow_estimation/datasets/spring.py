@@ -35,7 +35,7 @@ class SpringDataset(BaseDataset[T, VT]):
         frame_access_layer: Config | None = None,
         **kwargs,
     ) -> None:
-        access_layer.setdefault('subfolder_action', 'walk')
+        access_layer.setdefault('recursive', True)
         flo_access_layer = SpringOpticalFlowAccessLayer(**access_layer)
         frame_access_layer = (
             access_layer if frame_access_layer is None else access_layer

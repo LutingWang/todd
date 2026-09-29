@@ -9,8 +9,8 @@ class TestCV2AccessLayer:
 
     def test_setitem(self, tmp_path: pathlib.Path) -> None:
         access_layer = CV2AccessLayer(
-            data_root=str(tmp_path),
-            suffix='png',
+            directory=tmp_path,
+            suffix='.png',
         )
         image = np.array([[[255, 0, 0]]], dtype=np.uint8)
 

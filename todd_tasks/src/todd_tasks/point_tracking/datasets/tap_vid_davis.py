@@ -6,8 +6,6 @@ from typing import TypedDict
 
 import torch
 
-from todd import Config
-from todd.registries import Item, RegistryMeta
 from todd_torch.datasets import BaseDataset
 
 from .access_layers import TAPVidDAVISAccessLayer
@@ -24,28 +22,10 @@ class T(TypedDict):
 
 
 class TAPVidDAVISDataset(BaseDataset[T, str, VT]):
-
-    @classmethod
-    def build_pre_hook(
-        cls,
-        config: Config,
-        registry: RegistryMeta,
-        item: Item,
-    ) -> Config:
-        access_layer = config.pop('access_layer')
-        config = super().build_pre_hook(config, registry, item)
-        config.access_layer = access_layer
-        return config
-
-    def __init__(
-        self,
-        *args,
-        access_layer: Config,
-        **kwargs,
-    ) -> None:
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(
             *args,
-            access_layer=TAPVidDAVISAccessLayer(**access_layer),
+            access_layer=TAPVidDAVISAccessLayer(),
             **kwargs,
         )
 

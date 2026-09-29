@@ -5,17 +5,17 @@ __all__ = [
 from PIL import Image
 
 from ..registries import AccessLayerRegistry
-from .folder import FolderAccessLayer
+from .directory import DirectoryAccessLayer
 from .suffix import SuffixMixin
 
-VT = Image.Image
+V = Image.Image
 
 
 @AccessLayerRegistry.register_()
-class PILAccessLayer(SuffixMixin[VT], FolderAccessLayer[VT]):
+class PILAccessLayer(SuffixMixin[V], DirectoryAccessLayer[V]):
 
-    def __getitem__(self, key: str) -> VT:
+    def __getitem__(self, key: str) -> V:
         return Image.open(self._file(key))
 
-    def __setitem__(self, key: str, value: VT) -> None:
+    def __setitem__(self, key: str, value: V) -> None:
         value.save(self._file(key))
