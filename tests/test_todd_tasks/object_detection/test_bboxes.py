@@ -133,6 +133,10 @@ class ConcreteBBoxes(BBoxes):
 
 class ConcreteBBoxes1(ConcreteBBoxes):
 
+    def flatten(self) -> FlattenBBoxesXYXY:
+        args, kwargs = self.copy(self._flatten()).__getstate__()
+        return FlattenBBoxesXYXY(*args, **kwargs)
+
     @classmethod
     def _from1(cls, bboxes: BBoxes) -> torch.Tensor:
         return torch.tensor([[100., 200.]])
@@ -207,6 +211,9 @@ class TestBBoxes:
         target = torch.tensor([[100., 200., 300., 500.]])
         assert isinstance(bboxes1_, ConcreteBBoxes1)
         assert torch.allclose(bboxes1_.to_tensor(), target)
+        flatten_bboxes1 = bboxes1_.flatten()
+        assert isinstance(flatten_bboxes1, FlattenBBoxesXYXY)
+        assert torch.allclose(flatten_bboxes1.to_tensor(), target)
 
     def test_to(self, bboxes1: BBoxesXYXY) -> None:
         bboxes1_ = bboxes1.to(ConcreteBBoxes1)
