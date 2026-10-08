@@ -6,29 +6,29 @@ import pathlib
 from typing import Iterator, TypeVar
 
 from ..registries import AccessLayerRegistry
-from .directory import DirectoryAccessLayer
+from .file import FileAccessLayer
 
 V = TypeVar('V')
 
 
 @AccessLayerRegistry.register_()
-class SuffixMixin(DirectoryAccessLayer[V]):
+class SuffixMixin(FileAccessLayer[V]):
 
     def __init__(self, *args, suffix: str, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         assert not suffix or suffix.startswith('.')
         self._suffix = suffix
 
-    def _files(self) -> Iterator[pathlib.Path]:
-        files = super()._files()
+    def _paths(self) -> Iterator[pathlib.Path]:
+        paths = super()._paths()
         if self._suffix:
-            files = filter(lambda file: file.suffix == self._suffix, files)
-        return files
+            paths = filter(lambda path: path.suffix == self._suffix, paths)
+        return paths
 
-    def _file(self, key: str) -> pathlib.Path:
+    def _path(self, key: str) -> pathlib.Path:
         if self._suffix:
-            return super()._file(key + self._suffix)
-        return super()._file(key)
+            return super()._path(key + self._suffix)
+        return super()._path(key)
 
     def __iter__(self) -> Iterator[str]:
         iter_ = super().__iter__()

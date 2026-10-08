@@ -6,7 +6,7 @@ from typing import TypeVar
 
 from todd import Config
 from todd.registries import BuildPreHookMixin, Item, RegistryMeta
-from todd_torch.datasets.access_layers import DirectoryAccessLayer, SuffixMixin
+from todd_torch.datasets.access_layers import FileAccessLayer, SuffixMixin
 
 from ...optical_flow import SerializeMixin
 from ...registries import OFEOpticalFlowRegistry
@@ -19,7 +19,7 @@ V = TypeVar('V', bound=SerializeMixin)
 class OpticalFlowAccessLayer(
     BuildPreHookMixin,
     SuffixMixin[V],
-    DirectoryAccessLayer[V],
+    FileAccessLayer[V],
 ):
 
     def __init__(self, *args, optical_flow_type: type[V], **kwargs) -> None:
@@ -46,7 +46,7 @@ class OpticalFlowAccessLayer(
         return config
 
     def __getitem__(self, key: str) -> V:
-        return self._optical_flow_type.load(self._file(key))
+        return self._optical_flow_type.load(self._path(key))
 
     def __setitem__(self, key: str, value: V) -> None:
-        value.dump(self._file(key))
+        value.dump(self._path(key))

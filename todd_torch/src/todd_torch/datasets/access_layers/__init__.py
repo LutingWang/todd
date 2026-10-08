@@ -2,11 +2,13 @@ from .base import *
 from .concat import *
 from .cv2 import *
 from .directory import *
+from .file import *
 from .json_ import *
 from .jsonl import *
 from .npy import *
 from .pil import *
 from .pth import *
 from .suffix import *
+from .subdirectory import *
 from .text import *
 from .xml import *

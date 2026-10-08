@@ -3,14 +3,13 @@ __all__ = [
     'SpringCV2AccessLayer',
 ]
 
-import pathlib
 from pathlib import Path
 from typing import Iterator, TypeVar
 
 import numpy as np
 import numpy.typing as npt
 
-from todd_torch.datasets.access_layers import CV2AccessLayer, DirectoryAccessLayer
+from todd_torch.datasets.access_layers import CV2AccessLayer, FileAccessLayer
 
 from ...optical_flow import Flo5OpticalFlow
 from ..registries import OFEAccessLayerRegistry
@@ -19,20 +18,20 @@ from .optical_flow import OpticalFlowAccessLayer
 V = TypeVar('V')
 
 
-class SpringMixin(DirectoryAccessLayer[V]):
+class SpringMixin(FileAccessLayer[V]):
 
     def __init__(self, *args, modality: str, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._modality = modality
 
-    def _files(self) -> Iterator[Path]:
-        files = super()._files()
-        return filter(lambda file: file.parts[-2] == self._modality, files)
+    def _paths(self) -> Iterator[Path]:
+        paths = super()._paths()
+        return filter(lambda path: path.parts[-2] == self._modality, paths)
 
-    def _file(self, key: str) -> pathlib.Path:
+    def _path(self, key: str) -> Path:
         scene, frame = key.split('/')
         key = f'{scene}/{self._modality}/{self._modality}_{frame}'
-        return super()._file(key)
+        return super()._path(key)
 
     def __iter__(self) -> Iterator[str]:
         for key in super().__iter__():
