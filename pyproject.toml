@@ -219,5 +219,4 @@ max-line-length = 79
 [tool.bandit]
 skips = [
     'B101',
-    'B614',
 ]
