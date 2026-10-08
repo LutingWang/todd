@@ -53,5 +53,3 @@ TODO
 4. finish docs/source/api_reference/tasks/bpe.py and docs/source/pretrained/stable_diffusion.py
 5. remove todd.scripts
 6. update docformatter to v1.8 in pre-commit-config and remove bandit B614 from pyproject.toml
-7. move nested collection utils to patches
-8. fix Registry type hints

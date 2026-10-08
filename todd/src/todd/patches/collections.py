@@ -1,41 +1,166 @@
 __all__ = [
-    'AttrDict',
+    'CollectionRegistry',
+    'Collection',
+    'collection_map',
+    'collection_flatten',
+    'collection_reduce',
+    'collection_index',
 ]
 
-from collections import UserDict
-from typing import Any
+from abc import ABC, abstractmethod
+from collections.abc import Callable, Iterable
+from typing import Any, cast
+
+from ..registries import Registry
 
 
-class AttrDict(UserDict[Any, Any]):
+class CollectionRegistry(Registry):
+    pass
+
+
+class Collection(ABC):
 
     @classmethod
-    def __map(cls, item: Any) -> Any:
-        if isinstance(item, (list, tuple, set)):
-            return item.__class__(map(cls.__map, item))
-        if isinstance(item, dict):
-            return cls(item)
-        return item
+    @abstractmethod
+    def _flatten(cls, obj: Any) -> Iterable[Any]:
+        pass
 
-    def __setitem__(self, name: str, value: Any) -> None:
-        value = self.__map(value)
-        super().__setitem__(name, value)
+    @classmethod
+    @abstractmethod
+    def map(cls, f: Callable[[Any], Any], obj: Any) -> Any:
+        pass
 
-    def __setattr__(self, name: str, value: Any) -> None:
-        if name == 'data' or hasattr(self.__class__, name):
-            super().__setattr__(name, value)
-            return
-        self[name] = value
+    @classmethod
+    def flatten(cls, obj: Any) -> list[Any]:
+        return [
+            leaf for child in cls._flatten(obj)
+            for leaf in collection_flatten(child)
+        ]
 
-    def __getattr__(self, name: str) -> Any:
-        if name == 'data':  # triggered in `copy.deepcopy`
-            raise AttributeError(name)
-        try:
-            return self[name]
-        except KeyError as e:
-            raise AttributeError(e) from e
+    @classmethod
+    def reduce(
+        cls,
+        f: Callable[[Iterable[Any]], Any],
+        obj: Any,
+    ) -> Any:
+        return f(collection_reduce(f, child) for child in cls._flatten(obj))
 
-    def __delattr__(self, name: str) -> None:
-        try:
-            del self[name]
-        except KeyError as e:
-            raise AttributeError(e) from e
+
+class DefaultCollection(Collection):
+
+    @classmethod
+    def _flatten(cls, obj: Any) -> Iterable[Any]:
+        return tuple()
+
+    @classmethod
+    def map(cls, f: Callable[[Any], Any], obj: Any) -> Any:
+        return f(obj)
+
+    @classmethod
+    def flatten(cls, obj: Any) -> list[Any]:
+        return [obj]
+
+    @classmethod
+    def reduce(
+        cls,
+        f: Callable[[Iterable[Any]], Any],
+        obj: Any,
+    ) -> Any:
+        return obj
+
+
+@CollectionRegistry.register_(dict.__name__)
+class DictCollection(Collection):
+
+    @classmethod
+    def _flatten(cls, obj: dict[Any, Any]) -> Iterable[Any]:
+        return obj.values()
+
+    @classmethod
+    def map(
+        cls,
+        f: Callable[[Any], Any],
+        obj: dict[Any, Any],
+    ) -> dict[Any, Any]:
+        return dict(
+            zip(
+                obj,
+                (collection_map(f, child) for child in cls._flatten(obj)),
+                strict=True,
+            ),
+        )
+
+
+@CollectionRegistry.register_(list.__name__)
+class ListCollection(Collection):
+
+    @classmethod
+    def _flatten(cls, obj: list[Any]) -> Iterable[Any]:
+        return obj
+
+    @classmethod
+    def map(cls, f: Callable[[Any], Any], obj: list[Any]) -> list[Any]:
+        return [collection_map(f, child) for child in cls._flatten(obj)]
+
+
+@CollectionRegistry.register_(tuple.__name__)
+class TupleCollection(Collection):
+
+    @classmethod
+    def _flatten(cls, obj: tuple[Any, ...]) -> Iterable[Any]:
+        return obj
+
+    @classmethod
+    def map(
+        cls,
+        f: Callable[[Any], Any],
+        obj: tuple[Any, ...],
+    ) -> tuple[Any, ...]:
+        return tuple(collection_map(f, child) for child in cls._flatten(obj))
+
+
+@CollectionRegistry.register_(set.__name__)
+class SetCollection(Collection):
+
+    @classmethod
+    def _flatten(cls, obj: set[Any]) -> Iterable[Any]:
+        return obj
+
+    @classmethod
+    def map(cls, f: Callable[[Any], Any], obj: set[Any]) -> set[Any]:
+        return {collection_map(f, child) for child in cls._flatten(obj)}
+
+
+def collection_map(f: Callable[[Any], Any], obj: Any) -> Any:
+    collection = cast(
+        type[Collection],
+        CollectionRegistry.get(obj.__class__.__name__, DefaultCollection),
+    )
+    return collection.map(f, obj)
+
+
+def collection_flatten(obj: Any) -> list[Any]:
+    collection = cast(
+        type[Collection],
+        CollectionRegistry.get(obj.__class__.__name__, DefaultCollection),
+    )
+    return collection.flatten(obj)
+
+
+def collection_reduce(
+    f: Callable[[Iterable[Any]], Any],
+    obj: Any,
+) -> Any:
+    collection = cast(
+        type[Collection],
+        CollectionRegistry.get(obj.__class__.__name__, DefaultCollection),
+    )
+    return collection.reduce(f, obj)
+
+
+def collection_index(obj: Any, indices: Any) -> Any:
+    if not isinstance(indices, Iterable) or isinstance(indices, (str, bytes)):
+        return obj[indices]
+    for index in indices:
+        obj = obj[index]
+    return obj
