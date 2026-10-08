@@ -1,4 +1,5 @@
 import pathlib
+from typing import Any
 
 import torch
 
@@ -7,12 +8,39 @@ from todd.configs import PyConfig
 from todd_tasks.object_detection_knowledge_distillation.models.losses.ckd import (  # noqa: E501 pylint: disable=line-too-long
     CKDLoss,
 )
-from todd_torch.utils import NestedTensorCollectionUtils
 
 BaseDistiller = kd.distillers.BaseDistiller
 DistillerStore = kd.distillers.DistillerStore
 KDAdaptRegistry = kd.distillers.KDAdaptRegistry
 BaseAdapt = kd.distillers.adapts.BaseAdapt
+
+
+def assert_close(x: Any, y: Any) -> None:
+    if isinstance(x, torch.Tensor):
+        assert isinstance(y, torch.Tensor)
+        assert torch.allclose(x, y)
+        return
+    if isinstance(x, dict):
+        assert isinstance(y, dict)
+        assert x.keys() == y.keys()
+        for key, value in x.items():
+            assert_close(value, y[key])
+        return
+    if isinstance(x, list):
+        assert isinstance(y, list)
+        for value, other in zip(x, y, strict=True):
+            assert_close(value, other)
+        return
+    if isinstance(x, tuple):
+        assert isinstance(y, tuple)
+        for value, other in zip(x, y, strict=True):
+            assert_close(value, other)
+        return
+    if isinstance(x, (float, int)):
+        assert isinstance(y, (float, int))
+        assert torch.allclose(torch.tensor(x), torch.tensor(y))
+        return
+    assert x == y
 
 
 @KDAdaptRegistry.register_()
@@ -140,9 +168,8 @@ class TestCKD:
             tensors = losses.pop('_debug_')
             tensors.pop('bbox_ids')
 
-            utils = NestedTensorCollectionUtils()
-            assert utils.all_close(rank_result['tensors'], tensors)
-            assert utils.all_close(rank_result['losses'], losses)
+            assert_close(rank_result['tensors'], tensors)
+            assert_close(rank_result['losses'], losses)
 
 
 # if __name__ == '__main__':

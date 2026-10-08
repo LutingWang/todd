@@ -8,7 +8,7 @@ from typing import Any, Iterator, TypeVar
 import torch
 from torch.utils.data import DataLoader
 
-from todd.utils import NestedCollectionUtils
+from todd.utils import collection_map
 
 T = TypeVar('T')
 
@@ -26,9 +26,11 @@ def set_epoch(dataloader: DataLoader, epoch: int) -> None:
 
 
 def cuda(x: Any) -> Any:
-    if isinstance(x, torch.Tensor):
-        return x.cuda(non_blocking=True)
-    return x
+    return collection_map(
+        lambda leaf: leaf.cuda(non_blocking=True)
+        if isinstance(leaf, torch.Tensor) else leaf,
+        x,
+    )
 
 
 class PrefetchDataLoader(DataLoader[T]):
@@ -36,7 +38,6 @@ class PrefetchDataLoader(DataLoader[T]):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._stream = torch.cuda.Stream()
-        self._utils = NestedCollectionUtils()
 
     def _prefetch(self, iter_: Iterator[Any]) -> Iterator[Any] | None:
         try:
@@ -44,7 +45,7 @@ class PrefetchDataLoader(DataLoader[T]):
         except StopIteration:
             return None
         with torch.cuda.stream(self._stream):
-            return self._utils.map(cuda, batch)  # type: ignore[arg-type]
+            return cuda(batch)
 
     def __iter__(self) -> Iterator[Any]:  # type: ignore[override]
         iter_ = super().__iter__()

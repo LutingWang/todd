@@ -3,13 +3,12 @@ __all__ = [
 ]
 
 from abc import ABC, abstractmethod
-from functools import partial
 from typing import Any
 
 import torch
 from torch import nn
 
-from ...utils import NestedTensorCollectionUtils, StateDict
+from ...utils import StateDict
 from ..norms import BATCHNORMS
 
 
@@ -40,9 +39,10 @@ class BaseShadow(nn.Module, ABC):
     def _to_device(self, state_dict: StateDict) -> StateDict:
         if self._device is None:
             return state_dict
-        utils = NestedTensorCollectionUtils()
-        f = partial(torch.Tensor.to, device=self._device)
-        return utils.map(f, state_dict)
+        return {
+            key: tensor.to(self._device)
+            for key, tensor in state_dict.items()
+        }
 
     def _state_dict_to_device(self, module: nn.Module) -> StateDict:
         return self._to_device(module.state_dict())
@@ -52,9 +52,8 @@ class BaseShadow(nn.Module, ABC):
         pass
 
     def forward(self, module: nn.Module) -> None:
-        utils = NestedTensorCollectionUtils()
-        self._shadow = utils.map(
-            self._forward,  # type: ignore[arg-type]
-            self._shadow,
-            self._state_dict_to_device(module),
-        )
+        state_dict = self._state_dict_to_device(module)
+        self._shadow = {
+            key: self._forward(self._shadow[key], tensor)
+            for key, tensor in state_dict.items()
+        }
