@@ -10,7 +10,8 @@ import torch
 import torchvision.transforms.functional as F
 from PIL import Image
 
-from todd_torch.datasets import BaseAccessLayer, BaseDataset, IndexKeys
+from todd_torch.datasets import BaseDataset, IndexKeys
+from todd_torch.datasets.access_layers import BaseAccessLayer
 from todd_torch.patches.pil import convert_rgb
 from todd_torch.registries import DatasetRegistry
 

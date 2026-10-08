@@ -3,6 +3,7 @@ __all__ = [
     'SpringCV2AccessLayer',
 ]
 
+from abc import ABC
 from pathlib import Path
 from typing import Iterator, TypeVar
 
@@ -18,7 +19,7 @@ from .optical_flow import OpticalFlowAccessLayer
 V = TypeVar('V')
 
 
-class SpringMixin(FileAccessLayer[V]):
+class SpringMixin(FileAccessLayer[V], ABC):
 
     def __init__(self, *args, modality: str, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -44,8 +45,8 @@ class SpringMixin(FileAccessLayer[V]):
 
 @OFEAccessLayerRegistry.register_()
 class SpringOpticalFlowAccessLayer(
-    SpringMixin[Flo5OpticalFlow],
     OpticalFlowAccessLayer[Flo5OpticalFlow],
+    SpringMixin[Flo5OpticalFlow],
 ):
 
     def __init__(self, *args, **kwargs) -> None:

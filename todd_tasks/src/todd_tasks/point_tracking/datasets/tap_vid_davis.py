@@ -22,6 +22,7 @@ class T(TypedDict):
 
 
 class TAPVidDAVISDataset(BaseDataset[T, str, VT]):
+
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(
             *args,

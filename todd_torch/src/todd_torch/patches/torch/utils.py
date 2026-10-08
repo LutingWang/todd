@@ -27,8 +27,8 @@ def set_epoch(dataloader: DataLoader, epoch: int) -> None:
 
 def cuda(x: Any) -> Any:
     return collection_map(
-        lambda leaf: leaf.cuda(non_blocking=True)
-        if isinstance(leaf, torch.Tensor) else leaf,
+        lambda tensor: tensor.cuda(non_blocking=True)
+        if isinstance(tensor, torch.Tensor) else tensor,
         x,
     )
 

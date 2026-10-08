@@ -3,6 +3,7 @@ __all__ = [
 ]
 
 import pathlib
+from abc import ABC
 from typing import Iterator, TypeVar
 
 from ..registries import AccessLayerRegistry
@@ -12,7 +13,7 @@ V = TypeVar('V')
 
 
 @AccessLayerRegistry.register_()
-class SuffixMixin(FileAccessLayer[V]):
+class SuffixMixin(FileAccessLayer[V], ABC):
 
     def __init__(self, *args, suffix: str, **kwargs) -> None:
         super().__init__(*args, **kwargs)

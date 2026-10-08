@@ -94,7 +94,7 @@ class CheckMixin(nn.Module, ABC):
 # in order to avoid MRO resolution failures.
 
 
-class NoGradMixin(InitWeightsMixin, BuildPreHookMixin, CheckMixin):
+class NoGradMixin(InitWeightsMixin, BuildPreHookMixin, CheckMixin, ABC):
     """A mixin class that excludes specific parameters from gradient \
     computation.
 
@@ -240,7 +240,7 @@ class NoGradMixin(InitWeightsMixin, BuildPreHookMixin, CheckMixin):
         return state_dict
 
 
-class EvalMixin(InitWeightsMixin, BuildPreHookMixin, CheckMixin):
+class EvalMixin(InitWeightsMixin, BuildPreHookMixin, CheckMixin, ABC):
     """A mixin class that provides evaluation functionality for a model.
 
     This mixin class is intended to be used as a base class for models that
@@ -360,7 +360,7 @@ class EvalMixin(InitWeightsMixin, BuildPreHookMixin, CheckMixin):
         return self
 
 
-class FreezeMixin(NoGradMixin, EvalMixin):
+class FreezeMixin(NoGradMixin, EvalMixin, ABC):
     """A mixin class that provides freezing functionality to a model.
 
     Examples:
@@ -408,7 +408,7 @@ class FreezeMixin(NoGradMixin, EvalMixin):
         return config
 
 
-class FrozenMixin(FreezeMixin):
+class FrozenMixin(FreezeMixin, ABC):
     """A mixin class that provides freezing functionality to a class.
 
     This mixin class is used to create frozen modules, where the parameters

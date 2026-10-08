@@ -3,6 +3,7 @@ __all__ = [
     'Index',
 ]
 
+from abc import ABC
 from collections.abc import Iterable
 from typing import TypeAlias
 
@@ -14,7 +15,7 @@ from .base import BaseAdapt
 ListTensor: TypeAlias = torch.Tensor | list['ListTensor']
 
 
-class ListTensorAdapt(BaseAdapt):
+class ListTensorAdapt(BaseAdapt, ABC):
 
     @classmethod
     def _stack(cls, obj: ListTensor, **kwargs) -> torch.Tensor:

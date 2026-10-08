@@ -4,6 +4,7 @@ __all__ = [
 ]
 
 from abc import ABC, abstractmethod
+from typing import NoReturn
 
 import einops
 import torch
@@ -175,6 +176,9 @@ class Vocos(PretrainedMixin):
     def encode(self, audio: torch.Tensor) -> torch.Tensor:
         return self._mel_spectrogram(audio)
 
+    def forward(self) -> NoReturn:
+        raise NotImplementedError
+
     def decode(self, mel_spectrogram: torch.Tensor) -> torch.Tensor:
         x: torch.Tensor = self._in_conv(mel_spectrogram)
         x = einops.rearrange(x, 'b c t -> b t c')
@@ -185,7 +189,7 @@ class Vocos(PretrainedMixin):
         x = einops.rearrange(x, 'b t c -> b c t')
         magnitude, phase = x.chunk(2, 1)
         magnitude = magnitude.exp().clip(max=1e2)
-        return torch.istft(  # pylint: disable=not-callable
+        return torch.istft(
             magnitude * (phase.cos() + 1j * phase.sin()),
             self.n_fft,
             self.hop_length,

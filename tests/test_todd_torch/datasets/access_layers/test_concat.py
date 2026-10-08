@@ -9,12 +9,8 @@ from todd_torch.datasets.access_layers.concat import ConcatAccessLayer
 class TestConcatAccessLayer:
 
     def test_len(self, tmp_path: pathlib.Path) -> None:
-        first: NpyAccessLayer[np.int64] = NpyAccessLayer(
-            directory=tmp_path / 'first',
-        )
-        second: NpyAccessLayer[np.int64] = NpyAccessLayer(
-            directory=tmp_path / 'second',
-        )
+        first = NpyAccessLayer[np.int64](directory=tmp_path / 'first')
+        second = NpyAccessLayer[np.int64](directory=tmp_path / 'second')
         access_layer = ConcatAccessLayer(
             access_layers={
                 'first': first,
