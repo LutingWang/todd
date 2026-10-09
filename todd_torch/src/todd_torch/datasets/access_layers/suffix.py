@@ -2,8 +2,8 @@ __all__ = [
     'SuffixMixin',
 ]
 
-import pathlib
 from abc import ABC
+from pathlib import Path
 from typing import Iterator, TypeVar
 
 from ..registries import AccessLayerRegistry
@@ -20,13 +20,13 @@ class SuffixMixin(FileAccessLayer[V], ABC):
         assert not suffix or suffix.startswith('.')
         self._suffix = suffix
 
-    def _paths(self) -> Iterator[pathlib.Path]:
+    def _paths(self) -> Iterator[Path]:
         paths = super()._paths()
         if self._suffix:
             paths = filter(lambda path: path.suffix == self._suffix, paths)
         return paths
 
-    def _path(self, key: str) -> pathlib.Path:
+    def _path(self, key: str) -> Path:
         if self._suffix:
             return super()._path(key + self._suffix)
         return super()._path(key)

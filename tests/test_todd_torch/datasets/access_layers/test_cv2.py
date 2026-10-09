@@ -1,4 +1,4 @@
-import pathlib
+from pathlib import Path
 
 import numpy as np
 
@@ -7,7 +7,7 @@ from todd_torch.datasets.access_layers.cv2 import CV2AccessLayer
 
 class TestCV2AccessLayer:
 
-    def test_setitem(self, tmp_path: pathlib.Path) -> None:
+    def test_setitem(self, tmp_path: Path) -> None:
         access_layer = CV2AccessLayer(
             directory=tmp_path,
             suffix='.png',

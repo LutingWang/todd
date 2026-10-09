@@ -2,12 +2,12 @@ __all__ = [
     'normalize_text',
 ]
 
-import pathlib
+from pathlib import Path
 
 from tn.chinese.normalizer import Normalizer as ZhNormalizer
 from tn.english.normalizer import Normalizer as EnNormalizer
 
-cache_dir = pathlib.Path(__file__).with_suffix('')
+cache_dir = Path(__file__).with_suffix('')
 cache_dir.mkdir(parents=True, exist_ok=True)
 
 ZH_NORMALIZER = ZhNormalizer(

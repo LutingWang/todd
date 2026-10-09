@@ -2,7 +2,7 @@ __all__ = [
     'Tokenizer',
 ]
 
-import pathlib
+from pathlib import Path
 from typing import Generator, Mapping
 from typing_extensions import Self
 
@@ -19,9 +19,9 @@ class Tokenizer:
         self._character2token = dict(character2token)
 
     @classmethod
-    def load(cls, path: str | pathlib.Path) -> Self:
+    def load(cls, path: str | Path) -> Self:
         if isinstance(path, str):
-            path = pathlib.Path(path)
+            path = Path(path)
         with path.open() as f:
             character2token = {line.strip(): i for i, line in enumerate(f)}
         return cls(character2token)

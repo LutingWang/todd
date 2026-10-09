@@ -2,8 +2,8 @@ __all__ = [
     'DirectoryAccessLayer',
 ]
 
-import pathlib
 from abc import ABC, abstractmethod
+from pathlib import Path
 from typing import Iterator, TypeVar
 
 from .base import BaseAccessLayer
@@ -16,17 +16,17 @@ class DirectoryAccessLayer(BaseAccessLayer[str, T], ABC):
     def __init__(
         self,
         *args,
-        directory: pathlib.Path,
+        directory: Path,
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
         self._directory = directory
 
     @abstractmethod
-    def _paths(self) -> Iterator[pathlib.Path]:
+    def _paths(self) -> Iterator[Path]:
         pass
 
-    def _path(self, key: str) -> pathlib.Path:
+    def _path(self, key: str) -> Path:
         return self._directory / key
 
     def __iter__(self) -> Iterator[str]:
@@ -37,7 +37,7 @@ class DirectoryAccessLayer(BaseAccessLayer[str, T], ABC):
         return len(list(self._paths()))
 
     @property
-    def directory(self) -> pathlib.Path:
+    def directory(self) -> Path:
         return self._directory
 
     @property

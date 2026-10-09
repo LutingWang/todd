@@ -1,4 +1,4 @@
-import pathlib
+from pathlib import Path
 from typing import Any
 
 import torch
@@ -147,7 +147,7 @@ class TestCKD:
     #         )
     #     torch.save(result, filename)
 
-    def test_ckd(self, data_dir: pathlib.Path) -> None:
+    def test_ckd(self, data_dir: Path) -> None:
         config = PyConfig.load(data_dir / 'ckd.py')
         result = torch.load(data_dir / 'ckd.pth', map_location='cpu')
 

@@ -3,10 +3,10 @@ __all__ = [
     'COCODataset',
 ]
 
-import pathlib
 from abc import ABC, abstractmethod
 from collections import UserList
 from dataclasses import dataclass
+from pathlib import Path
 from typing import (
     TYPE_CHECKING,
     Generic,
@@ -179,7 +179,7 @@ class T(TypedDict):
 class COCODataset(BaseDataset[COCO, T]):
     _keys: Keys
 
-    DATA_ROOT = pathlib.Path('data/coco')
+    DATA_ROOT = Path('data/coco')
     ANNOTATIONS_ROOT = DATA_ROOT / 'annotations'
 
     def __init__(
@@ -188,7 +188,7 @@ class COCODataset(BaseDataset[COCO, T]):
         split: Split,
         year: Year = 2017,
         access_layer: PILAccessLayer | None = None,
-        annotations_file: pathlib.Path | str | None = None,
+        annotations_file: Path | str | None = None,
         **kwargs,
     ) -> None:
         split_year = f'{split}{year}'

@@ -2,7 +2,7 @@ __all__ = [
     'V3DetDataset',
 ]
 
-import pathlib
+from pathlib import Path
 from typing import Literal
 
 from todd_torch.datasets.access_layers import PILAccessLayer
@@ -17,7 +17,7 @@ Version = Literal['v1']
 
 @ODDatasetRegistry.register_()
 class V3DetDataset(COCODataset):
-    DATA_ROOT = pathlib.Path('data/v3det')
+    DATA_ROOT = Path('data/v3det')
     ANNOTATIONS_ROOT = DATA_ROOT / 'annotations'
 
     def __init__(
@@ -27,7 +27,7 @@ class V3DetDataset(COCODataset):
         year: Year = 2023,
         version: Version = 'v1',
         access_layer: PILAccessLayer | None = None,
-        annotations_file: pathlib.Path | str | None = None,
+        annotations_file: Path | str | None = None,
         **kwargs,
     ) -> None:
         if access_layer is None:

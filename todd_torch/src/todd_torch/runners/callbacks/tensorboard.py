@@ -2,7 +2,7 @@ __all__ = [
     'TensorBoardCallback',
 ]
 
-import pathlib
+from pathlib import Path
 from typing import Any, TypeVar
 
 from torch import nn
@@ -36,7 +36,7 @@ class TensorBoardCallback(IntervalMixin[T], BaseCallback[T]):
         self._main_tag = main_tag
 
     @property
-    def work_dir(self) -> pathlib.Path:
+    def work_dir(self) -> Path:
         return self.runner.work_dir / 'tensorboard'
 
     def bind(self, *args, **kwargs) -> None:

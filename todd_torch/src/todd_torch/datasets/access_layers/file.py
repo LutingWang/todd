@@ -2,8 +2,8 @@ __all__ = [
     'FileAccessLayer',
 ]
 
-import pathlib
 from abc import ABC
+from pathlib import Path
 from typing import Iterator, TypeVar
 
 from .directory import DirectoryAccessLayer
@@ -22,9 +22,9 @@ class FileAccessLayer(DirectoryAccessLayer[T], ABC):
         super().__init__(*args, **kwargs)
         self._recursive = recursive
 
-    def _paths(self) -> Iterator[pathlib.Path]:
+    def _paths(self) -> Iterator[Path]:
         return filter(
-            pathlib.Path.is_file,
+            Path.is_file,
             self._directory.rglob('*')
             if self._recursive else self._directory.iterdir(),
         )

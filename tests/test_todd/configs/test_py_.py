@@ -1,5 +1,5 @@
 import difflib
-import pathlib
+from pathlib import Path
 from unittest import mock
 
 import pytest
@@ -13,26 +13,26 @@ class TestPyConfig:
     def config(self) -> PyConfig:
         return PyConfig(a=1, b=dict(c=3))
 
-    def test_load(self, config: PyConfig, data_dir: pathlib.Path) -> None:
+    def test_load(self, config: PyConfig, data_dir: Path) -> None:
         assert PyConfig.load(data_dir / 'config.py') == config
 
-    def test_load1(self, data_dir: pathlib.Path) -> None:
+    def test_load1(self, data_dir: Path) -> None:
         assert PyConfig.load(data_dir / 'config1.py') == PyConfig(a=dict(c=3))
 
-    def test_load2(self, data_dir: pathlib.Path) -> None:
+    def test_load2(self, data_dir: Path) -> None:
         assert PyConfig.load(data_dir / 'config2.py') == \
             PyConfig(a=[dict(b=3)])
 
-    def test_load2_1(self, data_dir: pathlib.Path) -> None:
+    def test_load2_1(self, data_dir: Path) -> None:
         assert PyConfig.load(data_dir / 'config2_1.py') == \
             PyConfig(a=[dict(b=2), dict(c=3)])
 
-    def test_diff_html(self, config: PyConfig, data_dir: pathlib.Path) -> None:
+    def test_diff_html(self, config: PyConfig, data_dir: Path) -> None:
         diff = PyConfig(a=1).diff(config, True)
         html = data_dir / 'diff.html'
         with mock.patch.object(difflib.HtmlDiff, '_default_prefix', 0):
             assert diff == html.read_text()
 
-    def test_load_export(self, data_dir: pathlib.Path) -> None:
+    def test_load_export(self, data_dir: Path) -> None:
         config_import = PyConfig.load(data_dir / 'config_export.py')
         assert config_import.dumps() == "module = 'torch'\n"

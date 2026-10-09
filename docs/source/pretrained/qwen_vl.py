@@ -1,6 +1,6 @@
 # pylint: disable=duplicate-code
 
-import pathlib
+from pathlib import Path
 from typing import Sequence
 
 import torch
@@ -116,7 +116,7 @@ def main() -> None:
         "Please use no more than 4 GPUs, in order to avoid RuntimeError."
     )
 
-    images_root = pathlib.Path(__file__).parent / 'images'
+    images_root = Path(__file__).parent / 'images'
     images = [Image.open(image) for image in images_root.iterdir()]
 
     chatbot = Chatbot()

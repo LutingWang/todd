@@ -1,6 +1,6 @@
 import argparse
 import os
-import pathlib
+from pathlib import Path
 from typing import TypeVar, cast
 
 import einops
@@ -28,7 +28,7 @@ ModuleType = TypeVar('ModuleType', bound=nn.Module)  # noqa: E501 pylint: disabl
 
 class OursTokenDataset(BaseDataset[torch.Tensor, KT, VT]):
 
-    def __init__(self, *args, directory: pathlib.Path, **kwargs) -> None:
+    def __init__(self, *args, directory: Path, **kwargs) -> None:
         access_layer: PthAccessLayer[np.int64] = \
             PthAccessLayer(directory=directory)
         super().__init__(*args, access_layer=access_layer, **kwargs)
@@ -56,7 +56,7 @@ def main() -> None:
     name: str = args.name
 
     cpu = os.cpu_count() or 1
-    dataset = OursTokenDataset(directory=pathlib.Path('work_dir'))
+    dataset = OursTokenDataset(directory=Path('work_dir'))
     dataloader: DataLoader[torch.Tensor] = DataLoader(
         dataset,
         cpu,
@@ -87,7 +87,7 @@ def main() -> None:
         sum(map(len, token_sequences)),
     )
 
-    work_dir = pathlib.Path('work_dirs')
+    work_dir = Path('work_dirs')
     if Store.DRY_RUN:
         work_dir = work_dir / 'dry_run'
     work_dir = work_dir / name

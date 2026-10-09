@@ -1,4 +1,4 @@
-import pathlib
+from pathlib import Path
 
 import numpy as np
 
@@ -8,7 +8,7 @@ from todd_torch.datasets.access_layers.concat import ConcatAccessLayer
 
 class TestConcatAccessLayer:
 
-    def test_len(self, tmp_path: pathlib.Path) -> None:
+    def test_len(self, tmp_path: Path) -> None:
         first = NpyAccessLayer[np.int64](directory=tmp_path / 'first')
         second = NpyAccessLayer[np.int64](directory=tmp_path / 'second')
         access_layer = ConcatAccessLayer(

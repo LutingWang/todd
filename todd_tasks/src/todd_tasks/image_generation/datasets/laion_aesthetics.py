@@ -3,8 +3,8 @@ __all__ = [
 ]
 
 import csv
-import pathlib
 from abc import ABC
+from pathlib import Path
 from typing import Literal, TypedDict
 
 import torch
@@ -47,7 +47,7 @@ class T(TypedDict):
 
 @DatasetRegistry.register_()
 class LAIONAestheticsDataset(PILDataset[T], ABC):
-    DATA_ROOT = pathlib.Path('data/laion/aesthetics')
+    DATA_ROOT = Path('data/laion/aesthetics')
     ANNOTATIONS_ROOT = DATA_ROOT / 'annotations'
     SUFFIX = ''
 
@@ -56,7 +56,7 @@ class LAIONAestheticsDataset(PILDataset[T], ABC):
         *args,
         split: Split,
         access_layer: PILAccessLayer | None = None,
-        annotations_file: pathlib.Path | str | None = None,
+        annotations_file: Path | str | None = None,
         **kwargs,
     ) -> None:
         if access_layer is None:
@@ -67,7 +67,7 @@ class LAIONAestheticsDataset(PILDataset[T], ABC):
         if annotations_file is None:
             annotations_file = self.ANNOTATIONS_ROOT / f'{split}.tsv'
         elif isinstance(annotations_file, str):
-            annotations_file = pathlib.Path(annotations_file)
+            annotations_file = Path(annotations_file)
 
         with annotations_file.open() as f:
             self._annotations = [

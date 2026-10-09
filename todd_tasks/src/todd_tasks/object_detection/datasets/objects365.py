@@ -4,9 +4,9 @@ __all__ = [
     'Objects365Dataset',
 ]
 
-import pathlib
 from collections import UserList
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any, Iterable, Literal, Mapping, TypedDict, cast
 from typing_extensions import Self
 
@@ -119,7 +119,7 @@ class T(TypedDict):
 class Objects365Dataset(BaseCOCODataset[COCO, T]):
     _keys: Keys
 
-    DATA_ROOT = pathlib.Path('data/objects365')
+    DATA_ROOT = Path('data/objects365')
     ANNOTATIONS_ROOT = DATA_ROOT / 'annotations'
 
     IGNORE_KEYS = (
@@ -134,7 +134,7 @@ class Objects365Dataset(BaseCOCODataset[COCO, T]):
         split: Split,
         version: Literal['v1', 'v2'] = 'v2',
         access_layer: PILAccessLayer | None = None,
-        annotations_file: pathlib.Path | str | None = None,
+        annotations_file: Path | str | None = None,
         **kwargs,
     ) -> None:
         self._split = split

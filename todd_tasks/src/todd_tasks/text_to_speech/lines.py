@@ -2,8 +2,8 @@ __all__ = [
     'Lines',
 ]
 
-import pathlib
 import re
+from pathlib import Path
 from typing import Generator, Mapping
 
 from todd.patches import remove_prefix
@@ -21,7 +21,7 @@ class Lines:
 
     def parse(
         self,
-        file: pathlib.Path,
+        file: Path,
     ) -> Generator[tuple[Voice, str], None, None]:
         with file.open() as f:
             for line in f:

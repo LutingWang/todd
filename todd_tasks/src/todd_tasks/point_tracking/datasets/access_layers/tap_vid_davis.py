@@ -2,9 +2,9 @@ __all__ = [
     'TAPVidDAVISAccessLayer',
 ]
 
-import pathlib
 import pickle  # nosec B403
 from functools import cached_property
+from pathlib import Path
 from typing import Iterator, TypedDict
 
 import numpy as np
@@ -25,7 +25,7 @@ class TAPVidDAVISAccessLayer(
     ReadOnlyMixin[str, VT],
     BaseAccessLayer[str, VT],
 ):
-    DATA_FILE = pathlib.Path('data', 'tap_vid', 'davis.pkl')
+    DATA_FILE = Path('data', 'tap_vid', 'davis.pkl')
 
     @cached_property
     def data(self) -> dict[str, VT]:

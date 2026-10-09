@@ -4,8 +4,8 @@ __all__ = [
 
 import json
 import os
-import pathlib
 from abc import ABC
+from pathlib import Path
 from typing import Literal, TypedDict
 
 import torch
@@ -69,7 +69,7 @@ class T(TypedDict):
 
 @DatasetRegistry.register_()
 class ImageNetDataset(PILDataset[T], ABC):
-    DATA_ROOT = pathlib.Path('data/imagenet')
+    DATA_ROOT = Path('data/imagenet')
     ANNOTATIONS_ROOT = DATA_ROOT / 'annotations'
     SYNSETS_FILE = DATA_ROOT / 'synsets.json'
     SUFFIX = '.JPEG'
@@ -79,8 +79,8 @@ class ImageNetDataset(PILDataset[T], ABC):
         *args,
         split: Split,
         access_layer: PILAccessLayer | None = None,
-        annotations_file: pathlib.Path | str | None = None,
-        synsets_file: pathlib.Path | str | None = None,
+        annotations_file: Path | str | None = None,
+        synsets_file: Path | str | None = None,
         **kwargs,
     ) -> None:
         if access_layer is None:
@@ -92,11 +92,11 @@ class ImageNetDataset(PILDataset[T], ABC):
         if annotations_file is None:
             annotations_file = self.ANNOTATIONS_ROOT / f'{split}.json'
         elif isinstance(annotations_file, str):
-            annotations_file = pathlib.Path(annotations_file)
+            annotations_file = Path(annotations_file)
         if synsets_file is None:
             synsets_file = self.SYNSETS_FILE
         elif isinstance(synsets_file, str):
-            synsets_file = pathlib.Path(synsets_file)
+            synsets_file = Path(synsets_file)
 
         with annotations_file.open() as f:
             self._annotations: Annotations = json.load(f)

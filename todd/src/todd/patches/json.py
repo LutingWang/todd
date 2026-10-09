@@ -6,13 +6,13 @@ __all__ = [
 ]
 
 import json
-import pathlib
 from collections.abc import Iterable
+from pathlib import Path
 from typing import Any
 
 
 def json_dump(object_: Any, f: Any, *, compact: bool = True, **kwargs) -> None:
-    if isinstance(f, (str, pathlib.Path)):
+    if isinstance(f, (str, Path)):
         with open(f, 'w') as f_:
             json_dump(object_, f_, compact=compact, **kwargs)
         return
@@ -23,7 +23,7 @@ def json_dump(object_: Any, f: Any, *, compact: bool = True, **kwargs) -> None:
 
 
 def json_load(f: Any, **kwargs) -> Any:
-    if isinstance(f, (str, pathlib.Path)):
+    if isinstance(f, (str, Path)):
         with open(f) as f_:
             return json_load(f_, **kwargs)
     return json.load(f, **kwargs)
@@ -36,7 +36,7 @@ def jsonl_dump(
     compact: bool = True,
     **kwargs,
 ) -> None:
-    if isinstance(f, (str, pathlib.Path)):
+    if isinstance(f, (str, Path)):
         with open(f, 'w') as f_:
             jsonl_dump(objects, f_, compact=compact, **kwargs)
         return
@@ -49,7 +49,7 @@ def jsonl_dump(
 
 
 def jsonl_load(f: Any, **kwargs) -> list[Any]:
-    if isinstance(f, (str, pathlib.Path)):
+    if isinstance(f, (str, Path)):
         with open(f) as f_:
             return jsonl_load(f_, **kwargs)
     return [json.loads(line, **kwargs) for line in f]

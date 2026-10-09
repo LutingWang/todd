@@ -1,5 +1,5 @@
 import argparse
-import pathlib
+from pathlib import Path
 
 import torch
 
@@ -9,9 +9,9 @@ from todd_torch.utils import init_seed
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument('voices', type=pathlib.Path)
-    parser.add_argument('lines', type=pathlib.Path)
-    parser.add_argument('output', type=pathlib.Path)
+    parser.add_argument('voices', type=Path)
+    parser.add_argument('lines', type=Path)
+    parser.add_argument('output', type=Path)
     parser.add_argument('--seed', type=int, default=3407)
     args = parser.parse_args()
     return args

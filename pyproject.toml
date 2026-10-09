@@ -170,9 +170,9 @@ version_files = [
 
 [tool.pylint.main]
 init-hook = '''
-import pathlib
+from pathlib import Path
 import sys
-root = pathlib.Path.cwd()
+root = Path.cwd()
 sys.path.insert(0, str(root / 'todd' / 'src'))
 sys.path.insert(0, str(root / 'todd_tasks' / 'src'))
 sys.path.insert(0, str(root / 'todd_torch' / 'src'))

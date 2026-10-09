@@ -4,7 +4,7 @@ __all__ = [
 
 import logging
 import math
-import pathlib
+from pathlib import Path
 from typing import Generator
 
 import jieba
@@ -29,7 +29,7 @@ class F5_TTS:  # noqa: N801 pylint: disable=invalid-name
 
     def __init__(
         self,
-        voices: pathlib.Path,
+        voices: Path,
         min_rms: float = 0.1,
         sample_rate: int = 24_000,
     ) -> None:
@@ -99,7 +99,7 @@ class F5_TTS:  # noqa: N801 pylint: disable=invalid-name
 
     def read_file(
         self,
-        lines_file: pathlib.Path,
+        lines_file: Path,
         *args,
         **kwargs,
     ) -> Generator[tuple[Voice, AudioSegment], None, None]:
@@ -113,7 +113,7 @@ class F5_TTS:  # noqa: N801 pylint: disable=invalid-name
     def run(
         self,
         *args,
-        output_file: pathlib.Path,
+        output_file: Path,
         remove_silence: bool = False,
         **kwargs,
     ) -> None:

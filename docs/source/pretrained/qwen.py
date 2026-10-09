@@ -1,5 +1,5 @@
 import argparse
-import pathlib
+from pathlib import Path
 from typing import Literal, TextIO, TypedDict
 
 import torch
@@ -120,8 +120,8 @@ class Translator:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument('input_path', type=pathlib.Path)
-    parser.add_argument('output_path', type=pathlib.Path)
+    parser.add_argument('input_path', type=Path)
+    parser.add_argument('output_path', type=Path)
     args = parser.parse_args()
     return args
 

@@ -1,4 +1,4 @@
-import pathlib
+from pathlib import Path
 from typing import TypedDict
 
 import torch
@@ -16,8 +16,8 @@ from todd_torch.patches.torch import (
     get_world_size,
 )
 
-DATA_ROOT = pathlib.Path('data/imagenet-21k')
-WORK_DIR = pathlib.Path('work_dirs/imagenet-21k')
+DATA_ROOT = Path('data/imagenet-21k')
+WORK_DIR = Path('work_dirs/imagenet-21k')
 
 WORK_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -45,7 +45,7 @@ class Dataset(PILDataset[T]):
         return T(id_=key, image=tensor)
 
 
-def check(out_path: pathlib.Path) -> bool:
+def check(out_path: Path) -> bool:
     if not out_path.exists():
         return False
     try:

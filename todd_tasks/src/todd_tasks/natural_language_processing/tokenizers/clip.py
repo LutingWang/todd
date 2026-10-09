@@ -5,7 +5,7 @@ __all__ = [
 import gzip
 import html
 import itertools
-import pathlib
+from pathlib import Path
 from typing import Any
 
 import ftfy
@@ -58,7 +58,7 @@ class Codec:
 
 def load_bpe(path: Any, size: int) -> list[tuple[str, str]]:
     if path is None:
-        path = pathlib.Path(__file__).parent / 'clip_bpe.txt.gz'
+        path = Path(__file__).parent / 'clip_bpe.txt.gz'
     bpe: list[tuple[str, str]] = []
     with gzip.open(path, 'rt', encoding=UTF_8) as f:
         f.readline()  # skip first line

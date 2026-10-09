@@ -6,9 +6,9 @@ import contextlib
 import getpass
 import logging
 import os
-import pathlib
 import socket
 from abc import abstractmethod
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Generic, Mapping, TypeVar
 
 from torch import nn
@@ -47,7 +47,7 @@ class BaseRunner(BuildPreHookMixin, StateDictMixin, Generic[T]):
         callbacks: 'ComposedCallback[T]',
         dataset: Dataset[Any],
         dataloader: DataLoader[Any],
-        work_dir: pathlib.Path,
+        work_dir: Path,
         logger: logging.Logger,
         load_from: str | None = None,
         auto_resume: bool = False,
@@ -154,7 +154,7 @@ class BaseRunner(BuildPreHookMixin, StateDictMixin, Generic[T]):
     ) -> Config:
         work_dir = config.get('work_dir', Config())
         if not isinstance(work_dir, Config):
-            config.work_dir = pathlib.Path(work_dir)
+            config.work_dir = Path(work_dir)
             return config
 
         root = work_dir.get('root', 'work_dirs')
@@ -163,7 +163,7 @@ class BaseRunner(BuildPreHookMixin, StateDictMixin, Generic[T]):
         if Store.DRY_RUN:
             name = os.path.join('dry_run', name)
 
-        config.work_dir = pathlib.Path(root, name)
+        config.work_dir = Path(root, name)
         return config
 
     @classmethod
@@ -232,7 +232,7 @@ class BaseRunner(BuildPreHookMixin, StateDictMixin, Generic[T]):
         return self._callbacks
 
     @property
-    def work_dir(self) -> pathlib.Path:
+    def work_dir(self) -> Path:
         return self._work_dir
 
     @property

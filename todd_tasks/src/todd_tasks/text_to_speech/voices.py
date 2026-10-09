@@ -2,7 +2,7 @@ __all__ = [
     'Voice',
 ]
 
-import pathlib
+from pathlib import Path
 from typing import Any
 from typing_extensions import Self
 
@@ -100,7 +100,7 @@ class Voice:
     @classmethod
     def from_config(
         cls,
-        config_file: pathlib.Path,
+        config_file: Path,
         **kwargs,
     ) -> dict[str, Self]:
         config = PyConfig.load(config_file)

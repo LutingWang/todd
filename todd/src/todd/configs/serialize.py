@@ -3,8 +3,8 @@ __all__ = [
 ]
 
 import difflib
-import pathlib
 from abc import abstractmethod
+from pathlib import Path
 from typing import Any
 from typing_extensions import Self
 
@@ -24,7 +24,7 @@ class SerializeMixin(Config):
         return cls(cls._loads(s, **kwargs))  # type: ignore[abstract]
 
     @classmethod
-    def load(cls, file: str | pathlib.Path, **kwargs) -> Self:
+    def load(cls, file: str | Path, **kwargs) -> Self:
         if kwargs:
             kwargs_str = ', '.join(f'{k}={v}' for k, v in kwargs.items())
             logger.debug(
@@ -36,7 +36,7 @@ class SerializeMixin(Config):
             logger.debug("Loading config from %s", file)
 
         if isinstance(file, str):
-            file = pathlib.Path(file)
+            file = Path(file)
         # do not use `loads`, since it does not support `_delete_` with
         # `_base_`
         config = cls._loads(file.read_text(), **kwargs)
@@ -53,7 +53,7 @@ class SerializeMixin(Config):
     def dumps(self) -> str:
         pass
 
-    def dump(self, file: str | pathlib.Path) -> None:
+    def dump(self, file: str | Path) -> None:
         r"""Dump the config to a file.
 
         Args:
@@ -62,7 +62,7 @@ class SerializeMixin(Config):
         Refer to `dumps` for more details.
         """
         if isinstance(file, str):
-            file = pathlib.Path(file)
+            file = Path(file)
         file.write_text(self.dumps())
 
     def diff(self, other: Self, html: bool = False) -> str:

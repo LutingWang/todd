@@ -1,4 +1,4 @@
-import pathlib
+from pathlib import Path
 from typing import Any
 
 import todd_tasks.optical_flow_estimation as ofe
@@ -15,11 +15,11 @@ def downsample(data: T) -> T:
 
 dataset = ofe.datasets.SpringDataset(
     access_layer=Config(
-        directory=pathlib.Path('data', 'spring_sample', 'train'),
+        directory=Path('data', 'spring_sample', 'train'),
         modality='flow_FW_left',
     ),
     frame_access_layer=Config(modality='frame_left'),
 )
 PyConfig.load(
-    pathlib.Path(__file__).parent / 'optical_flow.py',
+    Path(__file__).parent / 'optical_flow.py',
 ).visualize(map(downsample, dataset))

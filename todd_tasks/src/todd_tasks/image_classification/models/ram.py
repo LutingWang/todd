@@ -2,8 +2,8 @@ __all__ = [
     'RAMplus',
 ]
 
-import pathlib
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any, Never, cast
 from typing_extensions import Self
 
@@ -45,7 +45,7 @@ class Categories(pd.DataFrame):
     @classmethod
     def load(cls, f: Any = None) -> Self:
         if f is None:
-            f = pathlib.Path(__file__).with_suffix('.csv')
+            f = Path(__file__).with_suffix('.csv')
         df = pd.read_csv(
             f,
             header=None,

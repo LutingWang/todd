@@ -2,7 +2,7 @@ __all__ = [
     'CheckpointCallback',
 ]
 
-import pathlib
+from pathlib import Path
 from typing import TypeVar
 
 import torch
@@ -45,7 +45,7 @@ class CheckpointCallback(IntervalMixin[T], BaseCallback[T]):
         if self.runner.auto_resume and self.latest_checkpoint_dir.exists():
             load_from = self.latest_checkpoint_dir
         elif self.runner.load_from is not None:
-            load_from = pathlib.Path(self.runner.load_from)
+            load_from = Path(self.runner.load_from)
             assert load_from.exists()
         else:
             load_from = None
@@ -60,14 +60,14 @@ class CheckpointCallback(IntervalMixin[T], BaseCallback[T]):
             self.runner.load_state_dict(state_dict, **self._load_state_dict)
 
     @property
-    def work_dir(self) -> pathlib.Path:
+    def work_dir(self) -> Path:
         return self.runner.work_dir / 'checkpoints'
 
     @property
-    def latest_checkpoint_dir(self) -> pathlib.Path:
+    def latest_checkpoint_dir(self) -> Path:
         return self._checkpoint_dir('latest')
 
-    def _checkpoint_dir(self, name: str) -> pathlib.Path:
+    def _checkpoint_dir(self, name: str) -> Path:
         return self.work_dir / name
 
     def _save(self, name: str) -> None:

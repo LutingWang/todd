@@ -4,9 +4,9 @@ __all__ = [
     'LVISDataset',
 ]
 
-import pathlib
 from collections import UserList
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any, Literal, Mapping, TypedDict, cast
 from typing_extensions import Self
 
@@ -107,7 +107,7 @@ class T(TypedDict):
 class LVISDataset(BaseCOCODataset[LVIS, T]):
     _keys: Keys
 
-    DATA_ROOT = pathlib.Path('data/lvis')
+    DATA_ROOT = Path('data/lvis')
     ANNOTATIONS_ROOT = DATA_ROOT / 'annotations'
 
     def __init__(
@@ -116,7 +116,7 @@ class LVISDataset(BaseCOCODataset[LVIS, T]):
         split: Split,
         version: Version = 'v1',
         access_layer: PILAccessLayer | None = None,
-        annotations_file: pathlib.Path | str | None = None,
+        annotations_file: Path | str | None = None,
         **kwargs,
     ) -> None:
         if access_layer is None:

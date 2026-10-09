@@ -1,11 +1,11 @@
-import pathlib
+from pathlib import Path
 
 import pytest
 from custom_object import CustomObject
 
 
 @pytest.fixture
-def data_dir(request: pytest.FixtureRequest) -> pathlib.Path:
+def data_dir(request: pytest.FixtureRequest) -> Path:
     stem = request.path.stem.removeprefix('test_')
     return request.path.resolve().with_name(stem)
 
