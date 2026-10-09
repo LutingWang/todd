@@ -8,6 +8,7 @@ from .jsonl import *
 from .npy import *
 from .pil import *
 from .pth import *
+from .read_only import *
 from .subdirectory import *
 from .suffix import *
 from .text import *

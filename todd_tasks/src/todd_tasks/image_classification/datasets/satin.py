@@ -11,7 +11,7 @@ import torchvision.transforms.functional as F
 from PIL import Image
 
 from todd_torch.datasets import BaseDataset, IndexKeys
-from todd_torch.datasets.access_layers import BaseAccessLayer
+from todd_torch.datasets.access_layers import BaseAccessLayer, ReadOnlyMixin
 from todd_torch.patches.pil import convert_rgb
 from todd_torch.registries import DatasetRegistry
 
@@ -33,7 +33,10 @@ Split = Literal['SAT-4', 'SAT-6', 'NASC-TG2', 'WHU-RS19', 'RSSCN7', 'RS_C11',
                 'MultiScene', 'RSI-CB256', 'AID_MultiLabel']
 
 
-class SATINAccessLayer(BaseAccessLayer[int, dict[str, Any]]):
+class SATINAccessLayer(
+    ReadOnlyMixin[int, dict[str, Any]],
+    BaseAccessLayer[int, dict[str, Any]],
+):
 
     def __init__(self, *args, split: Split, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -48,9 +51,6 @@ class SATINAccessLayer(BaseAccessLayer[int, dict[str, Any]]):
     def exists(self) -> bool:
         return True
 
-    def touch(self) -> None:
-        pass
-
     def __len__(self) -> int:
         return len(self._dataset)
 
@@ -59,12 +59,6 @@ class SATINAccessLayer(BaseAccessLayer[int, dict[str, Any]]):
 
     def __getitem__(self, key: int) -> dict[str, Any]:
         return self._dataset[key]
-
-    def __delitem__(self, *args, **kwargs) -> None:
-        raise NotImplementedError
-
-    def __setitem__(self, *args, **kwargs) -> None:
-        raise NotImplementedError
 
 
 @DatasetRegistry.register_()

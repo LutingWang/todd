@@ -9,7 +9,7 @@ from typing import Iterator, TypedDict
 
 import numpy as np
 
-from todd_torch.datasets.access_layers import BaseAccessLayer
+from todd_torch.datasets.access_layers import BaseAccessLayer, ReadOnlyMixin
 
 from ..registries import PTAccessLayerRegistry
 
@@ -21,7 +21,10 @@ class VT(TypedDict):
 
 
 @PTAccessLayerRegistry.register_()
-class TAPVidDAVISAccessLayer(BaseAccessLayer[str, VT]):
+class TAPVidDAVISAccessLayer(
+    ReadOnlyMixin[str, VT],
+    BaseAccessLayer[str, VT],
+):
     DATA_FILE = pathlib.Path('data', 'tap_vid', 'davis.pkl')
 
     @cached_property
@@ -33,9 +36,6 @@ class TAPVidDAVISAccessLayer(BaseAccessLayer[str, VT]):
     def exists(self) -> bool:
         return self.DATA_FILE.exists()
 
-    def touch(self) -> None:
-        raise NotImplementedError
-
     def __len__(self) -> int:
         return len(self.data)
 
@@ -44,9 +44,3 @@ class TAPVidDAVISAccessLayer(BaseAccessLayer[str, VT]):
 
     def __getitem__(self, key: str) -> VT:
         return self.data[key]
-
-    def __setitem__(self, *args, **kwargs) -> None:
-        raise NotImplementedError
-
-    def __delitem__(self, *args, **kwargs) -> None:
-        raise NotImplementedError
