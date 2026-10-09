@@ -1,5 +1,4 @@
 #!python3
-
 import argparse
 
 import lmdb

@@ -121,7 +121,7 @@ testpaths = [
     'tests',
     'todd/src/todd',
     'todd_tasks/src/todd_tasks',
-    'todd_torch/scripts',
+    'todd_torch/bin',
     'todd_torch/src/todd_torch',
 ]
 addopts = '--doctest-modules'

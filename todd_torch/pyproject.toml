@@ -50,8 +50,8 @@ images_to_video = 'todd_torch.patches.cv2.video_io:images_to_video_cli'
 [tool.setuptools]
 include-package-data = false
 script-files = [
-    'scripts/crop_border.py',
-    'scripts/merge_lmdbs.py',
+    'bin/crop_border.py',
+    'bin/merge_lmdbs.py',
     'bin/auto_torchrun',
     'bin/pipenv_install',
 ]
