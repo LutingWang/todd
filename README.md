@@ -51,3 +51,4 @@ TODO
 2. add Any to all missing typing fields
 3. @pytest.fixture(autouse=True)
 4. finish docs/source/api_reference/tasks/bpe.py and docs/source/pretrained/stable_diffusion.py
+6. update docformatter to v1.8 in pre-commit-config and remove bandit B614 from pyproject.toml
