@@ -14,10 +14,10 @@ V = TypeVar('V')
 class ReadOnlyMixin(BaseAccessLayer[K, V], ABC):
 
     def touch(self) -> None:
-        raise NotImplementedError
+        raise TypeError("Read-only access layers cannot be touched.")
 
     def __setitem__(self, key: K, value: V) -> None:
-        raise NotImplementedError
+        raise TypeError("Read-only access layers cannot be modified.")
 
     def __delitem__(self, key: K) -> None:
-        raise NotImplementedError
+        raise TypeError("Read-only access layers cannot be modified.")
