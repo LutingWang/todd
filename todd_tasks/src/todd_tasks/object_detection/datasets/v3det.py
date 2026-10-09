@@ -17,7 +17,7 @@ Version = Literal['v1']
 
 @ODDatasetRegistry.register_()
 class V3DetDataset(COCODataset):
-    DATA_ROOT = Path('data/v3det')
+    DATA_ROOT = Path('data', 'v3det')
     ANNOTATIONS_ROOT = DATA_ROOT / 'annotations'
 
     def __init__(

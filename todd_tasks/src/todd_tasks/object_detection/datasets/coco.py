@@ -179,7 +179,7 @@ class T(TypedDict):
 class COCODataset(BaseDataset[COCO, T]):
     _keys: Keys
 
-    DATA_ROOT = Path('data/coco')
+    DATA_ROOT = Path('data', 'coco')
     ANNOTATIONS_ROOT = DATA_ROOT / 'annotations'
 
     def __init__(

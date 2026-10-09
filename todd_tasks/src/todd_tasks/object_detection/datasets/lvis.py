@@ -107,7 +107,7 @@ class T(TypedDict):
 class LVISDataset(BaseCOCODataset[LVIS, T]):
     _keys: Keys
 
-    DATA_ROOT = Path('data/lvis')
+    DATA_ROOT = Path('data', 'lvis')
     ANNOTATIONS_ROOT = DATA_ROOT / 'annotations'
 
     def __init__(

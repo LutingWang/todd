@@ -69,7 +69,7 @@ class T(TypedDict):
 
 @DatasetRegistry.register_()
 class ImageNetDataset(PILDataset[T], ABC):
-    DATA_ROOT = Path('data/imagenet')
+    DATA_ROOT = Path('data', 'imagenet')
     ANNOTATIONS_ROOT = DATA_ROOT / 'annotations'
     SYNSETS_FILE = DATA_ROOT / 'synsets.json'
     SUFFIX = '.JPEG'

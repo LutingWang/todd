@@ -16,8 +16,8 @@ from todd_torch.patches.torch import (
     get_world_size,
 )
 
-DATA_ROOT = Path('data/imagenet-21k')
-WORK_DIR = Path('work_dirs/imagenet-21k')
+DATA_ROOT = Path('data', 'imagenet-21k')
+WORK_DIR = Path('work_dirs', 'imagenet-21k')
 
 WORK_DIR.mkdir(parents=True, exist_ok=True)
 

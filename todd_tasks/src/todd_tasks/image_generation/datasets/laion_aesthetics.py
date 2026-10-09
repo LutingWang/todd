@@ -47,7 +47,7 @@ class T(TypedDict):
 
 @DatasetRegistry.register_()
 class LAIONAestheticsDataset(PILDataset[T], ABC):
-    DATA_ROOT = Path('data/laion/aesthetics')
+    DATA_ROOT = Path('data', 'laion', 'aesthetics')
     ANNOTATIONS_ROOT = DATA_ROOT / 'annotations'
     SUFFIX = ''
 

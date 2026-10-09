@@ -23,7 +23,7 @@ class T(TypedDict):
 
 @DatasetRegistry.register_()
 class SAMed2DDataset(PILDataset[T], ABC):
-    DATA_ROOT = Path('data/sa_med2d')
+    DATA_ROOT = Path('data', 'sa_med2d')
     ANNOTATIONS_ROOT = DATA_ROOT / 'annotations'
     SUFFIX = '.png'
 
