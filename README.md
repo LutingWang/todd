@@ -51,4 +51,3 @@ TODO
 2. add Any to all missing typing fields
 3. @pytest.fixture(autouse=True)
 4. finish docs/source/api_reference/tasks/bpe.py and docs/source/pretrained/stable_diffusion.py
-5. remove todd.scripts

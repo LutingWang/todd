@@ -8,7 +8,7 @@ from typing import Any, Iterator, TypeVar
 import torch
 from torch.utils.data import DataLoader
 
-from todd.patches import collection_map
+from todd.utils import collection_map
 
 T = TypeVar('T')
 
