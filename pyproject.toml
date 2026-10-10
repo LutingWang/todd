@@ -159,7 +159,7 @@ exclude_lines = [
 
 [tool.commitizen]
 name = 'cz_conventional_commits'
-version = "0.10.1"
+version = "0.10.2"
 tag_format = 'v$version'
 version_files = [
     'todd/pyproject.toml:^version',
