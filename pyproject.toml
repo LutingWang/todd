@@ -72,6 +72,11 @@ files = [
     'todd_tasks/src',
     'todd_torch/src',
 ]
+mypy_path = [
+    'todd/src',
+    'todd_tasks/src',
+    'todd_torch/src',
+]
 plugins = 'numpy.typing.mypy_plugin'
 
 [[tool.mypy.overrides]]

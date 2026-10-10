@@ -13,14 +13,9 @@ T = TypeVar('T')
 
 class DirectoryAccessLayer(BaseAccessLayer[str, T], ABC):
 
-    def __init__(
-        self,
-        *args,
-        directory: Path,
-        **kwargs,
-    ) -> None:
+    def __init__(self, *args, directory: str, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self._directory = directory
+        self._directory = Path(directory)
 
     @abstractmethod
     def _paths(self) -> Iterator[Path]:
