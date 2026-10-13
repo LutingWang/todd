@@ -11,7 +11,7 @@ __all__ = [
     'DataLoaderRegistry',
 ]
 
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any, TypeVar, cast
 
 import torch
 import torch.utils.data.dataset
@@ -29,6 +29,8 @@ from ..patches.torch import PrefetchDataLoader, get_world_size
 
 if TYPE_CHECKING:
     from ..models.filters import NamedParametersFilter
+
+T = TypeVar('T')
 
 
 class InitRegistry(PartialRegistry):
@@ -166,6 +168,11 @@ for c in descendant_classes(torch.utils.data.Sampler):
 
 class CollateRegistry(PartialRegistry):
     pass
+
+
+@CollateRegistry.register_('default')
+def default_collate(batch: T) -> T:
+    return batch
 
 
 class WorkerInitRegistry(PartialRegistry):
