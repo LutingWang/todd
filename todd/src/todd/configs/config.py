@@ -10,6 +10,9 @@ from ..patches import AttrDict, set_
 
 class Config(AttrDict, dict[Any, Any]):  # type: ignore[misc]
 
+    def __reduce_ex__(self, protocol: int) -> tuple[Any, ...]:
+        return self.__class__, (), self.__dict__
+
     def __setitem__(self, name: str, value) -> None:
         """Set item.
 
