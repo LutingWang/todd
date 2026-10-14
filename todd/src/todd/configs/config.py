@@ -2,7 +2,7 @@ __all__ = [
     'Config',
 ]
 
-from typing import Any, Mapping, MutableMapping
+from typing import Any, Mapping, MutableMapping, SupportsIndex
 from typing_extensions import Self
 
 from ..patches import AttrDict, set_
@@ -10,7 +10,7 @@ from ..patches import AttrDict, set_
 
 class Config(AttrDict, dict[Any, Any]):  # type: ignore[misc]
 
-    def __reduce_ex__(self, protocol: int) -> tuple[Any, ...]:
+    def __reduce_ex__(self, protocol: SupportsIndex) -> tuple[Any, ...]:
         return self.__class__, (), self.__dict__
 
     def __setitem__(self, name: str, value) -> None:

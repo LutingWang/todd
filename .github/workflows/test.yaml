@@ -15,15 +15,16 @@ jobs:
       - uses: LutingWang/todd/.github/actions/checkout-todd@main
         with:
           lfs: true
-      - uses: actions/setup-python@master
+      - uses: astral-sh/setup-uv@v10.3.0
         with:
           python-version: ${{ matrix.python }}
+          activate-environment: true
       - name: Test
         run: |
-          pip install -U setuptools wheel
-          pip install torch torchvision torchaudio
-          pip install git+https://github.com/lvis-dataset/lvis-api.git@lvis_challenge_2021 --no-build-isolation
-          pip install ./todd[test] ./todd_torch ./todd_tasks[optional]
+          uv pip install -U pip setuptools wheel
+          uv pip install torch torchvision torchaudio
+          uv pip install git+https://github.com/lvis-dataset/lvis-api.git@lvis_challenge_2021 --no-build-isolation
+          uv pip install ./todd[test] ./todd_torch ./todd_tasks[optional]
           coverage run
           coverage xml && coverage report -m
       - uses: codecov/codecov-action@main

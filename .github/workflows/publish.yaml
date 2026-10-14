@@ -18,12 +18,13 @@ jobs:
       - uses: LutingWang/todd/.github/actions/checkout-todd@main
         with:
           lfs: true
-      - uses: actions/setup-python@master
+      - uses: astral-sh/setup-uv@v10.3.0
         with:
           python-version: ${{ matrix.python }}
+          activate-environment: true
       - name: Build
         run: |
-          pip install build
+          uv pip install build
           python -m build --sdist --wheel --outdir dist/ ${{ matrix.package }}
       - uses: pypa/gh-action-pypi-publish@release/v1
         if: ${{ !startsWith(github.ref , 'refs/tags') }}
