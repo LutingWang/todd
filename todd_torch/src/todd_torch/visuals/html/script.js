@@ -49,6 +49,19 @@ const render = async () => {
         errors.push(String(error));
       }
     });
+    document.querySelectorAll('.todd-table').forEach((element) => {
+      renderMathInElement(element, {
+        delimiters: [
+          { left: '$$', right: '$$', display: true },
+          { left: '$', right: '$', display: false },
+          { left: '\\(', right: '\\)', display: false },
+          { left: '\\[', right: '\\]', display: true },
+        ],
+        ignoredClasses: ['katex'],
+        throwOnError: true,
+        errorCallback: (message) => errors.push(message),
+      });
+    });
     await document.fonts.ready;
     await Promise.all(Array.from(document.images, (image) => image.decode()));
     fitTextElements();
