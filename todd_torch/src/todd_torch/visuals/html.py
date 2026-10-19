@@ -4,6 +4,7 @@ __all__ = [
 
 import math
 import shutil
+import tarfile
 from collections.abc import Sequence
 from contextlib import contextmanager
 from html import escape
@@ -18,6 +19,7 @@ from PIL import Image
 from playwright.sync_api import Browser, Page
 
 from todd.colors import RGB, Color
+from todd.utils import get_bytes
 
 from ..registries import VisualRegistry
 from ..utils.networks import image_to_data_url
@@ -47,11 +49,24 @@ class HTMLVisual(BaseVisual):
     def height(self) -> int:
         return self._height
 
+    @property
+    def _katex_root(self) -> Path:
+        katex_root = Path(__file__).parent / '.cache' / 'katex'
+        if not katex_root.exists():
+            url = 'https://registry.npmjs.org/katex/-/katex-0.19.0.tgz'
+            with (
+                get_bytes(url) as f,
+                tarfile.open(fileobj=f, mode='r:gz') as archive,
+            ):
+                archive.extractall(katex_root, filter='data')
+        return katex_root / 'package' / 'dist'
+
     def save(self, path: Any) -> None:
         path = Path(path).resolve()
         path.mkdir(parents=True, exist_ok=True)
         assert not list(path.iterdir())
 
+        shutil.copytree(self._katex_root, path / 'katex')
         resources_root = Path(__file__).with_suffix('')
         shutil.copytree(resources_root, path, dirs_exist_ok=True)
         for template_path in path.rglob('*.jinja'):
