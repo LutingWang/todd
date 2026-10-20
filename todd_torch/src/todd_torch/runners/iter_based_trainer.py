@@ -3,7 +3,8 @@ __all__ = [
 ]
 
 import itertools
-from typing import Any, Generator, TypeVar
+from collections.abc import Generator
+from typing import Any, TypeVar
 
 from torch import nn
 
@@ -27,7 +28,7 @@ class IterBasedTrainer(Trainer[T]):
     def iters(self) -> int:
         return self._iters
 
-    def _iterate_dataloader(self) -> Generator[Any, None, None]:
+    def _iterate_dataloader(self) -> Generator[Any]:
         if self.inner_iter > 0:
             set_epoch(self._dataloader, self.epoch)
             yield from itertools.islice(

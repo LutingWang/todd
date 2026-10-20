@@ -2,8 +2,9 @@ __all__ = [
     'Tokenizer',
 ]
 
+from collections.abc import Generator
 from pathlib import Path
-from typing import Generator, Mapping
+from typing import Mapping
 from typing_extensions import Self
 
 import jieba
@@ -29,7 +30,7 @@ class Tokenizer:
     def __len__(self) -> int:
         return len(self._character2token)
 
-    def _parse(self, text: str) -> Generator[str, None, None]:
+    def _parse(self, text: str) -> Generator[str]:
         segments = SEGMENT_PATTERN.findall(text)
         if segments[0].isascii():
             yield from segments.pop(0)

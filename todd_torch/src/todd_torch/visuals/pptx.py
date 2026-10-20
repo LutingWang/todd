@@ -6,8 +6,6 @@ import io
 from collections.abc import Sequence
 from typing import Any
 
-import numpy as np
-import numpy.typing as npt
 import pptx
 import pptx.dml.color
 import pptx.enum.shapes
@@ -27,10 +25,11 @@ from todd.colors import RGB, Color
 
 from ..registries import VisualRegistry
 from .base import BaseVisual, Pen, Point, TextStyle
+from .pil import PILVisual
 
 
 @VisualRegistry.register_()
-class PPTXVisual(BaseVisual):
+class PPTXVisual(BaseVisual[Image.Image]):
     """Visualize data in the format of PowerPoint.
 
     The PowerPoint contains only one slide.
@@ -185,25 +184,16 @@ class PPTXVisual(BaseVisual):
 
     def image(
         self,
-        image: npt.NDArray[np.uint8],
+        image: Image.Image,
         position: Point,
         width: float | None = None,
         height: float | None = None,
         opacity: float = 1,
     ) -> pptx.shapes.picture.Picture:
-        assert 0 <= opacity <= 1
-
-        height_, width_, channels = image.shape
-        assert channels == 3
-        width, height = self._get_image_wh(image, width, height)
-        alpha = np.full(
-            (height_, width_, 1),
-            round(255 * opacity),
-            dtype=np.uint8,
-        )
-        image_ = Image.fromarray(np.concatenate([image, alpha], axis=-1))
+        width, height = self._scale_wh(image.size, width, height)
+        image = PILVisual.apply_opacity(image, opacity)
         with io.BytesIO() as f:
-            image_.save(f, 'PNG')
+            image.save(f, 'PNG')
             f.seek(0)
             picture = self.shapes.add_picture(
                 f,

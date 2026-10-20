@@ -5,15 +5,13 @@ __all__ = [
 import math
 import shutil
 import tarfile
-from collections.abc import Sequence
+from collections.abc import Generator, Sequence
 from contextlib import contextmanager
 from html import escape
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Any, Generator
+from typing import Any
 
-import numpy as np
-import numpy.typing as npt
 from jinja2 import Template
 from PIL import Image
 from playwright.sync_api import Browser, Page
@@ -27,7 +25,7 @@ from .base import BaseVisual, Pen, Point, TextStyle
 
 
 @VisualRegistry.register_()
-class HTMLVisual(BaseVisual):
+class HTMLVisual(BaseVisual[Image.Image]):
 
     def __init__(
         self,
@@ -80,7 +78,7 @@ class HTMLVisual(BaseVisual):
             )
 
     @contextmanager
-    def _export(self, browser: Browser) -> Generator[Page, None, None]:
+    def _export(self, browser: Browser) -> Generator[Page]:
         with TemporaryDirectory() as temporary_root:
             html_root = Path(temporary_root)
             self.save(html_root)
@@ -203,14 +201,14 @@ class HTMLVisual(BaseVisual):
 
     def image(
         self,
-        image: npt.NDArray[np.uint8],
+        image: Image.Image,
         position: Point,
         width: float | None = None,
         height: float | None = None,
         opacity: float = 1,
     ) -> str:
-        width, height = self._get_image_wh(image, width, height)
-        data_url = image_to_data_url(Image.fromarray(image), '.png')
+        width, height = self._scale_wh(image.size, width, height)
+        data_url = image_to_data_url(image, '.png')
         self._elements.append(
             '<img class="todd-element todd-image" alt="" '
             f'src="{data_url}" '

@@ -8,7 +8,8 @@ __all__ = [
 
 import math
 from abc import ABC, abstractmethod
-from typing import Any, Generator, Generic, TypeVar
+from collections.abc import Generator
+from typing import Any, Generic, TypeVar
 from typing_extensions import Self
 
 import torch
@@ -45,7 +46,7 @@ class TensorWrapper(SerializeMixin, ABC, Generic[T]):
         args = (self._tensor, ) + args
         return args, kwargs
 
-    def __iter__(self) -> Generator[T, None, None]:
+    def __iter__(self) -> Generator[T]:
         yield from map(self.to_object, self._flatten())
 
     def __getitem__(self, key: Any) -> Self | T:

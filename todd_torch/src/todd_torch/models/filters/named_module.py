@@ -2,7 +2,7 @@ __all__ = [
     'NamedModulesFilter',
 ]
 
-from typing import Generator
+from collections.abc import Generator
 
 from torch import nn
 
@@ -16,5 +16,5 @@ class NamedModulesFilter(NamedMembersFilter[nn.Module]):
     def _named_members(
         self,
         module: nn.Module,
-    ) -> Generator[tuple[str, nn.Module], None, None]:
+    ) -> Generator[tuple[str, nn.Module]]:
         return module.named_modules()

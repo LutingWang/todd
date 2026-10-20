@@ -2,6 +2,7 @@ __all__ = [
     'CV2Visual',
 ]
 
+import math
 from collections.abc import Sequence
 from typing import Any
 
@@ -20,12 +21,12 @@ Canvas = npt.NDArray[np.uint8]
 
 
 @VisualRegistry.register_()
-class CV2Visual(BaseVisual):
+class CV2Visual(BaseVisual[Canvas]):
 
     @staticmethod
     def _to_rgb(color: Color) -> tuple[float, float, float]:
-        red, green, blue, *_ = RGB.from_(color).to_tuple(normalized=False)
-        return red, green, blue
+        r, g, b, *_ = RGB.from_(color).to_tuple(False)
+        return r, g, b
 
     def __init__(
         self,
@@ -67,7 +68,7 @@ class CV2Visual(BaseVisual):
             point.round_(),
             self._to_rgb(pen.color),
             marker_type,
-            round(pen.width),
+            math.ceil(pen.width),
             1,
             cv2.LINE_AA,
         )
@@ -84,7 +85,7 @@ class CV2Visual(BaseVisual):
             start.round_(),
             end.round_(),
             self._to_rgb(pen.color),
-            round(pen.width),
+            math.ceil(pen.width),
             cv2.LINE_AA,
         )
         return self._canvas
@@ -142,8 +143,12 @@ class CV2Visual(BaseVisual):
     ) -> Canvas:
         assert 0 <= opacity <= 1
 
-        w, h = self._get_image_wh(image, width, height)
-        w, h = round(w), round(h)
+        w, h = self._scale_wh(
+            (image.shape[1], image.shape[0]),
+            width,
+            height,
+        )
+        w, h = math.ceil(w), math.ceil(h)
         if (h, w) != image.shape[:2]:
             image = cv2.resize(image, (w, h))  # type: ignore[assignment]
 

@@ -2,7 +2,8 @@ __all__ = [
     'NamedParametersFilter',
 ]
 
-from typing import Generator, Iterable
+from collections.abc import Generator
+from typing import Iterable
 
 from torch import nn
 
@@ -50,7 +51,7 @@ class NamedParametersFilter(
     def _named_members(
         self,
         module: nn.Module,
-    ) -> Generator[tuple[str, nn.Parameter], None, None]:
+    ) -> Generator[tuple[str, nn.Parameter]]:
         named_modules: Iterable[tuple[str, nn.Module]]
         if self._named_modules_filter is None:
             named_modules = [('', module)]

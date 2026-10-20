@@ -4,7 +4,8 @@ __all__ = [
 
 import re
 from abc import abstractmethod
-from typing import Generator, Iterable, TypeVar
+from collections.abc import Generator
+from typing import Iterable, TypeVar
 
 from torch import nn
 
@@ -57,7 +58,7 @@ class NamedMembersFilter(BaseFilter[tuple[str, T]]):
     def filter_by_name(
         self,
         named_members: Iterable[tuple[str, T]],
-    ) -> Generator[tuple[str, T], None, None]:
+    ) -> Generator[tuple[str, T]]:
         for name, member in named_members:
             if name in self.names:
                 yield name, member
@@ -65,7 +66,7 @@ class NamedMembersFilter(BaseFilter[tuple[str, T]]):
     def filter_by_regex(
         self,
         named_members: Iterable[tuple[str, T]],
-    ) -> Generator[tuple[str, T], None, None]:
+    ) -> Generator[tuple[str, T]]:
         for name, member in named_members:
             if self.regex.match(name):
                 yield name, member
@@ -73,7 +74,7 @@ class NamedMembersFilter(BaseFilter[tuple[str, T]]):
     def filter_by_type(
         self,
         named_members: Iterable[tuple[str, T]],
-    ) -> Generator[tuple[str, T], None, None]:
+    ) -> Generator[tuple[str, T]]:
         for name, member in named_members:
             if isinstance(member, self.types):
                 yield name, member
@@ -82,13 +83,13 @@ class NamedMembersFilter(BaseFilter[tuple[str, T]]):
     def _named_members(
         self,
         module: nn.Module,
-    ) -> Generator[tuple[str, T], None, None]:
+    ) -> Generator[tuple[str, T]]:
         pass
 
     def __call__(
         self,
         module: nn.Module,
-    ) -> Generator[tuple[str, T], None, None]:
+    ) -> Generator[tuple[str, T]]:
         named_members = self._named_members(module)
         if self._names is not None:
             named_members = self.filter_by_name(named_members)

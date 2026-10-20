@@ -6,8 +6,9 @@ __all__ = [
 
 import contextlib
 import functools
+from collections.abc import Generator
 from datetime import datetime
-from typing import Any, Generator
+from typing import Any
 
 from ..loggers import logger
 from ..patches import del_, get_, has_, set_
@@ -22,7 +23,7 @@ def get_timestamp() -> str:
 
 
 @contextlib.contextmanager
-def set_temp(obj, name: str, value) -> Generator[None, None, None]:
+def set_temp(obj, name: str, value) -> Generator[None]:
     """Set a temporary attribute on an object.
 
     Args:

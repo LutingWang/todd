@@ -4,8 +4,8 @@ __all__ = [
 
 import logging
 import math
+from collections.abc import Generator
 from pathlib import Path
-from typing import Generator
 
 import jieba
 
@@ -102,7 +102,7 @@ class F5_TTS:  # noqa: N801 pylint: disable=invalid-name
         lines_file: Path,
         *args,
         **kwargs,
-    ) -> Generator[tuple[Voice, AudioSegment], None, None]:
+    ) -> Generator[tuple[Voice, AudioSegment]]:
         lines = Lines(voices=self._voices).parse(lines_file)
         for voice, line in lines:
             logger.info("Voice %s\n%s", voice._name, line)

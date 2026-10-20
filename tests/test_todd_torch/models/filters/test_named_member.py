@@ -1,4 +1,4 @@
-from typing import Generator
+from collections.abc import Generator
 
 from torch import nn
 
@@ -14,7 +14,7 @@ class CustomNamedMembersFilter(NamedMembersFilter[int | str]):
     def _named_members(
         self,
         module: nn.Module,
-    ) -> Generator[tuple[str, int | str], None, None]:
+    ) -> Generator[tuple[str, int | str]]:
         yield from named_members()
 
 

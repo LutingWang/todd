@@ -7,8 +7,8 @@ __all__ = [
 
 import hashlib
 import random
+from collections.abc import Generator
 from contextlib import contextmanager
-from typing import Generator
 
 import numpy as np
 import torch
@@ -34,7 +34,7 @@ def set_seed_temp(
     seed=None,
     deterministic: bool = False,
     benchmark: bool = True,
-) -> Generator[None, None, None]:
+) -> Generator[None]:
     if seed is None:
         seed = random_int()
     elif isinstance(seed, int):

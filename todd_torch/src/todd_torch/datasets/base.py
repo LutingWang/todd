@@ -5,7 +5,8 @@ __all__ = [
 
 import reprlib
 from abc import ABC, abstractmethod
-from typing import Generator, Generic, Iterator, Protocol, Sized, TypeVar
+from collections.abc import Generator
+from typing import Generic, Iterator, Protocol, Sized, TypeVar
 
 import torchvision.transforms as tf
 from torch.utils.data import Dataset
@@ -115,7 +116,7 @@ class BaseDataset(BuildPreHookMixin, Dataset[T], Generic[T, K_co, V], ABC):
             return 4 * get_world_size()
         return len(self._keys)
 
-    def __iter__(self) -> Generator[T, None, None]:
+    def __iter__(self) -> Generator[T]:
         for index in range(len(self)):
             yield self[index]
 

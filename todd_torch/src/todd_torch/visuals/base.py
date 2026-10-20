@@ -11,12 +11,11 @@ __all__ = [
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Any, NamedTuple
-
-import numpy as np
-import numpy.typing as npt
+from typing import Any, Generic, NamedTuple, TypeVar
 
 from todd.colors import HTML4, RGB, Color
+
+T = TypeVar('T')
 
 PALETTE = tuple(RGB.from_hex(color.value) for color in HTML4)
 
@@ -41,7 +40,7 @@ class TextStyle:
     font_size: float
 
 
-class BaseVisual(ABC):
+class BaseVisual(Generic[T], ABC):
 
     @abstractmethod
     def __init__(
@@ -103,15 +102,15 @@ class BaseVisual(ABC):
         pass
 
     @staticmethod
-    def _get_image_wh(
-        image: npt.NDArray[np.uint8],
+    def _scale_wh(
+        wh: tuple[float, float],
         width: float | None,
         height: float | None,
     ) -> tuple[float, float]:
         if width is not None and height is not None:
             return width, height
 
-        h, w = image.shape[:2]
+        w, h = wh
 
         if width is not None:
             return width, h / w * width
@@ -122,7 +121,7 @@ class BaseVisual(ABC):
     @abstractmethod
     def image(
         self,
-        image: npt.NDArray[np.uint8],
+        image: T,
         position: Point,
         width: float | None = None,
         height: float | None = None,

@@ -3,8 +3,9 @@ __all__ = [
 ]
 
 import re
+from collections.abc import Generator
 from pathlib import Path
-from typing import Generator, Mapping
+from typing import Mapping
 
 from todd.patches import remove_prefix
 
@@ -22,7 +23,7 @@ class Lines:
     def parse(
         self,
         file: Path,
-    ) -> Generator[tuple[Voice, str], None, None]:
+    ) -> Generator[tuple[Voice, str]]:
         with file.open() as f:
             for line in f:
                 line = line.strip()

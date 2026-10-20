@@ -3,7 +3,8 @@ __all__ = [
 ]
 
 from abc import ABC
-from typing import Any, Generator, Mapping, TypeVar
+from collections.abc import Generator
+from typing import Any, Mapping, TypeVar
 
 from todd import Config
 from todd.registries import BuildPreHookMixin, Item, RegistryMeta
@@ -55,7 +56,7 @@ class ConcatAccessLayer(BuildPreHookMixin, BaseAccessLayer[str, V], ABC):
         for access_layer in self._access_layers.values():
             access_layer.touch()
 
-    def __iter__(self) -> Generator[str, None, None]:
+    def __iter__(self) -> Generator[str]:
         for name, access_layer in self._access_layers.items():
             for k in access_layer:
                 yield name + self.KEY_SEPARATOR + k

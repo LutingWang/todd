@@ -2,7 +2,8 @@ __all__ = [
     'Lines',
 ]
 
-from typing import Generator, Iterable, cast
+from collections.abc import Generator
+from typing import Iterable, cast
 
 import jieba
 
@@ -41,7 +42,7 @@ class Lines(BaseLines):
         self,
         *args,
         **kwargs,
-    ) -> Generator[tuple[Voice, str], None, None]:
+    ) -> Generator[tuple[Voice, str]]:
         for voice, line in super().parse(*args, **kwargs):
             voice = cast(Voice, voice)
             max_bytes = int((self.MAX_DURATION - voice.duration) * voice.bps)

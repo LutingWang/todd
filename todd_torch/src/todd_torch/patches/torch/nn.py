@@ -11,7 +11,8 @@ __all__ = [
 ]
 
 import logging
-from typing import Any, Generator, Mapping
+from collections.abc import Generator
+from typing import Any, Mapping
 
 import torch
 from torch import nn
@@ -51,7 +52,7 @@ def training_modules(
     module: nn.Module,
     *args,
     **kwargs,
-) -> Generator[nn.Module, None, None]:
+) -> Generator[nn.Module]:
     for m in module.modules(*args, **kwargs):
         if m.training:
             yield m
@@ -61,7 +62,7 @@ def named_training_modules(
     module: nn.Module,
     *args,
     **kwargs,
-) -> Generator[tuple[str, nn.Module], None, None]:
+) -> Generator[tuple[str, nn.Module]]:
     for name, m in module.named_modules(*args, **kwargs):
         if m.training:
             yield name, m
@@ -71,7 +72,7 @@ def trainable_parameters(
     module: nn.Module,
     *args,
     **kwargs,
-) -> Generator[nn.Parameter, None, None]:
+) -> Generator[nn.Parameter]:
     for parameter in module.parameters(*args, **kwargs):
         if parameter.requires_grad:
             yield parameter
@@ -81,7 +82,7 @@ def named_trainable_parameters(
     module: nn.Module,
     *args,
     **kwargs,
-) -> Generator[tuple[str, nn.Parameter], None, None]:
+) -> Generator[tuple[str, nn.Parameter]]:
     for name, parameter in module.named_parameters(*args, **kwargs):
         if parameter.requires_grad:
             yield name, parameter
