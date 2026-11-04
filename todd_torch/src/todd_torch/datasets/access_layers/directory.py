@@ -13,7 +13,7 @@ T = TypeVar('T')
 
 class DirectoryAccessLayer(BaseAccessLayer[str, T], ABC):
 
-    def __init__(self, *args, directory: str, **kwargs) -> None:
+    def __init__(self, *args, directory: Path | str, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._directory = Path(directory)
 
