@@ -8,9 +8,8 @@ from todd_tasks.object_detection_knowledge_distillation.distillers.adapts.iou im
 
 class TestIoU:
 
-    @classmethod
     @pytest.fixture(scope='class')
-    def iou(cls):
+    def iou(self):
         return IoU()
 
     def test_normal(self, iou: IoU):
