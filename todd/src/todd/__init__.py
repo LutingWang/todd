@@ -1,6 +1,6 @@
 """Core utilities for Toolkit for Object Detection Distillation."""
 
-__version__ = '0.10.4'
+__version__ = '0.10.5'
 
 from . import colors, configs, loggers, patches, registries, utils
 from .configs import Config
