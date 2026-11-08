@@ -17,3 +17,15 @@ with (
     visual.export_pdf(browser, path=Path('result.pdf'))
     visual.export_screenshot(browser, path=Path('result.png'))
 ```
+
+需要自定义导出参数或复用同一次渲染时，可通过 `open()` 获取已渲染的 Page；退出上下文时会关闭 Page 并清理临时 HTML：
+
+```python
+with visual.open(browser) as page:
+    page.pdf(
+        path='result.pdf',
+        print_background=True,
+        prefer_css_page_size=True,
+    )
+    page.screenshot(path='result.png')
+```

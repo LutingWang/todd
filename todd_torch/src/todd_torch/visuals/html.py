@@ -78,7 +78,7 @@ class HTMLVisual(BaseVisual[Image.Image]):
             )
 
     @contextmanager
-    def _export(self, browser: Browser) -> Generator[Page]:
+    def open(self, browser: Browser) -> Generator[Page]:
         with TemporaryDirectory() as temporary_root:
             html_root = Path(temporary_root)
             self.save(html_root)
@@ -97,16 +97,16 @@ class HTMLVisual(BaseVisual[Image.Image]):
             finally:
                 page.close()
 
-    def export_pdf(self, *args, path: Path, **kwargs) -> None:
-        with self._export(*args, **kwargs) as page:
+    def export_pdf(self, browser: Browser, path: Path) -> None:
+        with self.open(browser) as page:
             page.pdf(
                 path=path,
                 print_background=True,
                 prefer_css_page_size=True,
             )
 
-    def export_screenshot(self, *args, path: Path, **kwargs) -> None:
-        with self._export(*args, **kwargs) as page:
+    def export_screenshot(self, browser: Browser, path: Path) -> None:
+        with self.open(browser) as page:
             page.screenshot(path=path)
 
     @staticmethod
