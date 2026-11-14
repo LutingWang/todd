@@ -10,7 +10,6 @@ from contextlib import contextmanager
 from html import escape
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Any
 
 from jinja2 import Template
 from PIL import Image
@@ -59,23 +58,30 @@ class HTMLVisual(BaseVisual[Image.Image]):
                 archive.extractall(katex_root, filter='data')
         return katex_root / 'package' / 'dist'
 
-    def save(self, path: Any) -> None:
-        path = Path(path).resolve()
+    def save(self, path: Path) -> None:
         path.mkdir(parents=True, exist_ok=True)
         assert not list(path.iterdir())
 
-        shutil.copytree(self._katex_root, path / 'katex')
+        assets_root = path / 'assets'
+        shutil.copytree(self._katex_root, assets_root / 'katex')
         resources_root = Path(__file__).with_suffix('')
-        shutil.copytree(resources_root, path, dirs_exist_ok=True)
-        for template_path in path.rglob('*.jinja'):
-            template: Template = Template(template_path.read_text())
-            template_path.with_suffix('').write_text(
-                template.render(
-                    width=self.width,
-                    height=self.height,
-                    elements=self._elements,
-                ),
-            )
+        shutil.copy(resources_root / 'script.js', assets_root / 'script.js')
+
+        template_path = resources_root / 'style.css.jinja'
+        template: Template = Template(template_path.read_text())
+        (assets_root / 'style.css').write_text(
+            template.render(width=self.width, height=self.height),
+        )
+
+        template = Template((resources_root / 'index.html.jinja').read_text())
+        (path / 'index.html').write_text(
+            template.render(
+                width=self.width,
+                height=self.height,
+                elements=self._elements,
+                assets_root=assets_root,
+            ),
+        )
 
     @contextmanager
     def open(self, browser: Browser) -> Generator[Page]:

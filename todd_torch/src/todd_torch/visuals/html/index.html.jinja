@@ -2,11 +2,15 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <link rel="stylesheet" href="katex/katex.min.css">
-    <link rel="stylesheet" href="style.css">
-    <script defer src="katex/katex.min.js"></script>
-    <script defer src="katex/contrib/auto-render.min.js"></script>
-    <script defer src="script.js"></script>
+    <link rel="stylesheet" href="assets/katex/katex.min.css">
+    {% for asset_path in assets_root.glob('*.css') | sort %}
+      <link rel="stylesheet" href="assets/{{ asset_path.name | e }}">
+    {% endfor %}
+    <script defer src="assets/katex/katex.min.js"></script>
+    <script defer src="assets/katex/contrib/auto-render.min.js"></script>
+    {% for asset_path in assets_root.glob('*.js') | sort %}
+      <script defer src="assets/{{ asset_path.name | e }}"></script>
+    {% endfor %}
   </head>
   <body>
     <div class="todd-canvas">
