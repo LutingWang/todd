@@ -56,11 +56,11 @@ class Codec:
         return bytes_.decode(UTF_8)
 
 
-def load_bpe(path: Any, size: int) -> list[tuple[str, str]]:
-    if path is None:
-        path = Path(__file__).parent / 'clip_bpe.txt.gz'
+def load_bpe(file: Any, size: int) -> list[tuple[str, str]]:
+    if file is None:
+        file = Path(__file__).parent / 'clip_bpe.txt.gz'
     bpe: list[tuple[str, str]] = []
-    with gzip.open(path, 'rt', encoding=UTF_8) as f:
+    with gzip.open(file, 'rt', encoding=UTF_8) as f:
         f.readline()  # skip first line
         for _ in range(size):
             text1, text2 = f.readline().split()  # ensure length is 2
@@ -116,10 +116,10 @@ class CLIPTokenizer(BaseTokenizer):
 
     EOW = '</w>'  # not a special token
 
-    def __init__(self, *args, bpe_path: Any = None, **kwargs) -> None:
+    def __init__(self, *args, bpe_file: Any = None, **kwargs) -> None:
         codec = Codec()
         bpe = load_bpe(
-            bpe_path,
+            bpe_file,
             3 * 2**14 - codec.NUM_CODES - len(self.special_texts),
         )
 

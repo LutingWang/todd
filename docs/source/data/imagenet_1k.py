@@ -41,70 +41,76 @@ def parse_synsets() -> Synsets:
 
 def train_synset(wnid: str, tar: tarfile.TarFile) -> None:
     prefix = wnid + '_'
-    path = ImageNetDataset.DATA_ROOT / 'train' / wnid
-    path.mkdir(parents=True, exist_ok=True)
-    for image in tqdm.tqdm(tar.getmembers(), leave=False):
-        assert image.isfile() and image.name.startswith(prefix)
-        image_file = tar.extractfile(image)
-        assert image_file is not None
-        image_path = path / image.name.removeprefix(prefix)
-        image_path.write_bytes(image_file.read())
+    directory = ImageNetDataset.DATA_ROOT / 'train' / wnid
+    directory.mkdir(parents=True, exist_ok=True)
+    for image_file in tqdm.tqdm(tar.getmembers(), leave=False):
+        assert image_file.isfile() and image_file.name.startswith(prefix)
+        image_stream = tar.extractfile(image_file)
+        assert image_stream is not None
+        output_file = directory / image_file.name.removeprefix(prefix)
+        output_file.write_bytes(image_stream.read())
 
 
 def train(tar: tarfile.TarFile) -> None:
     for synset in tqdm.tqdm(tar.getmembers()):
         assert synset.isfile() and synset.name.endswith('.tar')
         wnid, _ = os.path.splitext(synset.name)
-        synset_file = tar.extractfile(synset)
-        with tarfile.open(fileobj=synset_file) as synset_tar:
+        synset_stream = tar.extractfile(synset)
+        with tarfile.open(fileobj=synset_stream) as synset_tar:
             train_synset(wnid, synset_tar)
 
 
 def val(tar: tarfile.TarFile, synsets: Synsets) -> None:
-    gt_path = (
+    annotation_file = (
         ImageNetDataset.DATA_ROOT / 'ILSVRC2012_devkit_t12' / 'data'
         / 'ILSVRC2012_validation_ground_truth.txt'
     )
-    gt = np.loadtxt(gt_path, np.uint16).tolist()
+    annotation = np.loadtxt(annotation_file, np.uint16).tolist()
 
-    for synset_id in set(gt):
-        path = ImageNetDataset.DATA_ROOT / 'val' / synsets[synset_id]['WNID']
-        path.mkdir(parents=True, exist_ok=True)
+    for synset_id in set(annotation):
+        directory = ImageNetDataset.DATA_ROOT / 'val' / synsets[synset_id][
+            'WNID']
+        directory.mkdir(parents=True, exist_ok=True)
 
-    images = sorted(tar.getmembers(), key=lambda image: image.name)
-    for image, synset_id in zip(tqdm.tqdm(images), gt):
+    image_files = sorted(
+        tar.getmembers(),
+        key=lambda image_file: image_file.name,
+    )
+    for image_file, synset_id in zip(tqdm.tqdm(image_files), annotation):
         assert (
-            image.isfile()
-            and image.name.endswith(f'.{ImageNetDataset.SUFFIX}')
+            image_file.isfile()
+            and image_file.name.endswith(f'.{ImageNetDataset.SUFFIX}')
         )
-        path = ImageNetDataset.DATA_ROOT / 'val' / synsets[synset_id]['WNID']
-        image_file = tar.extractfile(image)
-        assert image_file is not None
-        image_path = (
-            path / image.name.removeprefix('ILSVRC2012_val_').lstrip('0')
+        directory = ImageNetDataset.DATA_ROOT / 'val' / synsets[synset_id][
+            'WNID']
+        image_stream = tar.extractfile(image_file)
+        assert image_stream is not None
+        output_file = (
+            directory
+            / image_file.name.removeprefix('ILSVRC2012_val_').lstrip('0')
         )
-        image_path.write_bytes(image_file.read())
+        output_file.write_bytes(image_stream.read())
 
 
 def annotations(split: str, synsets: Synsets) -> None:
-    split_root = ImageNetDataset.DATA_ROOT / split
-    synset_paths = {
-        synset_id: split_root / synset['WNID']
+    split_dir = ImageNetDataset.DATA_ROOT / split
+    synset_dirs = {
+        synset_id: split_dir / synset['WNID']
         for synset_id, synset in synsets.items()
     }
-    synset_paths = {
-        synset_id: synset_path
-        for synset_id, synset_path in synset_paths.items()
-        if synset_path.exists()
+    synset_dirs = {
+        synset_id: synset_dir
+        for synset_id, synset_dir in synset_dirs.items()
+        if synset_dir.exists()
     }
-    synset_paths = dict(sorted(synset_paths.items(), key=lambda x: x[1]))
+    synset_dirs = dict(sorted(synset_dirs.items(), key=lambda x: x[1]))
     json_dump(
         [
-            Annotation(name=image.name, synset_id=synset_id)
-            for synset_id, synset_path in synset_paths.items()
-            for image in synset_path.iterdir()
+            Annotation(name=image_file.name, synset_id=synset_id)
+            for synset_id, synset_dir in synset_dirs.items()
+            for image_file in synset_dir.iterdir()
         ],
-        ImageNetDataset.ANNOTATIONS_ROOT / f'{split}.json',
+        ImageNetDataset.ANNOTATIONS_DIR / f'{split}.json',
     )
 
 

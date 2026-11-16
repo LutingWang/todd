@@ -180,7 +180,7 @@ class COCODataset(BaseDataset[COCO, T]):
     _keys: Keys
 
     DATA_ROOT = Path('data', 'coco')
-    ANNOTATIONS_ROOT = DATA_ROOT / 'annotations'
+    ANNOTATIONS_DIR = DATA_ROOT / 'annotations'
 
     def __init__(
         self,
@@ -199,7 +199,7 @@ class COCODataset(BaseDataset[COCO, T]):
             )
         if annotations_file is None:
             annotations_file = (
-                self.ANNOTATIONS_ROOT / f'instances_{split_year}.json'
+                self.ANNOTATIONS_DIR / f'instances_{split_year}.json'
             )
 
         coco = COCO(annotations_file)

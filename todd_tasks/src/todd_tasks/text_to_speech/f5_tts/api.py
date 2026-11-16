@@ -29,12 +29,12 @@ class F5_TTS:  # noqa: N801 pylint: disable=invalid-name
 
     def __init__(
         self,
-        voices: Path,
+        voices_file: Path,
         min_rms: float = 0.1,
         sample_rate: int = 24_000,
     ) -> None:
         self._voices = Voice.from_config(
-            voices,
+            voices_file,
             min_rms=min_rms,
             sample_rate=sample_rate,
         )

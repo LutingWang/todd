@@ -98,7 +98,7 @@ class Visual:
                     Pen(color=colors[p], width=thickness),
                 )
 
-    def save_image(self, path: Any, *args, **kwargs) -> None:
+    def save_image(self, file: Any, *args, **kwargs) -> None:
         images = [visual.to_numpy() for visual in self._visuals]
         image = np.stack(images)
         image = einops.rearrange(image, 't h w c -> t c h w')
@@ -106,15 +106,15 @@ class Visual:
         tensor = torchvision.utils.make_grid(tensor, *args, **kwargs)
         tensor = einops.rearrange(tensor, 'c h w -> h w c')
         image = tensor.numpy()
-        cv2.imwrite(str(path), cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
+        cv2.imwrite(str(file), cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
 
-    def save_video(self, path: Any, *args, **kwargs) -> None:
+    def save_video(self, file: Any, *args, **kwargs) -> None:
         video_writer = VideoWriter(*args, **kwargs)
         for visual in self._visuals:
             rgb_frame = visual.to_numpy()
             bgr_frame = cv2.cvtColor(rgb_frame, cv2.COLOR_RGB2BGR)
             video_writer.write(bgr_frame)  # type: ignore[arg-type]
-        video_writer.dump(path)
+        video_writer.dump(file)
 
 
 class TAPVidDAVISVisual(Visual):

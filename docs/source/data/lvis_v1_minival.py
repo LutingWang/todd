@@ -4,7 +4,7 @@ from typing import Any, cast
 from todd_tasks.object_detection.datasets import LVISDataset
 from todd_tasks.object_detection.datasets.coco import URL
 
-annotations_file = LVISDataset.ANNOTATIONS_ROOT / 'lvis_v1_val.json'
+annotations_file = LVISDataset.ANNOTATIONS_DIR / 'lvis_v1_val.json'
 with annotations_file.open() as f:
     lvis: dict[str, Any] = json.load(f)
 
@@ -19,6 +19,6 @@ annotations = [
 ]
 lvis.update(images=images, annotations=annotations)
 
-annotations_file = LVISDataset.ANNOTATIONS_ROOT / 'lvis_v1_minival.json'
+annotations_file = LVISDataset.ANNOTATIONS_DIR / 'lvis_v1_minival.json'
 with annotations_file.open('w') as f:
     json.dump(lvis, f, separators=(',', ':'))

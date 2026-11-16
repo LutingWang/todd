@@ -24,7 +24,7 @@ class T(TypedDict):
 @DatasetRegistry.register_()
 class SAMed2DDataset(PILDataset[T], ABC):
     DATA_ROOT = Path('data', 'sa_med2d')
-    ANNOTATIONS_ROOT = DATA_ROOT / 'annotations'
+    ANNOTATIONS_DIR = DATA_ROOT / 'annotations'
     SUFFIX = '.png'
 
     def __init__(
@@ -41,7 +41,7 @@ class SAMed2DDataset(PILDataset[T], ABC):
                 suffix=self.SUFFIX,
             )
         if annotations_file is None:
-            annotations_file = self.ANNOTATIONS_ROOT / f'SAMed2D_{split}.json'
+            annotations_file = self.ANNOTATIONS_DIR / f'SAMed2D_{split}.json'
         elif isinstance(annotations_file, str):
             annotations_file = Path(annotations_file)
         self._annotations_file = annotations_file

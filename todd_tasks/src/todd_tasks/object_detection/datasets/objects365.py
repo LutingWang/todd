@@ -120,7 +120,7 @@ class Objects365Dataset(BaseCOCODataset[COCO, T]):
     _keys: Keys
 
     DATA_ROOT = Path('data', 'objects365')
-    ANNOTATIONS_ROOT = DATA_ROOT / 'annotations'
+    ANNOTATIONS_DIR = DATA_ROOT / 'annotations'
 
     IGNORE_KEYS = (
         'v1/patch6/objects365_v1_00320532',
@@ -146,7 +146,7 @@ class Objects365Dataset(BaseCOCODataset[COCO, T]):
             )
         if annotations_file is None:
             annotations_file = (
-                self.ANNOTATIONS_ROOT / f'zhiyuan_obj{version}_{split}.json'
+                self.ANNOTATIONS_DIR / f'zhiyuan_obj{version}_{split}.json'
             )
 
         coco = COCO(annotations_file)

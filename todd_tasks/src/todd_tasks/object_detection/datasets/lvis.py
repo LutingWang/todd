@@ -108,7 +108,7 @@ class LVISDataset(BaseCOCODataset[LVIS, T]):
     _keys: Keys
 
     DATA_ROOT = Path('data', 'lvis')
-    ANNOTATIONS_ROOT = DATA_ROOT / 'annotations'
+    ANNOTATIONS_DIR = DATA_ROOT / 'annotations'
 
     def __init__(
         self,
@@ -126,7 +126,7 @@ class LVISDataset(BaseCOCODataset[LVIS, T]):
             )
         if annotations_file is None:
             annotations_file = (
-                self.ANNOTATIONS_ROOT / f'lvis_{version}_{split}.json'
+                self.ANNOTATIONS_DIR / f'lvis_{version}_{split}.json'
             )
 
         lvis = LVIS(annotations_file)

@@ -64,8 +64,11 @@ class Inception(
     def init_weights(self, config: Config) -> bool:
         # https://github.com/mseitzer/pytorch-fid/releases/download/
         # fid_weights/pt_inception-2015-12-05-6726825d.pth
-        f = config.get('pretrained', 'pretrained/pytorch-fid/pt_inception.pth')
-        state_dict: dict[str, torch.Tensor] = torch.load(f)
+        file = config.get(
+            'pretrained',
+            'pretrained/pytorch-fid/pt_inception.pth',
+        )
+        state_dict: dict[str, torch.Tensor] = torch.load(file)
         state_dict.pop('fc.weight')
         state_dict.pop('fc.bias')
         self._inception.load_state_dict(state_dict)
@@ -111,17 +114,22 @@ class Statistician(nn.Module):
         return Statistics(mu=mu, sigma=sigma)
 
 
-def fid(gt: Statistics, pred: Statistics, eps: float = 1e-6) -> float:
-    delta_mu = gt.mu - pred.mu
+def fid(
+    reference_statistics: Statistics,
+    prediction_statistics: Statistics,
+    eps: float = 1e-6,
+) -> float:
+    delta_mu = reference_statistics.mu - prediction_statistics.mu
 
-    cov = gt.sigma.dot(pred.sigma)
+    cov = reference_statistics.sigma.dot(prediction_statistics.sigma)
     cov, _ = linalg.sqrtm(cov, disp=False)
 
     if np.isinf(cov).any():
         logger.warning("FID calculation produces singular product")
-        gt_offset = np.eye(gt.sigma.shape[0]) * eps
-        offset = np.eye(pred.sigma.shape[0]) * eps
-        cov = (gt.sigma + gt_offset).dot(pred.sigma + offset)
+        reference_offset = np.eye(reference_statistics.sigma.shape[0]) * eps
+        offset = np.eye(prediction_statistics.sigma.shape[0]) * eps
+        cov = (reference_statistics.sigma
+               + reference_offset).dot(prediction_statistics.sigma + offset)
         cov = linalg.sqrtm(cov, disp=False)
 
     # Numerical error might give slight imaginary component
@@ -134,6 +142,6 @@ def fid(gt: Statistics, pred: Statistics, eps: float = 1e-6) -> float:
         cov = cov.real
 
     return (
-        delta_mu.dot(delta_mu) + np.trace(gt.sigma) + np.trace(pred.sigma)
-        - 2 * np.trace(cov)
+        delta_mu.dot(delta_mu) + np.trace(reference_statistics.sigma)
+        + np.trace(prediction_statistics.sigma) - 2 * np.trace(cov)
     )

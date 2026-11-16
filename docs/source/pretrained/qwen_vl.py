@@ -116,8 +116,8 @@ def main() -> None:
         "Please use no more than 4 GPUs, in order to avoid RuntimeError."
     )
 
-    images_root = Path(__file__).parent / 'images'
-    images = [Image.open(image) for image in images_root.iterdir()]
+    images_dir = Path(__file__).parent / 'images'
+    images = [Image.open(image_file) for image_file in images_dir.iterdir()]
 
     chatbot = Chatbot()
 

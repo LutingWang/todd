@@ -46,74 +46,92 @@ class HTMLVisual(BaseVisual[Image.Image]):
     def height(self) -> int:
         return self._height
 
-    @property
-    def _katex_root(self) -> Path:
-        katex_root = Path(__file__).parent / '.cache' / 'katex'
-        if not katex_root.exists():
+    def _save_katex(self, input_dir: Path, output_dir: Path) -> None:
+        katex_dir = input_dir / '.cache' / 'katex'
+        if not katex_dir.exists():
             url = 'https://registry.npmjs.org/katex/-/katex-0.19.0.tgz'
             with (
                 get_bytes(url) as f,
                 tarfile.open(fileobj=f, mode='r:gz') as archive,
             ):
-                archive.extractall(katex_root, filter='data')
-        return katex_root / 'package' / 'dist'
+                archive.extractall(katex_dir, filter='data')
+        shutil.copytree(katex_dir / 'package' / 'dist', output_dir / 'katex')
+
+    def _save_script(self, input_dir: Path, output_dir: Path) -> None:
+        shutil.copy(input_dir / 'script.js', output_dir / 'script.js')
+
+    def _save_style(self, input_dir: Path, output_dir: Path) -> None:
+        template_file = input_dir / 'style.css.jinja'
+        template: Template = Template(template_file.read_text())
+        output_file = output_dir / 'style.css'
+        output_file.write_text(
+            template.render(width=self.width, height=self.height),
+        )
+
+    def _save_index(self, input_dir: Path, directory: Path) -> None:
+        output_dir = directory / 'assets'
+        javascript_files = [
+            file.relative_to(directory).as_posix() for file in sorted(
+                output_dir.rglob('*.js'),
+                # Load KaTeX before its plugins.
+                key=lambda file: len(str(file)),
+            )
+        ]
+        css_files = [
+            file.relative_to(directory).as_posix()
+            for file in output_dir.rglob('*.css')
+        ]
+
+        template_file = input_dir / 'index.html.jinja'
+        template: Template = Template(template_file.read_text())
+        output_file = directory / 'index.html'
+        output_file.write_text(
+            template.render(
+                elements=self._elements,
+                javascript_files=javascript_files,
+                css_files=css_files,
+            ),
+        )
 
     def save(self, path: Path) -> None:
         path.mkdir(parents=True, exist_ok=True)
         assert not list(path.iterdir())
 
-        assets_root = path / 'assets'
-        shutil.copytree(self._katex_root, assets_root / 'katex')
-        resources_root = Path(__file__).with_suffix('')
-        shutil.copy(resources_root / 'script.js', assets_root / 'script.js')
-
-        template_path = resources_root / 'style.css.jinja'
-        template: Template = Template(template_path.read_text())
-        (assets_root / 'style.css').write_text(
-            template.render(width=self.width, height=self.height),
-        )
-
-        template = Template((resources_root / 'index.html.jinja').read_text())
-        (path / 'index.html').write_text(
-            template.render(
-                width=self.width,
-                height=self.height,
-                elements=self._elements,
-                assets_root=assets_root,
-            ),
-        )
+        input_dir = Path(__file__).with_suffix('')
+        output_dir = path / 'assets'
+        self._save_katex(input_dir, output_dir)
+        self._save_script(input_dir, output_dir)
+        self._save_style(input_dir, output_dir)
+        self._save_index(input_dir, path)
 
     @contextmanager
     def open(self, browser: Browser) -> Generator[Page]:
-        with TemporaryDirectory() as temporary_root:
-            html_root = Path(temporary_root)
-            self.save(html_root)
-            html_path = html_root / 'index.html'
+        with TemporaryDirectory() as temporary_dir:
+            directory = Path(temporary_dir)
+            self.save(directory)
+            file = directory / 'index.html'
             page = browser.new_page(
-                viewport=dict(
-                    width=self.width,
-                    height=self.height,
-                ),
+                viewport=dict(width=self.width, height=self.height),
             )
             try:
-                page.goto(html_path.as_uri())
+                page.goto(file.as_uri())
                 if error := page.evaluate('window.todd_render()'):
                     raise ValueError(error)
                 yield page
             finally:
                 page.close()
 
-    def export_pdf(self, browser: Browser, path: Path) -> None:
+    def export_pdf(self, browser: Browser, file: Path) -> None:
         with self.open(browser) as page:
             page.pdf(
-                path=path,
+                path=file,
                 print_background=True,
                 prefer_css_page_size=True,
             )
 
-    def export_screenshot(self, browser: Browser, path: Path) -> None:
+    def export_screenshot(self, browser: Browser, file: Path) -> None:
         with self.open(browser) as page:
-            page.screenshot(path=path)
+            page.screenshot(path=file)
 
     @staticmethod
     def _to_rgb(color: Color) -> RGB:

@@ -70,7 +70,7 @@ class T(TypedDict):
 @DatasetRegistry.register_()
 class ImageNetDataset(PILDataset[T], ABC):
     DATA_ROOT = Path('data', 'imagenet')
-    ANNOTATIONS_ROOT = DATA_ROOT / 'annotations'
+    ANNOTATIONS_DIR = DATA_ROOT / 'annotations'
     SYNSETS_FILE = DATA_ROOT / 'synsets.json'
     SUFFIX = '.JPEG'
 
@@ -90,7 +90,7 @@ class ImageNetDataset(PILDataset[T], ABC):
                 suffix=self.SUFFIX,
             )
         if annotations_file is None:
-            annotations_file = self.ANNOTATIONS_ROOT / f'{split}.json'
+            annotations_file = self.ANNOTATIONS_DIR / f'{split}.json'
         elif isinstance(annotations_file, str):
             annotations_file = Path(annotations_file)
         if synsets_file is None:

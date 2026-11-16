@@ -2,14 +2,11 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <link rel="stylesheet" href="assets/katex/katex.min.css">
-    {% for asset_path in assets_root.glob('*.css') | sort %}
-      <link rel="stylesheet" href="assets/{{ asset_path.name | e }}">
+    {% for css_file in css_files %}
+      <link rel="stylesheet" href="{{ css_file }}">
     {% endfor %}
-    <script defer src="assets/katex/katex.min.js"></script>
-    <script defer src="assets/katex/contrib/auto-render.min.js"></script>
-    {% for asset_path in assets_root.glob('*.js') | sort %}
-      <script defer src="assets/{{ asset_path.name | e }}"></script>
+    {% for javascript_file in javascript_files %}
+      <script defer src="{{ javascript_file }}"></script>
     {% endfor %}
   </head>
   <body>

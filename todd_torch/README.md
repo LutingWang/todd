@@ -14,8 +14,8 @@ with (
     sync_playwright() as playwright,
     playwright.chromium.launch() as browser,
 ):
-    visual.export_pdf(browser, path=Path('result.pdf'))
-    visual.export_screenshot(browser, path=Path('result.png'))
+    visual.export_pdf(browser, Path('result.pdf'))
+    visual.export_screenshot(browser, Path('result.png'))
 ```
 
 需要自定义导出参数或复用同一次渲染时，可通过 `open()` 获取已渲染的 Page；退出上下文时会关闭 Page 并清理临时 HTML：

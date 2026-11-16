@@ -45,15 +45,15 @@ class Dataset(PILDataset[T]):
         return T(id_=key, image=tensor)
 
 
-def check(out_path: Path) -> bool:
-    if not out_path.exists():
+def check(output_file: Path) -> bool:
+    if not output_file.exists():
         return False
     try:
-        torch.load(out_path)
+        torch.load(output_file)
     except Exception:  # pylint: disable=broad-exception-caught
-        todd.logger.warning("Failed to load %s. Overwriting...", out_path)
+        todd.logger.warning("Failed to load %s. Overwriting...", output_file)
         return False
-    todd.logger.debug("%s already exists.", out_path)
+    todd.logger.debug("%s already exists.", output_file)
     return True
 
 
@@ -103,8 +103,8 @@ def main() -> None:
     categories = categories[get_rank()::get_world_size()]
 
     for category in tqdm(categories, disable=not is_master):
-        out_path = WORK_DIR / f'{category}.pth'
-        if check(out_path):
+        output_file = WORK_DIR / f'{category}.pth'
+        if check(output_file):
             continue
 
         dataset = Dataset(category=category)
@@ -131,7 +131,7 @@ def main() -> None:
             clip_features=torch.cat(clip_feature_list).half(),
             dino_features=torch.cat(dino_feature_list).half(),
         )
-        torch.save(data, out_path)
+        torch.save(data, output_file)
 
 
 if __name__ == '__main__':

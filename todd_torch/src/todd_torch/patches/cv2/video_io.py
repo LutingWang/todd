@@ -59,13 +59,13 @@ class VideoWriter:
 
 def images_to_video_cli() -> None:
     parser = argparse.ArgumentParser(description="Write Video")
-    parser.add_argument('images', nargs='+')
+    parser.add_argument('image_files', nargs='+')
     parser.add_argument('--fps', type=float, default=12.)
-    parser.add_argument('--out', required=True)
+    parser.add_argument('--output-file', required=True)
     args = parser.parse_args()
 
     writer = VideoWriter(args.fps)
-    for image in args.images:
-        frame = cv2.imread(image)
+    for image_file in args.image_files:
+        frame = cv2.imread(image_file)
         writer.write(frame)
-    writer.dump(args.out)
+    writer.dump(args.output_file)

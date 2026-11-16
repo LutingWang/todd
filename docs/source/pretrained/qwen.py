@@ -120,8 +120,8 @@ class Translator:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument('input_path', type=Path)
-    parser.add_argument('output_path', type=Path)
+    parser.add_argument('input_file', type=Path)
+    parser.add_argument('output_file', type=Path)
     args = parser.parse_args()
     return args
 
@@ -129,13 +129,13 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
 
-    book = epub.read_epub(args.input_path)
+    book = epub.read_epub(args.input_file)
 
     with open('tmp.log', 'w') as f:
         translator = Translator(f)
         translator.translate(book)
 
-    epub.write_epub(args.output_path, book)
+    epub.write_epub(args.output_file, book)
 
 
 if __name__ == '__main__':

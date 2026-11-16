@@ -104,18 +104,18 @@ def load_state_dict(
 
 
 def load_state_dict_(
-    f: torch.serialization.FileLike | list[torch.serialization.FileLike],
+    files: torch.serialization.FileLike | list[torch.serialization.FileLike],
     *args,
     logger: logging.Logger | None = None,
     **kwargs,
 ) -> dict[str, Any]:
-    f_list = f if isinstance(f, list) else [f]
+    files = files if isinstance(files, list) else [files]
     if logger is None:
         from ...loggers import master_logger as logger
     assert logger is not None
 
     state_dict: dict[str, Any] = dict()
-    for f_ in f_list:
-        logger.info("Loading model from %s", f_)
-        state_dict.update(load(f_, 'cpu', *args, **kwargs))
+    for file in files:
+        logger.info("Loading model from %s", file)
+        state_dict.update(load(file, 'cpu', *args, **kwargs))
     return state_dict

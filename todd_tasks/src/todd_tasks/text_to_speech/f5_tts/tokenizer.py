@@ -20,10 +20,10 @@ class Tokenizer:
         self._character2token = dict(character2token)
 
     @classmethod
-    def load(cls, path: str | Path) -> Self:
-        if isinstance(path, str):
-            path = Path(path)
-        with path.open() as f:
+    def load(cls, file: str | Path) -> Self:
+        if isinstance(file, str):
+            file = Path(file)
+        with file.open() as f:
             character2token = {line.strip(): i for i, line in enumerate(f)}
         return cls(character2token)
 

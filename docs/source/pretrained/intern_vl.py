@@ -220,8 +220,8 @@ class Chatbot:
 
 
 def main() -> None:
-    images_root = Path(__file__).parent / 'images'
-    images = [Image.open(image) for image in images_root.iterdir()]
+    images_dir = Path(__file__).parent / 'images'
+    images = [Image.open(image_file) for image_file in images_dir.iterdir()]
 
     chatbot = Chatbot()
 

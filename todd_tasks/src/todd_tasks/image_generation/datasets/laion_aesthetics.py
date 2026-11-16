@@ -48,7 +48,7 @@ class T(TypedDict):
 @DatasetRegistry.register_()
 class LAIONAestheticsDataset(PILDataset[T], ABC):
     DATA_ROOT = Path('data', 'laion', 'aesthetics')
-    ANNOTATIONS_ROOT = DATA_ROOT / 'annotations'
+    ANNOTATIONS_DIR = DATA_ROOT / 'annotations'
     SUFFIX = ''
 
     def __init__(
@@ -65,7 +65,7 @@ class LAIONAestheticsDataset(PILDataset[T], ABC):
                 suffix=self.SUFFIX,
             )
         if annotations_file is None:
-            annotations_file = self.ANNOTATIONS_ROOT / f'{split}.tsv'
+            annotations_file = self.ANNOTATIONS_DIR / f'{split}.tsv'
         elif isinstance(annotations_file, str):
             annotations_file = Path(annotations_file)
 

@@ -75,11 +75,12 @@ class BaseStrategy(RunnerHolderMixin[T], StateDictMixin):
 
     def load_model_from(
         self,
-        f: torch.serialization.FileLike | list[torch.serialization.FileLike],
+        file: torch.serialization.FileLike
+        | list[torch.serialization.FileLike],
         *args,
         **kwargs,
     ) -> None:
-        model_state_dict = load_state_dict_(f, logger=self.runner.logger)
+        model_state_dict = load_state_dict_(file, logger=self.runner.logger)
         self.load_model_state_dict(model_state_dict, *args, **kwargs)
 
     def optim_state_dict(self, *args, **kwargs) -> dict[str, Any]:
