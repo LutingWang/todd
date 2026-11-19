@@ -1,5 +1,5 @@
 __all__ = [
-    'python_json',
+    'PythonJSONEncoder',
     'json_dump',
     'json_load',
     'jsonl_dump',
@@ -7,20 +7,15 @@ __all__ = [
 ]
 
 import json
-from collections.abc import Generator, Iterable
-from contextlib import contextmanager
+from collections.abc import Iterable, Iterator
 from pathlib import Path
 from typing import Any
 
 
-@contextmanager
-def python_json() -> Generator[None, None, None]:
-    encoder = json.encoder.c_make_encoder  # type: ignore[attr-defined]
-    json.encoder.c_make_encoder = None  # type: ignore[attr-defined]
-    try:
-        yield
-    finally:
-        json.encoder.c_make_encoder = encoder  # type: ignore[attr-defined]
+class PythonJSONEncoder(json.JSONEncoder):
+
+    def iterencode(self, o: Any, _one_shot: bool = False) -> Iterator[str]:
+        return super().iterencode(o, _one_shot=False)
 
 
 def json_dump(object_: Any, f: Any, *, compact: bool = True, **kwargs) -> None:
